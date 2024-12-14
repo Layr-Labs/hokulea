@@ -1,7 +1,7 @@
 //! This module contains the [PreimageServer] struct and its implementation.
 
 use crate::{
-    fetcher::Fetcher,
+    extended_fetcher::ExtendedFetcher,
     kv::KeyValueStore,
     preimage::{
         OfflineHintRouter, OfflinePreimageFetcher, OnlineHintRouter, OnlinePreimageFetcher,
@@ -33,7 +33,7 @@ where
     kv_store: Arc<RwLock<KV>>,
     /// The fetcher for fetching preimages from a remote source. If [None], the server will only
     /// serve preimages that are already in the key-value store.
-    fetcher: Option<Arc<RwLock<Fetcher<KV>>>>,
+    fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
 }
 
 impl<P, H, KV> PreimageServer<P, H, KV>
@@ -49,7 +49,7 @@ where
         oracle_server: P,
         hint_reader: H,
         kv_store: Arc<RwLock<KV>>,
-        fetcher: Option<Arc<RwLock<Fetcher<KV>>>>,
+        fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
     ) -> Self {
         Self {
             oracle_server,
@@ -80,7 +80,7 @@ where
     /// client.
     async fn start_oracle_server(
         kv_store: Arc<RwLock<KV>>,
-        fetcher: Option<Arc<RwLock<Fetcher<KV>>>>,
+        fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
         oracle_server: P,
     ) -> Result<()> {
         #[inline(always)]
@@ -121,7 +121,7 @@ where
     /// handler.
     async fn start_hint_router(
         hint_reader: H,
-        fetcher: Option<Arc<RwLock<Fetcher<KV>>>>,
+        fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
     ) -> Result<()> {
         #[inline(always)]
         async fn do_loop<R, H>(router: &R, server: &H) -> Result<()>

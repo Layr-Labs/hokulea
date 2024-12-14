@@ -7,7 +7,7 @@ use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 
 use kona_proof::errors::OracleProviderError;
 
-use crate::hint::HintType;
+use crate::hint::ExtendedHintType;
 
 /// The oracle-backed EigenDA provider for the client program.
 #[derive(Debug, Clone)]
@@ -29,7 +29,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
     async fn get_blob(&mut self, cert: &Bytes) -> Result<Bytes, Self::Error> {
         self.oracle
-            .write(&HintType::EigenDACommitment.encode_with(&[cert]))
+            .write(&ExtendedHintType::AltDACommitment.encode_with(&[cert]))
             .await
             .map_err(OracleProviderError::Preimage)?;
         let data = self
@@ -45,14 +45,14 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
     async fn get_element(&mut self, cert: &Bytes, element: &Bytes) -> Result<Bytes, Self::Error> {
         self.oracle
-            .write(&HintType::EigenDACommitment.encode_with(&[cert]))
+            .write(&ExtendedHintType::AltDACommitment.encode_with(&[cert]))
             .await
             .map_err(OracleProviderError::Preimage)?;
 
         let cert_point_key = Bytes::copy_from_slice(&[cert.to_vec(), element.to_vec()].concat());
 
         self.oracle
-            .write(&HintType::EigenDACommitment.encode_with(&[&cert_point_key]))
+            .write(&ExtendedHintType::AltDACommitment.encode_with(&[&cert_point_key]))
             .await
             .map_err(OracleProviderError::Preimage)?;
         let data = self

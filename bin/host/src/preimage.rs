@@ -1,6 +1,6 @@
 //! Contains the implementations of the [HintRouter] and [PreimageFetcher] traits.]
 
-use crate::{fetcher::Fetcher, kv::KeyValueStore};
+use crate::{extended_fetcher::ExtendedFetcher, kv::KeyValueStore};
 use async_trait::async_trait;
 use kona_preimage::{
     errors::{PreimageOracleError, PreimageOracleResult},
@@ -15,7 +15,7 @@ pub struct OnlinePreimageFetcher<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
-    inner: Arc<RwLock<Fetcher<KV>>>,
+    inner: Arc<RwLock<ExtendedFetcher<KV>>>,
 }
 
 #[async_trait]
@@ -37,7 +37,7 @@ where
     KV: KeyValueStore + ?Sized,
 {
     /// Create a new [OnlinePreimageFetcher] from the given [Fetcher].
-    pub const fn new(fetcher: Arc<RwLock<Fetcher<KV>>>) -> Self {
+    pub const fn new(fetcher: Arc<RwLock<ExtendedFetcher<KV>>>) -> Self {
         Self { inner: fetcher }
     }
 }
@@ -80,7 +80,7 @@ pub struct OnlineHintRouter<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
-    inner: Arc<RwLock<Fetcher<KV>>>,
+    inner: Arc<RwLock<ExtendedFetcher<KV>>>,
 }
 
 #[async_trait]
@@ -100,7 +100,7 @@ where
     KV: KeyValueStore + ?Sized,
 {
     /// Create a new [OnlineHintRouter] from the given [Fetcher].
-    pub const fn new(fetcher: Arc<RwLock<Fetcher<KV>>>) -> Self {
+    pub const fn new(fetcher: Arc<RwLock<ExtendedFetcher<KV>>>) -> Self {
         Self { inner: fetcher }
     }
 }
