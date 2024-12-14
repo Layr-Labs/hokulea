@@ -76,6 +76,13 @@ where
     }
 
     /// Get the preimage for the given key.
+    /// TODO: there's probably a much nicer way to write this function.
+    /// Fetcher was not written with extensibility in mind, so we have to do this,
+    /// but there might be ways to change the Fetcher's API to make this easier (eg by making prefetch public).
+    /// ExtendedFetcher -> get_preimage_altda -> prefetch that only understands altda hints
+    ///     \-> Fetcher -> get_preimage -> prefetch that understands all other hints
+    /// Both get_preimages just for loop until the preimage is found. Their hint coverage is mutually exclusive,
+    /// so only one of them will ever return, hence the tokio::select!.
     pub async fn get_preimage(&self, key: B256) -> Result<Vec<u8>> {
         tokio::select! {
             result = self.get_preimage_altda(key) => result,
