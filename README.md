@@ -1,5 +1,3 @@
 # Hokulea
 
-test
-
 ![](./hokulea.jpeg)
