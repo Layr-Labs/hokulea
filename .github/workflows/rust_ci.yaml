@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: taiki-e/install-action@just
       - name: Install Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -40,8 +38,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: taiki-e/install-action@just
       - name: Install Rust nightly toolchain
         uses: dtolnay/rust-toolchain@nightly
@@ -75,8 +71,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: taiki-e/install-action@just
       - name: Install Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -101,8 +95,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: taiki-e/install-action@just
       - name: Install Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -119,8 +111,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: taiki-e/install-action@just
       - name: Install Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -130,3 +120,18 @@ jobs:
           cache-on-failure: true
       - name: cargo hack
         run: just hack
+  unused-deps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just, cargo-udeps
+      - name: Install Rust stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - run: just unused-deps
