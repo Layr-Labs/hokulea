@@ -91,7 +91,7 @@ jobs:
         run: just hack
   unused-deps:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5 # machete runs very quickly but need longer timeout to install the tools
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
