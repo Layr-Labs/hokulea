@@ -1,13 +1,10 @@
 set positional-arguments
-alias l := lint-native
-alias lint := lint-native
-alias f := fmt-native-fix
-alias b := build
-alias h := hack
 
 # default recipe to display help information
 default:
   @just --list
+
+############################### STYLE ###############################
 
 # unused-deps finds unused dependencies in the workspace.
 # See https://rustprojectprimer.com/checks/unused.html
@@ -16,6 +13,46 @@ default:
 unused-deps slow="false":
   cargo machete
   # cargo +nightly udeps
+
+# Lint the workspace for all available targets
+alias la := lint
+lint: lint-native lint-docs
+
+# Lint the workspace
+alias l := lint-native
+alias lint := lint-native
+lint-native: fmt-native-check lint-docs
+  cargo +nightly clippy --workspace --all --all-features --all-targets -- -D warnings
+
+# Lint the Rust documentation
+lint-docs:
+  RUSTDOCFLAGS="-D warnings" cargo doc --all --no-deps --document-private-items
+
+# Runs `cargo hack check` against the workspace
+alias h := hack
+hack:
+  cargo hack check --feature-powerset --no-dev-deps
+
+# Fixes the formatting of the workspace
+alias f := fmt-native-fix
+fmt-native-fix:
+  cargo +nightly fmt --all
+
+# Check the formatting of the workspace
+fmt-native-check:
+  cargo +nightly fmt --all -- --check
+
+############################### BUILD ###############################
+
+# Build the workspace for all available targets
+alias b := build
+build: build-native
+
+# Build for the native target
+build-native *args='':
+  cargo build --workspace $@
+
+############################### UNIT TESTS ###############################
 
 # Run all tests (excluding online tests)
 alias t := tests
@@ -26,8 +63,27 @@ test *args="-E '!test(test_online)'":
   cargo nextest run --workspace --all --all-features {{args}}
 
 # Run all online tests
+# TODO: understand when this is needed
 test-online:
   just test "-E 'test(test_online)'"
+
+# Test the Rust documentation
+test-docs:
+  cargo test --doc --all --locked
+
+############################### E2E TESTS ###############################
+
+# TODO: Use the below stuff to add an e2e test for the client program using hokulea
+
+# Clones and checks out the monorepo at the commit present in `.monorepo`
+monorepo:
+  ([ ! -d monorepo ] && git clone https://github.com/ethereum-optimism/monorepo) || exit 0
+  cd monorepo && git checkout $(cat ../.monorepo)
+
+# Updates the pinned version of the monorepo
+update-monorepo:
+  [ ! -d monorepo ] && git clone https://github.com/ethereum-optimism/monorepo
+  cd monorepo && git rev-parse HEAD > ../.monorepo
 
 # Run action tests for the client program on the native target
 action-tests test_name='Test_ProgramAction' *args='':
@@ -53,48 +109,3 @@ action-tests test_name='Test_ProgramAction' *args='':
 # Clean the action tests directory
 clean-actions:
   rm -rf monorepo/
-
-# Lint the workspace for all available targets
-alias la := lint-all
-lint-all: lint-native lint-docs
-
-# Runs `cargo hack check` against the workspace
-hack:
-  cargo hack check --feature-powerset --no-dev-deps
-
-# Fixes the formatting of the workspace
-fmt-native-fix:
-  cargo +nightly fmt --all
-
-# Check the formatting of the workspace
-fmt-native-check:
-  cargo +nightly fmt --all -- --check
-
-# Lint the workspace
-lint-native: fmt-native-check lint-docs
-  cargo +nightly clippy --workspace --all --all-features --all-targets -- -D warnings
-
-# Lint the Rust documentation
-lint-docs:
-  RUSTDOCFLAGS="-D warnings" cargo doc --all --no-deps --document-private-items
-
-# Test the Rust documentation
-test-docs:
-  cargo test --doc --all --locked
-
-# Build the workspace for all available targets
-build: build-native
-
-# Build for the native target
-build-native *args='':
-  cargo build --workspace $@
-
-# Clones and checks out the monorepo at the commit present in `.monorepo`
-monorepo:
-  ([ ! -d monorepo ] && git clone https://github.com/ethereum-optimism/monorepo) || exit 0
-  cd monorepo && git checkout $(cat ../.monorepo)
-
-# Updates the pinned version of the monorepo
-update-monorepo:
-  [ ! -d monorepo ] && git clone https://github.com/ethereum-optimism/monorepo
-  cd monorepo && git rev-parse HEAD > ../.monorepo
