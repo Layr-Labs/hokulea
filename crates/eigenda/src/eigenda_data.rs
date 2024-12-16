@@ -3,6 +3,7 @@ use alloy_primitives::Bytes;
 use kona_derive::errors::BlobDecodingError;
 
 #[derive(Default, Clone, Debug)]
+/// Represents the data structure for EigenDA Blob.
 pub struct EigenDABlobData {
     /// The calldata
     pub(crate) blob: Bytes,

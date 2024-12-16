@@ -2,7 +2,7 @@ use alloy_primitives::Bytes;
 use anyhow::Ok;
 use reqwest;
 
-/// An online implementation of the [EigenDABlobProvider] trait.
+/// Fetches blobs from EigenDA via an eigenda-proxy instance.
 #[derive(Debug, Clone)]
 pub struct OnlineEigenDABlobProvider {
     /// The base url.

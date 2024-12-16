@@ -12,8 +12,6 @@ use kona_host::cli::HostCli;
 
 use kona_host::kv;
 
-use hokulea_client;
-
 use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use anyhow::{anyhow, Result};
 use fetcher::Fetcher;

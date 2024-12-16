@@ -569,7 +569,7 @@ where
                     kv_write_lock.set(key.into(), preimage.into())?;
                 }
             }
-            HintType::AltDACommitment => {
+            HintType::EigenDACommitment => {
                 let cert = hint_data;
                 info!(target: "fetcher", "Fetching AltDACommitment cert: {:?}", cert);
                 // Fetch the blob sidecar from the blob provider.

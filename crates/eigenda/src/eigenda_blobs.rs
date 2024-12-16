@@ -37,43 +37,7 @@ where
         }
     }
 
-    /// Loads blob data into the source if it is not open.
-    async fn load_blobs(&mut self, altda_commitment: &Bytes) -> Result<(), BlobProviderError> {
-        if self.open {
-            return Ok(());
-        }
-
-        info!(target: "eigenda-blobsource", "going to fetch through altda fetcher");
-        // it should use self.altda_fetcher to get the blob
-        let data = self.altda_fetcher.get_blob(altda_commitment).await;
-        match data {
-            Ok(data) => {
-                self.open = true;
-                let new_blob = data.clone();
-                // new_blob.truncate(data.len()-1);
-                let eigenda_blob = EigenDABlobData { blob: new_blob };
-                self.data.push(eigenda_blob);
-
-                info!(target: "eigenda-blobsource", "load_blobs {:?}", self.data);
-
-                Ok(())
-            }
-            Err(_) => {
-                self.open = true;
-                return Ok(());
-            }
-        }
-    }
-
-    fn next_data(&mut self) -> Result<EigenDABlobData, PipelineResult<Bytes>> {
-        info!(target: "eigenda-blobsource", "self.data.is_empty() {:?}", self.data.is_empty());
-
-        if self.data.is_empty() {
-            return Err(Err(PipelineError::Eof.temp()));
-        }
-        Ok(self.data.remove(0))
-    }
-
+    /// Fetches the next blob from the source.
     pub async fn next(&mut self, altda_commitment: &Bytes) -> PipelineResult<Bytes> {
         info!(target: "eigenda-blobsource", "next");
         self.load_blobs(altda_commitment).await?;
@@ -99,8 +63,46 @@ where
         }
     }
 
+    /// Clears the source.
     pub fn clear(&mut self) {
         self.data.clear();
         self.open = false;
+    }
+
+    /// Loads blob data into the source if it is not open.
+    async fn load_blobs(&mut self, altda_commitment: &Bytes) -> Result<(), BlobProviderError> {
+        if self.open {
+            return Ok(());
+        }
+
+        info!(target: "eigenda-blobsource", "going to fetch through altda fetcher");
+        // it should use self.altda_fetcher to get the blob
+        let data = self.altda_fetcher.get_blob(altda_commitment).await;
+        match data {
+            Ok(data) => {
+                self.open = true;
+                let new_blob = data.clone();
+                // new_blob.truncate(data.len()-1);
+                let eigenda_blob = EigenDABlobData { blob: new_blob };
+                self.data.push(eigenda_blob);
+
+                info!(target: "eigenda-blobsource", "load_blobs {:?}", self.data);
+
+                Ok(())
+            }
+            Err(_) => {
+                self.open = true;
+                Ok(())
+            }
+        }
+    }
+
+    fn next_data(&mut self) -> Result<EigenDABlobData, PipelineResult<Bytes>> {
+        info!(target: "eigenda-blobsource", "self.data.is_empty() {:?}", self.data.is_empty());
+
+        if self.data.is_empty() {
+            return Err(Err(PipelineError::Eof.temp()));
+        }
+        Ok(self.data.remove(0))
     }
 }

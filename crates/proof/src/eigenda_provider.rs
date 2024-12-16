@@ -29,7 +29,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
     async fn get_blob(&mut self, cert: &Bytes) -> Result<Bytes, Self::Error> {
         self.oracle
-            .write(&HintType::AltDACommitment.encode_with(&[&cert]))
+            .write(&HintType::EigenDACommitment.encode_with(&[cert]))
             .await
             .map_err(OracleProviderError::Preimage)?;
         let data = self
@@ -45,14 +45,14 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
     async fn get_element(&mut self, cert: &Bytes, element: &Bytes) -> Result<Bytes, Self::Error> {
         self.oracle
-            .write(&HintType::AltDACommitment.encode_with(&[&cert]))
+            .write(&HintType::EigenDACommitment.encode_with(&[cert]))
             .await
             .map_err(OracleProviderError::Preimage)?;
 
         let cert_point_key = Bytes::copy_from_slice(&[cert.to_vec(), element.to_vec()].concat());
 
         self.oracle
-            .write(&HintType::AltDACommitment.encode_with(&[&cert_point_key]))
+            .write(&HintType::EigenDACommitment.encode_with(&[&cert_point_key]))
             .await
             .map_err(OracleProviderError::Preimage)?;
         let data = self
