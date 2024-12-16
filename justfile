@@ -20,7 +20,6 @@ lint: lint-native lint-docs
 
 # Lint the workspace
 alias l := lint-native
-alias lint := lint-native
 lint-native: fmt-native-check lint-docs
   cargo +nightly clippy --workspace --all --all-features --all-targets -- -D warnings
 
