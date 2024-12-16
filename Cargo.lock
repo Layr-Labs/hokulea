@@ -1709,7 +1709,7 @@ name = "hokulea-client"
 version = "0.1.0"
 dependencies = [
  "alloy-consensus",
- "hokulea-eigenda-proof",
+ "hokulea-proof",
  "kona-client",
  "kona-driver",
  "kona-executor",
@@ -1730,22 +1730,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hokulea-eigenda-proof"
-version = "0.1.0"
-dependencies = [
- "alloy-primitives",
- "async-trait",
- "hokulea-eigenda",
- "kona-derive",
- "kona-driver",
- "kona-preimage",
- "kona-proof",
- "op-alloy-genesis",
- "op-alloy-protocol",
- "op-alloy-rpc-types-engine",
-]
-
-[[package]]
 name = "hokulea-host"
 version = "0.1.0"
 dependencies = [
@@ -1759,7 +1743,7 @@ dependencies = [
  "async-trait",
  "clap",
  "hokulea-client",
- "hokulea-eigenda-proof",
+ "hokulea-proof",
  "kona-host",
  "kona-mpt",
  "kona-preimage",
@@ -1771,6 +1755,22 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "hokulea-proof"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives",
+ "async-trait",
+ "hokulea-eigenda",
+ "kona-derive",
+ "kona-driver",
+ "kona-preimage",
+ "kona-proof",
+ "op-alloy-genesis",
+ "op-alloy-protocol",
+ "op-alloy-rpc-types-engine",
 ]
 
 [[package]]

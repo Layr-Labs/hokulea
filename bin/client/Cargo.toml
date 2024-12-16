@@ -12,6 +12,6 @@ kona-proof.workspace = true
 kona-driver.workspace = true
 kona-executor.workspace = true
 
-hokulea-eigenda-proof.workspace = true
+hokulea-proof.workspace = true
 
 tracing.workspace = true

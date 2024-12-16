@@ -9,7 +9,7 @@ kona-mpt.workspace = true
 kona-preimage = { workspace = true, features = ["std"] }
 kona-host.workspace = true
 
-hokulea-eigenda-proof.workspace = true
+hokulea-proof.workspace = true
 hokulea-client.workspace = true
 
 # Alloy

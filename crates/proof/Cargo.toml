@@ -1,5 +1,5 @@
 [package]
-name = "hokulea-eigenda-proof"
+name = "hokulea-proof"
 description = "Eigenda Proof SDK"
 version = "0.1.0"
 edition = "2021"

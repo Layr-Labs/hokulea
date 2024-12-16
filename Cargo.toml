@@ -6,7 +6,7 @@ members = ["bin/*"]
 # Workspace
 hokulea-client = { path = "bin/client", version = "0.1.0", default-features = false }
 hokulea-eigenda = { path = "crates/eigenda", version = "0.1.0", default-features = false }
-hokulea-eigenda-proof = { path = "crates/proof", version = "0.1.0", default-features = false }
+hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = false }
 
 # Kona
 # We use git dependencies instead of version dependencies because Kona is moving very fast right now
