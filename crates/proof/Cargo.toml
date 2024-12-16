@@ -1,5 +1,5 @@
 [package]
-name = "eigenda-proof"
+name = "hokulea-eigenda-proof"
 description = "Eigenda Proof SDK"
 version = "0.1.0"
 edition = "2021"
@@ -9,40 +9,16 @@ kona-preimage.workspace = true
 kona-driver.workspace = true
 kona-proof.workspace = true
 kona-derive.workspace = true
-eigenda.workspace = true
 
-kona-mpt.workspace = true
-kona-executor.workspace = true
-# Alloy
-
-# Op Alloy
-
-
+hokulea-eigenda.workspace = true
 
 # Alloy
-alloy-rlp.workspace = true
-alloy-eips.workspace = true
-alloy-consensus.workspace = true
 alloy-primitives.workspace = true
 
 # Op Alloy
-op-alloy-registry.workspace = true
 op-alloy-protocol.workspace = true
-op-alloy-consensus.workspace = true
 op-alloy-rpc-types-engine.workspace = true
 op-alloy-genesis = { workspace = true, features = ["serde"] }
 
 # General
-lru.workspace = true
-spin.workspace = true
-serde.workspace = true
-tracing.workspace = true
-serde_json.workspace = true
 async-trait.workspace = true
-thiserror.workspace = true
-
-# `std` feature dependencies
-tokio = { workspace = true, features = ["full"], optional = true }
-
-[features]
-std = ["dep:tokio"]

@@ -4,22 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-primitives.workspace = true
-alloy-provider.workspace = true
 alloy-consensus.workspace = true
-anyhow.workspace = true
-clap.workspace = true
 
 kona-client.workspace = true
-kona-host.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
 kona-driver.workspace = true
 kona-executor.workspace = true
 
-eigenda.workspace = true
-eigenda-proof.workspace = true
+hokulea-eigenda-proof.workspace = true
 
-thiserror.workspace = true
 tracing.workspace = true
-

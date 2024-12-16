@@ -1,4 +1,4 @@
-use alloy_primitives::{Address, Bytes};
+use alloy_primitives::Bytes;
 
 use kona_derive::errors::BlobDecodingError;
 

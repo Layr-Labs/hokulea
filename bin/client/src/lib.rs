@@ -1,6 +1,6 @@
 extern crate alloc;
 use alloy_consensus::{Header, Sealed};
-use eigenda_proof::pipeline::OraclePipeline;
+use hokulea_eigenda_proof::pipeline::OraclePipeline;
 use kona_client::FaultProofProgramError;
 use kona_driver::Driver;
 use kona_preimage::{
@@ -20,7 +20,7 @@ use kona_proof::{
 };
 use tracing::{error, info};
 
-use eigenda_proof::eigenda_provider::OracleEigenDAProvider;
+use hokulea_eigenda_proof::eigenda_provider::OracleEigenDAProvider;
 
 #[inline]
 pub async fn run<P, H>(oracle_client: P, hint_client: H) -> Result<(), FaultProofProgramError>

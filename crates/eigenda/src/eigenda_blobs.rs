@@ -1,19 +1,14 @@
 //! Blob Data Source
 
-use crate::eigenda::EigenDADataSource;
 use crate::eigenda_data::EigenDABlobData;
 use crate::traits::EigenDABlobProvider;
 
-use alloc::{boxed::Box, string::ToString, vec::Vec};
-use alloy_primitives::{Address, Bytes};
-use async_trait::async_trait;
+use alloc::vec::Vec;
+use alloy_primitives::Bytes;
 use kona_derive::{
     errors::{BlobProviderError, PipelineError},
-    traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
 };
-
-use op_alloy_protocol::{BlockInfo, Frame, DERIVATION_VERSION_0};
 
 /// A data iterator that reads from a blob.
 #[derive(Debug, Clone)]
@@ -43,18 +38,18 @@ where
     }
 
     /// Loads blob data into the source if it is not open.
-    async fn load_blobs(&mut self, altDACommitment: &Bytes) -> Result<(), BlobProviderError> {
+    async fn load_blobs(&mut self, altda_commitment: &Bytes) -> Result<(), BlobProviderError> {
         if self.open {
             return Ok(());
         }
 
         info!(target: "eigenda-blobsource", "going to fetch through altda fetcher");
         // it should use self.altda_fetcher to get the blob
-        let data = self.altda_fetcher.get_blob(altDACommitment).await;
+        let data = self.altda_fetcher.get_blob(altda_commitment).await;
         match data {
             Ok(data) => {
                 self.open = true;
-                let mut new_blob = data.clone();
+                let new_blob = data.clone();
                 // new_blob.truncate(data.len()-1);
                 let eigenda_blob = EigenDABlobData { blob: new_blob };
                 self.data.push(eigenda_blob);
@@ -63,7 +58,7 @@ where
 
                 Ok(())
             }
-            Err(e) => {
+            Err(_) => {
                 self.open = true;
                 return Ok(());
             }
@@ -79,9 +74,9 @@ where
         Ok(self.data.remove(0))
     }
 
-    pub async fn next(&mut self, altDACommitment: &Bytes) -> PipelineResult<Bytes> {
+    pub async fn next(&mut self, altda_commitment: &Bytes) -> PipelineResult<Bytes> {
         info!(target: "eigenda-blobsource", "next");
-        self.load_blobs(altDACommitment).await?;
+        self.load_blobs(altda_commitment).await?;
         info!(target: "eigenda-blobsource", "next 1");
         let next_data = match self.next_data() {
             Ok(d) => d,
@@ -99,7 +94,7 @@ where
                 warn!(target: "blob-source", "Failed to decode blob data, skipping");
                 panic!()
                 // todo need to add recursion
-                // self.next(altDACommitment).await
+                // self.next(altda_commitment).await
             }
         }
     }

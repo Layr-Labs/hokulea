@@ -16,7 +16,7 @@ use alloy_rpc_types::{
     Transaction,
 };
 use anyhow::{anyhow, Result};
-use eigenda_proof::hint::{Hint, HintType};
+use hokulea_eigenda_proof::hint::{Hint, HintType};
 use kona_host::{blobs::OnlineBlobProvider, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use op_alloy_protocol::BlockInfo;

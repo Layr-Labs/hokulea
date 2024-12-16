@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 use alloc::sync::Arc;
 use alloy_primitives::{keccak256, Bytes};
 use async_trait::async_trait;
-use eigenda::traits::EigenDABlobProvider;
+use hokulea_eigenda::EigenDABlobProvider;
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 
 use kona_proof::errors::OracleProviderError;

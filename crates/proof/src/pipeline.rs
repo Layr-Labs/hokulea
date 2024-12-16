@@ -1,9 +1,7 @@
 use alloc::{boxed::Box, sync::Arc};
 use async_trait::async_trait;
 use core::fmt::Debug;
-use eigenda::eigenda::EigenDADataSource;
-use eigenda::eigenda_blobs::EigenDABlobSource;
-use eigenda::traits::EigenDABlobProvider;
+use hokulea_eigenda::{EigenDABlobProvider, EigenDABlobSource, EigenDADataSource};
 use kona_derive::{
     attributes::StatefulAttributesBuilder,
     errors::PipelineErrorKind,

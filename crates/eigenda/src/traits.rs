@@ -1,8 +1,8 @@
-use alloc::{boxed::Box, fmt::Debug, string::ToString, vec::Vec};
+use alloc::{boxed::Box, string::ToString};
 use alloy_primitives::Bytes;
 use async_trait::async_trait;
 use core::fmt::Display;
-use kona_derive::{errors::PipelineErrorKind, types::PipelineResult};
+use kona_derive::errors::PipelineErrorKind;
 
 #[async_trait]
 pub trait EigenDABlobProvider {

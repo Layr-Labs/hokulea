@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![warn(
     missing_debug_implementations,
     missing_docs,
@@ -14,10 +15,14 @@ extern crate alloc;
 #[macro_use]
 extern crate tracing;
 
-pub mod traits;
+mod traits;
+pub use traits::EigenDABlobProvider;
 
-pub mod eigenda;
+mod eigenda;
+pub use eigenda::EigenDADataSource;
 
-pub mod eigenda_blobs;
+mod eigenda_blobs;
+pub use eigenda_blobs::EigenDABlobSource;
 
-pub mod eigenda_data;
+mod eigenda_data;
+pub use eigenda_data::EigenDABlobData;

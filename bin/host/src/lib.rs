@@ -8,11 +8,9 @@ pub mod preimage;
 
 use server::PreimageServer;
 
-use kona_host::cli::{init_tracing_subscriber, HostCli};
+use kona_host::cli::HostCli;
 
 use kona_host::kv;
-
-use kona_client;
 
 use hokulea_client;
 
@@ -22,7 +20,6 @@ use fetcher::Fetcher;
 use kona_preimage::{
     BidirectionalChannel, HintReader, HintWriter, NativeChannel, OracleReader, OracleServer,
 };
-use kona_std_fpvm::{FileChannel, FileDescriptor};
 use kv::KeyValueStore;
 use std::sync::Arc;
 use tokio::{sync::RwLock, task};
@@ -50,7 +47,7 @@ pub async fn start_server_and_native_client(cfg: HostCli) -> Result<i32> {
         )
         .await
         .map_err(|e| anyhow!("Failed to load eigenda blob provider configuration: {e}"))?;
-    info!(target: "host", "create fetch with eigenda_provider");
+        info!(target: "host", "create fetch with eigenda_provider");
         Some(Arc::new(RwLock::new(Fetcher::new(
             kv_store.clone(),
             l1_provider,

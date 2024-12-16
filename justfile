@@ -1,6 +1,4 @@
 set positional-arguments
-alias t := tests
-alias la := lint-all
 alias l := lint-native
 alias lint := lint-native
 alias f := fmt-native-fix
@@ -11,7 +9,16 @@ alias h := hack
 default:
   @just --list
 
+# unused-deps finds unused dependencies in the workspace.
+# See https://rustprojectprimer.com/checks/unused.html
+# machete runs very fast but is less accurate, on by default.
+# udeps is slower (it compiles code) but more accurate, off by default.
+unused-deps slow="false":
+  cargo machete
+  # cargo +nightly udeps
+
 # Run all tests (excluding online tests)
+alias t := tests
 tests: test test-docs
 
 # Test for the native target with all features. By default, excludes online tests.
@@ -48,7 +55,8 @@ clean-actions:
   rm -rf monorepo/
 
 # Lint the workspace for all available targets
-lint-all: lint-native lint-cannon lint-asterisc lint-docs
+alias la := lint-all
+lint-all: lint-native lint-docs
 
 # Runs `cargo hack check` against the workspace
 hack:
@@ -66,24 +74,6 @@ fmt-native-check:
 lint-native: fmt-native-check lint-docs
   cargo +nightly clippy --workspace --all --all-features --all-targets -- -D warnings
 
-# Lint the workspace (mips arch). Currently, only the `kona-std-fpvm` crate is linted for the `cannon` target, as it is the only crate with architecture-specific code.
-lint-cannon:
-  docker run \
-    --rm \
-    --platform linux/amd64 \
-    -v `pwd`/:/workdir \
-    -w="/workdir" \
-    ghcr.io/anton-rs/kona/cannon-builder:main cargo +nightly clippy -p kona-std-fpvm --all-features --target /mips-unknown-none.json -Zbuild-std=core,alloc -- -D warnings
-
-# Lint the workspace (risc-v arch). Currently, only the `kona-std-fpvm` crate is linted for the `asterisc` target, as it is the only crate with architecture-specific code.
-lint-asterisc:
-  docker run \
-    --rm \
-    --platform linux/amd64 \
-    -v `pwd`/:/workdir \
-    -w="/workdir" \
-    ghcr.io/anton-rs/kona/asterisc-builder:main cargo +nightly clippy -p kona-std-fpvm --all-features --target riscv64gc-unknown-linux-gnu -Zbuild-std=core,alloc -- -D warnings
-
 # Lint the Rust documentation
 lint-docs:
   RUSTDOCFLAGS="-D warnings" cargo doc --all --no-deps --document-private-items
@@ -93,60 +83,11 @@ test-docs:
   cargo test --doc --all --locked
 
 # Build the workspace for all available targets
-build: build-native build-cannon build-asterisc
+build: build-native
 
 # Build for the native target
 build-native *args='':
   cargo build --workspace $@
-
-# Build for the `cannon` target. Any crates that require the stdlib are excluded from the build for this target.
-build-cannon *args='':
-  docker run \
-    --rm \
-    --platform linux/amd64 \
-    -v `pwd`/:/workdir \
-    -w="/workdir" \
-    ghcr.io/anton-rs/kona/cannon-builder:main cargo build --workspace -Zbuild-std=core,alloc $@ --exclude kona-host
-
-# Build for the `asterisc` target. Any crates that require the stdlib are excluded from the build for this target.
-build-asterisc *args='':
-  docker run \
-    --rm \
-    --platform linux/amd64 \
-    -v `pwd`/:/workdir \
-    -w="/workdir" \
-    ghcr.io/anton-rs/kona/asterisc-builder:main cargo build --workspace -Zbuild-std=core,alloc $@ --exclude kona-host
-
-# Build the `kona-client` prestate artifacts for the latest release.
-build-client-prestate-asterisc-artifacts kona_tag asterisc_tag out='./prestate-artifacts-asterisc':
-  #!/bin/bash
-  PATH_TO_REPRO_BUILDER=./build/asterisc/asterisc-repro.dockerfile
-  OUTPUT_DIR={{out}}
-
-  echo "Building kona-client prestate artifacts for the asterisc target. 🐚 Kona Tag: {{kona_tag}} | 🎇 Asterisc Tag: {{asterisc_tag}}"
-  docker build \
-    -f $PATH_TO_REPRO_BUILDER \
-    --output $OUTPUT_DIR \
-    --build-arg CLIENT_TAG={{kona_tag}} \
-    --build-arg ASTERISC_TAG={{asterisc_tag}} \
-    --platform linux/amd64 \
-    .
-
-# Build the `kona-client` prestate artifacts for the latest release, with an image containing the resulting
-# binaries.
-build-client-prestate-asterisc-image kona_tag asterisc_tag out='./prestate-artifacts-asterisc':
-  #!/bin/bash
-  PATH_TO_REPRO_BUILDER=./build/asterisc/asterisc-repro.dockerfile
-  OUTPUT_DIR={{out}}
-
-  echo "Building kona-client prestate artifacts for the asterisc target. 🐚 Kona Tag: {{kona_tag}} | 🎇 Asterisc Tag: {{asterisc_tag}}"
-  docker build \
-    -f $PATH_TO_REPRO_BUILDER \
-    -t kona-fpp-asterisc:latest \
-    --build-arg CLIENT_TAG={{kona_tag}} \
-    --build-arg ASTERISC_TAG={{asterisc_tag}} \
-    --platform linux/amd64 \
-    .
 
 # Clones and checks out the monorepo at the commit present in `.monorepo`
 monorepo:
