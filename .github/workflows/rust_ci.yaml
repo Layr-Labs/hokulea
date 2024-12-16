@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: taiki-e/install-action@v2
         with:
-          tool: just, cargo-udeps
+          tool: just, machete
       - name: Install Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
