@@ -7,7 +7,7 @@ use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::Bytes;
 use async_trait::async_trait;
 use kona_derive::{
-    sources::{BlobSource, CalldataSource, EthereumDataSource},
+    sources::EthereumDataSource,
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
 };
