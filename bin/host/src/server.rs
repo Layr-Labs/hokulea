@@ -1,13 +1,12 @@
 //! This module contains the [PreimageServer] struct and its implementation.
 
 use crate::{
-    extended_fetcher::ExtendedFetcher,
+    extended_fetcher::FetcherWithEigenDASupport,
     kv::KeyValueStore,
-    preimage::{
-        OfflineHintRouter, OfflinePreimageFetcher, OnlineHintRouter, OnlinePreimageFetcher,
-    },
+    preimage::{OfflinePreimageFetcher, OnlineHintRouter, OnlinePreimageFetcher},
 };
 use anyhow::{anyhow, Result};
+use kona_host::preimage::OfflineHintRouter;
 use kona_preimage::{
     errors::PreimageOracleError, HintReaderServer, HintRouter, PreimageFetcher,
     PreimageOracleServer,
@@ -33,7 +32,7 @@ where
     kv_store: Arc<RwLock<KV>>,
     /// The fetcher for fetching preimages from a remote source. If [None], the server will only
     /// serve preimages that are already in the key-value store.
-    fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
+    fetcher: Option<Arc<RwLock<FetcherWithEigenDASupport<KV>>>>,
 }
 
 impl<P, H, KV> PreimageServer<P, H, KV>
@@ -49,7 +48,7 @@ where
         oracle_server: P,
         hint_reader: H,
         kv_store: Arc<RwLock<KV>>,
-        fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
+        fetcher: Option<Arc<RwLock<FetcherWithEigenDASupport<KV>>>>,
     ) -> Self {
         Self {
             oracle_server,
@@ -80,7 +79,7 @@ where
     /// client.
     async fn start_oracle_server(
         kv_store: Arc<RwLock<KV>>,
-        fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
+        fetcher: Option<Arc<RwLock<FetcherWithEigenDASupport<KV>>>>,
         oracle_server: P,
     ) -> Result<()> {
         #[inline(always)]
@@ -121,7 +120,7 @@ where
     /// handler.
     async fn start_hint_router(
         hint_reader: H,
-        fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
+        fetcher: Option<Arc<RwLock<FetcherWithEigenDASupport<KV>>>>,
     ) -> Result<()> {
         #[inline(always)]
         async fn do_loop<R, H>(router: &R, server: &H) -> Result<()>

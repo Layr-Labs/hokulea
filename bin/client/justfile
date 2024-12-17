@@ -73,10 +73,16 @@ run-client-native-against-devnet verbosity='' block_number='' rollup_config_path
 
   if [ -z "{{block_number}}" ]; then
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
+    if [ $BLOCK_NUMBER -eq 0 ]; then
+      echo "No finalized blocks found on L2 chain. If devnet was just started, wait a bit and try again..."
+      echo "You can run the following command to check the latest finalized block."
+      echo "cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d"
+      exit 1
+    fi
   else
     BLOCK_NUMBER={{block_number}}
   fi
-
+  set -x
   just run-client-native $BLOCK_NUMBER \
     $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC \
     $ROLLUP_CONFIG_PATH {{verbosity}}

@@ -14,7 +14,7 @@ use kona_host::kv;
 
 use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use anyhow::{anyhow, Result};
-use extended_fetcher::ExtendedFetcher;
+use extended_fetcher::FetcherWithEigenDASupport;
 use kona_preimage::{
     BidirectionalChannel, HintReader, HintWriter, NativeChannel, OracleReader, OracleServer,
 };
@@ -46,7 +46,7 @@ pub async fn start_server_and_native_client(cfg: HostCli) -> Result<i32> {
         .await
         .map_err(|e| anyhow!("Failed to load eigenda blob provider configuration: {e}"))?;
 
-        Some(Arc::new(RwLock::new(ExtendedFetcher::new_from_parts(
+        Some(Arc::new(RwLock::new(FetcherWithEigenDASupport::new_from_parts(
             kv_store.clone(),
             l1_provider,
             blob_provider,
@@ -84,7 +84,7 @@ pub async fn start_server_and_native_client(cfg: HostCli) -> Result<i32> {
 
 pub async fn start_native_preimage_server<KV>(
     kv_store: Arc<RwLock<KV>>,
-    fetcher: Option<Arc<RwLock<ExtendedFetcher<KV>>>>,
+    fetcher: Option<Arc<RwLock<FetcherWithEigenDASupport<KV>>>>,
     hint_chan: NativeChannel,
     preimage_chan: NativeChannel,
 ) -> Result<()>

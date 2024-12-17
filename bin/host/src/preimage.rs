@@ -1,6 +1,6 @@
 //! Contains the implementations of the [HintRouter] and [PreimageFetcher] traits.]
 
-use crate::{extended_fetcher::ExtendedFetcher, kv::KeyValueStore};
+use crate::{extended_fetcher::FetcherWithEigenDASupport, kv::KeyValueStore};
 use async_trait::async_trait;
 use kona_preimage::{
     errors::{PreimageOracleError, PreimageOracleResult},
@@ -15,7 +15,7 @@ pub struct OnlinePreimageFetcher<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
-    inner: Arc<RwLock<ExtendedFetcher<KV>>>,
+    inner: Arc<RwLock<FetcherWithEigenDASupport<KV>>>,
 }
 
 #[async_trait]
@@ -37,7 +37,7 @@ where
     KV: KeyValueStore + ?Sized,
 {
     /// Create a new [OnlinePreimageFetcher] from the given [ExtendedFetcher].
-    pub const fn new(fetcher: Arc<RwLock<ExtendedFetcher<KV>>>) -> Self {
+    pub const fn new(fetcher: Arc<RwLock<FetcherWithEigenDASupport<KV>>>) -> Self {
         Self { inner: fetcher }
     }
 }
@@ -80,7 +80,7 @@ pub struct OnlineHintRouter<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
-    inner: Arc<RwLock<ExtendedFetcher<KV>>>,
+    inner: Arc<RwLock<FetcherWithEigenDASupport<KV>>>,
 }
 
 #[async_trait]
@@ -90,7 +90,9 @@ where
 {
     async fn route_hint(&self, hint: String) -> PreimageOracleResult<()> {
         let mut fetcher = self.inner.write().await;
-        fetcher.hint(&hint);
+        fetcher
+            .hint(&hint)
+            .map_err(|e| PreimageOracleError::Other(e.to_string()))?;
         Ok(())
     }
 }
@@ -100,18 +102,7 @@ where
     KV: KeyValueStore + ?Sized,
 {
     /// Create a new [OnlineHintRouter] from the given [ExtendedFetcher].
-    pub const fn new(fetcher: Arc<RwLock<ExtendedFetcher<KV>>>) -> Self {
+    pub const fn new(fetcher: Arc<RwLock<FetcherWithEigenDASupport<KV>>>) -> Self {
         Self { inner: fetcher }
-    }
-}
-
-/// An [OfflineHintRouter] is a [HintRouter] that does nothing.
-#[derive(Debug)]
-pub struct OfflineHintRouter;
-
-#[async_trait]
-impl HintRouter for OfflineHintRouter {
-    async fn route_hint(&self, _hint: String) -> PreimageOracleResult<()> {
-        Ok(())
     }
 }

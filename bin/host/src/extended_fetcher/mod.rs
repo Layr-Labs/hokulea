@@ -12,9 +12,13 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, info, trace, warn};
 
-/// The [Fetcher] struct is responsible for fetching preimages from a remote source.
+/// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
+/// to fetch preimages from EigenDA.
+/// TODO: Kona is planning to change the fetcher interface to allow registering extra hints
+/// without needing a new type. We will probably want to switch when possible.
+/// See https://github.com/anton-rs/kona/issues/369
 #[derive(Debug)]
-pub struct ExtendedFetcher<KV>
+pub struct FetcherWithEigenDASupport<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
@@ -25,10 +29,10 @@ where
     /// The eigenda provider
     eigenda_blob_provider: OnlineEigenDABlobProvider,
     /// The last hint that was received. [None] if no hint has been received yet.
-    last_hint: Option<String>,
+    last_eigenda_hint: Option<String>,
 }
 
-impl<KV> ExtendedFetcher<KV>
+impl<KV> FetcherWithEigenDASupport<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
@@ -42,7 +46,7 @@ where
             fetcher,
             kv_store,
             eigenda_blob_provider,
-            last_hint: None,
+            last_eigenda_hint: None,
         }
     }
 
@@ -65,33 +69,41 @@ where
             fetcher,
             kv_store,
             eigenda_blob_provider,
-            last_hint: None,
+            last_eigenda_hint: None,
         }
     }
 
     /// Set the last hint to be received.
-    pub fn hint(&mut self, hint: &str) {
-        trace!(target: "fetcher", "Received hint: {hint}");
-        self.last_hint = Some(hint.to_string());
+    pub fn hint(&mut self, hint: &str) -> Result<()> {
+        trace!(target: "fetcher_with_eigenda_support", "Received hint: {hint}");
+        let (hint_type, _) = ExtendedHint::parse(hint)?.split();
+        // We route the hint to the right fetcher based on the hint type.
+        match hint_type {
+            ExtendedHintType::EigenDACommitment => {
+                self.last_eigenda_hint = Some(hint.to_string());
+            }
+            _ => {
+                self.fetcher.hint(hint);
+                // get_preimage will fetch from the underlying fetcher when last_eigenda_hint = None
+                self.last_eigenda_hint = None;
+            }
+        }
+        Ok(())
     }
 
-    /// Get the preimage for the given key.
-    /// TODO: there's probably a much nicer way to write this function.
-    /// Fetcher was not written with extensibility in mind, so we have to do this,
-    /// but there might be ways to change the Fetcher's API to make this easier (eg by making prefetch public).
+    /// Fetch the preimage for the given key. The requested is routed to the appropriate fetcher
+    /// based on the last hint that was received (see hint() above).
     /// ExtendedFetcher -> get_preimage_altda -> prefetch that only understands altda hints
     ///     \-> Fetcher -> get_preimage -> prefetch that understands all other hints
-    /// Both get_preimages just for loop until the preimage is found. Their hint coverage is mutually exclusive,
-    /// so only one of them will ever return, hence the tokio::select!.
     pub async fn get_preimage(&self, key: B256) -> Result<Vec<u8>> {
-        tokio::select! {
-            result = self.get_preimage_altda(key) => result,
-            result = self.fetcher.get_preimage(key) => result,
+        match self.last_eigenda_hint.as_ref() {
+            Some(hint) => self.get_preimage_altda(key, hint).await,
+            None => self.fetcher.get_preimage(key).await,
         }
     }
 
-    async fn get_preimage_altda(&self, key: B256) -> Result<Vec<u8>> {
-        trace!(target: "extended fetcher", "Pre-image requested. Key: {key}");
+    async fn get_preimage_altda(&self, key: B256, hint: &str) -> Result<Vec<u8>> {
+        trace!(target: "fetcher_with_eigenda_support", "Pre-image requested. Key: {key}");
 
         // Acquire a read lock on the key-value store.
         let kv_lock = self.kv_store.read().await;
@@ -101,12 +113,10 @@ where
         drop(kv_lock);
 
         // Use a loop to keep retrying the prefetch as long as the key is not found
-        while preimage.is_none() && self.last_hint.is_some() {
-            let hint = self.last_hint.as_ref().expect("Cannot be None");
-
+        while preimage.is_none() {
             if let Err(e) = self.prefetch(hint).await {
-                error!(target: "fetcher", "Failed to prefetch hint: {e}");
-                warn!(target: "fetcher", "Retrying hint fetch: {hint}");
+                error!(target: "fetcher_with_eigenda_support", "Failed to prefetch hint: {e}");
+                warn!(target: "fetcher_with_eigenda_support", "Retrying hint fetch: {hint}");
                 continue;
             }
 
@@ -119,14 +129,14 @@ where
 
     /// Fetch the preimage for the given hint and insert it into the key-value store.
     async fn prefetch(&self, hint: &str) -> Result<()> {
-        trace!(target: "fetcher", "prefetch: {hint}");
+        trace!(target: "fetcher_with_eigenda_support", "prefetch: {hint}");
         let hint = ExtendedHint::parse(hint)?;
         let (hint_type, hint_data) = hint.split();
-        trace!(target: "fetcher", "Fetching hint: {hint_type} {hint_data}");
+        trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
 
-        if hint_type == ExtendedHintType::AltDACommitment {
+        if hint_type == ExtendedHintType::EigenDACommitment {
             let cert = hint_data;
-            info!(target: "fetcher", "Fetching AltDACommitment cert: {:?}", cert);
+            info!(target: "fetcher_with_eigenda_support", "Fetching AltDACommitment cert: {:?}", cert);
             // Fetch the blob sidecar from the blob provider.
             let eigenda_blob = self
                 .eigenda_blob_provider
@@ -134,7 +144,7 @@ where
                 .await
                 .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
-            info!(target: "fetcher", "eigenda_blob len {}", eigenda_blob.len());
+            info!(target: "fetcher_with_eigenda_support", "eigenda_blob len {}", eigenda_blob.len());
             // Acquire a lock on the key-value store and set the preimages.
             let mut kv_write_lock = self.kv_store.write().await;
 

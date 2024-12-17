@@ -52,7 +52,7 @@ impl ExtendedHint {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ExtendedHintType {
     Original(HintType),
-    AltDACommitment,
+    EigenDACommitment,
 }
 
 impl ExtendedHintType {
@@ -68,7 +68,7 @@ impl TryFrom<&str> for ExtendedHintType {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "altda-commitment" => Ok(Self::AltDACommitment),
+            "eigenda-commitment" => Ok(Self::EigenDACommitment),
             _ => Ok(Self::Original(HintType::try_from(value)?)),
         }
     }
@@ -77,7 +77,7 @@ impl TryFrom<&str> for ExtendedHintType {
 impl From<ExtendedHintType> for &str {
     fn from(value: ExtendedHintType) -> Self {
         match value {
-            ExtendedHintType::AltDACommitment => "altda-commitment",
+            ExtendedHintType::EigenDACommitment => "eigenda-commitment",
             ExtendedHintType::Original(hint_type) => hint_type.into(),
         }
     }
