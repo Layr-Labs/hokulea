@@ -109,7 +109,7 @@ impl TryFrom<&str> for HintType {
             "l2-account-proof" => Ok(Self::L2AccountProof),
             "l2-account-storage-proof" => Ok(Self::L2AccountStorageProof),
             "l2-payload-witness" => Ok(Self::L2PayloadWitness),
-            "altda-commitment" => Ok(Self::EigenDACommitment),
+            "eigenda-commitment" => Ok(Self::EigenDACommitment),
             _ => Err(HintParsingError(value.to_string())),
         }
     }
@@ -131,7 +131,7 @@ impl From<HintType> for &str {
             HintType::L2AccountProof => "l2-account-proof",
             HintType::L2AccountStorageProof => "l2-account-storage-proof",
             HintType::L2PayloadWitness => "l2-payload-witness",
-            HintType::EigenDACommitment => "altda-commitment",
+            HintType::EigenDACommitment => "eigenda-commitment",
         }
     }
 }
