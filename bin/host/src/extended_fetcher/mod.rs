@@ -5,6 +5,7 @@ use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use alloy_primitives::{keccak256, B256};
 use alloy_provider::ReqwestProvider;
 use anyhow::{anyhow, Result};
+use core::panic;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
@@ -153,6 +154,8 @@ where
                 PreimageKey::new(*keccak256(cert), PreimageKeyType::GlobalGeneric).into(),
                 eigenda_blob.to_vec(),
             )?;
+        } else {
+            panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");
         }
         // We don't match against the other enum case because fetcher.prefetch is private,
         // so we can't make the below code compile.
