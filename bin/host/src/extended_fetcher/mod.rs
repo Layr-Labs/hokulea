@@ -97,12 +97,12 @@ where
     ///     \-> Fetcher -> get_preimage -> prefetch that understands all other hints
     pub async fn get_preimage(&self, key: B256) -> Result<Vec<u8>> {
         match self.last_eigenda_hint.as_ref() {
-            Some(hint) => self.get_preimage_altda(key, hint).await,
+            Some(hint) => self.get_preimage_eigenda(key, hint).await,
             None => self.fetcher.get_preimage(key).await,
         }
     }
 
-    async fn get_preimage_altda(&self, key: B256, hint: &str) -> Result<Vec<u8>> {
+    async fn get_preimage_eigenda(&self, key: B256, hint: &str) -> Result<Vec<u8>> {
         trace!(target: "fetcher_with_eigenda_support", "Pre-image requested. Key: {key}");
 
         // Acquire a read lock on the key-value store.
