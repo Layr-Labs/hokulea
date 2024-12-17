@@ -46,14 +46,16 @@ pub async fn start_server_and_native_client(cfg: HostCli) -> Result<i32> {
         .await
         .map_err(|e| anyhow!("Failed to load eigenda blob provider configuration: {e}"))?;
 
-        Some(Arc::new(RwLock::new(FetcherWithEigenDASupport::new_from_parts(
-            kv_store.clone(),
-            l1_provider,
-            blob_provider,
-            eigenda_blob_provider,
-            l2_provider,
-            cfg.agreed_l2_head_hash,
-        ))))
+        Some(Arc::new(RwLock::new(
+            FetcherWithEigenDASupport::new_from_parts(
+                kv_store.clone(),
+                l1_provider,
+                blob_provider,
+                eigenda_blob_provider,
+                l2_provider,
+                cfg.agreed_l2_head_hash,
+            ),
+        )))
     } else {
         None
     };

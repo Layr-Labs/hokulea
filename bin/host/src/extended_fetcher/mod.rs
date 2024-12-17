@@ -16,7 +16,7 @@ use tracing::{error, info, trace, warn};
 /// to fetch preimages from EigenDA.
 /// TODO: Kona is planning to change the fetcher interface to allow registering extra hints
 /// without needing a new type. We will probably want to switch when possible.
-/// See https://github.com/anton-rs/kona/issues/369
+/// See <https://github.com/anton-rs/kona/issues/369>
 #[derive(Debug)]
 pub struct FetcherWithEigenDASupport<KV>
 where
@@ -93,7 +93,7 @@ where
 
     /// Fetch the preimage for the given key. The requested is routed to the appropriate fetcher
     /// based on the last hint that was received (see hint() above).
-    /// ExtendedFetcher -> get_preimage_altda -> prefetch that only understands altda hints
+    /// FetcherWithEigenDASupport -> get_preimage_altda -> prefetch that only understands altda hints
     ///     \-> Fetcher -> get_preimage -> prefetch that understands all other hints
     pub async fn get_preimage(&self, key: B256) -> Result<Vec<u8>> {
         match self.last_eigenda_hint.as_ref() {
