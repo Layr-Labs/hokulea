@@ -1,7 +1,7 @@
 //! This module contains the [PreimageServer] struct and its implementation.
 
 use crate::{
-    extended_fetcher::FetcherWithEigenDASupport,
+    eigenda_fetcher::FetcherWithEigenDASupport,
     kv::KeyValueStore,
     preimage::{OfflinePreimageFetcher, OnlineHintRouter, OnlinePreimageFetcher},
 };

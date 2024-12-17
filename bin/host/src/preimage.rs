@@ -1,6 +1,6 @@
 //! Contains the implementations of the [HintRouter] and [PreimageFetcher] traits.]
 
-use crate::{extended_fetcher::FetcherWithEigenDASupport, kv::KeyValueStore};
+use crate::{eigenda_fetcher::FetcherWithEigenDASupport, kv::KeyValueStore};
 use async_trait::async_trait;
 use kona_preimage::{
     errors::{PreimageOracleError, PreimageOracleResult},

@@ -1,4 +1,4 @@
-pub mod extended_fetcher;
+pub mod eigenda_fetcher;
 
 pub mod eigenda_blobs;
 
@@ -14,7 +14,7 @@ use kona_host::kv;
 
 use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use anyhow::{anyhow, Result};
-use extended_fetcher::FetcherWithEigenDASupport;
+use eigenda_fetcher::FetcherWithEigenDASupport;
 use kona_preimage::{
     BidirectionalChannel, HintReader, HintWriter, NativeChannel, OracleReader, OracleServer,
 };
