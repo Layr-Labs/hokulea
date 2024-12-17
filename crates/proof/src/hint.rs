@@ -8,7 +8,7 @@ use alloy_primitives::{hex, Bytes};
 use core::fmt::Display;
 use kona_proof::{errors::HintParsingError, HintType};
 
-/// A [Hint] is parsed in the format `<hint_type> <hint_data>`, where `<hint_type>` is a string that
+/// A [ExtendedHint] is parsed in the format `<hint_type> <hint_data>`, where `<hint_type>` is a string that
 /// represents the type of hint, and `<hint_data>` is the data associated with the hint (bytes
 /// encoded as hex UTF-8).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,7 +42,7 @@ impl ExtendedHint {
         })
     }
 
-    /// Splits the [Hint] into its components.
+    /// Splits the [ExtendedHint] into its components.
     pub fn split(self) -> (ExtendedHintType, Bytes) {
         (self.hint_type, self.hint_data)
     }

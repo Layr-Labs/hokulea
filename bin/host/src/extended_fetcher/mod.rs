@@ -5,7 +5,7 @@ use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use alloy_primitives::{keccak256, B256};
 use alloy_provider::ReqwestProvider;
 use anyhow::{anyhow, Result};
-use eigenda_proof::hint::{ExtendedHint, ExtendedHintType};
+use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use std::sync::Arc;
@@ -124,34 +124,32 @@ where
         let (hint_type, hint_data) = hint.split();
         trace!(target: "fetcher", "Fetching hint: {hint_type} {hint_data}");
 
-        match hint_type {
-            ExtendedHintType::AltDACommitment => {
-                let cert = hint_data;
-                info!(target: "fetcher", "Fetching AltDACommitment cert: {:?}", cert);
-                // Fetch the blob sidecar from the blob provider.
-                let eigenda_blob = self
-                    .eigenda_blob_provider
-                    .fetch_eigenda_blob(&cert)
-                    .await
-                    .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
+        if hint_type == ExtendedHintType::AltDACommitment {
+            let cert = hint_data;
+            info!(target: "fetcher", "Fetching AltDACommitment cert: {:?}", cert);
+            // Fetch the blob sidecar from the blob provider.
+            let eigenda_blob = self
+                .eigenda_blob_provider
+                .fetch_eigenda_blob(&cert)
+                .await
+                .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
-                info!(target: "fetcher", "eigenda_blob len {}", eigenda_blob.len());
-                // Acquire a lock on the key-value store and set the preimages.
-                let mut kv_write_lock = self.kv_store.write().await;
+            info!(target: "fetcher", "eigenda_blob len {}", eigenda_blob.len());
+            // Acquire a lock on the key-value store and set the preimages.
+            let mut kv_write_lock = self.kv_store.write().await;
 
-                // Set the preimage for the blob commitment.
-                kv_write_lock.set(
-                    PreimageKey::new(*keccak256(cert), PreimageKeyType::GlobalGeneric).into(),
-                    eigenda_blob.to_vec(),
-                )?;
-            }
-            // We can't do this because fetcher.prefetch is private.
-            // TODO: do we want to change the Fetcher api to make this possible?
-            // ExtendedHintType::Original(hint_type) => {
-            //     self.fetcher.prefetch(hint_type, hint_data).await?;
-            // }
-            _ => (),
+            // Set the preimage for the blob commitment.
+            kv_write_lock.set(
+                PreimageKey::new(*keccak256(cert), PreimageKeyType::GlobalGeneric).into(),
+                eigenda_blob.to_vec(),
+            )?;
         }
+        // We don't match against the other enum case because fetcher.prefetch is private,
+        // so we can't make the below code compile.
+        // TODO: do we want to change the Fetcher api to make this possible?
+        // ExtendedHintType::Original(hint_type) => {
+        //     self.fetcher.prefetch(hint_type, hint_data).await?;
+        // }
 
         Ok(())
     }

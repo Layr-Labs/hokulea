@@ -9,7 +9,7 @@ use kona_preimage::{
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-/// A [Fetcher]-backed implementation of the [PreimageFetcher] trait.
+/// A [ExtendedFetcher]-backed implementation of the [PreimageFetcher] trait.
 #[derive(Debug)]
 pub struct OnlinePreimageFetcher<KV>
 where
@@ -36,7 +36,7 @@ impl<KV> OnlinePreimageFetcher<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
-    /// Create a new [OnlinePreimageFetcher] from the given [Fetcher].
+    /// Create a new [OnlinePreimageFetcher] from the given [ExtendedFetcher].
     pub const fn new(fetcher: Arc<RwLock<ExtendedFetcher<KV>>>) -> Self {
         Self { inner: fetcher }
     }
@@ -74,7 +74,7 @@ where
     }
 }
 
-/// A [Fetcher]-backed implementation of the [HintRouter] trait.
+/// A [ExtendedFetcher]-backed implementation of the [HintRouter] trait.
 #[derive(Debug)]
 pub struct OnlineHintRouter<KV>
 where
@@ -99,7 +99,7 @@ impl<KV> OnlineHintRouter<KV>
 where
     KV: KeyValueStore + ?Sized,
 {
-    /// Create a new [OnlineHintRouter] from the given [Fetcher].
+    /// Create a new [OnlineHintRouter] from the given [ExtendedFetcher].
     pub const fn new(fetcher: Arc<RwLock<ExtendedFetcher<KV>>>) -> Self {
         Self { inner: fetcher }
     }
