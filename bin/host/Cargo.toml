@@ -5,39 +5,22 @@ edition = "2021"
 
 [dependencies]
 # Workspace
-kona-mpt.workspace = true
-kona-preimage = { workspace = true, features = ["std"] }
-kona-host.workspace = true
-
 hokulea-proof.workspace = true
 hokulea-client.workspace = true
 
+# Kona
+kona-preimage = { workspace = true, features = ["std"] }
+kona-host.workspace = true
+
 # Alloy
 alloy-rlp.workspace = true
-alloy-eips = { workspace = true, features = ["kzg"] }
 alloy-provider = { workspace = true, features = ["reqwest"] }
-alloy-consensus.workspace = true
-alloy-rpc-types = { workspace = true, features = ["eth", "debug"] }
 alloy-primitives = { workspace = true, features = ["serde"] }
-
-# Op Alloy
-op-alloy-protocol = { workspace = true, features = ["std", "serde"] }
-op-alloy-rpc-types-engine = { workspace = true, features = ["serde"] }
-
-# Revm
-revm = { workspace = true, features = [
-    "std",
-    "c-kzg",
-    "secp256k1",
-    "portable",
-    "blst",
-] }
 
 # General
 anyhow.workspace = true
 tracing.workspace = true
 reqwest.workspace = true
-serde_json.workspace = true
 async-trait.workspace = true
 tokio = { workspace = true, features = ["full"] }
 clap = { workspace = true, features = ["derive", "env"] }
