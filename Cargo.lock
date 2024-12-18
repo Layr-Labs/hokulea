@@ -1786,6 +1786,7 @@ dependencies = [
  "op-alloy-genesis",
  "op-alloy-protocol",
  "op-alloy-rpc-types-engine",
+ "tracing",
 ]
 
 [[package]]
