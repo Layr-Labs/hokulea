@@ -69,7 +69,7 @@ run-client-native-against-devnet verbosity='' block_number='' rollup_config_path
   L1_BEACON_RPC="http://127.0.0.1:5052"
   L2_RPC="http://127.0.0.1:9545"
   ROLLUP_NODE_RPC="http://127.0.0.1:7545"
-  ROLLUP_CONFIG_PATH="/home/ubuntu/op-main-repo/.devnet/rollup.json"
+  ROLLUP_CONFIG_PATH="../../../optimism/.devnet/rollup.json"
 
   if [ -z "{{block_number}}" ]; then
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
