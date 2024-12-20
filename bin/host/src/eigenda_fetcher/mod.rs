@@ -13,7 +13,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, info, trace, warn};
 use hokulea_eigenda::BlobInfo;
-use alloy_rlp::{Decodable};
+use alloy_rlp::Decodable;
 
 /// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
 /// to fetch preimages from EigenDA.
@@ -139,7 +139,7 @@ where
 
         if hint_type == ExtendedHintType::EigenDACommitment {
 
-            let item_slice= hint_data.as_ref();
+            let item_slice = hint_data.as_ref();
 
             // the fourth because 0x01010000 in the beginnin is metadata
             let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..])?;
