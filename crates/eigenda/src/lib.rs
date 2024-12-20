@@ -29,4 +29,3 @@ pub use eigenda_data::EigenDABlobData;
 
 mod certificate;
 pub use certificate::BlobInfo;
-
