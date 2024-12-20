@@ -1,6 +1,3 @@
-// data struct copied from https://github.com/Layr-Labs/eigenda-client-rs/blob/3ac1f62ae3d99aedf3de7a2fe827fab17db7b874/src/blob_info.rs
-use core::fmt;
-
 use alloy_primitives::Bytes;
 use alloy_rlp::{RlpDecodable, RlpEncodable};
 
@@ -13,7 +10,6 @@ pub struct G1Commitment {
     pub y: [u8; 32],
 }
 
-
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct BlobQuorumParam {
     pub quorum_number: u32,
@@ -22,19 +18,7 @@ pub struct BlobQuorumParam {
     pub chunk_length: u32,
 }
 
-impl BlobQuorumParam {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::new();
-        bytes.extend(&self.quorum_number.to_be_bytes());
-        bytes.extend(&self.adversary_threshold_percentage.to_be_bytes());
-        bytes.extend(&self.confirmation_threshold_percentage.to_be_bytes());
-        bytes.extend(&self.chunk_length.to_be_bytes());
-
-        bytes
-    }
-}
-
-
+/// eigenda v1 blob header
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct BlobHeader {
     pub commitment: G1Commitment,
@@ -60,6 +44,7 @@ pub struct BatchMetadata {
     pub batch_header_hash: Bytes,
 }
 
+/// eigenda v1 blob verification proof
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct BlobVerificationProof {
     pub batch_id: u32,
@@ -69,8 +54,11 @@ pub struct BlobVerificationProof {
     pub quorum_indexes: Bytes,
 }
 
+/// eigenda v1 certificate
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct BlobInfo {
+    /// v1 blob header
     pub blob_header: BlobHeader,
+    /// v1 blob verification proof with merkle tree
     pub blob_verification_proof: BlobVerificationProof,
 }
