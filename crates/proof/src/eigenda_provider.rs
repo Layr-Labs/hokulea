@@ -32,14 +32,43 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .write(&ExtendedHintType::EigenDACommitment.encode_with(&[cert]))
             .await
             .map_err(OracleProviderError::Preimage)?;
+
+        // hack - remove later, when cert actually contain length
         let data = self
-            .oracle
-            .get(PreimageKey::new(
-                *keccak256(cert),
-                PreimageKeyType::GlobalGeneric,
-            ))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
+        .oracle
+        .get(PreimageKey::new(
+            *keccak256(cert),
+            PreimageKeyType::GlobalGeneric,
+        ))
+        .await
+        .map_err(OracleProviderError::Preimage)?;
+        let blob_size = data.len();
+        //
+
+        let mut blob = vec![0, blob_size];
+        let mut field_element_key = [0u8; 80];
+
+        
+
+        field_element_key[..48].copy_from_slice(commitment.as_ref());
+        for i in 0..FIELD_ELEMENTS_PER_BLOB {
+            field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
+
+            let mut field_element = [0u8; 32];
+            self.oracle
+                .get_exact(
+                    PreimageKey::new(*keccak256(field_element_key), PreimageKeyType::Blob),
+                    &mut field_element,
+                )
+                .await
+                .map_err(OracleProviderError::Preimage)?;
+            blob[(i as usize) << 5..(i as usize + 1) << 5].copy_from_slice(field_element.as_ref());
+        }
+
+        tracing::info!(target: "client_oracle", "Retrieved blob {blob_hash:?} from the oracle.");
+
+
+
         Ok(data.into())
     }
 
