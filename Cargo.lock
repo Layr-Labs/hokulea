@@ -1723,6 +1723,7 @@ name = "hokulea-eigenda"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives",
+ "alloy-rlp",
  "async-trait",
  "kona-derive",
  "op-alloy-protocol",
@@ -1740,6 +1741,7 @@ dependencies = [
  "async-trait",
  "clap",
  "hokulea-client",
+ "hokulea-eigenda",
  "hokulea-proof",
  "kona-host",
  "kona-preimage",
