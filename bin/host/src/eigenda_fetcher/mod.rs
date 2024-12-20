@@ -141,8 +141,11 @@ where
             let item_slice = hint_data.as_ref();
 
             // the fourth because 0x01010000 in the beginnin is metadata
-            let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..])?;
-            info!("cert_blob_info {:?}", cert_blob_info);
+            match BlobInfo::decode(&mut &item_slice[4..]) {
+                Ok( cert_blob_info) => info!("cert_blob_info {:?}", cert_blob_info),
+                Err(e) => info!("cannot decode cert_blob_info {:?}", e),
+            }
+            
 
             let cert = hint_data;
             info!(target: "fetcher_with_eigenda_support", "Fetching AltDACommitment cert: {:?}", cert);
