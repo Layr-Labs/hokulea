@@ -3,7 +3,6 @@ use alloy_rlp::{RlpDecodable, RlpEncodable};
 
 use alloc::vec::Vec;
 
-
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct G1Commitment {
     pub x: [u8; 32],
@@ -25,7 +24,6 @@ pub struct BlobHeader {
     pub data_length: u32,
     pub blob_quorum_params: Vec<BlobQuorumParam>,
 }
-
 
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct BatchHeader {

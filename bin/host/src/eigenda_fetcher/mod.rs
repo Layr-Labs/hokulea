@@ -4,16 +4,16 @@
 use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use alloy_primitives::{keccak256, B256};
 use alloy_provider::ReqwestProvider;
+use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
+use hokulea_eigenda::BlobInfo;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, info, trace, warn};
-use hokulea_eigenda::BlobInfo;
-use alloy_rlp::Decodable;
 
 /// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
 /// to fetch preimages from EigenDA.
@@ -138,13 +138,12 @@ where
         trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
 
         if hint_type == ExtendedHintType::EigenDACommitment {
-
             let item_slice = hint_data.as_ref();
 
             // the fourth because 0x01010000 in the beginnin is metadata
             let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..])?;
             info!("cert_blob_info {:?}", cert_blob_info);
-            
+
             let cert = hint_data;
             info!(target: "fetcher_with_eigenda_support", "Fetching AltDACommitment cert: {:?}", cert);
             // Fetch the blob sidecar from the blob provider.
