@@ -29,3 +29,6 @@ pub use eigenda_data::EigenDABlobData;
 
 mod certificate;
 pub use certificate::BlobInfo;
+
+mod errors;
+pub use errors::CodecError;
