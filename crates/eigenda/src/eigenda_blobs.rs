@@ -39,21 +39,15 @@ where
 
     /// Fetches the next blob from the source.
     pub async fn next(&mut self, altda_commitment: &Bytes) -> PipelineResult<Bytes> {
-        info!(target: "eigenda-blobsource", "next");
         self.load_blobs(altda_commitment).await?;
-        info!(target: "eigenda-blobsource", "next 1");
         let next_data = match self.next_data() {
             Ok(d) => d,
             Err(e) => return e,
         };
-        info!(target: "eigenda-blobsource", "next 2");
         // Decode the blob data to raw bytes.
         // Otherwise, ignore blob and recurse next.
         match next_data.decode() {
-            Ok(d) => {
-                info!(target: "eigenda-blobsource", "next 3");
-                Ok(d)
-            }
+            Ok(d) => Ok(d),
             Err(_) => {
                 warn!(target: "blob-source", "Failed to decode blob data, skipping");
                 panic!()
