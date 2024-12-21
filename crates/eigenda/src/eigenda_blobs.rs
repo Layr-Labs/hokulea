@@ -17,7 +17,7 @@ where
     B: EigenDABlobProvider + Send,
 {
     /// Fetches blobs.
-    pub altda_fetcher: B,
+    pub eigenda_fetcher: B,
     /// EigenDA blobs.
     pub data: Vec<EigenDABlobData>,
     /// Whether the source is open.
@@ -29,17 +29,17 @@ where
     B: EigenDABlobProvider + Send,
 {
     /// Creates a new blob source.
-    pub const fn new(altda_fetcher: B) -> Self {
+    pub const fn new(eigenda_fetcher: B) -> Self {
         Self {
-            altda_fetcher,
+            eigenda_fetcher,
             data: Vec::new(),
             open: false,
         }
     }
 
     /// Fetches the next blob from the source.
-    pub async fn next(&mut self, altda_commitment: &Bytes) -> PipelineResult<Bytes> {
-        self.load_blobs(altda_commitment).await?;
+    pub async fn next(&mut self, eigenda_commitment: &Bytes) -> PipelineResult<Bytes> {
+        self.load_blobs(eigenda_commitment).await?;
         let next_data = match self.next_data() {
             Ok(d) => d,
             Err(e) => return e,
@@ -51,8 +51,6 @@ where
             Err(_) => {
                 warn!(target: "blob-source", "Failed to decode blob data, skipping");
                 panic!()
-                // todo need to add recursion
-                // self.next(altda_commitment).await
             }
         }
     }
@@ -64,14 +62,13 @@ where
     }
 
     /// Loads blob data into the source if it is not open.
-    async fn load_blobs(&mut self, altda_commitment: &Bytes) -> Result<(), BlobProviderError> {
+    async fn load_blobs(&mut self, eigenda_commitment: &Bytes) -> Result<(), BlobProviderError> {
         if self.open {
             return Ok(());
         }
 
-        info!(target: "eigenda-blobsource", "going to fetch through altda fetcher");
-        // it should use self.altda_fetcher to get the blob
-        let data = self.altda_fetcher.get_blob(altda_commitment).await;
+        info!(target: "eigenda-blobsource", "going to fetch through eigenda fetcher");
+        let data = self.eigenda_fetcher.get_blob(eigenda_commitment).await;
         match data {
             Ok(data) => {
                 self.open = true;

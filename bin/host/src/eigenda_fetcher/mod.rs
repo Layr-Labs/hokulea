@@ -96,7 +96,7 @@ where
 
     /// Fetch the preimage for the given key. The requested is routed to the appropriate fetcher
     /// based on the last hint that was received (see hint() above).
-    /// FetcherWithEigenDASupport -> get_preimage_altda -> prefetch that only understands altda hints
+    /// FetcherWithEigenDASupport -> get_preimage_eigenda -> prefetch that only understands eigenda hints
     ///     \-> Fetcher -> get_preimage -> prefetch that understands all other hints
     pub async fn get_preimage(&self, key: B256) -> Result<Vec<u8>> {
         match self.last_eigenda_hint.as_ref() {
@@ -147,7 +147,7 @@ where
             }
 
             let cert = hint_data;
-            info!(target: "fetcher_with_eigenda_support", "Fetching AltDACommitment cert: {:?}", cert);
+            info!(target: "fetcher_with_eigenda_support", "Fetching eigenda commitment cert: {:?}", cert);
             // Fetch the blob sidecar from the blob provider.
             let eigenda_blob = self
                 .eigenda_blob_provider
