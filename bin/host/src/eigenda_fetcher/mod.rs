@@ -161,29 +161,35 @@ where
 
             // ToDo - remove it once cert is actually correct
             kv_write_lock.set(
-                PreimageKey::new(*keccak256(cert), PreimageKeyType::GlobalGeneric).into(),
+                PreimageKey::new(*keccak256(cert.clone()), PreimageKeyType::GlobalGeneric).into(),
                 eigenda_blob.to_vec(),
             )?;
 
-            // fake a commitment
-            let t1 = cert.clone();
-            let mut kzg_commitment = [0u8; 32];
-            let mut a = 32;
-            if a > t1.len() {
-                a = t1.len()
-            }
-            kzg_commitment[..a].copy_from_slice(t1.as_ref());
-            let blob_length = (eigenda_blob.len() + 32 - 1) / 32;  // in term of field element
-            let kzg_proof = cert.clone();
-            // end of fake
+            // data
+            let item_slice = cert.as_ref();
+            let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
+            info!("cert_blob_info {:?}", cert_blob_info);
 
             // Write all the field elements to the key-value store.
             // The preimage oracle key for each field element is the keccak256 hash of
             // `abi.encodePacked(cert.KZGCommitment, uint256(i))`
-            let mut blob_key = [0u8; 80];
-            blob_key[..32].copy_from_slice(kzg_commitment.as_ref());
+
+            let mut blob_key = [0u8; 96];
+            blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
+            blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
+
+            // Todo ensure data_length is always power of 2. Proxy made mistake 
+            let data_size = cert_blob_info.blob_header.data_length as u64;
+            let blob_length: u64 = data_size / 32;
+
+            // proxy could just return the original blob
+            let mut padded_eigenda_blob = vec![0u8; data_size as usize];
+            padded_eigenda_blob[..eigenda_blob.len()].copy_from_slice(eigenda_blob.as_ref());
+            
+            info!("cert_blob_info blob_length {:?}", blob_length);
+
             for i in 0..blob_length {
-                blob_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
+                blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
                 let blob_key_hash = keccak256(blob_key.as_ref());
 
                 kv_write_lock.set(
@@ -192,22 +198,24 @@ where
                 )?;
                 kv_write_lock.set(
                     PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                    eigenda_blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                    padded_eigenda_blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
                 )?;
             }
 
             // Write the KZG Proof as the last element.
-            blob_key[72..].copy_from_slice((blob_length).to_be_bytes().as_ref());
+            blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
             let blob_key_hash = keccak256(blob_key.as_ref());
 
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
                 blob_key.into(),
             )?;
+            // proof to be done
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                kzg_proof.to_vec(),
+                [1,2,3].to_vec(),
             )?;
+            
 
         } else {
             panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");

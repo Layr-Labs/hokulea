@@ -12,6 +12,9 @@ alloy-primitives.workspace = true
 alloy-rlp.workspace = true
 tracing.workspace = true
 async-trait.workspace = true
+thiserror.workspace = true
+bytes.workspace = true
+rust-kzg-bn254.workspace = true
 
 [features]
 default = []
