@@ -12,20 +12,20 @@ hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = f
 # We use git dependencies instead of version dependencies because Kona is moving very fast right now
 # but publish infrequently (last was 2 weeks ago). We want to make sure to use the latest code
 # while we're still figuring out how to integrate with it.
-kona-mpt = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-derive = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-driver = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-executor = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-proof = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-std-fpvm = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-preimage = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-std-fpvm-proc = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
+kona-mpt = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-derive = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-driver = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-executor = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-proof = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-std-fpvm = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-preimage = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-std-fpvm-proc = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
 
 # These two kona crates aren't published to crates.io, so we need to use git dependencies.
 # TODO: Given that Hokulea is just meant to be a library crate to extend kona with eigenda understanding,
 #       we prob want to move these to dev-dependencies since we only need them for testing?
-kona-client = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
-kona-host = { git = "https://github.com/anton-rs/kona", rev = "8f21eff5d48f2a7e72380c15e24a927799dd8175", default-features = false }
+kona-client = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
+kona-host = { git = "https://github.com/anton-rs/kona", rev = "7a40d87", default-features = false }
 
 
 # Alloy
