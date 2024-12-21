@@ -19,6 +19,10 @@ alloy-primitives.workspace = true
 op-alloy-protocol.workspace = true
 op-alloy-rpc-types-engine.workspace = true
 op-alloy-genesis = { workspace = true, features = ["serde"] }
+alloy-rlp.workspace = true
+
+
+tracing.workspace = true
 
 # General
 async-trait.workspace = true

@@ -4,8 +4,10 @@
 use crate::eigenda_blobs::OnlineEigenDABlobProvider;
 use alloy_primitives::{keccak256, B256};
 use alloy_provider::ReqwestProvider;
+use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
+use hokulea_eigenda::BlobInfo;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
@@ -94,7 +96,7 @@ where
 
     /// Fetch the preimage for the given key. The requested is routed to the appropriate fetcher
     /// based on the last hint that was received (see hint() above).
-    /// FetcherWithEigenDASupport -> get_preimage_altda -> prefetch that only understands altda hints
+    /// FetcherWithEigenDASupport -> get_preimage_eigenda -> prefetch that only understands eigenda hints
     ///     \-> Fetcher -> get_preimage -> prefetch that understands all other hints
     pub async fn get_preimage(&self, key: B256) -> Result<Vec<u8>> {
         match self.last_eigenda_hint.as_ref() {
@@ -136,8 +138,16 @@ where
         trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
 
         if hint_type == ExtendedHintType::EigenDACommitment {
+            let item_slice = hint_data.as_ref();
+
+            // the fourth because 0x01010000 in the beginnin is metadata
+            match BlobInfo::decode(&mut &item_slice[4..]) {
+                Ok(cert_blob_info) => info!("cert_blob_info {:?}", cert_blob_info),
+                Err(e) => info!("cannot decode cert_blob_info {:?}", e),
+            }
+
             let cert = hint_data;
-            info!(target: "fetcher_with_eigenda_support", "Fetching AltDACommitment cert: {:?}", cert);
+            info!(target: "fetcher_with_eigenda_support", "Fetching eigenda commitment cert: {:?}", cert);
             // Fetch the blob sidecar from the blob provider.
             let eigenda_blob = self
                 .eigenda_blob_provider
@@ -149,10 +159,61 @@ where
             // Acquire a lock on the key-value store and set the preimages.
             let mut kv_write_lock = self.kv_store.write().await;
 
-            // Set the preimage for the blob commitment.
+            // ToDo - remove it once cert is actually correct
             kv_write_lock.set(
-                PreimageKey::new(*keccak256(cert), PreimageKeyType::GlobalGeneric).into(),
+                PreimageKey::new(*keccak256(cert.clone()), PreimageKeyType::GlobalGeneric).into(),
                 eigenda_blob.to_vec(),
+            )?;
+
+            // data
+            let item_slice = cert.as_ref();
+            let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
+            info!("cert_blob_info {:?}", cert_blob_info);
+
+            // Write all the field elements to the key-value store.
+            // The preimage oracle key for each field element is the keccak256 hash of
+            // `abi.encodePacked(cert.KZGCommitment, uint256(i))`
+
+            let mut blob_key = [0u8; 96];
+            blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
+            blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
+
+            // Todo ensure data_length is always power of 2. Proxy made mistake
+            let data_size = cert_blob_info.blob_header.data_length as u64;
+            let blob_length: u64 = data_size / 32;
+
+            // proxy could just return the original blob
+            let mut padded_eigenda_blob = vec![0u8; data_size as usize];
+            padded_eigenda_blob[..eigenda_blob.len()].copy_from_slice(eigenda_blob.as_ref());
+
+            info!("cert_blob_info blob_length {:?}", blob_length);
+
+            for i in 0..blob_length {
+                blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
+                let blob_key_hash = keccak256(blob_key.as_ref());
+
+                kv_write_lock.set(
+                    PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
+                    blob_key.into(),
+                )?;
+                kv_write_lock.set(
+                    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                    padded_eigenda_blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                )?;
+            }
+
+            // Write the KZG Proof as the last element.
+            blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
+            let blob_key_hash = keccak256(blob_key.as_ref());
+
+            kv_write_lock.set(
+                PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
+                blob_key.into(),
+            )?;
+            // proof to be done
+            kv_write_lock.set(
+                PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                [1, 2, 3].to_vec(),
             )?;
         } else {
             panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");

@@ -1,12 +1,17 @@
 //! Contains the [EigenDADataSource], which is a concrete implementation of the
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
+
 use crate::eigenda_blobs::EigenDABlobSource;
+use crate::errors::CodecError;
 use crate::traits::EigenDABlobProvider;
+use crate::BlobInfo;
+use alloy_rlp::Decodable;
 
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::Bytes;
 use async_trait::async_trait;
 use kona_derive::{
+    errors::{PipelineEncodingError, PipelineError, PipelineErrorKind},
     sources::EthereumDataSource,
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
@@ -56,14 +61,29 @@ where
 
     async fn next(&mut self, block_ref: &BlockInfo) -> PipelineResult<Self::Item> {
         // then acutally use ethereum da to fetch. items are Bytes
-        let item = self.ethereum_source.next(block_ref).await?;
+        let cert = self.ethereum_source.next(block_ref).await?;
 
-        // just dump all the data out
-        info!(target: "eth-datasource", "next item {:?}", item);
+        // verify if cert is too stale
+        let cert_blob_info = BlobInfo::decode(&mut &cert.as_ref()[4..]).unwrap();
+        info!("cert_blob_info {:?}", cert_blob_info);
+        let rbn = cert_blob_info
+            .blob_verification_proof
+            .batch_medatada
+            .batch_header
+            .reference_block_number as u64;
+        let l1_block_number = block_ref.number;
 
-        let eigenda_source_result = self.eigenda_source.next(&item).await;
-        info!(target: "eigenda-datasource", "eigenda_source_result {:?}", eigenda_source_result);
-        eigenda_source_result
+        // ToDo make it part of rollup config
+        let stale_gap = 100 as u64;
+
+        // check staleness
+        if rbn + stale_gap < l1_block_number {
+            // return error
+            unimplemented!()
+        }
+
+        let eigenda_blob = self.eigenda_source.next(&cert).await?;
+        Ok(eigenda_blob)
     }
 
     fn clear(&mut self) {
