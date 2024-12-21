@@ -178,14 +178,14 @@ where
             blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
             blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
 
-            // Todo ensure data_length is always power of 2. Proxy made mistake 
+            // Todo ensure data_length is always power of 2. Proxy made mistake
             let data_size = cert_blob_info.blob_header.data_length as u64;
             let blob_length: u64 = data_size / 32;
 
             // proxy could just return the original blob
             let mut padded_eigenda_blob = vec![0u8; data_size as usize];
             padded_eigenda_blob[..eigenda_blob.len()].copy_from_slice(eigenda_blob.as_ref());
-            
+
             info!("cert_blob_info blob_length {:?}", blob_length);
 
             for i in 0..blob_length {
@@ -213,10 +213,8 @@ where
             // proof to be done
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                [1,2,3].to_vec(),
+                [1, 2, 3].to_vec(),
             )?;
-            
-
         } else {
             panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");
         }
