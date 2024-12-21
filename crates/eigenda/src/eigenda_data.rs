@@ -36,6 +36,8 @@ impl EigenDABlobData {
             helpers::remove_empty_byte_from_padded_bytes_unchecked(codec_data.as_ref());
         let blob_content: Bytes = blob_content.into();
 
+        // might insert a FFT here,
+
         // take data
         Ok(blob_content.slice(..content_size as usize))
     }
