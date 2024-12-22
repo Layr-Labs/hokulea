@@ -30,7 +30,7 @@ impl OnlineEigenDABlobProvider {
     ) -> Result<alloy_rlp::Bytes, reqwest::Error> {
         let url = format!("{}/{}/{}", self.base, GET_METHOD, cert.slice(1..));
 
-        let raw_response = self.inner.get(url).header("raw", "true").send().await?;
+        let raw_response = self.inner.get(url).send().await?;
 
         raw_response.bytes().await
     }

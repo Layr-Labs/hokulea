@@ -8,9 +8,11 @@ use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
 use hokulea_eigenda::BlobInfo;
+use hokulea_eigenda::BLOB_ENCODING_VERSION;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
+use rust_kzg_bn254::helpers;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, info, trace, warn};
@@ -138,37 +140,45 @@ where
         trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
 
         if hint_type == ExtendedHintType::EigenDACommitment {
-            let item_slice = hint_data.as_ref();
-
-            // the fourth because 0x01010000 in the beginnin is metadata
-            match BlobInfo::decode(&mut &item_slice[4..]) {
-                Ok(cert_blob_info) => info!("cert_blob_info {:?}", cert_blob_info),
-                Err(e) => info!("cannot decode cert_blob_info {:?}", e),
-            }
-
             let cert = hint_data;
             info!(target: "fetcher_with_eigenda_support", "Fetching eigenda commitment cert: {:?}", cert);
             // Fetch the blob sidecar from the blob provider.
-            let eigenda_blob = self
+            let rollup_data = self
                 .eigenda_blob_provider
                 .fetch_eigenda_blob(&cert)
                 .await
                 .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
-            info!(target: "fetcher_with_eigenda_support", "eigenda_blob len {}", eigenda_blob.len());
             // Acquire a lock on the key-value store and set the preimages.
             let mut kv_write_lock = self.kv_store.write().await;
 
-            // ToDo - remove it once cert is actually correct
-            kv_write_lock.set(
-                PreimageKey::new(*keccak256(cert.clone()), PreimageKeyType::GlobalGeneric).into(),
-                eigenda_blob.to_vec(),
-            )?;
-
-            // data
+            // the fourth because 0x01010000 in the beginnin is metadata
+            let rollup_data_len = rollup_data.len() as u32;
             let item_slice = cert.as_ref();
             let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
-            info!("cert_blob_info {:?}", cert_blob_info);
+
+            // Todo ensure data_length is always power of 2. Proxy made mistake
+            let data_size = cert_blob_info.blob_header.data_length as u64;
+            let blob_length: u64 = data_size / 32;
+
+            // encode to become raw blob
+            let codec_rollup_data = helpers::convert_by_padding_empty_byte(rollup_data.as_ref());
+            let codec_rollup_data_len = codec_rollup_data.len() as u32;
+
+            let mut raw_blob = vec![0u8; data_size as usize];
+
+            if 32 + codec_rollup_data_len as u64 > data_size {
+                return Err(anyhow!("data size is less than reconstructed data codec_rollup_data_len {} data_size {}", codec_rollup_data_len, data_size));
+            }
+
+            // blob header
+            // https://github.com/Layr-Labs/eigenda/blob/f8b0d31d65b29e60172507074922668f4ca89420/api/clients/codecs/default_blob_codec.go#L25
+            // raw blob the immediate data just before taking IFFT
+            raw_blob[1] = BLOB_ENCODING_VERSION;
+            raw_blob[2..6].copy_from_slice(&rollup_data_len.to_be_bytes());
+
+            // encode length as uint32
+            raw_blob[32..(32 + codec_rollup_data_len as usize)].copy_from_slice(&codec_rollup_data);
 
             // Write all the field elements to the key-value store.
             // The preimage oracle key for each field element is the keccak256 hash of
@@ -177,14 +187,6 @@ where
             let mut blob_key = [0u8; 96];
             blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
             blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
-
-            // Todo ensure data_length is always power of 2. Proxy made mistake
-            let data_size = cert_blob_info.blob_header.data_length as u64;
-            let blob_length: u64 = data_size / 32;
-
-            // proxy could just return the original blob
-            let mut padded_eigenda_blob = vec![0u8; data_size as usize];
-            padded_eigenda_blob[..eigenda_blob.len()].copy_from_slice(eigenda_blob.as_ref());
 
             info!("cert_blob_info blob_length {:?}", blob_length);
 
@@ -198,7 +200,7 @@ where
                 )?;
                 kv_write_lock.set(
                     PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                    padded_eigenda_blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                    raw_blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
                 )?;
             }
 
