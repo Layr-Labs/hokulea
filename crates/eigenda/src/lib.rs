@@ -32,3 +32,6 @@ pub use certificate::BlobInfo;
 
 mod errors;
 pub use errors::CodecError;
+
+mod constant;
+pub use constant::BLOB_ENCODING_VERSION;
