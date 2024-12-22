@@ -2,7 +2,6 @@
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
 
 use crate::eigenda_blobs::EigenDABlobSource;
-use crate::errors::CodecError;
 use crate::traits::EigenDABlobProvider;
 use crate::BlobInfo;
 use alloy_rlp::Decodable;
@@ -11,7 +10,7 @@ use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::Bytes;
 use async_trait::async_trait;
 use kona_derive::{
-    errors::{PipelineEncodingError, PipelineError, PipelineErrorKind},
+    errors::{PipelineError, PipelineErrorKind},
     sources::EthereumDataSource,
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
@@ -81,8 +80,8 @@ where
         // but passing blockId to proxy which implement the logic,
         // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
         if rbn + stale_gap < l1_block_number {
-            // return error
-            unimplemented!()
+            // ToDo double check
+            return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
         }
 
         let eigenda_blob = self.eigenda_source.next(&cert).await?;

@@ -17,9 +17,7 @@ impl EigenDABlobData {
     /// Returns a [BlobDecodingError] if the blob is invalid.
     pub(crate) fn decode(&self) -> Result<Bytes, BlobDecodingError> {
         if self.blob.len() < 32 {
-            // ToDo format error better
-            //return Err(PipelineErrorKind::Temporary(PipelineError::BadEncoding(PipelineEncodingError::SpanBatchError(()))));
-            unimplemented!()
+            return Err(BlobDecodingError::InvalidLength);
         }
 
         info!(target: "eigenda-datasource", "padded_eigenda_blob {:?}", self.blob);
