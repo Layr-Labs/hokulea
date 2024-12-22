@@ -204,19 +204,19 @@ where
                 )?;
             }
 
-            // Write the KZG Proof as the last element.
-            blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
-            let blob_key_hash = keccak256(blob_key.as_ref());
+            // Write the KZG Proof as the last element, needed for ZK
+            //blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
+            //let blob_key_hash = keccak256(blob_key.as_ref());
 
-            kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-                blob_key.into(),
-            )?;
+            //kv_write_lock.set(
+            //    PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
+            //    blob_key.into(),
+            //)?;
             // proof to be done
-            kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                [1, 2, 3].to_vec(),
-            )?;
+            //kv_write_lock.set(
+            //    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+            //    [1, 2, 3].to_vec(),
+            //)?;
         } else {
             panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");
         }
