@@ -1,4 +1,4 @@
-//! This module contains the [ExtendedHintType], which adds an AltDACommitment case to kona's [HintType] enum.
+//! This module contains the [ExtendedHintType], which adds an EigenDACommitment case to kona's [HintType] enum.
 
 use alloc::{
     string::{String, ToString},
