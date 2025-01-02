@@ -72,15 +72,15 @@ where
             .reference_block_number as u64;
         let l1_block_number = block_ref.number;
 
-        // ToDo make it part of rollup config
+        // TODO: make it part of rollup config
         let stale_gap = 100 as u64;
 
         // check staleness
-        // ToDo this would require the op-rollup to follow the same pattern
+        // TODO: this would require the op-rollup to follow the same pattern
         // but passing blockId to proxy which implement the logic,
         // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
         if rbn + stale_gap < l1_block_number {
-            // ToDo double check
+            // TODO: double check
             return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
         }
 

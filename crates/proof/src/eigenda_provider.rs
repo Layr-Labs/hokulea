@@ -58,7 +58,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         // even then, it is not that the entire 80 bytes are used. Some bytes are empty
         // for solidity optimization, I remember.
         //
-        // ToDo investigate later to decide a right size
+        // TODO: investigate later to decide a right size
         let mut blob_key = [0u8; 96];
 
         // In eigenDA terminology, length describes the number of field element, size describes
