@@ -8,7 +8,7 @@ use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
 use hokulea_eigenda::BlobInfo;
-use hokulea_eigenda::BLOB_ENCODING_VERSION;
+use hokulea_eigenda::BLOB_ENCODING_VERSION_0;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
@@ -174,7 +174,7 @@ where
             // blob header
             // https://github.com/Layr-Labs/eigenda/blob/f8b0d31d65b29e60172507074922668f4ca89420/api/clients/codecs/default_blob_codec.go#L25
             // raw blob the immediate data just before taking IFFT
-            raw_blob[1] = BLOB_ENCODING_VERSION;
+            raw_blob[1] = BLOB_ENCODING_VERSION_0;
             raw_blob[2..6].copy_from_slice(&rollup_data_len.to_be_bytes());
 
             // encode length as uint32
