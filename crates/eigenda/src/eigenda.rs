@@ -73,7 +73,7 @@ where
         let l1_block_number = block_ref.number;
 
         // TODO: make it part of rollup config
-        let stale_gap = 100 as u64;
+        let stale_gap = 100_u64;
 
         // check staleness
         // TODO: this would require the op-rollup to follow the same pattern

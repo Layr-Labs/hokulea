@@ -1958,7 +1958,6 @@ dependencies = [
  "kona-derive",
  "op-alloy-protocol",
  "rust-kzg-bn254",
- "thiserror 2.0.7",
  "tracing",
 ]
 

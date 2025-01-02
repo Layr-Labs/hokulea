@@ -87,7 +87,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
             // if field element is 0, it means the host has identified that the data
             // has breached eigenda invariant, i.e cert is valid
-            if field_element.len() == 0 {
+            if field_element.is_empty() {
                 return Err(OracleProviderError::Preimage(PreimageOracleError::Other(
                     "field elememnt is empty, breached eigenda invariant".into(),
                 )));
