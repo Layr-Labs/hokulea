@@ -3,6 +3,9 @@ use alloy_rlp::{RlpDecodable, RlpEncodable};
 
 use alloc::vec::Vec;
 
+// ToDo use prost to generate struct from proto file
+// see seggestion, https://github.com/Layr-Labs/hokulea/pull/17#discussion_r1901102921
+
 #[derive(Debug, PartialEq, Clone, RlpEncodable, RlpDecodable)]
 pub struct G1Commitment {
     pub x: [u8; 32],

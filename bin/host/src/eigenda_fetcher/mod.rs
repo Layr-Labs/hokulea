@@ -152,7 +152,7 @@ where
             // Acquire a lock on the key-value store and set the preimages.
             let mut kv_write_lock = self.kv_store.write().await;
 
-            // the fourth because 0x01010000 in the beginnin is metadata
+            // the fourth because 0x01010000 in the beginning is metadata
             let rollup_data_len = rollup_data.len() as u32;
             let item_slice = cert.as_ref();
             let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
