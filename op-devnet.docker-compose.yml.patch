@@ -1,0 +1,39 @@
+diff --git a/ops-bedrock/docker-compose.yml b/ops-bedrock/docker-compose.yml
+index adcaea8f4..5c5e2e8ee 100644
+--- a/ops-bedrock/docker-compose.yml
++++ b/ops-bedrock/docker-compose.yml
+@@ -240,22 +240,20 @@ services:
+       OP_CHALLENGER_NUM_CONFIRMATIONS: 1
+ 
+   da-server:
+-    image: us-docker.pkg.dev/oplabs-tools-artifacts/images/da-server:devnet
+-    build:
+-      context: ../
+-      dockerfile: ops/docker/op-stack-go/Dockerfile
+-      target: da-server-target
+-    command: >
+-      da-server
+-      --file.path=/data
+-      --addr=0.0.0.0
+-      --port=3100
+-      --log.level=debug
+-      --generic-commitment="${ALTDA_GENERIC_DA}"
++    image: ghcr.io/layr-labs/eigenda-proxy:v1.6.1
++    environment:
++      EIGENDA_PROXY_ADDR: 0.0.0.0
++      EIGENDA_PROXY_PORT: 3100
++      EIGENDA_PROXY_METRICS_ENABLED: "true"
++      EIGENDA_PROXY_METRICS_PORT: 7300
++      EIGENDA_PROXY_MEMSTORE_ENABLED: "true"
++      EIGENDA_PROXY_MEMSTORE_EXPIRATION: 45m
++      EIGENDA_PROXY_MEMSTORE_PUT_LATENCY: 0s
++      EIGENDA_PROXY_MEMSTORE_GET_LATENCY: 0s
++      EIGENDA_PROXY_EIGENDA_CERT_VERIFICATION_DISABLED: "true"
+     ports:
+       - "3100:3100"
+-    volumes:
+-      - "da_data:/data"
++      - "6969:7300"
+ 
+   sentinel:
+     image: quarry/sentinel # TODO(10141): We need a public image for this (sentinel is out of repo)
