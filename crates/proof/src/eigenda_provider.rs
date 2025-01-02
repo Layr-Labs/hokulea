@@ -35,7 +35,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .await
             .map_err(OracleProviderError::Preimage)?;
 
-        // the fourth because 0x01010000 in the beginnin is metadata
+        // the fourth because 0x01010000 in the beginning is metadata
         let item_slice = cert.as_ref();
 
         // cert should at least contain 32 bytes for header + 4 bytes for commitment type metadata
