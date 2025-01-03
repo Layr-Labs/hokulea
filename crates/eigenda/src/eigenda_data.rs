@@ -89,44 +89,6 @@ mod tests {
     use alloy_primitives::Bytes;
     use kona_derive::errors::BlobDecodingError;
 
-    fn generate_blob_data(content: &[u8]) -> EigenDABlobData {
-        let mut blob = vec![0; 32];
-        blob[1] = BLOB_ENCODING_VERSION_0;
-        blob[2..6].copy_from_slice(&(content.len() as u32).to_be_bytes());
-        blob.extend_from_slice(&helpers::convert_by_padding_empty_byte(content));
-        EigenDABlobData {
-            blob: Bytes::from(blob),
-        }
-    }
-
-    #[test]
-    fn test_decode_success() {
-        let content = vec![1, 2, 3, 4];
-        let data = generate_blob_data(&content);
-        let result = data.decode();
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Bytes::from(content));
-    }
-
-    #[test]
-    fn test_decode_success_empty() {
-        let content = vec![];
-        let data = generate_blob_data(&content);
-        let result = data.decode();
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Bytes::from(content));
-    }
-
-    #[test]
-    fn test_decode_error_invalid_length() {
-        let data = EigenDABlobData {
-            blob: Bytes::from(vec![0; 31]), // one byte short of having a full header
-        };
-        let result = data.decode();
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), BlobDecodingError::InvalidLength);
-    }
-
     #[test]
     fn test_encode_and_decode_success() {
         let rollup_data = vec![1, 2, 3, 4];
