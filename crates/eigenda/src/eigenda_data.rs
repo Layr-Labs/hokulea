@@ -1,4 +1,4 @@
-use crate::BLOB_ENCODING_VERSION_0;
+use crate::{BLOB_ENCODING_VERSION_0, BYTES_PER_FIELD_ELEMENT};
 use alloc::vec;
 use alloy_primitives::Bytes;
 use bytes::buf::Buf;
@@ -50,11 +50,8 @@ impl EigenDABlobData {
     /// This matches exactly the eigenda proxy implementation, whose logic is in
     /// <https://github.com/Layr-Labs/eigenda/blob/master/encoding/utils/codec/codec.go#L12>
     ///
-    /// The length of (header + payload) by the encode function is always power of 2
+    /// The length of (header + payload) by the encode function is always multiple of 32
     /// The eigenda proxy does not take such constraint.
-    /// TODO it is possible to remove such power of 2 constraint, such that the client is not
-    /// relying on the data_length from eigenda cert. It might save some comm rounds between
-    /// host and client.
     pub fn encode(rollup_data: &[u8]) -> Self {
         let rollup_data_size = rollup_data.len() as u32;
 
@@ -64,7 +61,10 @@ impl EigenDABlobData {
         let blob_payload_size = codec_rollup_data.len();
 
         let blob_size = blob_payload_size + 32;
-        let blob_size = blob_size.next_power_of_two();
+
+        // round up to the closest multiple of 32
+        let blob_size = (blob_size + BYTES_PER_FIELD_ELEMENT - 1) / BYTES_PER_FIELD_ELEMENT
+            * BYTES_PER_FIELD_ELEMENT;
 
         let mut raw_blob = vec![0u8; blob_size as usize];
 
@@ -82,8 +82,6 @@ impl EigenDABlobData {
 
 #[cfg(test)]
 mod tests {
-    use crate::BLOB_ENCODING_VERSION_0;
-
     use super::*;
     use alloc::vec;
     use alloy_primitives::Bytes;
@@ -94,7 +92,7 @@ mod tests {
         let rollup_data = vec![1, 2, 3, 4];
         let eigenda_blob = EigenDABlobData::encode(&rollup_data);
         let data_len = eigenda_blob.blob.len();
-        assert!(data_len.is_power_of_two());
+        assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0);
 
         let result = eigenda_blob.decode();
         assert!(result.is_ok());

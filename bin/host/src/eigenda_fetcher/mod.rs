@@ -155,12 +155,7 @@ where
             let item_slice = cert.as_ref();
             let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
 
-            // TODO ensure data_length is always power of 2. Proxy made mistake
             // Proxy should return a cert whose data_length measured in symbol (i.e. 32 Bytes)
-            // Currently, it returns number of bytes. We need to fix proxy and here later.
-            //let data_size = cert_blob_info.blob_header.data_length as u64;
-            //let blob_length: u64 = data_size / 32;
-
             let blob_length = cert_blob_info.blob_header.data_length as u64;
             warn!("blob length: {:?}", blob_length);
 
