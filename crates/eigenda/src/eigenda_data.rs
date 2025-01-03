@@ -48,7 +48,7 @@ impl EigenDABlobData {
     /// The 2-4 indices of header are storing the length of the input rollup data in big endien
     /// The payload is prepared by padding an empty byte for every 31 bytes from the rollup data
     /// This matches exactly the eigenda proxy implementation, whose logic is in
-    /// https://github.com/Layr-Labs/eigenda/blob/master/encoding/utils/codec/codec.go#L12
+    /// <https://github.com/Layr-Labs/eigenda/blob/master/encoding/utils/codec/codec.go#L12>
     ///
     /// The length of (header + payload) by the encode function is always power of 2
     /// The eigenda proxy does not take such constraint.
