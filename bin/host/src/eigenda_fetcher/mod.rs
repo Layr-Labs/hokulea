@@ -7,8 +7,8 @@ use alloy_provider::ReqwestProvider;
 use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
-use hokulea_eigenda::encode_eigenda_blob;
 use hokulea_eigenda::BlobInfo;
+use hokulea_eigenda::EigenDABlobData;
 use hokulea_eigenda::BLOB_ENCODING_VERSION_0;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
@@ -162,13 +162,12 @@ where
             let data_size = cert_blob_info.blob_header.data_length as u64;
             let blob_length: u64 = data_size / 32;
 
-            let raw_blob = encode_eigenda_blob(rollup_data.as_ref());
-            trace!(target: "fetcher_with_eigenda_support", "Fetching ssize size: {:?} {}", raw_blob.len() , data_size);
+            let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref());
 
-            if raw_blob.len() != data_size as usize {
+            if eigenda_blob.blob.len() != data_size as usize {
                 return Err(
                     anyhow!("data size from cert  does not equal to reconstructed data codec_rollup_data_len {} data_size {}", 
-                        raw_blob.len(), data_size));
+                        eigenda_blob.blob.len(), data_size));
             }
 
             // Write all the field elements to the key-value store.
@@ -192,7 +191,7 @@ where
                 )?;
                 kv_write_lock.set(
                     PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                    raw_blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                    eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
                 )?;
             }
 

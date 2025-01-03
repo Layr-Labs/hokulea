@@ -9,7 +9,7 @@ use rust_kzg_bn254::helpers;
 /// Represents the data structure for EigenDA Blob.
 pub struct EigenDABlobData {
     /// The calldata
-    pub(crate) blob: Bytes,
+    pub blob: Bytes,
 }
 
 impl EigenDABlobData {
