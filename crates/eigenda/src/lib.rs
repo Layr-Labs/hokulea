@@ -32,3 +32,4 @@ pub use certificate::BlobInfo;
 
 mod constant;
 pub use constant::BLOB_ENCODING_VERSION_0;
+pub use constant::STALE_GAP;

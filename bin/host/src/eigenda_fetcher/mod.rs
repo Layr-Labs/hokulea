@@ -184,6 +184,7 @@ where
             // The preimage oracle key for each field element is the keccak256 hash of
             // `abi.encodePacked(cert.KZGCommitment, uint256(i))`
 
+            //  TODO figure out the key size, most likely dependent on smart contract parsing
             let mut blob_key = [0u8; 96];
             blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
             blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
@@ -204,6 +205,8 @@ where
                 )?;
             }
 
+            // TODO proof is at the random point, but we need to figure out where to generate
+            //
             // Write the KZG Proof as the last element, needed for ZK
             //blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
             //let blob_key_hash = keccak256(blob_key.as_ref());
