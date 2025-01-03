@@ -30,10 +30,6 @@ pub use eigenda_data::EigenDABlobData;
 mod certificate;
 pub use certificate::BlobInfo;
 
-pub mod codec;
-pub use codec::decode_eigenda_blob;
-pub use codec::encode_eigenda_blob;
-
 mod constant;
 pub use constant::BLOB_ENCODING_VERSION_0;
 pub use constant::STALE_GAP;
