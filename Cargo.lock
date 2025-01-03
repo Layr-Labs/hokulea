@@ -1978,7 +1978,6 @@ dependencies = [
  "kona-preimage",
  "proptest",
  "reqwest",
- "rust-kzg-bn254",
  "tokio",
  "tracing",
 ]

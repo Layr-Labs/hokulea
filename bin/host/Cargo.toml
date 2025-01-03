@@ -26,8 +26,5 @@ async-trait.workspace = true
 tokio = { workspace = true, features = ["full"] }
 clap = { workspace = true, features = ["derive", "env"] }
 
-# Cryptography
-rust-kzg-bn254.workspace = true
-
 [dev-dependencies]
 proptest.workspace = true
