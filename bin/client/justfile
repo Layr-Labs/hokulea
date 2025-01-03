@@ -119,6 +119,9 @@ run-client-native block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc rollu
   # Move to the workspace root
   cd $(git rev-parse --show-toplevel)
 
+  rm -rf ./data
+  mkdir ./data
+
   echo "Running host program with native client program..."
   cargo r --bin hokulea-host  -- \
     --l1-head $L1_HEAD \

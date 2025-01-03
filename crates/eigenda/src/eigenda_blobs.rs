@@ -48,8 +48,8 @@ where
         // Otherwise, ignore blob and recurse next.
         match next_data.decode() {
             Ok(d) => Ok(d),
-            Err(_) => {
-                warn!(target: "blob-source", "Failed to decode blob data, skipping");
+            Err(e) => {
+                warn!(target: "blob-source", "Failed to decode blob data, skipping {}", e);
                 panic!()
             }
         }
