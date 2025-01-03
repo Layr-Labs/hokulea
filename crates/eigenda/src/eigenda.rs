@@ -72,7 +72,6 @@ where
             .reference_block_number as u64;
         let l1_block_number = block_ref.number;
 
-
         // check staleness
         // TODO: this would require the op-rollup to follow the same pattern
         // but passing blockId to proxy which implement the logic,

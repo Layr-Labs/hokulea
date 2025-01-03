@@ -3,4 +3,3 @@
 pub const BLOB_ENCODING_VERSION_0: u8 = 0x0;
 /// TODO: make it part of rollup config
 pub const STALE_GAP: u64 = 100;
-
