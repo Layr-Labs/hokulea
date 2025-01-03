@@ -60,11 +60,11 @@ impl EigenDABlobData {
 
         let blob_payload_size = codec_rollup_data.len();
 
-        let blob_size = blob_payload_size + 32;
+        // the first field element contains the header
+        let blob_size = blob_payload_size + BYTES_PER_FIELD_ELEMENT;
 
         // round up to the closest multiple of 32
-        let blob_size = (blob_size + BYTES_PER_FIELD_ELEMENT - 1) / BYTES_PER_FIELD_ELEMENT
-            * BYTES_PER_FIELD_ELEMENT;
+        let blob_size = blob_size.div_ceil(BYTES_PER_FIELD_ELEMENT) * BYTES_PER_FIELD_ELEMENT;
 
         let mut raw_blob = vec![0u8; blob_size as usize];
 
@@ -72,7 +72,8 @@ impl EigenDABlobData {
         raw_blob[2..6].copy_from_slice(&rollup_data_size.to_be_bytes());
 
         // encode length as uint32
-        raw_blob[32..(32 + blob_payload_size as usize)].copy_from_slice(&codec_rollup_data);
+        raw_blob[BYTES_PER_FIELD_ELEMENT..(BYTES_PER_FIELD_ELEMENT + blob_payload_size as usize)]
+            .copy_from_slice(&codec_rollup_data);
 
         Self {
             blob: Bytes::from(raw_blob),
