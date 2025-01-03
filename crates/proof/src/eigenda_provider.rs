@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 use alloc::sync::Arc;
 use alloy_primitives::{keccak256, Bytes};
 use async_trait::async_trait;
-use hokulea_eigenda::{BlobInfo, EigenDABlobProvider};
+use hokulea_eigenda::{BlobInfo, EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT};
 use kona_preimage::{errors::PreimageOracleError, CommsClient, PreimageKey, PreimageKeyType};
 
 use kona_proof::errors::OracleProviderError;
@@ -51,7 +51,9 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
         info!("cert_blob_info {:?}", cert_blob_info);
 
-        let mut blob: Vec<u8> = vec![0; cert_blob_info.blob_header.data_length as usize];
+        // data_length measurs in field element, multiply to get num bytes
+        let mut blob: Vec<u8> =
+            vec![0; cert_blob_info.blob_header.data_length as usize * BYTES_PER_FIELD_ELEMENT];
 
         // 96 because our g1 commitment has 64 bytes in v1
         // why 96, the original 4844 has bytes length of 80 (it has 48 bytes for commitment)
@@ -62,10 +64,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let mut blob_key = [0u8; 96];
 
         // In eigenDA terminology, length describes the number of field element, size describes
-        // number of bytes. In eigenda proxy memstore mode, the datalength is wronly assigned to
-        // be the bytes lenght. We need to resolve it later.
-        // For now, we internally divides 32. ToDo
-        let data_length = cert_blob_info.blob_header.data_length as u64 / 32;
+        // number of bytes.
+        let data_length = cert_blob_info.blob_header.data_length as u64;
 
         info!("cert_blob_info.blob_header.data_length {:?}", data_length);
 

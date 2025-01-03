@@ -9,14 +9,13 @@ use anyhow::{anyhow, Result};
 use core::panic;
 use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::EigenDABlobData;
-use hokulea_eigenda::BLOB_ENCODING_VERSION_0;
+use hokulea_eigenda::BYTES_PER_FIELD_ELEMENT;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
-use rust_kzg_bn254::helpers;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{error, info, trace, warn};
+use tracing::{error, trace, warn};
 
 /// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
 /// to fetch preimages from EigenDA.
@@ -159,15 +158,18 @@ where
             // TODO ensure data_length is always power of 2. Proxy made mistake
             // Proxy should return a cert whose data_length measured in symbol (i.e. 32 Bytes)
             // Currently, it returns number of bytes. We need to fix proxy and here later.
-            let data_size = cert_blob_info.blob_header.data_length as u64;
-            let blob_length: u64 = data_size / 32;
+            //let data_size = cert_blob_info.blob_header.data_length as u64;
+            //let blob_length: u64 = data_size / 32;
+
+            let blob_length = cert_blob_info.blob_header.data_length as u64;
+            warn!("blob length: {:?}", blob_length);
 
             let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref());
 
-            if eigenda_blob.blob.len() != data_size as usize {
+            if eigenda_blob.blob.len() != blob_length as usize * BYTES_PER_FIELD_ELEMENT {
                 return Err(
-                    anyhow!("data size from cert  does not equal to reconstructed data codec_rollup_data_len {} data_size {}", 
-                        eigenda_blob.blob.len(), data_size));
+                    anyhow!("data size from cert  does not equal to reconstructed data codec_rollup_data_len {} blob size {}", 
+                        eigenda_blob.blob.len(), blob_length as usize * BYTES_PER_FIELD_ELEMENT));
             }
 
             // Write all the field elements to the key-value store.

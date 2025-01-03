@@ -59,7 +59,7 @@ impl EigenDABlobData {
         let rollup_data_size = rollup_data.len() as u32;
 
         // encode to become raw blob
-        let codec_rollup_data = helpers::convert_by_padding_empty_byte(rollup_data.as_ref());
+        let codec_rollup_data = helpers::convert_by_padding_empty_byte(rollup_data);
 
         let blob_payload_size = codec_rollup_data.len();
 
