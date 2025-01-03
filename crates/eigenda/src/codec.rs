@@ -1,9 +1,9 @@
+use crate::BLOB_ENCODING_VERSION_0;
+use alloc::vec::Vec;
 use alloy_primitives::Bytes;
 use bytes::buf::Buf;
-use rust_kzg_bn254::helpers;
-use crate::BLOB_ENCODING_VERSION_0;
 use kona_derive::errors::BlobDecodingError;
-use alloc::vec::Vec;
+use rust_kzg_bn254::helpers;
 
 /// encoded data into an eigenda blob. The output is always power of 2
 pub fn encode_eigenda_blob(rollup_data: &[u8]) -> Bytes {
@@ -31,7 +31,6 @@ pub fn encode_eigenda_blob(rollup_data: &[u8]) -> Bytes {
     Bytes::from(raw_blob)
 }
 
-
 /// decode data into an eigenda blob
 pub fn decode_eigenda_blob(blob: &Bytes) -> Result<Bytes, BlobDecodingError> {
     if blob.len() < 32 {
@@ -48,8 +47,7 @@ pub fn decode_eigenda_blob(blob: &Bytes) -> Result<Bytes, BlobDecodingError> {
     let codec_data = blob.slice(32..);
 
     // rust kzg bn254 impl already
-    let blob_content =
-        helpers::remove_empty_byte_from_padded_bytes_unchecked(codec_data.as_ref());
+    let blob_content = helpers::remove_empty_byte_from_padded_bytes_unchecked(codec_data.as_ref());
     let blob_content: Bytes = blob_content.into();
 
     if blob_content.len() < content_size as usize {

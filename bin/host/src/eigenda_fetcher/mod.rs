@@ -7,8 +7,8 @@ use alloy_provider::ReqwestProvider;
 use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
-use hokulea_eigenda::{BlobInfo};
 use hokulea_eigenda::encode_eigenda_blob;
+use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::BLOB_ENCODING_VERSION_0;
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
@@ -151,7 +151,6 @@ where
                 .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
             // Acquire a lock on the key-value store and set the preimages.
             let mut kv_write_lock = self.kv_store.write().await;
-
 
             // the fourth because 0x01010000 in the beginning is metadata
             let item_slice = cert.as_ref();
