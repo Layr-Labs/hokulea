@@ -7,16 +7,16 @@ edition = "2021"
 kona-derive.workspace = true
 
 # Op Alloy
-op-alloy-protocol.workspace = true
 alloy-primitives.workspace = true
 alloy-rlp.workspace = true
 tracing.workspace = true
 async-trait.workspace = true
 bytes.workspace = true
 rust-kzg-bn254.workspace = true
+maili-protocol.workspace = true
 
 [features]
 default = []
 serde = [
-  "op-alloy-protocol/serde",
+  "maili-protocol/serde",
 ]

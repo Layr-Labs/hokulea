@@ -15,7 +15,7 @@ use kona_derive::{
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
 };
-use op_alloy_protocol::BlockInfo;
+use maili_protocol::BlockInfo;
 
 /// A factory for creating an Ethereum data source provider.
 #[derive(Debug, Clone)]

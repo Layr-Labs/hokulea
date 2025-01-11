@@ -18,7 +18,7 @@ use kona_driver::{DriverPipeline, PipelineCursor};
 use kona_preimage::CommsClient;
 use kona_proof::{l1::OracleL1ChainProvider, l2::OracleL2ChainProvider, FlushableCache};
 use op_alloy_genesis::{RollupConfig, SystemConfig};
-use op_alloy_protocol::{BlockInfo, L2BlockInfo};
+use maili_protocol::{BlockInfo, L2BlockInfo};
 use op_alloy_rpc_types_engine::OpAttributesWithParent;
 
 /// An oracle-backed payload attributes builder for the `AttributesQueue` stage of the derivation
