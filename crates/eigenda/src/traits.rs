@@ -13,7 +13,4 @@ pub trait EigenDABlobProvider {
 
     /// Fetches a blob.
     async fn get_blob(&mut self, cert: &Bytes) -> Result<Bytes, Self::Error>;
-
-    /// Fetches an element from a blob.
-    async fn get_element(&mut self, cert: &Bytes, element: &Bytes) -> Result<Bytes, Self::Error>;
 }

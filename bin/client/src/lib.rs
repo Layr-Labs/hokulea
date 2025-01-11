@@ -8,6 +8,8 @@ use kona_preimage::{
 };
 
 use alloc::sync::Arc;
+use std::sync::Mutex;
+
 use core::fmt::Debug;
 use kona_executor::TrieDBProvider;
 use kona_proof::{
@@ -21,6 +23,7 @@ use kona_proof::{
 use tracing::{error, info};
 
 use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
+use hokulea_proof::witness::EigenDABlobWitness;
 
 #[inline]
 pub async fn run<P, H>(oracle_client: P, hint_client: H) -> Result<(), FaultProofProgramError>
@@ -49,7 +52,9 @@ where
     let mut l1_provider = OracleL1ChainProvider::new(boot.clone(), oracle.clone());
     let mut l2_provider = OracleL2ChainProvider::new(boot.clone(), oracle.clone());
     let beacon = OracleBlobProvider::new(oracle.clone());
-    let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
+
+    let eigenda_blob_witness = Arc::new(Mutex::new(EigenDABlobWitness::new()));
+    let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone(), eigenda_blob_witness.clone());
 
     // If the claimed L2 block number is less than the safe head of the L2 chain, the claim is
     // invalid.
@@ -101,6 +106,10 @@ where
     let (number, output_root) = driver
         .advance_to_target(&boot.rollup_config, Some(boot.claimed_l2_block_number))
         .await?;
+
+    if !eigenda_blob_witness.lock().unwrap().verify() {
+        panic!("unable to batch verify the blob witness");
+    }
 
     ////////////////////////////////////////////////////////////////
     //                          EPILOGUE                          //

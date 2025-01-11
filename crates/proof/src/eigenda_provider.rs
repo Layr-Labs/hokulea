@@ -8,20 +8,26 @@ use kona_preimage::{errors::PreimageOracleError, CommsClient, PreimageKey, Preim
 use kona_proof::errors::OracleProviderError;
 
 use crate::hint::ExtendedHintType;
+use crate::witness::EigenDABlobWitness;
 use alloy_rlp::Decodable;
 use tracing::info;
+use std::sync::Mutex;
+
 
 /// The oracle-backed EigenDA provider for the client program.
 #[derive(Debug, Clone)]
 pub struct OracleEigenDAProvider<T: CommsClient> {
     /// The preimage oracle client.
     oracle: Arc<T>,
+    /// kzg proof witness
+    /// TODO this will break no-std assumption, never merge this
+    witness: Arc<Mutex<EigenDABlobWitness>>,
 }
 
 impl<T: CommsClient> OracleEigenDAProvider<T> {
     /// Constructs a new oracle-backed EigenDA provider.
-    pub fn new(oracle: Arc<T>) -> Self {
-        Self { oracle }
+    pub fn new(oracle: Arc<T>, witness: Arc<Mutex<EigenDABlobWitness>>) -> Self {
+        Self { oracle, witness }
     }
 }
 
@@ -73,6 +79,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         blob_key[..32].copy_from_slice(&cert_blob_info.blob_header.commitment.x);
         blob_key[32..64].copy_from_slice(&cert_blob_info.blob_header.commitment.y);
 
+        // + 1 for the proof
         for i in 0..data_length {
             blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
 
@@ -98,29 +105,32 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
         info!("cert_blob_info blob {:?}", blob);
 
+        // TODO 
+        blob_key[88..].copy_from_slice(data_length.to_be_bytes().as_ref());
+
+        // proof is expressed in uncompressed bn254 g1 containing 64 bytes
+        let mut kzg_proof = [0u8; 64];
+        self.oracle
+            .get_exact(
+                PreimageKey::new(*keccak256(blob_key), PreimageKeyType::GlobalGeneric),
+                &mut kzg_proof,
+            )
+            .await
+            .map_err(OracleProviderError::Preimage)?;
+
+        // if field element is 0, it means the host has identified that the data
+        // has breached eigenda invariant, i.e cert is valid
+        if kzg_proof.is_empty() {
+            return Err(OracleProviderError::Preimage(PreimageOracleError::Other(
+                "field elememnt is empty, breached eigenda invariant".into(),
+            )));
+        }
+        
+        // TODO store and verify kzg commitment later
+        let commitment = Bytes::copy_from_slice(&[cert_blob_info.blob_header.commitment.x, cert_blob_info.blob_header.commitment.y].concat());
+
+        self.witness.lock().unwrap().write(blob.clone().into(), commitment, kzg_proof.into());
+        
         Ok(blob.into())
-    }
-
-    async fn get_element(&mut self, cert: &Bytes, element: &Bytes) -> Result<Bytes, Self::Error> {
-        self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[cert]))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
-
-        let cert_point_key = Bytes::copy_from_slice(&[cert.to_vec(), element.to_vec()].concat());
-
-        self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[&cert_point_key]))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
-        let data = self
-            .oracle
-            .get(PreimageKey::new(
-                *keccak256(cert_point_key),
-                PreimageKeyType::GlobalGeneric,
-            ))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
-        Ok(data.into())
     }
 }

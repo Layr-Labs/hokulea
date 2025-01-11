@@ -79,6 +79,7 @@ where
 
                 info!(target: "eigenda-blobsource", "load_blobs {:?}", self.data);
 
+
                 Ok(())
             }
             Err(_) => {
