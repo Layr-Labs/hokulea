@@ -63,10 +63,10 @@ impl EigenDABlobWitness {
             .verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs)
             .unwrap();
         
-        info!("lib_blobs {:?}", lib_blobs);
-        info!("lib_commitments {:?}", lib_commitments);
-        info!("lib_proofs {:?}", lib_proofs);
-        info!("pairing_result {:?}", pairing_result);
+        //info!("lib_blobs {:?}", lib_blobs);
+        //info!("lib_commitments {:?}", lib_commitments);
+        //info!("lib_proofs {:?}", lib_proofs);
+        //info!("pairing_result {:?}", pairing_result);
 
         return pairing_result
     }

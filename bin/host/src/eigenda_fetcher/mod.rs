@@ -271,7 +271,7 @@ where
         self.append_left_padded_biguint_be(&mut output, &commitment_x_bigint);
         self.append_left_padded_biguint_be(&mut output, &commitment_y_bigint);
 
-        let proof = match kzg.compute_blob_kzg_proof(&input, &commitment) {
+        let proof = match kzg.compute_blob_proof(&input, &commitment) {
             Ok(p) => p,
             Err(e) => return Err(anyhow!("kzg.compute_blob_kzg_proof {}", e)),
         };
