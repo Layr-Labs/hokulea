@@ -2004,7 +2004,6 @@ dependencies = [
  "kona-preimage",
  "kona-proof",
  "maili-protocol",
- "maili-registry",
  "op-alloy-genesis",
  "op-alloy-rpc-types-engine",
  "tracing",

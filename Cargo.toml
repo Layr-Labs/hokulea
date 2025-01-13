@@ -29,7 +29,6 @@ kona-host = { git = "https://github.com/op-rs/kona", rev = "14c7de51d75d15a82cdc
 
 # Maili
 maili-protocol = { version = "0.1.2", default-features = false }
-maili-registry = { version = "0.1.2", default-features = false }
 
 # Alloy
 alloy-rlp = { version = "0.3.10", default-features = false }

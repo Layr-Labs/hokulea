@@ -20,7 +20,6 @@ op-alloy-rpc-types-engine.workspace = true
 op-alloy-genesis = { workspace = true, features = ["serde"] }
 alloy-rlp.workspace = true
 maili-protocol.workspace = true
-maili-registry.workspace = true
 
 tracing.workspace = true
 
