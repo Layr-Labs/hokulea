@@ -27,8 +27,5 @@ tokio = { workspace = true, features = ["full"] }
 clap = { workspace = true, features = ["derive", "env"] }
 num.workspace = true
 
-# Crypto
-rust-kzg-bn254.workspace = true
-
 [dev-dependencies]
 proptest.workspace = true

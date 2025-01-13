@@ -17,10 +17,6 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, trace, warn};
 
-use rust_kzg_bn254::kzg::KZG;
-use rust_kzg_bn254::blob::Blob;
-use num::BigUint;
-
 /// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
 /// to fetch preimages from EigenDA.
 /// TODO: Kona is planning to change the fetcher interface to allow registering extra hints
@@ -199,32 +195,18 @@ where
             // proof is at the random point
             // Write the KZG Proof as the last element, needed for ZK
             blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
-            let blob_key_hash = keccak256(blob_key.as_ref());
 
-            let output = match self.compute_bn254_kzg_proof(eigenda_blob.blob.as_ref()) {
-                Ok(o) => o,
-                Err(e) => panic!("cannot produce bn254 proof {:?}", e),
-            };
 
-            // make sure locally computed proof equals to returned proof from the provider
-            if output[..32] != cert_blob_info.blob_header.commitment.x[..] ||
-               output[32..64] != cert_blob_info.blob_header.commitment.y[..]{
-                return Err(anyhow!("proxy commitment is different from computed commitment proxy {:x?} {:x?}, local {:x?}",
-                    cert_blob_info.blob_header.commitment.x,
-                    cert_blob_info.blob_header.commitment.y,
-                    output,
-                ));
-            }
-
-            kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-                blob_key.into(),
-            )?;
+            //let blob_key_hash = keccak256(blob_key.as_ref());
+            //kv_write_lock.set(
+            //    PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
+            //    blob_key.into(),
+            //)?;
             // proof to be done
-            kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                output[64..].to_vec(),
-            )?;
+            //kv_write_lock.set(
+            //    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+            //    output[64..].to_vec(),
+            //)?;
         } else {
             panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");
         }
@@ -238,60 +220,5 @@ where
         Ok(())
     }
 
-    // nitro code https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L30
-    fn compute_bn254_kzg_proof(&self, blob: &[u8]) -> Result<Vec<u8>> {
-        // TODO remove the need for G2 access
-        // Add command line to specify where are g1 and g2 path
-        // In the future, it might make sense to let the proxy to return such
-        // value, instead of local computation
-        let mut kzg = match KZG::setup(
-            "resources/g1.32mb.point",
-            "",
-            "resources/g2.point.powerOf2",
-            268435456,
-            1024,
-        ) {
-            Ok(k) => k,
-            Err(e) => return Err(anyhow!("cannot setup kzg {}", e)),
-        };
 
-        let input = Blob::new(blob);
-        let input_poly = input.to_polynomial_eval_form();
-
-        kzg.data_setup_custom(1, input.len().try_into().unwrap()).unwrap();
-
-        let mut output = vec![0u8; 0];
-
-        let commitment = match kzg.commit_eval_form(&input_poly) {
-            Ok(c) => c,
-            Err(e) => return Err(anyhow!("kzg.commit_eval_form {}", e)),
-        };
-
-        // TODO the library should have returned the bytes, or provide a helper
-        // for conversion. For both proof and commitment
-        let commitment_x_bigint: BigUint = commitment.x.into();
-        let commitment_y_bigint: BigUint = commitment.y.into();
-
-        self.append_left_padded_biguint_be(&mut output, &commitment_x_bigint);
-        self.append_left_padded_biguint_be(&mut output, &commitment_y_bigint);
-
-        let proof = match kzg.compute_blob_proof(&input, &commitment) {
-            Ok(p) => p,
-            Err(e) => return Err(anyhow!("kzg.compute_blob_kzg_proof {}", e)),
-        };
-        let proof_x_bigint: BigUint = proof.x.into();
-        let proof_y_bigint: BigUint = proof.y.into();
-
-        self.append_left_padded_biguint_be(&mut output, &proof_x_bigint);
-        self.append_left_padded_biguint_be(&mut output, &proof_y_bigint);
-
-        Ok(output)
-    }
-
-    pub fn append_left_padded_biguint_be(&self, vec: &mut Vec<u8>, biguint: &BigUint) {
-        let bytes = biguint.to_bytes_be();
-        let padding = 32 - bytes.len();
-        vec.extend(std::iter::repeat(0).take(padding));
-        vec.extend_from_slice(&bytes);
-    }
 }

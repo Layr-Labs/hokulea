@@ -100,27 +100,4 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
         Ok(blob.into())
     }
-
-    async fn get_element(&mut self, cert: &Bytes, element: &Bytes) -> Result<Bytes, Self::Error> {
-        self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[cert]))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
-
-        let cert_point_key = Bytes::copy_from_slice(&[cert.to_vec(), element.to_vec()].concat());
-
-        self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[&cert_point_key]))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
-        let data = self
-            .oracle
-            .get(PreimageKey::new(
-                *keccak256(cert_point_key),
-                PreimageKeyType::GlobalGeneric,
-            ))
-            .await
-            .map_err(OracleProviderError::Preimage)?;
-        Ok(data.into())
-    }
 }

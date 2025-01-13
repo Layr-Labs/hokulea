@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 alloy-consensus.workspace = true
+alloy-primitives.workspace = true
+alloy-rlp.workspace = true
 
 kona-client.workspace = true
 kona-preimage.workspace = true
@@ -13,5 +15,14 @@ kona-driver.workspace = true
 kona-executor.workspace = true
 
 hokulea-proof.workspace = true
+hokulea-eigenda.workspace = true
 
 tracing.workspace = true
+async-trait.workspace = true
+rust-kzg-bn254.workspace = true
+num.workspace = true
+anyhow.workspace = true
+
+ark-bn254.workspace = true
+
+ark-ff.workspace = true
