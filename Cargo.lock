@@ -1985,8 +1985,10 @@ dependencies = [
  "hokulea-proof",
  "kona-host",
  "kona-preimage",
+ "num",
  "proptest",
  "reqwest",
+ "rust-kzg-bn254",
  "tokio",
  "tracing",
 ]
@@ -3631,8 +3633,7 @@ checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
 [[package]]
 name = "rust-kzg-bn254"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acdae4058a9f604acf7023d99d931d6f30261fff93787bcfd1f1ccfc725b701c"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254?rev=4ad14ea4ce9473e13ed6437140fcbbff3a8ccce1#4ad14ea4ce9473e13ed6437140fcbbff3a8ccce1"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -3644,6 +3645,7 @@ dependencies = [
  "crossbeam-channel",
  "directories",
  "hex-literal",
+ "itertools 0.13.0",
  "num-bigint",
  "num-traits",
  "num_cpus",
@@ -3651,6 +3653,7 @@ dependencies = [
  "rayon",
  "sha2",
  "sys-info",
+ "thiserror 2.0.11",
  "ureq",
 ]
 

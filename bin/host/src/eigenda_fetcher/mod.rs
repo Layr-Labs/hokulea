@@ -19,6 +19,7 @@ use tracing::{error, trace, warn};
 
 use rust_kzg_bn254::kzg::KZG;
 use rust_kzg_bn254::blob::Blob;
+use num::BigUint;
 
 /// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
 /// to fetch preimages from EigenDA.
@@ -239,6 +240,10 @@ where
 
     // nitro code https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L30
     fn compute_bn254_kzg_proof(&self, blob: &[u8]) -> Result<Vec<u8>> {
+        // TODO remove the need for G2 access
+        // Add command line to specify where are g1 and g2 path
+        // In the future, it might make sense to let the proxy to return such
+        // value, instead of local computation
         let mut kzg = match KZG::setup(
             "resources/g1.32mb.point",
             "",
@@ -257,19 +262,20 @@ where
 
         let mut output = vec![0u8; 0];
 
-        // TODO proxy should have returned the commitment, should compare with the result
         let commitment = match kzg.commit_eval_form(&input_poly) {
             Ok(c) => c,
             Err(e) => return Err(anyhow!("kzg.commit_eval_form {}", e)),
         };
 
+        // TODO the library should have returned the bytes, or provide a helper
+        // for conversion. For both proof and commitment
         let commitment_x_bigint: BigUint = commitment.x.into();
         let commitment_y_bigint: BigUint = commitment.y.into();
 
         self.append_left_padded_biguint_be(&mut output, &commitment_x_bigint);
         self.append_left_padded_biguint_be(&mut output, &commitment_y_bigint);
 
-        let proof = match kzg.compute_blob_kzg_proof(&input, &commitment) {
+        let proof = match kzg.compute_blob_proof(&input, &commitment) {
             Ok(p) => p,
             Err(e) => return Err(anyhow!("kzg.compute_blob_kzg_proof {}", e)),
         };
