@@ -2,6 +2,9 @@
 
 Hokulea is a library to provide the altda providers for a derivation pipeline built with [kona](https://github.com/anton-rs/kona) to understand eigenDA blobs, following the [kona book](https://anton-rs.github.io/kona/sdk/pipeline/providers.html#implementing-a-custom-data-availability-provider) recommendation (also see this [comment](https://github.com/anton-rs/kona/pull/862#issuecomment-2515038089)).
 
+### Download SRS points
+Hokulea host currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the host to have access to sufficient KZG SRS points.
+
 ### Running against devnet
 
 First start the devnet:
