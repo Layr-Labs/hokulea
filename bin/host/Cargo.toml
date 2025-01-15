@@ -25,7 +25,6 @@ reqwest.workspace = true
 async-trait.workspace = true
 tokio = { workspace = true, features = ["full"] }
 clap = { workspace = true, features = ["derive", "env"] }
-num.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

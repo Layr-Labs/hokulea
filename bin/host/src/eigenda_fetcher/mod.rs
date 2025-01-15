@@ -156,15 +156,15 @@ where
             let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
 
             // Proxy should return a cert whose data_length measured in symbol (i.e. 32 Bytes)
-            let blob_length = cert_blob_info.blob_header.data_length as u64;
-            warn!("blob length: {:?}", blob_length);
+            let data_length = cert_blob_info.blob_header.data_length as u64;
+            warn!("data length: {:?}", data_length);
 
             let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref());
 
-            if eigenda_blob.blob.len() != blob_length as usize * BYTES_PER_FIELD_ELEMENT {
+            if eigenda_blob.blob.len() != data_length as usize * BYTES_PER_FIELD_ELEMENT {
                 return Err(
                     anyhow!("data size from cert  does not equal to reconstructed data codec_rollup_data_len {} blob size {}", 
-                        eigenda_blob.blob.len(), blob_length as usize * BYTES_PER_FIELD_ELEMENT));
+                        eigenda_blob.blob.len(), data_length as usize * BYTES_PER_FIELD_ELEMENT));
             }
 
             // Write all the field elements to the key-value store.
@@ -176,9 +176,9 @@ where
             blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
             blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
 
-            trace!("cert_blob_info blob_length {:?}", blob_length);
+            trace!("cert_blob_info data_length {:?}", data_length);
 
-            for i in 0..blob_length {
+            for i in 0..data_length {
                 blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
                 let blob_key_hash = keccak256(blob_key.as_ref());
 
@@ -192,11 +192,10 @@ where
                 )?;
             }
 
-            // proof is at the random point
+            // TODO currenlty proof is only computed in the client side if cached_eigenda_provider
+            // is used. We can add this back, if hosts needs to get the proof.
             // Write the KZG Proof as the last element, needed for ZK
-            blob_key[88..].copy_from_slice((blob_length).to_be_bytes().as_ref());
-
-
+            //blob_key[88..].copy_from_slice((data_length).to_be_bytes().as_ref());
             //let blob_key_hash = keccak256(blob_key.as_ref());
             //kv_write_lock.set(
             //    PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
@@ -219,6 +218,4 @@ where
 
         Ok(())
     }
-
-
 }

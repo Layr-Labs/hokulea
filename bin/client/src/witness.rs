@@ -1,9 +1,9 @@
-use alloy_primitives::Bytes;
 use alloc::vec::Vec;
-use rust_kzg_bn254::kzg::KZG;
-use rust_kzg_bn254::blob::Blob;
-use ark_bn254::{G1Affine, Fq};
+use alloy_primitives::Bytes;
+use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
+use rust_kzg_bn254::blob::Blob;
+use rust_kzg_bn254::kzg::KZG;
 use tracing::info;
 
 #[derive(Debug, Clone)]
@@ -18,7 +18,7 @@ impl EigenDABlobWitness {
         EigenDABlobWitness {
             eigenda_blobs: Vec::new(),
             commitments: Vec::new(),
-            proofs:  Vec::new(),
+            proofs: Vec::new(),
         }
     }
 
@@ -30,7 +30,8 @@ impl EigenDABlobWitness {
     }
 
     pub fn verify(&self) -> bool {
-        // TODO we should have to specify the details to get a kzg to perform a verification
+        // TODO we should not need so many g1 and g2 points for kzg verification
+        // improve kzg library instead
         let kzg = match KZG::setup(
             "resources/g1.32mb.point",
             "",
@@ -42,32 +43,39 @@ impl EigenDABlobWitness {
             Err(e) => panic!("cannot setup kzg {}", e),
         };
 
-        
         info!("lib_blobs len {:?}", self.eigenda_blobs.len());
 
         // transform to rust-kzg-bn254 inputs types
         // TODO should make library do the parsing the return result
         let lib_blobs: Vec<Blob> = self.eigenda_blobs.iter().map(|b| Blob::new(b)).collect();
-        let lib_commitments: Vec<G1Affine> = self.commitments.iter().map(|c| {
-            let x = Fq::from_be_bytes_mod_order(&c[..32]);
-            let y = Fq::from_be_bytes_mod_order(&c[32..64]);
-            G1Affine::new(x, y)
-            }).collect();
-        let lib_proofs: Vec<G1Affine> = self.proofs.iter().map(|p| {
-            let x = Fq::from_be_bytes_mod_order(&p[..32]);
-            let y = Fq::from_be_bytes_mod_order(&p[32..64]);
+        let lib_commitments: Vec<G1Affine> = self
+            .commitments
+            .iter()
+            .map(|c| {
+                let x = Fq::from_be_bytes_mod_order(&c[..32]);
+                let y = Fq::from_be_bytes_mod_order(&c[32..64]);
+                G1Affine::new(x, y)
+            })
+            .collect();
+        let lib_proofs: Vec<G1Affine> = self
+            .proofs
+            .iter()
+            .map(|p| {
+                let x = Fq::from_be_bytes_mod_order(&p[..32]);
+                let y = Fq::from_be_bytes_mod_order(&p[32..64]);
 
-            G1Affine::new(x, y)
-            }).collect();
+                G1Affine::new(x, y)
+            })
+            .collect();
         let pairing_result = kzg
             .verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs)
             .unwrap();
-        
+
         //info!("lib_blobs {:?}", lib_blobs);
         //info!("lib_commitments {:?}", lib_commitments);
         //info!("lib_proofs {:?}", lib_proofs);
         //info!("pairing_result {:?}", pairing_result);
 
-        return pairing_result
+        return pairing_result;
     }
 }

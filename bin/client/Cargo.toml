@@ -21,7 +21,6 @@ tracing.workspace = true
 async-trait.workspace = true
 rust-kzg-bn254.workspace = true
 num.workspace = true
-anyhow.workspace = true
 
 ark-bn254.workspace = true
 
