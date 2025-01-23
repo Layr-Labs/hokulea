@@ -6,7 +6,7 @@ use rust_kzg_bn254::blob::Blob;
 use rust_kzg_bn254::kzg::KZG;
 use tracing::info;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EigenDABlobWitness {
     pub eigenda_blobs: Vec<Bytes>,
     pub commitments: Vec<Bytes>,
@@ -76,6 +76,6 @@ impl EigenDABlobWitness {
         //info!("lib_proofs {:?}", lib_proofs);
         //info!("pairing_result {:?}", pairing_result);
 
-        return pairing_result;
+        pairing_result
     }
 }
