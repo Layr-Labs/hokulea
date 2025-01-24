@@ -1,0 +1,15 @@
+[package]
+name = "hokulea-cryptography"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+rust-kzg-bn254.workspace = true
+num.workspace = true
+ark-bn254.workspace = true
+ark-ff.workspace = true
+
+tracing.workspace = true
+alloy-primitives.workspace = true
+thiserror.workspace = true

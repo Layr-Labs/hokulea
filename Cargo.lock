@@ -1952,6 +1952,7 @@ dependencies = [
  "ark-bn254",
  "ark-ff 0.5.0",
  "async-trait",
+ "hokulea-cryptography",
  "hokulea-eigenda",
  "hokulea-proof",
  "kona-client",
@@ -1961,6 +1962,19 @@ dependencies = [
  "kona-proof",
  "num",
  "rust-kzg-bn254",
+ "tracing",
+]
+
+[[package]]
+name = "hokulea-cryptography"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives",
+ "ark-bn254",
+ "ark-ff 0.5.0",
+ "num",
+ "rust-kzg-bn254",
+ "thiserror 2.0.11",
  "tracing",
 ]
 
@@ -3639,7 +3653,7 @@ checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
 [[package]]
 name = "rust-kzg-bn254"
 version = "0.2.1"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254?rev=4ad14ea4ce9473e13ed6437140fcbbff3a8ccce1#4ad14ea4ce9473e13ed6437140fcbbff3a8ccce1"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254?rev=01b3f0bbcea4ef247e71131977bd5d1299b59004#01b3f0bbcea4ef247e71131977bd5d1299b59004"
 dependencies = [
  "ark-bn254",
  "ark-ec",
