@@ -12,7 +12,7 @@ alloy-rlp.workspace = true
 tracing.workspace = true
 async-trait.workspace = true
 bytes.workspace = true
-rust-kzg-bn254.workspace = true
+rust-kzg-bn254-primitives.workspace = true
 maili-protocol.workspace = true
 
 [features]

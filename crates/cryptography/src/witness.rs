@@ -3,13 +3,13 @@ use alloc::vec::Vec;
 use alloy_primitives::Bytes;
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
-use rust_kzg_bn254::blob::Blob;
-use rust_kzg_bn254::kzg::KZG;
-use rust_kzg_bn254::srs::SRS;
-use rust_kzg_bn254::batch;
+use rust_kzg_bn254_primitives::blob::Blob;
+use rust_kzg_bn254_prover::kzg::KZG;
+use rust_kzg_bn254_prover::srs::SRS;
+use rust_kzg_bn254_verifier::batch;
 use tracing::info;
 use num::BigUint;
-use rust_kzg_bn254::errors::KzgError;
+use rust_kzg_bn254_primitives::errors::KzgError;
 
 /// stores  
 #[derive(Debug, Clone, Default)]
@@ -38,7 +38,7 @@ impl EigenDABlobWitness {
         // In the future, it might make sense to let the proxy to return such
         // value, instead of local computation
         let srs = SRS::new("resources/g1.32mb.point", 268435456, 1024).unwrap();
-        let mut kzg = KZG::new(srs);
+        let mut kzg = KZG::new();
 
         let input = Blob::new(blob);
         let input_poly = input.to_polynomial_eval_form();
@@ -47,7 +47,7 @@ impl EigenDABlobWitness {
 
         let mut commitment_bytes = vec![0u8; 0];
 
-        let commitment = kzg.commit_eval_form(&input_poly)?;
+        let commitment = kzg.commit_eval_form(&input_poly, &srs)?;
 
         // TODO the library should have returned the bytes, or provide a helper
         // for conversion. For both proof and commitment
@@ -59,7 +59,7 @@ impl EigenDABlobWitness {
 
         let mut proof_bytes = vec![0u8; 0];
 
-        let proof = kzg.compute_blob_proof(&input, &commitment)?;
+        let proof = kzg.compute_blob_proof(&input, &commitment, &srs)?;
         let proof_x_bigint: BigUint = proof.x.into();
         let proof_y_bigint: BigUint = proof.y.into();
 
@@ -104,7 +104,7 @@ impl EigenDABlobWitness {
                 G1Affine::new(x, y)
             })
             .collect();
-        let pairing_result = batch::verify_blob_kzg_proof(&lib_blobs, &lib_commitments, &lib_proofs).unwrap();
+        let pairing_result = batch::verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs).unwrap();
 
         pairing_result
     }

@@ -3,7 +3,7 @@ use alloc::vec;
 use alloy_primitives::Bytes;
 use bytes::buf::Buf;
 use kona_derive::errors::BlobDecodingError;
-use rust_kzg_bn254::helpers;
+use rust_kzg_bn254_primitives::helpers;
 
 #[derive(Default, Clone, Debug)]
 /// Represents the data structure for EigenDA Blob.
