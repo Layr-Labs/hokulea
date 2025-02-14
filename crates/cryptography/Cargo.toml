@@ -15,3 +15,5 @@ ark-ff.workspace = true
 tracing.workspace = true
 alloy-primitives.workspace = true
 thiserror.workspace = true
+
+eigenda-v2-struct-rust.workspace = true

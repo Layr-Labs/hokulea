@@ -10,12 +10,13 @@ use rust_kzg_bn254_verifier::batch;
 use tracing::info;
 use num::BigUint;
 use rust_kzg_bn254_primitives::errors::KzgError;
+use eigenda_v2_struct_rust::v2_cert::rs_struct::EigenDAV2Cert;
 
 /// stores  
 #[derive(Debug, Clone, Default)]
 pub struct EigenDABlobWitness {
+    pub eigenda_certs: Vec<EigenDAV2Cert>,
     pub eigenda_blobs: Vec<Bytes>,
-    pub commitments: Vec<Bytes>,
     pub proofs: Vec<Bytes>,
 }
 
@@ -24,7 +25,7 @@ impl EigenDABlobWitness {
     pub fn new() -> Self {
         EigenDABlobWitness {
             eigenda_blobs: Vec::new(),
-            commitments: Vec::new(),
+            eigenda_certs: Vec::new(),
             proofs: Vec::new(),
         }
     }
@@ -67,14 +68,18 @@ impl EigenDABlobWitness {
         append_left_padded_biguint_be(&mut proof_bytes, &proof_y_bigint);
 
         // push data into witness
-        self.write(Bytes::copy_from_slice(blob), Bytes::copy_from_slice(&commitment_bytes), proof_bytes.into());
+        self.write(
+            Bytes::copy_from_slice(blob), 
+            Bytes::copy_from_slice(&commitment_bytes), 
+            proof_bytes.into(),
+        );
 
         Ok(())
     }
 
-    pub fn write(&mut self, blob: Bytes, commitment: Bytes, proof: Bytes) {
+    pub fn write(&mut self, blob: Bytes, eigenda_v2_cert: EigenDAV2Cert, proof: Bytes) {
         self.eigenda_blobs.push(blob);
-        self.commitments.push(commitment);
+        self.eigenda_certs.push(eigenda_v2_cert);
         self.proofs.push(proof);
         info!("added a blob");
     }
@@ -86,11 +91,12 @@ impl EigenDABlobWitness {
         // TODO should make library do the parsing the return result
         let lib_blobs: Vec<Blob> = self.eigenda_blobs.iter().map(|b| Blob::new(b)).collect();
         let lib_commitments: Vec<G1Affine> = self
-            .commitments
+            .eigenda_certs
             .iter()
             .map(|c| {
-                let x = Fq::from_be_bytes_mod_order(&c[..32]);
-                let y = Fq::from_be_bytes_mod_order(&c[32..64]);
+                let d = c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment;
+                let x = Fq::from_be_bytes_mod_order(&d.x);
+                let y = Fq::from_be_bytes_mod_order(&d.y);
                 G1Affine::new(x, y)
             })
             .collect();
@@ -100,7 +106,6 @@ impl EigenDABlobWitness {
             .map(|p| {
                 let x = Fq::from_be_bytes_mod_order(&p[..32]);
                 let y = Fq::from_be_bytes_mod_order(&p[32..64]);
-
                 G1Affine::new(x, y)
             })
             .collect();
