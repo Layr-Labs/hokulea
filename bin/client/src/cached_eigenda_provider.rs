@@ -1,3 +1,4 @@
+/*
 use alloy_primitives::Bytes;
 use alloy_rlp::Decodable;
 use async_trait::async_trait;
@@ -7,7 +8,7 @@ use kona_preimage::CommsClient;
 use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
-use hokulea_cryptography::witness::EigenDABlobWitness;
+use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 
 use kona_proof::errors::OracleProviderError;
 
@@ -23,12 +24,12 @@ pub struct CachedOracleEigenDAProvider<T: CommsClient> {
     /// The preimage oracle client.
     oracle: OracleEigenDAProvider<T>,
     /// kzg proof witness
-    pub witness: Arc<Mutex<EigenDABlobWitness>>,
+    pub witness: Arc<Mutex<EigenDABlobWitnessData>>,
 }
 
 impl<T: CommsClient> CachedOracleEigenDAProvider<T> {
     /// Constructs a new oracle-backed EigenDA provider.
-    pub fn new(oracle: OracleEigenDAProvider<T>, witness: Arc<Mutex<EigenDABlobWitness>>) -> Self {
+    pub fn new(oracle: OracleEigenDAProvider<T>, witness: Arc<Mutex<EigenDABlobWitnessData>>) -> Self {
         Self { oracle, witness }
     }
 }
@@ -69,4 +70,5 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for CachedOracleEigenDAPr
 
         Ok(blob)
     }
-}
+} 
+*/

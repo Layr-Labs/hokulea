@@ -7,7 +7,7 @@ members = ["bin/*", "crates/*"]
 hokulea-client = { path = "bin/client", version = "0.1.0", default-features = false }
 hokulea-eigenda = { path = "crates/eigenda", version = "0.1.0", default-features = false }
 hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = false }
-hokulea-cryptography = { path = "crates/cryptography", version = "0.1.0", default-features = false }
+hokulea-compute-kzg-proof = { path = "crates/compute-kzg-proof", version = "0.1.0", default-features = false }
 
 # Kona
 # We use git dependencies instead of version dependencies because Kona is moving very fast right now
@@ -76,7 +76,7 @@ rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", r
 rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "b3e532e9aad533009849755d5ad7b9578a16bfb2", default-features = false }
 
 # EigenDA v2 struct
-eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust.git", rev = "c51fe28c5dbde192bb160bdd8cefa1be38ac2852" }
+eigenda-v2-struct-rust = { path = "../eigenda-v2-struct-rust" }
 
 ark-bn254 = "0.5.0"
 ark-ff = { version = "0.5.0", features = ["parallel"] }

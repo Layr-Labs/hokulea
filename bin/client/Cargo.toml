@@ -16,7 +16,7 @@ kona-executor.workspace = true
 
 hokulea-proof.workspace = true
 hokulea-eigenda.workspace = true
-hokulea-cryptography.workspace = true
+hokulea-compute-kzg-proof.workspace = true
 
 tracing.workspace = true
 async-trait.workspace = true

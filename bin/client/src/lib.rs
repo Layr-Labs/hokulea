@@ -8,7 +8,6 @@ use kona_preimage::{
 };
 
 use alloc::sync::Arc;
-use std::sync::Mutex;
 
 use core::fmt::Debug;
 use kona_executor::TrieDBProvider;
@@ -23,7 +22,6 @@ use kona_proof::{
 use tracing::{error, info};
 
 use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
-use hokulea_cryptography::witness::EigenDABlobWitness;
 
 pub mod cached_eigenda_provider;
 
@@ -55,9 +53,6 @@ where
     let mut l2_provider = OracleL2ChainProvider::new(boot.clone(), oracle.clone());
     let beacon = OracleBlobProvider::new(oracle.clone());
     let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
-
-    let eigenda_blob_witness = Arc::new(Mutex::new(EigenDABlobWitness::new()));
-    let cached_eigenda_blob_provider = cached_eigenda_provider::CachedOracleEigenDAProvider::new(eigenda_blob_provider, eigenda_blob_witness);
 
     // If the claimed L2 block number is less than the safe head of the L2 chain, the claim is
     // invalid.
@@ -99,7 +94,7 @@ where
         beacon,
         l1_provider.clone(),
         l2_provider.clone(),
-        cached_eigenda_blob_provider.clone(),
+        eigenda_blob_provider.clone(),
     );
     let executor = KonaExecutor::new(&cfg, l2_provider.clone(), l2_provider, None, None);
     let mut driver = Driver::new(cursor, executor, pipeline);
@@ -109,12 +104,6 @@ where
     let (number, output_root) = driver
         .advance_to_target(&boot.rollup_config, Some(boot.claimed_l2_block_number))
         .await?;
-
-    // batch Verify cache
-    let witness = cached_eigenda_blob_provider.witness.lock().unwrap();
-    if !witness.batch_verify() {
-        panic!("batch verify wrong");
-    }
 
     ////////////////////////////////////////////////////////////////
     //                          EPILOGUE                          //
