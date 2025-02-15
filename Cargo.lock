@@ -1953,7 +1953,6 @@ name = "hokulea-compute-kzg-proof"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives",
- "ark-bn254",
  "num",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-prover",
