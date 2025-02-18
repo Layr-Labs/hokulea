@@ -1935,10 +1935,6 @@ name = "hokulea-client"
 version = "0.1.0"
 dependencies = [
  "alloy-consensus",
- "alloy-primitives",
- "alloy-rlp",
- "async-trait",
- "hokulea-eigenda",
  "hokulea-proof",
  "kona-client",
  "kona-driver",

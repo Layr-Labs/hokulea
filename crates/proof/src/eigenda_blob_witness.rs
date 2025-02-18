@@ -21,7 +21,6 @@ pub struct EigenDABlobWitnessData {
     pub validity_proofs: Vec<(bool, Bytes)>,
 }
 
-///
 impl EigenDABlobWitnessData {
     pub fn new() -> Self {
         EigenDABlobWitnessData {

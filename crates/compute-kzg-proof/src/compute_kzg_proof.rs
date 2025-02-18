@@ -12,7 +12,7 @@ use rust_kzg_bn254_prover::srs::SRS;
 
 /// This function computes a KZG proof for a eigenDA blob
 /// In the future, the eigenda blob header would contain the proof such that it does not require local computation
-/// nitro code https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141
+/// nitro code <https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141>
 /// could refactor in the future, such that both host and client can compute the proof
 pub fn compute_kzg_proof(blob: &[u8]) -> Result<Bytes, KzgError> {
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation

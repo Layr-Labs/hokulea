@@ -8,6 +8,7 @@ use rust_kzg_bn254_verifier::batch;
 use tracing::info;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
+/// (P0) Validate validity proof for eigenda cert is correct, regardless if cert itself is correct
 /// (P1) Given a cert is valid, then blob and the commitment in the cert must be consistent
 /// (P2) Given a cert is invalid, then blob must be empty
 #[derive(Clone, Debug, Default)]
@@ -45,7 +46,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
                 commitments.push((commitment.x, commitment.y));
             } else {
                 // check (P2) if cert is not valie, the blob is only allowed to be empty
-                assert!(value.eigenda_blobs[i].len() == 0);
+                assert!(value.eigenda_blobs[i].is_empty());
             }
             entries.push((
                 value.eigenda_certs[i].clone(),
@@ -57,7 +58,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         // check (P1) if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));
 
-        PreloadedEigenDABlobProvider { entries: entries }
+        PreloadedEigenDABlobProvider { entries }
     }
 }
 
@@ -91,10 +92,9 @@ pub fn batch_verify(
             G1Affine::new(x, y)
         })
         .collect();
-    let pairing_result =
-        batch::verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs).unwrap();
 
-    pairing_result
+    // convert all the error to false
+    batch::verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs).unwrap_or(false)
 }
 
 /// Regardless of the validity of the eigenda cert, the steel proof must be valid in testing that the da cert
@@ -112,5 +112,5 @@ pub fn validate_validity_proof(
     //
     // #[cfg(target_os = "zkvm")]
     // env::verify(DACERT_V2_VERIFIER_ID, &serde::to_vec(&n).unwrap()).unwrap();
-    return true;
+    true
 }
