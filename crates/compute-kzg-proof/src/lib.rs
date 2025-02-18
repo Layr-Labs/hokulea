@@ -10,3 +10,5 @@
 #![cfg_attr(not(test), warn(unused_crate_dependencies))]
 
 pub mod compute_kzg_proof;
+
+pub use compute_kzg_proof::compute_kzg_proof;

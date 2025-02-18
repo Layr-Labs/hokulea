@@ -11,7 +11,6 @@ kona-proof.workspace = true
 kona-derive.workspace = true
 
 hokulea-eigenda.workspace = true
-hokulea-compute-kzg-proof.workspace = true
 
 eigenda-v2-struct-rust.workspace = true
 rust-kzg-bn254-primitives.workspace = true

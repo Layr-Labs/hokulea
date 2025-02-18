@@ -23,8 +23,6 @@ use tracing::{error, info};
 
 use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
 
-pub mod cached_eigenda_provider;
-
 #[inline]
 pub async fn run<P, H>(oracle_client: P, hint_client: H) -> Result<(), FaultProofProgramError>
 where

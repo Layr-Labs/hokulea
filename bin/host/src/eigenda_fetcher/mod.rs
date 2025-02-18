@@ -7,6 +7,7 @@ use alloy_provider::ReqwestProvider;
 use alloy_rlp::Decodable;
 use anyhow::{anyhow, Result};
 use core::panic;
+use hokulea_compute_kzg_proof::compute_kzg_proof;
 use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::EigenDABlobData;
 use hokulea_eigenda::BYTES_PER_FIELD_ELEMENT;
@@ -192,20 +193,23 @@ where
                 )?;
             }
 
-            // TODO currenlty proof is only computed in the client side if cached_eigenda_provider
-            // is used. We can add this back, if hosts needs to get the proof.
+            let kzg_proof = match compute_kzg_proof(&eigenda_blob.blob) {
+                Ok(p) => p,
+                Err(e) => return Err(anyhow!("cannot compute kzg proof {}", e)),
+            };
+
             // Write the KZG Proof as the last element, needed for ZK
-            //blob_key[88..].copy_from_slice((data_length).to_be_bytes().as_ref());
-            //let blob_key_hash = keccak256(blob_key.as_ref());
-            //kv_write_lock.set(
-            //    PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-            //    blob_key.into(),
-            //)?;
+            blob_key[88..].copy_from_slice((data_length).to_be_bytes().as_ref());
+            let blob_key_hash = keccak256(blob_key.as_ref());
+            kv_write_lock.set(
+                PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
+                blob_key.into(),
+            )?;
             // proof to be done
-            //kv_write_lock.set(
-            //    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-            //    output[64..].to_vec(),
-            //)?;
+            kv_write_lock.set(
+                PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                kzg_proof.to_vec(),
+            )?;
         } else {
             panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints.");
         }
