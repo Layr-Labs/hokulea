@@ -8,12 +8,12 @@ use ark_ff::PrimeField;
 use tracing::info;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
-/// (V1) Given a cert is valid, then blob and the commitment in the cert must be consistent
-/// (V2) Given a cert is invalid, then blob must be empty
+/// (P1) Given a cert is valid, then blob and the commitment in the cert must be consistent
+/// (P2) Given a cert is invalid, then blob must be empty
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
-    pub entries: Vec<(EigenDAV2Cert, Bytes, bool)>,
+    pub entries: Vec<(EigenDAV2Cert, Blob, bool)>,
 }
 
 impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
@@ -25,19 +25,20 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..blobs.len() {
-            if value.is_valid[i] {
+            let is_valid = value.validity_proofs[i].0;
+            if is_valid {
                 blobs.push(value.eigenda_blobs[i].clone());
-                proofs.push(value.proofs[i].clone());
+                proofs.push(value.kzg_proofs[i].clone());
                 let commitment = value.eigenda_certs[i].blob_inclusion_info.blob_certificate.blob_header.commitment.commitment;
                 commitments.push((commitment.x, commitment.y));
             } else {
-                // check (V2) if cert is not valie, the blob must be empty
+                // check (P2) if cert is not valie, the blob is only allowed to be empty
                 assert!(value.eigenda_blobs[i].len() == 0);
             }
-            entries.push((value.eigenda_certs[i].clone(), value.eigenda_blobs[i].clone(), value.is_valid[i]));
+            entries.push((value.eigenda_certs[i].clone(), value.eigenda_blobs[i].clone(), is_valid));
         }
 
-        // check (V1) if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
+        // check (P1) if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));
 
         PreloadedEigenDABlobProvider {
@@ -48,11 +49,11 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
 
 /// Eventually, rust-kzg-bn254 would provide a nice interface that takes
 /// bytes input, so that we can remove this wrapper. For now, just include it here
-pub fn batch_verify(eigenda_blobs: Vec<Bytes>, commitments: Vec<(U256, U256)>, proofs: Vec<Bytes>) -> bool {
+pub fn batch_verify(eigenda_blobs: Vec<Blob>, commitments: Vec<(U256, U256)>, proofs: Vec<Bytes>) -> bool {
     info!("lib_blobs len {:?}", eigenda_blobs.len());
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
-    let lib_blobs: Vec<Blob> = eigenda_blobs.iter().map(|b| Blob::new(b)).collect();
+    let lib_blobs: Vec<Blob> = eigenda_blobs;
     let lib_commitments: Vec<G1Affine> = commitments
         .iter()
         .map(|c| {
