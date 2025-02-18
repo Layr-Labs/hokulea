@@ -54,6 +54,6 @@ pub fn compute_kzg_proof(blob: &[u8]) -> Result<Bytes, KzgError> {
 pub fn append_left_padded_biguint_be(vec: &mut Vec<u8>, biguint: &BigUint) {
     let bytes = biguint.to_bytes_be();
     let padding = 32 - bytes.len();
-    vec.extend(std::iter::repeat(0).take(padding));
+    vec.extend(std::iter::repeat_n(0, padding));
     vec.extend_from_slice(&bytes);
 }
