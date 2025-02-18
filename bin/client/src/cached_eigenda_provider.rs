@@ -70,5 +70,5 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for CachedOracleEigenDAPr
 
         Ok(blob)
     }
-} 
+}
 */

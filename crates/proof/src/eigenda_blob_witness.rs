@@ -15,13 +15,13 @@ pub struct EigenDABlobWitnessData {
     /// kzg proof on Fiat Shamir points
     pub kzg_proofs: Vec<Bytes>,
     /// a zk proof attesting the Cert is valid
-    /// each element is a tuple indicating 
+    /// each element is a tuple indicating
     /// (validity, proof for validity) regardless of
     /// validity is true or false
     pub validity_proofs: Vec<(bool, Bytes)>,
 }
 
-/// 
+///
 impl EigenDABlobWitnessData {
     pub fn new() -> Self {
         EigenDABlobWitnessData {
@@ -32,4 +32,3 @@ impl EigenDABlobWitnessData {
         }
     }
 }
-

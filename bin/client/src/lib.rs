@@ -44,7 +44,7 @@ where
     ));
     let boot = match BootInfo::load(oracle.as_ref()).await {
         Ok(boot) => Arc::new(boot),
-        Err(e ) => {
+        Err(e) => {
             error!(target: "client", "Failed to load boot info: {:?}", e);
             return Err(e.into());
         }
@@ -100,7 +100,7 @@ where
     let mut driver = Driver::new(cursor, executor, pipeline);
 
     // Run the derivation pipeline until we are able to produce the output root of the claimed
-    // L2 block.    
+    // L2 block.
     let (number, output_root) = driver
         .advance_to_target(&boot.rollup_config, Some(boot.claimed_l2_block_number))
         .await?;
