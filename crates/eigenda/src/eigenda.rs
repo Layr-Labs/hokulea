@@ -88,12 +88,14 @@ where
 
                 let eigenda_blob = self.eigenda_source.next(&cert).await?;
                 Ok(eigenda_blob)
-            },
+            }
             CertVersion::Version2 => {
                 // TODO if punctuality is checked elsewhere, then we don't need to deserialize here
-                let eigenda_v2_cert = match EigenDAV2Cert::decode(&mut &cert.as_ref()[4..]){
+                let eigenda_v2_cert = match EigenDAV2Cert::decode(&mut &cert.as_ref()[4..]) {
                     Ok(c) => c,
-                    Err(_e) => return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource)),
+                    Err(_e) => {
+                        return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource))
+                    }
                 };
                 let rbn = eigenda_v2_cert.batch_header_v2.reference_block_number as u64;
                 // check staleness
@@ -106,10 +108,10 @@ where
                 }
                 let eigenda_blob = self.eigenda_source.next(&cert).await?;
                 Ok(eigenda_blob)
-            },
+            }
             CertVersion::Unknown => {
                 return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
-            },
+            }
         }
     }
 
