@@ -71,7 +71,7 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
     type Error = OracleProviderError;
 
     /// Fetches a blob for V1
-    async fn get_blob(&mut self, _cert: &Bytes) -> Result<Bytes, Self::Error> {
+    async fn get_blob(&mut self, _cert: &Bytes) -> Result<Blob, Self::Error> {
         unimplemented!()
     }
 
@@ -79,7 +79,7 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
     /// Return an error if cert does not match the immeditate next item
     async fn get_blob_v2(&mut self, cert: &EigenDAV2Cert) -> Result<Blob, Self::Error> {
         let (eigenda_cert, eigenda_blob) = self.entries.pop().unwrap();
-        if eigenda_cert == *cert {
+        if eigenda_cert == *cert {    
             Ok(eigenda_blob)
         } else {
             Err(OracleProviderError::Preimage(PreimageOracleError::Other(

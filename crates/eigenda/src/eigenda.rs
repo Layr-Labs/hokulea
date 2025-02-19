@@ -3,12 +3,13 @@
 
 use crate::eigenda_blobs::EigenDABlobSource;
 use crate::traits::EigenDABlobProvider;
-use crate::{BlobInfo, STALE_GAP};
+use crate::{BlobInfo, CertVersion, STALE_GAP};
 use alloy_rlp::Decodable;
 
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::Bytes;
 use async_trait::async_trait;
+use eigenda_v2_struct_rust::EigenDAV2Cert;
 use kona_derive::{
     errors::{PipelineError, PipelineErrorKind},
     sources::EthereumDataSource,
@@ -61,30 +62,55 @@ where
     async fn next(&mut self, block_ref: &BlockInfo) -> PipelineResult<Self::Item> {
         // then acutally use ethereum da to fetch. items are Bytes
         let cert = self.ethereum_source.next(block_ref).await?;
-
-        // TODO add logics to multiplex depends on the cert version
-
-        // verify if cert is too stale
-        let cert_blob_info = BlobInfo::decode(&mut &cert.as_ref()[4..]).unwrap();
-        info!("cert_blob_info {:?}", cert_blob_info);
-        let rbn = cert_blob_info
-            .blob_verification_proof
-            .batch_medatada
-            .batch_header
-            .reference_block_number as u64;
         let l1_block_number = block_ref.number;
 
-        // check staleness
-        // TODO: this would require the op-rollup to follow the same pattern
-        // but passing blockId to proxy which implement the logic,
-        // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
-        if rbn + STALE_GAP < l1_block_number {
-            // TODO: double check
-            return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
-        }
+        let cert_version_byte = cert.as_ref()[3];
+        let cert_version: CertVersion = cert_version_byte.into();
+        match cert_version {
+            CertVersion::Version1 => {
+                // TODO if punctuality is checked elsewhere, then we don't need to deserialize here
+                let cert_blob_info = BlobInfo::decode(&mut &cert.as_ref()[4..]).unwrap();
+                info!("cert_blob_info {:?}", cert_blob_info);
+                let rbn = cert_blob_info
+                    .blob_verification_proof
+                    .batch_medatada
+                    .batch_header
+                    .reference_block_number as u64;
 
-        let eigenda_blob = self.eigenda_source.next(&cert).await?;
-        Ok(eigenda_blob)
+                // check staleness
+                // TODO: this would require the op-rollup to follow the same pattern
+                // but passing blockId to proxy which implement the logic,
+                // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
+                if rbn + STALE_GAP < l1_block_number {
+                    // TODO: double check
+                    return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
+                }
+
+                let eigenda_blob = self.eigenda_source.next(&cert).await?;
+                Ok(eigenda_blob)
+            },
+            CertVersion::Version2 => {
+                // TODO if punctuality is checked elsewhere, then we don't need to deserialize here
+                let eigenda_v2_cert = match EigenDAV2Cert::decode(&mut &cert.as_ref()[4..]){
+                    Ok(c) => c,
+                    Err(_e) => return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource)),
+                };
+                let rbn = eigenda_v2_cert.batch_header_v2.reference_block_number as u64;
+                // check staleness
+                // TODO: this would require the op-rollup to follow the same pattern
+                // but passing blockId to proxy which implement the logic,
+                // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
+                if rbn + STALE_GAP < l1_block_number {
+                    // TODO: double check
+                    return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
+                }
+                let eigenda_blob = self.eigenda_source.next(&cert).await?;
+                Ok(eigenda_blob)
+            },
+            CertVersion::Unknown => {
+                return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
+            },
+        }
     }
 
     fn clear(&mut self) {

@@ -33,7 +33,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
     type Error = OracleProviderError;
 
     /// Get V1 blobs. TODO remove in the future if not needed for testing
-    async fn get_blob(&mut self, cert: &Bytes) -> Result<Bytes, Self::Error> {
+    async fn get_blob(&mut self, cert: &Bytes) -> Result<Blob, Self::Error> {
         self.oracle
             .write(&ExtendedHintType::EigenDACommitment.encode_with(&[cert]))
             .await
