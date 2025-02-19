@@ -1517,7 +1517,7 @@ dependencies = [
 [[package]]
 name = "eigenda-v2-struct-rust"
 version = "0.1.0"
-source = "git+https://github.com/bxue-l2/eigenda-v2-struct-rust?rev=cdeaf4e6ed7c3d55e70bf97c2c04a5e056b780ef#cdeaf4e6ed7c3d55e70bf97c2c04a5e056b780ef"
+source = "git+https://github.com/bxue-l2/eigenda-v2-struct-rust?rev=d3e3b956a59dcd2bb6bb7ea01c9e9d699350c4d8#d3e3b956a59dcd2bb6bb7ea01c9e9d699350c4d8"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
@@ -1962,6 +1962,7 @@ dependencies = [
  "alloy-rlp",
  "async-trait",
  "bytes",
+ "eigenda-v2-struct-rust",
  "kona-derive",
  "maili-protocol",
  "rust-kzg-bn254-primitives",
