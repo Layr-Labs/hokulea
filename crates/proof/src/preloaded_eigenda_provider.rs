@@ -3,9 +3,13 @@ use alloy_primitives::{Bytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
+use hokulea_eigenda::EigenDABlobProvider;
+use kona_proof::errors::OracleProviderError;
+use kona_preimage::errors::PreimageOracleError;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 use tracing::info;
+use async_trait::async_trait;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// (P0) Validate validity proof for eigenda cert is correct, regardless if cert itself is correct
@@ -14,7 +18,7 @@ use tracing::info;
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
-    pub entries: Vec<(EigenDAV2Cert, Blob, bool)>,
+    pub entries: Vec<(EigenDAV2Cert, Blob)>,
 }
 
 impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
@@ -51,7 +55,6 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
             entries.push((
                 value.eigenda_certs[i].clone(),
                 value.eigenda_blobs[i].clone(),
-                is_valid,
             ));
         }
 
@@ -59,6 +62,30 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         assert!(batch_verify(blobs, commitments, proofs));
 
         PreloadedEigenDABlobProvider { entries }
+    }
+}
+
+#[async_trait]
+impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
+    // TODO investigate if create a speical error type EigenDABlobProviderError
+    type Error = OracleProviderError;
+
+    /// Fetches a blob for V1
+    async fn get_blob(&mut self, _cert: &Bytes) -> Result<Bytes, Self::Error> {
+        unimplemented!()
+    }
+
+    /// Fetches a blob for V2 using preloaded data
+    /// Return an error if cert does not match the immeditate next item
+    async fn get_blob_v2(&mut self, cert: &EigenDAV2Cert) -> Result<Blob, Self::Error> {
+        let (eigenda_cert, eigenda_blob) = self.entries.pop().unwrap();
+        if eigenda_cert == *cert {
+            Ok(eigenda_blob)
+        } else {
+            Err(OracleProviderError::Preimage(PreimageOracleError::Other(
+                "does not contain header".into(),
+            )))
+        }
     }
 }
 
