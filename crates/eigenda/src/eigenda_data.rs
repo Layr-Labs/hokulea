@@ -6,7 +6,8 @@ use kona_derive::errors::BlobDecodingError;
 use rust_kzg_bn254_primitives::helpers;
 
 #[derive(Default, Clone, Debug)]
-/// Represents the data structure for EigenDA Blob.
+/// Represents the data structure for EigenDA Blob
+/// intended for deriving rollup channel frame from eigenda blob
 pub struct EigenDABlobData {
     /// The calldata
     pub blob: Bytes,

@@ -13,9 +13,9 @@ pub trait EigenDABlobProvider {
     /// The error type for the [EigenDABlobProvider].
     type Error: Display + ToString + Into<PipelineErrorKind>;
 
-    /// Fetches a blob.
-    async fn get_blob(&mut self, cert: &Bytes) -> Result<Bytes, Self::Error>;
+    /// Fetches a blob with v1 cert
+    async fn get_blob(&mut self, cert: &Bytes) -> Result<Blob, Self::Error>;
 
-    /// Fetches a blob.
+    /// Fetches a blob with v2 cert
     async fn get_blob_v2(&mut self, cert: &EigenDAV2Cert) -> Result<Blob, Self::Error>;
 }
