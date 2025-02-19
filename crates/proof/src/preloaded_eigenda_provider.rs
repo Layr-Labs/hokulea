@@ -2,14 +2,14 @@ use crate::eigenda_blob_witness::EigenDABlobWitnessData;
 use alloy_primitives::{Bytes, FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
+use async_trait::async_trait;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 use hokulea_eigenda::EigenDABlobProvider;
-use kona_proof::errors::OracleProviderError;
 use kona_preimage::errors::PreimageOracleError;
+use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 use tracing::info;
-use async_trait::async_trait;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// (P0) Validate validity proof for eigenda cert is correct, regardless if cert itself is correct
@@ -79,7 +79,7 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
     /// Return an error if cert does not match the immeditate next item
     async fn get_blob_v2(&mut self, cert: &EigenDAV2Cert) -> Result<Blob, Self::Error> {
         let (eigenda_cert, eigenda_blob) = self.entries.pop().unwrap();
-        if eigenda_cert == *cert {    
+        if eigenda_cert == *cert {
             Ok(eigenda_blob)
         } else {
             Err(OracleProviderError::Preimage(PreimageOracleError::Other(

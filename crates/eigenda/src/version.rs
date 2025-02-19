@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq, Copy, Clone)]
 /// Represents the cert version derived from rollup inbox
 /// The version is needed to decode the Cert from serialiezd bytes
-/// Once a valid blob is retrieved, both versions use the identical 
+/// Once a valid blob is retrieved, both versions use the identical
 /// logic to derive the rollup channel frame from eigenda blobs
 pub enum CertVersion {
     /// unknown

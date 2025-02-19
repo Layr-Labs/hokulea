@@ -105,7 +105,6 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         Ok(blob.into())
     }
 
-        
     /// get_blob_v2 takes a v2 cert type as opposed to bytes stream
     async fn get_blob_v2(&mut self, cert: &EigenDAV2Cert) -> Result<Blob, Self::Error> {
         let mut cert_rlp_bytes = Vec::<u8>::new();
@@ -117,18 +116,36 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .await
             .map_err(OracleProviderError::Preimage)?;
 
-        let blob_length = cert.blob_inclusion_info.blob_certificate.blob_header.commitment.length as usize;
+        let blob_length = cert
+            .blob_inclusion_info
+            .blob_certificate
+            .blob_header
+            .commitment
+            .length as usize;
 
         // data_length measurs in field element, multiply to get num bytes
-        let mut blob: Vec<u8> =
-            vec![0; blob_length * BYTES_PER_FIELD_ELEMENT];
+        let mut blob: Vec<u8> = vec![0; blob_length * BYTES_PER_FIELD_ELEMENT];
 
         // TODO: Investigate of using cert_rlp_bytes as key, instead of 96 bytes
         let mut blob_key = [0u8; 96];
 
         // the common key
-        let x: [u8; 32] = cert.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.x.to_be_bytes();
-        let y: [u8; 32] = cert.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.y.to_be_bytes();
+        let x: [u8; 32] = cert
+            .blob_inclusion_info
+            .blob_certificate
+            .blob_header
+            .commitment
+            .commitment
+            .x
+            .to_be_bytes();
+        let y: [u8; 32] = cert
+            .blob_inclusion_info
+            .blob_certificate
+            .blob_header
+            .commitment
+            .commitment
+            .y
+            .to_be_bytes();
 
         blob_key[..32].copy_from_slice(&x);
         blob_key[32..64].copy_from_slice(&y);
@@ -153,7 +170,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
                 )));
             }
 
-            blob[(i as usize) << 5..(i as usize + 1) << 5].copy_from_slice(field_element.as_ref());
+            blob[i << 5..(i + 1) << 5].copy_from_slice(field_element.as_ref());
         }
 
         Ok(Blob::new(&blob))

@@ -2,8 +2,8 @@ use alloc::{boxed::Box, string::ToString};
 use alloy_primitives::Bytes;
 use async_trait::async_trait;
 use core::fmt::Display;
-use kona_derive::errors::PipelineErrorKind;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
+use kona_derive::errors::PipelineErrorKind;
 use rust_kzg_bn254_primitives::blob::Blob;
 
 /// A trait for providing EigenDA blobs.
