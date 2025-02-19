@@ -1,7 +1,9 @@
 //! Blob Data Source
 
-use crate::eigenda_data::EigenDABlobData;
+use crate::{eigenda_data::EigenDABlobData, CertVersion};
 use crate::traits::EigenDABlobProvider;
+use eigenda_v2_struct_rust::EigenDAV2Cert;
+use alloy_rlp::Decodable;
 
 use alloc::vec::Vec;
 use alloy_primitives::Bytes;
@@ -68,13 +70,21 @@ where
         }
 
         info!(target: "eigenda-blobsource", "going to fetch through eigenda fetcher");
-        let data = self.eigenda_fetcher.get_blob(eigenda_commitment).await;
+        let cert_version: CertVersion = eigenda_commitment.as_ref()[3].into();
+        let data = match cert_version {
+            CertVersion::Version1 => self.eigenda_fetcher.get_blob(eigenda_commitment).await,
+            CertVersion::Version2 => {
+                let eigenda_v2_cert = EigenDAV2Cert::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
+                self.eigenda_fetcher.get_blob_v2(&eigenda_v2_cert).await            
+            }
+            CertVersion::Unknown => panic!("impossible to trigger"),
+        };
+
         match data {
             Ok(data) => {
                 self.open = true;
-                let new_blob = data.clone();
-                // new_blob.truncate(data.len()-1);
-                let eigenda_blob = EigenDABlobData { blob: new_blob };
+                let new_blob: Vec<u8> = data.into();
+                let eigenda_blob = EigenDABlobData { blob: new_blob.into() };
                 self.data.push(eigenda_blob);
 
                 info!(target: "eigenda-blobsource", "load_blobs {:?}", self.data);
