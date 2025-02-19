@@ -62,6 +62,8 @@ where
         // then acutally use ethereum da to fetch. items are Bytes
         let cert = self.ethereum_source.next(block_ref).await?;
 
+        // TODO add logics to multiplex depends on the cert version
+
         // verify if cert is too stale
         let cert_blob_info = BlobInfo::decode(&mut &cert.as_ref()[4..]).unwrap();
         info!("cert_blob_info {:?}", cert_blob_info);
