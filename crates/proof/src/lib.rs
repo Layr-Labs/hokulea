@@ -12,4 +12,4 @@ pub mod eigenda_blob_witness;
 
 pub mod journal;
 
-pub mod cert_validity_proof;
+pub mod cert_validity;

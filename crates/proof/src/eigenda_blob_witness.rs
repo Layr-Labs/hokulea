@@ -5,7 +5,7 @@ use alloy_primitives::Bytes;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 use rust_kzg_bn254_primitives::blob::Blob;
 
-use crate::cert_validity_proof::CertValidity;
+use crate::cert_validity::CertValidity;
 
 /// stores  
 #[derive(Debug, Clone, Default)]
