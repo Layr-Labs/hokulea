@@ -21,4 +21,3 @@ pub struct EigenDABlobWitnessData {
     /// validity
     pub validity: Vec<CertValidity>,
 }
-
