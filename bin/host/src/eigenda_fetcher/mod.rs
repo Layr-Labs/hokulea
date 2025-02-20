@@ -17,7 +17,7 @@ use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{error, trace, warn};
+use tracing::{error, info, trace};
 
 /// The [FetcherWithEigenDASupport] struct wraps and extends kona's [Fetcher] struct with the ability
 /// to fetch preimages from EigenDA.
@@ -123,7 +123,6 @@ where
         while preimage.is_none() {
             if let Err(e) = self.prefetch(hint).await {
                 error!(target: "fetcher_with_eigenda_support", "Failed to prefetch hint: {e}");
-                warn!(target: "fetcher_with_eigenda_support", "Retrying hint fetch: {hint}");
                 continue;
             }
 
