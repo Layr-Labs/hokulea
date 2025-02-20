@@ -28,6 +28,9 @@ op-alloy-genesis = { workspace = true, features = ["serde"] }
 alloy-rlp.workspace = true
 maili-protocol.workspace = true
 
+# ZKVM
+risc0-zkvm.workspace = true
+
 tracing.workspace = true
 
 # General

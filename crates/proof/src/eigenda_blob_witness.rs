@@ -5,6 +5,8 @@ use alloy_primitives::Bytes;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 use rust_kzg_bn254_primitives::blob::Blob;
 
+use crate::cert_validity_proof::CertValidity;
+
 /// stores  
 #[derive(Debug, Clone, Default)]
 pub struct EigenDABlobWitnessData {
@@ -14,11 +16,10 @@ pub struct EigenDABlobWitnessData {
     pub eigenda_blobs: Vec<Blob>,
     /// kzg proof on Fiat Shamir points
     pub kzg_proofs: Vec<Bytes>,
-    /// a zk proof attesting the Cert is valid
-    /// each element is a tuple indicating
-    /// (validity, proof for validity) regardless of
-    /// validity is true or false
-    pub validity_proofs: Vec<(bool, Bytes)>,
+    /// indicates the validity of a cert is either true or false
+    /// validity contains a zk proof attesting claimed
+    /// validity
+    pub validity: Vec<CertValidity>,
 }
 
 impl EigenDABlobWitnessData {
@@ -27,7 +28,7 @@ impl EigenDABlobWitnessData {
             eigenda_certs: Vec::new(),
             eigenda_blobs: Vec::new(),
             kzg_proofs: Vec::new(),
-            validity_proofs: Vec::new(),
+            validity: Vec::new(),
         }
     }
 }

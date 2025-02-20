@@ -61,7 +61,7 @@ tokio = "1.42.0"
 async-channel = "2.3.1"
 cfg-if = "1.0.0"
 reqwest = "0.12.12"
-async-trait = "0.1.85"
+async-trait = "0.1.81"
 linked_list_allocator = "0.10.5"
 bytes = "1.9.0"
 num = "0.4"
@@ -76,7 +76,7 @@ rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", r
 rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "b3e532e9aad533009849755d5ad7b9578a16bfb2", default-features = false }
 
 # EigenDA v2 struct
-eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "d3e3b956a59dcd2bb6bb7ea01c9e9d699350c4d8" }
+eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "1ceba2f777bc842c414d43911763581e5300e7d5" }
 
 ark-bn254 = "0.5.0"
 ark-ff = { version = "0.5.0", features = ["parallel"] }
@@ -102,6 +102,9 @@ revm = { version = "16.0.0", default-features = false }
 
 # K/V database
 rocksdb = { version = "0.22.0", default-features = false }
+
+# ZKVM
+risc0-zkvm = { version = "1.2.3", features = ["heap-embedded-alloc", "unstable"] }
 
 [profile.dev]
 opt-level = 3

@@ -1,5 +1,5 @@
 use crate::eigenda_blob_witness::EigenDABlobWitnessData;
-use alloy_primitives::{Bytes, U256};
+use alloy_primitives::{Bytes, B256, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
@@ -30,15 +30,16 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..blobs.len() {
-            // always verify steel proof if in zkvm mode
-            assert!(validate_validity_proof(
+            // always verify validity of the cert
+            value.validity[i].validate_cert_receipt(
                 &value.eigenda_certs[i],
-                &value.validity_proofs[i]
-            ));
+                // TODO figure out a way to pass down validity_call_verifier_id
+                // at minimum, this value needs to come from system config from derivation
+                B256::default(),
+            );
 
             // if valid, check blob kzg integrity
-            let is_valid = value.validity_proofs[i].0;
-            if is_valid {
+            if value.validity[i].claimed_validity {
                 blobs.push(value.eigenda_blobs[i].clone());
                 proofs.push(value.kzg_proofs[i].clone());
                 let commitment = value.eigenda_certs[i]
@@ -122,22 +123,4 @@ pub fn batch_verify(
 
     // convert all the error to false
     batch::verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs).unwrap_or(false)
-}
-
-/// Regardless of the validity of the eigenda cert, the steel proof must be valid in testing that the da cert
-/// is either right or wrong
-pub fn validate_validity_proof(
-    _eigenda_certs: &EigenDAV2Cert,
-    _validity_proofs: &(bool, Bytes),
-) -> bool {
-    // TODO: verify the steel proof is valid in a separete PR
-    //
-    // Current thought Bytes = zkvm seal receipt
-    // construct journal part of receipt with _eigenda_certs and bool
-    // then call receipt.verify(fpvm_image_id)
-    // https://github.com/risc0/kailua/blob/448170c324c55be996e4541dbc3bbf5ef6d77e95/crates/common/src/stitching.rs#L73
-    //
-    // #[cfg(target_os = "zkvm")]
-    // env::verify(DACERT_V2_VERIFIER_ID, &serde::to_vec(&n).unwrap()).unwrap();
-    true
 }
