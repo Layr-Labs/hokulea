@@ -1,5 +1,5 @@
 use crate::eigenda_blob_witness::EigenDABlobWitnessData;
-use alloy_primitives::{Bytes, U256};
+use alloy_primitives::{Bytes, FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
@@ -67,7 +67,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
 pub fn batch_verify(
     eigenda_blobs: Vec<Blob>,
     commitments: Vec<(U256, U256)>,
-    proofs: Vec<Bytes>,
+    proofs: Vec<FixedBytes<64>>,
 ) -> bool {
     info!("lib_blobs len {:?}", eigenda_blobs.len());
     // transform to rust-kzg-bn254 inputs types
