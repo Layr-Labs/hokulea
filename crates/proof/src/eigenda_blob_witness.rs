@@ -21,13 +21,3 @@ pub struct EigenDABlobWitnessData {
     pub validity_proofs: Vec<(bool, Bytes)>,
 }
 
-impl EigenDABlobWitnessData {
-    pub fn new() -> Self {
-        EigenDABlobWitnessData {
-            eigenda_certs: Vec::new(),
-            eigenda_blobs: Vec::new(),
-            kzg_proofs: Vec::new(),
-            validity_proofs: Vec::new(),
-        }
-    }
-}
