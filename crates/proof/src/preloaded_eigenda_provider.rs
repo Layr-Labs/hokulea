@@ -45,7 +45,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
                     .commitment;
                 commitments.push((commitment.x, commitment.y));
             } else {
-                // check (P2) if cert is not valie, the blob is only allowed to be empty
+                // check (P2) if cert is not valid, the blob is only allowed to be empty
                 assert!(value.eigenda_blobs[i].is_empty());
             }
             entries.push((
