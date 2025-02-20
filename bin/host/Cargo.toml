@@ -9,6 +9,7 @@ hokulea-proof.workspace = true
 hokulea-client.workspace = true
 hokulea-eigenda.workspace = true
 hokulea-compute-kzg-proof.workspace = true
+eigenda-v2-struct-rust.workspace = true
 
 # Kona
 kona-preimage = { workspace = true, features = ["std"] }

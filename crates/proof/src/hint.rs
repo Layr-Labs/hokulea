@@ -53,6 +53,7 @@ impl ExtendedHint {
 pub enum ExtendedHintType {
     Original(HintType),
     EigenDACommitment,
+    EigenDACommitmentV2,
 }
 
 impl ExtendedHintType {
@@ -69,6 +70,7 @@ impl TryFrom<&str> for ExtendedHintType {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "eigenda-commitment" => Ok(Self::EigenDACommitment),
+            "eigenda-commitment-v2" => Ok(Self::EigenDACommitmentV2),
             _ => Ok(Self::Original(HintType::try_from(value)?)),
         }
     }
@@ -78,6 +80,7 @@ impl From<ExtendedHintType> for &str {
     fn from(value: ExtendedHintType) -> Self {
         match value {
             ExtendedHintType::EigenDACommitment => "eigenda-commitment",
+            ExtendedHintType::EigenDACommitmentV2 => "eigenda-commitment-v2",
             ExtendedHintType::Original(hint_type) => hint_type.into(),
         }
     }

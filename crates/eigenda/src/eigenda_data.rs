@@ -1,4 +1,4 @@
-use crate::{BLOB_ENCODING_VERSION_0, BYTES_PER_FIELD_ELEMENT};
+use crate::BYTES_PER_FIELD_ELEMENT;
 use alloc::vec;
 use alloy_primitives::Bytes;
 use bytes::buf::Buf;
@@ -53,7 +53,7 @@ impl EigenDABlobData {
     ///
     /// The length of (header + payload) by the encode function is always multiple of 32
     /// The eigenda proxy does not take such constraint.
-    pub fn encode(rollup_data: &[u8]) -> Self {
+    pub fn encode(rollup_data: &[u8], blob_version: u8) -> Self {
         let rollup_data_size = rollup_data.len() as u32;
 
         // encode to become raw blob
@@ -69,7 +69,7 @@ impl EigenDABlobData {
 
         let mut raw_blob = vec![0u8; blob_size as usize];
 
-        raw_blob[1] = BLOB_ENCODING_VERSION_0;
+        raw_blob[1] = blob_version;
         raw_blob[2..6].copy_from_slice(&rollup_data_size.to_be_bytes());
 
         // encode length as uint32
@@ -85,6 +85,7 @@ impl EigenDABlobData {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::BLOB_ENCODING_VERSION_0;
     use alloc::vec;
     use alloy_primitives::Bytes;
     use kona_derive::errors::BlobDecodingError;
@@ -92,7 +93,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success() {
         let rollup_data = vec![1, 2, 3, 4];
-        let eigenda_blob = EigenDABlobData::encode(&rollup_data);
+        let eigenda_blob = EigenDABlobData::encode(&rollup_data, BLOB_ENCODING_VERSION_0);
         let data_len = eigenda_blob.blob.len();
         assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0);
 
@@ -104,7 +105,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success_empty() {
         let rollup_data = vec![];
-        let eigenda_blob = EigenDABlobData::encode(&rollup_data);
+        let eigenda_blob = EigenDABlobData::encode(&rollup_data, BLOB_ENCODING_VERSION_0);
         let data_len = eigenda_blob.blob.len();
         // 32 is eigenda blob header size
         assert!(data_len == 32);
@@ -117,7 +118,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_error_invalid_length() {
         let rollup_data = vec![1, 2, 3, 4];
-        let mut eigenda_blob = EigenDABlobData::encode(&rollup_data);
+        let mut eigenda_blob = EigenDABlobData::encode(&rollup_data, BLOB_ENCODING_VERSION_0);
         eigenda_blob.blob.truncate(33);
         let result = eigenda_blob.decode();
         assert!(result.is_err());

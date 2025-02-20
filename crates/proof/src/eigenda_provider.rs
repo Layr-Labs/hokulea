@@ -112,7 +112,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         cert.encode(&mut cert_rlp_bytes);
 
         self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[&cert_rlp_bytes]))
+            .write(&ExtendedHintType::EigenDACommitmentV2.encode_with(&[&cert_rlp_bytes]))
             .await
             .map_err(OracleProviderError::Preimage)?;
 
