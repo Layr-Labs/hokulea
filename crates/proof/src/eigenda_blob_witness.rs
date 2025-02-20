@@ -20,4 +20,3 @@ pub struct EigenDABlobWitnessData {
     /// validity is true or false
     pub validity_proofs: Vec<(bool, Bytes)>,
 }
-
