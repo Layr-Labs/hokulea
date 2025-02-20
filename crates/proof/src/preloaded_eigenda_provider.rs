@@ -36,7 +36,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
             let is_valid = value.validity_proofs[i].0;
             if is_valid {
                 blobs.push(value.eigenda_blobs[i].clone());
-                proofs.push(value.kzg_proofs[i].clone());
+                proofs.push(value.kzg_proofs[i]);
                 let commitment = value.eigenda_certs[i]
                     .blob_inclusion_info
                     .blob_certificate
