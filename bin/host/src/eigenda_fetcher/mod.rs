@@ -86,7 +86,7 @@ where
         let (hint_type, _) = ExtendedHint::parse(hint)?.split();
         // We route the hint to the right fetcher based on the hint type.
         match hint_type {
-            ExtendedHintType::EigenDACommitment => {
+            ExtendedHintType::EigenDACertV1 | ExtendedHintType::EigenDACertV2 => {
                 self.last_eigenda_hint = Some(hint.to_string());
             }
             _ => {
@@ -151,7 +151,7 @@ where
             .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
         let (eigenda_blob, mut blob_key) = match hint_type {
-            ExtendedHintType::EigenDACommitment => {
+            ExtendedHintType::EigenDACertV1 => {
                 // the fourth because 0x01010000 in the beginning is metadata
                 let item_slice = cert.as_ref();
                 let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
@@ -173,7 +173,7 @@ where
                 blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
                 (eigenda_blob, blob_key)
             },
-            ExtendedHintType::EigenDACommitmentV2 => {
+            ExtendedHintType::EigenDACertV2 => {
                 // the fourth because 0x01010000 in the beginning is metadata
                 let item_slice = cert.as_ref();
                 let v2_cert = EigenDAV2Cert::decode(&mut &item_slice[4..]).unwrap();

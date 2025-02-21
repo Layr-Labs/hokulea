@@ -52,8 +52,8 @@ impl ExtendedHint {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ExtendedHintType {
     Original(HintType),
-    EigenDACommitment,
-    EigenDACommitmentV2,
+    EigenDACertV1,
+    EigenDACertV2,
 }
 
 impl ExtendedHintType {
@@ -69,8 +69,8 @@ impl TryFrom<&str> for ExtendedHintType {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "eigenda-commitment" => Ok(Self::EigenDACommitment),
-            "eigenda-commitment-v2" => Ok(Self::EigenDACommitmentV2),
+            "eigenda-certificate-v1" => Ok(Self::EigenDACertV1),
+            "eigenda-certificate-v2" => Ok(Self::EigenDACertV2),
             _ => Ok(Self::Original(HintType::try_from(value)?)),
         }
     }
@@ -79,8 +79,8 @@ impl TryFrom<&str> for ExtendedHintType {
 impl From<ExtendedHintType> for &str {
     fn from(value: ExtendedHintType) -> Self {
         match value {
-            ExtendedHintType::EigenDACommitment => "eigenda-commitment",
-            ExtendedHintType::EigenDACommitmentV2 => "eigenda-commitment-v2",
+            ExtendedHintType::EigenDACertV1 => "eigenda-certificate-v1",
+            ExtendedHintType::EigenDACertV2 => "eigenda-certificate-v2",
             ExtendedHintType::Original(hint_type) => hint_type.into(),
         }
     }
