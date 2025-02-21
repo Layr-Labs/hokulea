@@ -142,7 +142,6 @@ where
         trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
 
         let cert = hint_data;
-        trace!(target: "fetcher_with_eigenda_support", "Fetching eigenda commitment cert: {:?}", cert);
         // Fetch the blob sidecar from the blob provider.
         let rollup_data = self
             .eigenda_blob_provider
