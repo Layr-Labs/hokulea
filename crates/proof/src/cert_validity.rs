@@ -10,8 +10,8 @@ use risc0_zkvm::Receipt;
 pub struct CertValidity {
     /// the claim about if the cert is valid
     pub claimed_validity: bool,
-    /// a zkvm proof attesting the above result
-    /// in dev mode, receipt is ignored
+    /// A zkvm proof attesting the claimed_validity.
+    /// In dev mode, receipt is ignored.
     pub receipt: Option<Receipt>,
 }
 
