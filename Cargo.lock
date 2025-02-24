@@ -2347,6 +2347,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "clap",
+ "eigenda-v2-struct-rust",
  "hokulea-client",
  "hokulea-compute-kzg-proof",
  "hokulea-eigenda",
