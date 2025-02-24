@@ -35,7 +35,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
     /// Get V1 blobs. TODO remove in the future if not needed for testing
     async fn get_blob(&mut self, cert: &Bytes) -> Result<Blob, Self::Error> {
         self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[cert]))
+            .write(&ExtendedHintType::EigenDACertV1.encode_with(&[cert]))
             .await
             .map_err(OracleProviderError::Preimage)?;
 
@@ -112,7 +112,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         cert.encode(&mut cert_rlp_bytes);
 
         self.oracle
-            .write(&ExtendedHintType::EigenDACommitment.encode_with(&[&cert_rlp_bytes]))
+            .write(&ExtendedHintType::EigenDACertV2.encode_with(&[&cert_rlp_bytes]))
             .await
             .map_err(OracleProviderError::Preimage)?;
 
