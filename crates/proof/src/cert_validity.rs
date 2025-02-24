@@ -1,6 +1,9 @@
+use crate::journal::CertValidityJournal;
 use alloy_primitives::B256;
+use alloy_rlp::Decodable;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 use risc0_zkvm::is_dev_mode;
+use risc0_zkvm::sha::Digest;
 use risc0_zkvm::Receipt;
 
 #[derive(Debug, Clone, Default)]
@@ -20,11 +23,9 @@ impl CertValidity {
         eigenda_cert: &EigenDAV2Cert,
         validity_call_verifier_id: B256,
     ) {
-        if !is_dev_mode() {
-            use crate::journal::CertValidityJournal;
-            use alloy_rlp::Decodable;
-            use risc0_zkvm::sha::Digest;
-
+        if is_dev_mode() {
+            return;
+        } else {
             // if not in dev mode, the receipt must be non empty
             assert!(self.receipt.is_some());
             let receipt = self.receipt.as_ref().unwrap();
