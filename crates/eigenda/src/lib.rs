@@ -34,6 +34,6 @@ mod version;
 pub use version::CertVersion;
 
 mod constant;
-pub use constant::PAYLOAD_ENCODING_VERSION_0;
 pub use constant::BYTES_PER_FIELD_ELEMENT;
+pub use constant::PAYLOAD_ENCODING_VERSION_0;
 pub use constant::STALE_GAP;

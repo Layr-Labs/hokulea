@@ -11,7 +11,7 @@ use eigenda_v2_struct_rust::EigenDAV2Cert;
 use hokulea_compute_kzg_proof::compute_kzg_proof;
 use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::EigenDABlobData;
-use hokulea_eigenda::{PAYLOAD_ENCODING_VERSION_0, BYTES_PER_FIELD_ELEMENT};
+use hokulea_eigenda::{BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0};
 use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
