@@ -25,21 +25,20 @@ impl CertValidity {
     ) {
         if is_dev_mode() {
             return;
-        } else {
-            // if not in dev mode, the receipt must be non empty
-            assert!(self.receipt.is_some());
-            let receipt = self.receipt.as_ref().unwrap();
-
-            let journal = CertValidityJournal::decode(&mut receipt.journal.bytes.as_ref()).unwrap();
-            // ensure journal attests the same outcome
-            assert!(journal.is_valid == self.claimed_validity);
-
-            // ensure journal contains the correct cert
-            assert!(journal.cert_digest == eigenda_cert.digest());
-            let fpvm_image_id = Digest::from(validity_call_verifier_id.0);
-
-            // so far, we have ensure the data is right, now verify the proof with respect to the data
-            assert!(self.receipt.as_ref().unwrap().verify(fpvm_image_id).is_ok())
         }
+        // if not in dev mode, the receipt must be non empty
+        assert!(self.receipt.is_some());
+        let receipt = self.receipt.as_ref().unwrap();
+
+        let journal = CertValidityJournal::decode(&mut receipt.journal.bytes.as_ref()).unwrap();
+        // ensure journal attests the same outcome
+        assert!(journal.is_valid == self.claimed_validity);
+
+        // ensure journal contains the correct cert
+        assert!(journal.cert_digest == eigenda_cert.digest());
+        let fpvm_image_id = Digest::from(validity_call_verifier_id.0);
+
+        // so far, we have ensure the data is right, now verify the proof with respect to the data
+        assert!(self.receipt.as_ref().unwrap().verify(fpvm_image_id).is_ok())
     }
 }
