@@ -81,10 +81,12 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
 
             //let mut field_element = [0u8; 32];
-            let field_element = self.oracle
-                .get(
-                    PreimageKey::new(*keccak256(blob_key),PreimageKeyType::GlobalGeneric),
-                )
+            let field_element = self
+                .oracle
+                .get(PreimageKey::new(
+                    *keccak256(blob_key),
+                    PreimageKeyType::GlobalGeneric,
+                ))
                 .await
                 .map_err(OracleProviderError::Preimage)?;
 
