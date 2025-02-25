@@ -80,11 +80,10 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         for i in 0..data_length {
             blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
 
-            let mut field_element = [0u8; 32];
-            self.oracle
-                .get_exact(
-                    PreimageKey::new(*keccak256(blob_key), PreimageKeyType::GlobalGeneric),
-                    &mut field_element,
+            //let mut field_element = [0u8; 32];
+            let field_element = self.oracle
+                .get(
+                    PreimageKey::new(*keccak256(blob_key),PreimageKeyType::GlobalGeneric),
                 )
                 .await
                 .map_err(OracleProviderError::Preimage)?;
@@ -96,6 +95,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
                     "field elememnt is empty, breached eigenda invariant".into(),
                 )));
             }
+            // a field element for bn254
+            assert!(field_element.len() == 32);
 
             blob[(i as usize) << 5..(i as usize + 1) << 5].copy_from_slice(field_element.as_ref());
         }

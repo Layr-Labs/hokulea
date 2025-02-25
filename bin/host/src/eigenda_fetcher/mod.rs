@@ -148,6 +148,10 @@ where
             .await
             .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
+        // TODO define an error message from proxy that if the view call is wrong
+        // https://github.com/Layr-Labs/eigenda/blob/master/contracts/src/core/EigenDACertVerifier.sol#L165
+        // then store empty byte in the kv_store
+
         let (eigenda_blob, blob_length_fe, mut blob_key) = match hint_type {
             ExtendedHintType::EigenDACertV1 => {
                 // the fourth because 0x01010000 in the beginning is metadata
