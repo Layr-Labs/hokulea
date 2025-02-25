@@ -4,8 +4,6 @@
 /// Once a valid blob is retrieved, both versions use the identical
 /// logic to derive the rollup channel frame from eigenda blobs
 pub enum CertVersion {
-    /// unknown
-    Unknown,
     /// existing eigenda cert version
     Version1,
     /// lastest eigenda cert version
@@ -17,7 +15,7 @@ impl From<u8> for CertVersion {
         match value {
             0 => Self::Version1,
             1 => Self::Version2,
-            _ => Self::Unknown,
+            _ => panic!("unknown version"),
         }
     }
 }

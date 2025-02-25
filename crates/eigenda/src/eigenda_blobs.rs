@@ -78,7 +78,6 @@ where
                     EigenDAV2Cert::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
                 self.eigenda_fetcher.get_blob_v2(&eigenda_v2_cert).await
             }
-            CertVersion::Unknown => panic!("impossible to trigger"),
         };
 
         match data {

@@ -1,6 +1,5 @@
 extern crate alloc;
 use alloc::vec::Vec;
-use alloy_primitives::Bytes;
 use alloy_primitives::FixedBytes;
 
 use eigenda_v2_struct_rust::EigenDAV2Cert;
