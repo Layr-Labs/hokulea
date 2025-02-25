@@ -16,7 +16,7 @@ Then request rollup config and save it:
 ```bash
 ROLLUP_NODE_RPC=$(kurtosis port print eigenda-memstore-devnet op-cl-1-op-node-op-geth-op-kurtosis http) && curl -X POST -H "Content-Type: application/json" --data     '{"jsonrpc":"2.0","method":"optimism_rollupConfig","params":[],"id":1}' $ROLLUP_NODE_RPC | jq .result > rollup.json
 ```
-Then run hokulea:
+Then run hokulea with eigenda v1:
 ```bash
 cd bin/client
 just run-client-native-against-devnet
