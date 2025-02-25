@@ -3,19 +3,20 @@
 use anyhow::Result;
 use clap::Parser;
 use hokulea_host::start_server_and_native_client;
-use kona_host::{init_tracing_subscriber, start_server, HostCli};
+use kona_host::{init_tracing_subscriber, start_server};
+use hokulea_host::args::EigenDaArgs;
 
 use tracing::{error, info};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {
-    let cfg = HostCli::parse();
-    init_tracing_subscriber(cfg.v)?;
+    let eigenda_args = EigenDaArgs::parse();
+    init_tracing_subscriber(eigenda_args.kona_cfg.v)?;
 
-    if cfg.server {
-        start_server(cfg).await?;
+    if eigenda_args.kona_cfg.server {
+        start_server(eigenda_args.kona_cfg).await?;
     } else {
-        let status = match start_server_and_native_client(cfg).await {
+        let status = match start_server_and_native_client(eigenda_args.kona_cfg, eigenda_args.eigenda_proxy_address.unwrap()).await {
             Ok(status) => status,
             Err(e) => {
                 error!(target: "hokulea_host", "Exited with an error: {:?}", e);
