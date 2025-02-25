@@ -159,9 +159,9 @@ where
 
                 let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
 
-                if eigenda_blob.blob.len() != blob_length_fe * BYTES_PER_FIELD_ELEMENT {
+                if eigenda_blob.blob.len() > blob_length_fe * BYTES_PER_FIELD_ELEMENT {
                     return Err(
-                        anyhow!("data size from cert  does not equal to reconstructed data codec_rollup_data_len {} blob size {}",
+                        anyhow!("data size from cert is less than locally crafted blob cert data size {} locally crafted size {}", 
                             eigenda_blob.blob.len(), blob_length_fe * BYTES_PER_FIELD_ELEMENT));
                 }
 
@@ -180,7 +180,7 @@ where
 
                 let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
 
-                if eigenda_blob.blob.len() <= blob_length_fe * BYTES_PER_FIELD_ELEMENT {
+                if eigenda_blob.blob.len() > blob_length_fe * BYTES_PER_FIELD_ELEMENT {
                     return Err(
                         anyhow!("data size from cert is less than locally crafted blob cert data size {} locally crafted size {}", 
                             eigenda_blob.blob.len(), blob_length_fe * BYTES_PER_FIELD_ELEMENT));
@@ -202,10 +202,10 @@ where
 
         // implementation requires eigenda_blob to be multiple of 32
         assert!(eigenda_blob.blob.len() % 32 == 0);
-        let fetch_num_element = eigenda_blob.blob.len() / BYTES_PER_FIELD_ELEMENT;
+        let fetch_num_element = (eigenda_blob.blob.len() / BYTES_PER_FIELD_ELEMENT) as u64;
 
         // populate every field element (fe) onto database
-        for i in 0..blob_length_fe {
+        for i in 0..blob_length_fe as u64 {
             blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
             let blob_key_hash = keccak256(blob_key.as_ref());
 
@@ -217,7 +217,7 @@ where
             if i < fetch_num_element {
                 kv_write_lock.set(
                     PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                    eigenda_blob.blob[i << 5..(i + 1) << 5].to_vec(),
+                    eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
                 )?;
             } else {
                 // empty bytes for the missing part between the re-encoded blob and claimed blob length from the header
@@ -235,7 +235,7 @@ where
         };
 
         // Write the KZG Proof as the last element, needed for ZK
-        blob_key[88..].copy_from_slice((fetch_num_element).to_be_bytes().as_ref());
+        blob_key[88..].copy_from_slice((blob_length_fe as u64).to_be_bytes().as_ref());
         let blob_key_hash = keccak256(blob_key.as_ref());
         kv_write_lock.set(
             PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),

@@ -69,7 +69,6 @@ where
             return Ok(());
         }
 
-        info!(target: "eigenda-blobsource", "going to fetch through eigenda fetcher");
         let cert_version: CertVersion = eigenda_commitment.as_ref()[3].into();
         let data = match cert_version {
             CertVersion::Version1 => self.eigenda_fetcher.get_blob(eigenda_commitment).await,
@@ -93,7 +92,8 @@ where
 
                 Ok(())
             }
-            Err(_) => {
+            Err(e) => {
+                error!("EigenDA blob source fetching error {}", e);
                 self.open = true;
                 Ok(())
             }

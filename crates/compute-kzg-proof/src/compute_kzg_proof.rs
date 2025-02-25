@@ -16,7 +16,7 @@ use rust_kzg_bn254_prover::srs::SRS;
 /// could refactor in the future, such that both host and client can compute the proof
 pub fn compute_kzg_proof(blob: &[u8]) -> Result<Bytes, KzgError> {
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
-    let srs = SRS::new("resources/g1.32mb.point", 268435456, 1024).unwrap();
+    let srs = SRS::new("resources/g1.point", 268435456, 1024).unwrap();
     let mut kzg = KZG::new();
 
     let input = Blob::new(blob);

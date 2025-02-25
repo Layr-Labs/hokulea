@@ -100,7 +100,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             blob[(i as usize) << 5..(i as usize + 1) << 5].copy_from_slice(field_element.as_ref());
         }
 
-        info!("cert_blob_info blob {:?}", blob);
+        info!("cert_blob_info blob End {:?}", blob);
 
         Ok(blob.into())
     }
