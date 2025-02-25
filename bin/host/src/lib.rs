@@ -41,7 +41,7 @@ pub async fn start_server_and_native_client(cfg: HostCli) -> Result<i32> {
         let (l1_provider, blob_provider, l2_provider) = cfg.create_providers().await?;
         let eigenda_blob_provider = OnlineEigenDABlobProvider::new_http(
             //EIGENDA_ADDRESS.to_string(),
-            "http://127.0.0.1:3100".to_string(),
+            "http://127.0.0.1:33037".to_string(),
         )
         .await
         .map_err(|e| anyhow!("Failed to load eigenda blob provider configuration: {e}"))?;
