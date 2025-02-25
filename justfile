@@ -11,7 +11,7 @@ default:
 # machete runs very fast but is less accurate, on by default.
 # udeps is slower (it compiles code) but more accurate, off by default.
 unused-deps slow="false":
-  cargo +nightly machete
+  cargo machete
   # cargo +nightly udeps
 
 # Lint the workspace for all available targets
