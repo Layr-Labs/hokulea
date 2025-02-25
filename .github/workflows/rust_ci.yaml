@@ -101,7 +101,7 @@ jobs:
       - name: Install cargo-machete
         run: cargo install cargo-machete
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.84.0
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
