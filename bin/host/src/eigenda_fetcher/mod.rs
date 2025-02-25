@@ -80,7 +80,7 @@ where
 
     /// Set the last hint to be received.
     pub fn hint(&mut self, hint: &str) -> Result<()> {
-        trace!(target: "fetcher_with_eigenda_support", "Received hint: {hint}");
+        warn!(target: "fetcher_with_eigenda_support", "Received hint: {hint}");
         let (hint_type, _) = ExtendedHint::parse(hint)?.split();
         // We route the hint to the right fetcher based on the hint type.
         match hint_type {
@@ -157,11 +157,11 @@ where
 
             // Proxy should return a cert whose data_length measured in symbol (i.e. 32 Bytes)
             let blob_length = cert_blob_info.blob_header.data_length as u64;
-            warn!("blob length: {:?}", blob_length);
 
             let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref());
 
-            if eigenda_blob.blob.len() != blob_length as usize * BYTES_PER_FIELD_ELEMENT {
+            if eigenda_blob.blob.len() > blob_length as usize * BYTES_PER_FIELD_ELEMENT {
+                warn!("eigenda_blob.blob.len() {:?}   blob_length {:?}", eigenda_blob.blob.len(), blob_length);
                 return Err(
                     anyhow!("data size from cert  does not equal to reconstructed data codec_rollup_data_len {} blob size {}", 
                         eigenda_blob.blob.len(), blob_length as usize * BYTES_PER_FIELD_ELEMENT));
@@ -176,9 +176,7 @@ where
             blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
             blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
 
-            trace!("cert_blob_info blob_length {:?}", blob_length);
-
-            for i in 0..blob_length {
+            for i in 0..blob_length as u64 {            
                 blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
                 let blob_key_hash = keccak256(blob_key.as_ref());
 
@@ -186,10 +184,21 @@ where
                     PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
                     blob_key.into(),
                 )?;
-                kv_write_lock.set(
-                    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                    eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
-                )?;
+
+                if i >= eigenda_blob.blob.len() as u64 / BYTES_PER_FIELD_ELEMENT as u64 {
+                    let empty_bytes = vec![0u8; 32];
+                    kv_write_lock.set(
+                        PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                        empty_bytes,
+                    )?;
+                } else {
+                    kv_write_lock.set(
+                        PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                        eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                    )?;
+                }
+                
+                warn!("host index {:?}", i);
             }
 
             // TODO proof is at the random point, but we need to figure out where to generate

@@ -62,25 +62,28 @@ where
         // then acutally use ethereum da to fetch. items are Bytes
         let cert = self.ethereum_source.next(block_ref).await?;
 
+        /*
+
         // verify if cert is too stale
         let cert_blob_info = BlobInfo::decode(&mut &cert.as_ref()[4..]).unwrap();
-        info!("cert_blob_info {:?}", cert_blob_info);
+        info!("cert_blob_info EigenDADataSource {:?}", cert_blob_info);
         let rbn = cert_blob_info
             .blob_verification_proof
             .batch_medatada
             .batch_header
             .reference_block_number as u64;
-        let l1_block_number = block_ref.number;
+        //let l1_block_number = block_ref.number;
 
         // check staleness
         // TODO: this would require the op-rollup to follow the same pattern
         // but passing blockId to proxy which implement the logic,
         // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
-        if rbn + STALE_GAP < l1_block_number {
+        //if rbn + STALE_GAP < l1_block_number {
             // TODO: double check
-            return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
-        }
-
+        //    return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
+        //}
+        */
+        
         let eigenda_blob = self.eigenda_source.next(&cert).await?;
         Ok(eigenda_blob)
     }
