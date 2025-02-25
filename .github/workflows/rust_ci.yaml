@@ -99,9 +99,9 @@ jobs:
         with:
           tool: just, cargo-udeps
       - name: Install cargo-machete
-        run: cargo install cargo-machete
+        run: cargo +nightly install cargo-machete
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
