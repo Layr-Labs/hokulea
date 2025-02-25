@@ -12,6 +12,8 @@ use rust_kzg_bn254_verifier::batch;
 use tracing::info;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
+/// Preloader implements EigenDABlobProvider, so it can be passed into hokulea client that
+/// functions as a eigenda blob provider.
 /// (P0) Validate validity proof for eigenda cert is correct, regardless if cert itself is correct
 /// (P1) Given a cert is valid, then blob and the commitment in the cert must be consistent
 /// (P2) Given a cert is invalid, then blob must be empty
@@ -68,7 +70,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
 
 #[async_trait]
 impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
-    // TODO investigate if create a speical error type EigenDABlobProviderError
+    // TODO investigate if create a special error type EigenDABlobProviderError
     type Error = OracleProviderError;
 
     /// Fetches a blob for V1

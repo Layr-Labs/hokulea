@@ -108,10 +108,7 @@ where
                 }
                 let eigenda_blob = self.eigenda_source.next(&cert).await?;
                 Ok(eigenda_blob)
-            }
-            CertVersion::Unknown => {
-                return Err(PipelineErrorKind::Temporary(PipelineError::EndOfSource));
-            }
+            }            
         }
     }
 
