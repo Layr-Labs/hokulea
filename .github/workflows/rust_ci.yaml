@@ -98,10 +98,10 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: just, cargo-udeps
-      - name: Machete
-        uses: bnjbvr/cargo-machete@main
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Install cargo-machete
+        run: cargo +nightly install cargo-machete  
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
