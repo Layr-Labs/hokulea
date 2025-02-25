@@ -2,9 +2,9 @@
 
 use anyhow::Result;
 use clap::Parser;
+use hokulea_host::args::EigenDaArgs;
 use hokulea_host::start_server_and_native_client;
 use kona_host::{init_tracing_subscriber, start_server};
-use hokulea_host::args::EigenDaArgs;
 
 use tracing::{error, info};
 
@@ -16,7 +16,12 @@ async fn main() -> Result<()> {
     if eigenda_args.kona_cfg.server {
         start_server(eigenda_args.kona_cfg).await?;
     } else {
-        let status = match start_server_and_native_client(eigenda_args.kona_cfg, eigenda_args.eigenda_proxy_address.unwrap()).await {
+        let status = match start_server_and_native_client(
+            eigenda_args.kona_cfg,
+            eigenda_args.eigenda_proxy_address.unwrap(),
+        )
+        .await
+        {
             Ok(status) => status,
             Err(e) => {
                 error!(target: "hokulea_host", "Exited with an error: {:?}", e);

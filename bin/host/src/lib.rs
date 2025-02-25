@@ -35,7 +35,10 @@ use tracing::info;
 /// - `Ok(exit_code)` if the client program exits successfully.
 /// - `Err(_)` if the client program failed to execute, was killed by a signal, or the host program
 ///   exited first.
-pub async fn start_server_and_native_client(cfg: HostCli, eigenda_proxy_address: String) -> Result<i32> {
+pub async fn start_server_and_native_client(
+    cfg: HostCli,
+    eigenda_proxy_address: String,
+) -> Result<i32> {
     let hint_chan = BidirectionalChannel::new()?;
     let preimage_chan = BidirectionalChannel::new()?;
     let kv_store = cfg.construct_kv_store();
@@ -43,7 +46,7 @@ pub async fn start_server_and_native_client(cfg: HostCli, eigenda_proxy_address:
         let (l1_provider, blob_provider, l2_provider) = cfg.create_providers().await?;
         let eigenda_blob_provider = OnlineEigenDABlobProvider::new_http(
             //EIGENDA_ADDRESS.to_string(),
-        eigenda_proxy_address,
+            eigenda_proxy_address,
         )
         .await
         .map_err(|e| anyhow!("Failed to load eigenda blob provider configuration: {e}"))?;
