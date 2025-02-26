@@ -33,6 +33,9 @@ pub use certificate::BlobInfo;
 mod version;
 pub use version::CertVersion;
 
+mod cert_metadata;
+pub use cert_metadata::{CertMetaData, CertMetaParseError};
+
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;
 pub use constant::PAYLOAD_ENCODING_VERSION_0;

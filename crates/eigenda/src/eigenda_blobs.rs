@@ -1,6 +1,7 @@
 //! Blob Data Source
 
 use crate::traits::EigenDABlobProvider;
+use crate::BlobInfo;
 use crate::{eigenda_data::EigenDABlobData, CertVersion};
 use alloy_rlp::Decodable;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
@@ -69,14 +70,29 @@ where
             return Ok(());
         }
 
-        let cert_version: CertVersion = eigenda_commitment.as_ref()[3].into();
+        // cert should at least contain 32 bytes for header + 4 bytes for commitment type metadata
+        // don't the case when data empty, TODO need further thoughts
+        if eigenda_commitment.len() <= 32 + 4 {
+            // TODO define custom error for EigenDABlobProviderError
+            return Err(BlobProviderError::SlotDerivation);
+        }
+        let mut meta_data = [0u8; 4];
+        meta_data.copy_from_slice(&eigenda_commitment[..4]);
+
+        // the first four bytes are metadata, like cert version, OP generic commitement
+        // see https://github.com/Layr-Labs/eigenda-proxy/blob/main/commitments/mode.go#L39
+        // the first byte my guess is the OP
+        let cert_version: CertVersion = eigenda_commitment.as_ref()[3].try_into().unwrap();
         let data = match cert_version {
-            CertVersion::Version1 => self.eigenda_fetcher.get_blob(eigenda_commitment).await,
+            CertVersion::Version1 => {
+                let eigenda_v1_cert = BlobInfo::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
+                self.eigenda_fetcher.get_blob(meta_data, &eigenda_v1_cert).await
+            }
             CertVersion::Version2 => {
                 let eigenda_v2_cert =
                     EigenDAV2Cert::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
-                self.eigenda_fetcher.get_blob_v2(&eigenda_v2_cert).await
-            }
+                self.eigenda_fetcher.get_blob_v2(meta_data, &eigenda_v2_cert).await
+            },            
         };
 
         match data {
