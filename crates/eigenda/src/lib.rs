@@ -34,7 +34,7 @@ mod version;
 pub use version::CertVersion;
 
 mod cert_metadata;
-pub use cert_metadata::{CertMetaData, CertMetaParseError};
+pub use cert_metadata::{CertMetaParseError, CertMetadata};
 
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;

@@ -85,14 +85,19 @@ where
         let cert_version: CertVersion = eigenda_commitment.as_ref()[3].try_into().unwrap();
         let data = match cert_version {
             CertVersion::Version1 => {
-                let eigenda_v1_cert = BlobInfo::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
-                self.eigenda_fetcher.get_blob(meta_data, &eigenda_v1_cert).await
+                let eigenda_v1_cert =
+                    BlobInfo::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
+                self.eigenda_fetcher
+                    .get_blob(meta_data, &eigenda_v1_cert)
+                    .await
             }
             CertVersion::Version2 => {
                 let eigenda_v2_cert =
                     EigenDAV2Cert::decode(&mut &eigenda_commitment.as_ref()[4..]).unwrap();
-                self.eigenda_fetcher.get_blob_v2(meta_data, &eigenda_v2_cert).await
-            },            
+                self.eigenda_fetcher
+                    .get_blob_v2(meta_data, &eigenda_v2_cert)
+                    .await
+            }
         };
 
         match data {

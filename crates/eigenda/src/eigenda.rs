@@ -1,10 +1,8 @@
 //! Contains the [EigenDADataSource], which is a concrete implementation of the
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
-
-use crate::cert_metadata::parse_cert_metadata;
 use crate::eigenda_blobs::EigenDABlobSource;
 use crate::traits::EigenDABlobProvider;
-use crate::{cert_metadata, BlobInfo, CertVersion};
+use crate::{BlobInfo, CertMetadata, CertVersion};
 use alloy_rlp::Decodable;
 
 use alloc::{boxed::Box, fmt::Debug};
@@ -67,22 +65,20 @@ where
             // if data is ethereum block
             // see https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/protocol/src/frame.rs#L140
             return Ok(data);
-        } else if data[0] != 0x1 {
-            // do not handle any other type of data
-            error!("failed to get version");
+        }
+
+        let cert_metadata = match CertMetadata::parse_cert_metadata(&data[..4]) {
+            Ok(c) => c,
             // same handling procudure as in kona
             // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L130
             // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L165
-            return Err(PipelineError::NotEnoughData.temp());
-        }
-        let cert_metadata = match parse_cert_metadata(&data[..4]) {
-            Ok(c) => c,
-            Err(_e) => return Err(PipelineError::NotEnoughData.temp()),
-        };  
+            Err(e) => {
+                error!("failed to get version {}", e);
+                return Err(PipelineError::NotEnoughData.temp());
+            }
+        };
 
-        // must be tru
-        let cert_version: CertVersion = cert_metadata[3].try_into().unwrap();
-        match cert_version {
+        match cert_metadata.cert_version {
             CertVersion::Version1 => {
                 // TODO if punctuality is checked elsewhere, then we don't need to deserialize here
                 let cert_blob_info = BlobInfo::decode(&mut &data.as_ref()[4..]).unwrap();
@@ -124,7 +120,7 @@ where
                 //}
                 let eigenda_blob = self.eigenda_source.next(&data).await?;
                 Ok(eigenda_blob)
-            },            
+            }
         }
     }
 

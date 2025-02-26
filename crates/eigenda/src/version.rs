@@ -4,9 +4,9 @@ use crate::CertMetaParseError;
 /// The version is needed to decode the Cert from serialiezd bytes
 /// Once a valid blob is retrieved, both versions use the identical
 /// logic to derive the rollup channel frame from eigenda blobs
-pub enum CertVersion {    
+pub enum CertVersion {
     /// eigenda cert v1 version
-    Version1,
+    Version1 = 0,
     /// eigenda cert v2 version
     Version2,
 }
@@ -19,5 +19,11 @@ impl TryFrom<u8> for CertVersion {
             1 => Ok(Self::Version2),
             _ => Err(CertMetaParseError::UnsupportedCertVersionType),
         }
+    }
+}
+
+impl From<CertVersion> for u8 {
+    fn from(version: CertVersion) -> Self {
+        version as u8
     }
 }

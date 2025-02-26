@@ -12,8 +12,8 @@ use hokulea_compute_kzg_proof::compute_kzg_proof;
 use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::EigenDABlobData;
 use hokulea_eigenda::{BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0};
-use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use hokulea_proof::get_eigenda_field_element_key_part;
+use hokulea_proof::hint::{ExtendedHint, ExtendedHintType};
 use kona_host::{blobs::OnlineBlobProvider, fetcher::Fetcher, kv::KeyValueStore};
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use std::sync::Arc;
@@ -203,7 +203,7 @@ where
         for i in 0..blob_length_fe as u64 {
             let index_bytes: [u8; 8] = i.to_be_bytes();
             field_element_key[72..].copy_from_slice(&index_bytes);
-            
+
             let field_element_key_hash = keccak256(field_element_key.as_ref());
 
             kv_write_lock.set(
@@ -213,13 +213,15 @@ where
 
             if i < fetch_num_element {
                 kv_write_lock.set(
-                    PreimageKey::new(*field_element_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                    PreimageKey::new(*field_element_key_hash, PreimageKeyType::GlobalGeneric)
+                        .into(),
                     eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
                 )?;
             } else {
                 // empty bytes for the missing part between the re-encoded blob and claimed blob length from the header
                 kv_write_lock.set(
-                    PreimageKey::new(*field_element_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                    PreimageKey::new(*field_element_key_hash, PreimageKeyType::GlobalGeneric)
+                        .into(),
                     vec![0u8; 32],
                 )?;
             }
