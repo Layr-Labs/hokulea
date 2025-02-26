@@ -141,11 +141,11 @@ where
         let (hint_type, hint_data) = hint.split();
         trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
 
-        let cert = hint_data;
+        let proxy_request_key = hint_data;
         // Fetch the blob sidecar from the blob provider.
         let rollup_data = self
             .eigenda_blob_provider
-            .fetch_eigenda_blob(&cert)
+            .fetch_eigenda_blob(&proxy_request_key)
             .await
             .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
@@ -153,14 +153,11 @@ where
         // https://github.com/Layr-Labs/eigenda/blob/master/contracts/src/core/EigenDACertVerifier.sol#L165
         // then store empty byte in the kv_store
 
-
-        let mut field_element_key = get_eigenda_field_element_key_part(&cert);
-
         let (eigenda_blob, blob_length_fe) = match hint_type {
             ExtendedHintType::EigenDACertV1 => {
                 // the fourth because 0x01010000 in the beginning is metadata
-                let item_slice = cert.as_ref();
-                let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
+                let cert_rlp_byte = proxy_request_key.as_ref();
+                let cert_blob_info = BlobInfo::decode(&mut &cert_rlp_byte[4..]).unwrap();
 
                 // Proxy should return a cert whose data_length measured in symbol (i.e. 32 Bytes)
                 let blob_length_fe = cert_blob_info.blob_header.data_length as usize;
@@ -176,8 +173,8 @@ where
             },
             ExtendedHintType::EigenDACertV2 => {
                 // the fourth because 0x01010000 in the beginning is metadata
-                let item_slice = cert.as_ref();
-                let v2_cert = EigenDAV2Cert::decode(&mut &item_slice[4..]).unwrap();
+                let cert_rlp_byte = proxy_request_key.as_ref();
+                let v2_cert = EigenDAV2Cert::decode(&mut &cert_rlp_byte[4..]).unwrap();
 
                 let blob_length_fe = v2_cert.blob_inclusion_info.blob_certificate.blob_header.commitment.length as usize;
 
@@ -200,27 +197,29 @@ where
         assert!(eigenda_blob.blob.len() % 32 == 0);
         let fetch_num_element = (eigenda_blob.blob.len() / BYTES_PER_FIELD_ELEMENT) as u64;
 
+        let mut field_element_key = get_eigenda_field_element_key_part(&proxy_request_key);
+
         // populate every field element (fe) onto database
         for i in 0..blob_length_fe as u64 {
-            field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
-
+            let index_bytes: [u8; 8] = i.to_be_bytes();
+            field_element_key[72..].copy_from_slice(&index_bytes);
             
-            let blob_key_hash = keccak256(field_element_key.as_ref());
+            let field_element_key_hash = keccak256(field_element_key.as_ref());
 
             kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
+                PreimageKey::new(*field_element_key_hash, PreimageKeyType::Keccak256).into(),
                 field_element_key.into(),
             )?;
 
             if i < fetch_num_element {
                 kv_write_lock.set(
-                    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                    PreimageKey::new(*field_element_key_hash, PreimageKeyType::GlobalGeneric).into(),
                     eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
                 )?;
             } else {
                 // empty bytes for the missing part between the re-encoded blob and claimed blob length from the header
                 kv_write_lock.set(
-                    PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                    PreimageKey::new(*field_element_key_hash, PreimageKeyType::GlobalGeneric).into(),
                     vec![0u8; 32],
                 )?;
             }
