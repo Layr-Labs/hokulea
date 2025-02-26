@@ -4,12 +4,12 @@ use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
+use hokulea_eigenda::BlobInfo;
 use hokulea_eigenda::EigenDABlobProvider;
 use kona_preimage::errors::PreimageOracleError;
 use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
-use hokulea_eigenda::BlobInfo;
 use tracing::info;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
@@ -74,13 +74,21 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
     type Error = OracleProviderError;
 
     /// Fetches a blob for V1
-    async fn get_blob(&mut self, _meta_data: [u8; 4], _cert: &BlobInfo) -> Result<Blob, Self::Error> {
+    async fn get_blob(
+        &mut self,
+        _meta_data: [u8; 4],
+        _cert: &BlobInfo,
+    ) -> Result<Blob, Self::Error> {
         unimplemented!()
     }
 
     /// Fetches a blob for V2 using preloaded data
     /// Return an error if cert does not match the immeditate next item
-    async fn get_blob_v2(&mut self, _meta_data: [u8; 4], cert: &EigenDAV2Cert) -> Result<Blob, Self::Error> {
+    async fn get_blob_v2(
+        &mut self,
+        _meta_data: [u8; 4],
+        cert: &EigenDAV2Cert,
+    ) -> Result<Blob, Self::Error> {
         let (eigenda_cert, eigenda_blob) = self.entries.pop().unwrap();
         if eigenda_cert == *cert {
             Ok(eigenda_blob)
