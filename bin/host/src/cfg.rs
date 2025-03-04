@@ -56,7 +56,7 @@ impl SingleChainHostWithEigenDA {
     {
         let kv_store = self.kona_cfg.create_key_value_store()?;
 
-        let task_handle = if self.kona_cfg.is_offline() {
+        let task_handle = if self.is_offline() {
             task::spawn(
                 PreimageServer::new(
                     OracleServer::new(preimage),
@@ -123,6 +123,13 @@ impl SingleChainHostWithEigenDA {
 
         // Bubble up the exit status of the client program if execution completes.
         std::process::exit(client_result.is_err() as i32)
+    }
+}
+
+impl SingleChainHostWithEigenDA {
+    /// Returns `true` if the host is running in offline mode.
+    pub const fn is_offline(&self) -> bool {
+        self.kona_cfg.is_offline() && self.eigenda_proxy_address.is_none()
     }
 }
 
