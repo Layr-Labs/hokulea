@@ -1,55 +1,13 @@
 //! This module contains the [ExtendedHintType], which adds an EigenDACommitment case to kona's [HintType] enum.
 
-use alloc::{
-    string::{String, ToString},
-    vec::Vec,
-};
-use alloy_primitives::{hex, Bytes};
+use alloc::{string::String, vec::Vec};
+use alloy_primitives::hex;
 use core::fmt::Display;
 use kona_proof::{errors::HintParsingError, HintType};
-
-/// A [ExtendedHint] is parsed in the format `<hint_type> <hint_data>`, where `<hint_type>` is a string that
-/// represents the type of hint, and `<hint_data>` is the data associated with the hint (bytes
-/// encoded as hex UTF-8).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtendedHint {
-    /// The type of hint.
-    pub hint_type: ExtendedHintType,
-    /// The data associated with the hint.
-    pub hint_data: Bytes,
-}
-
-impl ExtendedHint {
-    /// Parses a hint from a string.
-    pub fn parse(s: &str) -> Result<Self, HintParsingError> {
-        let mut parts = s.split(' ').collect::<Vec<_>>();
-
-        if parts.len() != 2 {
-            return Err(HintParsingError(alloc::format!(
-                "Invalid hint format: {}",
-                s
-            )));
-        }
-
-        let hint_type = ExtendedHintType::try_from(parts.remove(0))?;
-        let hint_data = hex::decode(parts.remove(0))
-            .map_err(|e| HintParsingError(e.to_string()))?
-            .into();
-
-        Ok(Self {
-            hint_type,
-            hint_data,
-        })
-    }
-
-    /// Splits the [ExtendedHint] into its components.
-    pub fn split(self) -> (ExtendedHintType, Bytes) {
-        (self.hint_type, self.hint_data)
-    }
-}
+use std::str::FromStr;
 
 /// The [ExtendedHintType] extends the [HintType] enum and is used to specify the type of hint that was received.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ExtendedHintType {
     Original(HintType),
     EigenDACertV1,
@@ -64,14 +22,14 @@ impl ExtendedHintType {
     }
 }
 
-impl TryFrom<&str> for ExtendedHintType {
-    type Error = HintParsingError;
+impl FromStr for ExtendedHintType {
+    type Err = HintParsingError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
         match value {
             "eigenda-certificate-v1" => Ok(Self::EigenDACertV1),
             "eigenda-certificate-v2" => Ok(Self::EigenDACertV2),
-            _ => Ok(Self::Original(HintType::try_from(value)?)),
+            _ => Ok(Self::Original(HintType::from_str(value)?)),
         }
     }
 }

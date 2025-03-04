@@ -1,5 +1,6 @@
 use alloy_primitives::B256;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
+
 use risc0_zkvm::is_dev_mode;
 use risc0_zkvm::Receipt;
 
