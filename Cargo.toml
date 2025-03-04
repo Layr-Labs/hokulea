@@ -3,16 +3,16 @@ resolver = "2"
 members = ["bin/*", "crates/*"]
 
 [workspace.dependencies]
-kona-client = { path = "../kona/bin/client", default-features = false, version = "0.1.0" }
-kona-host = { path = "../kona/bin/host", default-features = false, features = ["single"], version = "0.1.0" }
-kona-derive = { path = "../kona/crates/protocol/derive", version = "0.2.3" }
-kona-driver = { path = "../kona/crates/protocol/driver", version = "0.2.3" }
-kona-executor = { path = "../kona/crates/proof/executor", version = "0.2.3" }
-kona-mpt = { path = "../kona/crates/proof/mpt", features = ["serde"], version = "0.1.2" }
-kona-preimage = { path = "../kona/crates/proof/preimage", features = ["serde", "rkyv", "std"], version = "0.2.1" }
-kona-proof = { path = "../kona/crates/proof/proof", version = "0.2.3" }
-kona-std-fpvm = { path = "../kona/crates/proof/std-fpvm", version = "0.1.2" }
-kona-providers-alloy = { path = "../kona/crates/services/providers-alloy", version = "0.1.0" }
+kona-client = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", default-features = false, version = "0.1.0" }
+kona-host = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", default-features = false, features = ["single"], version = "0.1.0" }
+kona-derive = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
+kona-driver = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
+kona-executor = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
+kona-mpt = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", features = ["serde"], version = "0.1.2" }
+kona-preimage = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", features = ["serde", "rkyv", "std"], version = "0.2.1" }
+kona-proof = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
+kona-std-fpvm = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.1.2" }
+kona-providers-alloy = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.1.0" }
 
 # Workspace
 hokulea-client = { path = "bin/client", version = "0.1.0", default-features = false }
