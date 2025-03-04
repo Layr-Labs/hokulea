@@ -1,5 +1,5 @@
 use crate::eigenda_blobs::OnlineEigenDABlobProvider;
-use crate::handler::SingleChainHintHandleWithEigenDA;
+use crate::handler::SingleChainHintHandlerWithEigenDA;
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use hokulea_proof::hint::ExtendedHintType;
@@ -64,7 +64,7 @@ impl SingleChainHostWithEigenDA {
                 self.clone(),
                 kv_store.clone(),
                 providers,
-                SingleChainHintHandleWithEigenDA,
+                SingleChainHintHandlerWithEigenDA,
             );
 
             task::spawn(

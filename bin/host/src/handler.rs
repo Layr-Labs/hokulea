@@ -21,10 +21,10 @@ use hokulea_eigenda::{BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0};
 
 /// The [HintHandler] for the [SingleChainHostWithEigenDA].
 #[derive(Debug, Clone, Copy)]
-pub struct SingleChainHintHandleWithEigenDA;
+pub struct SingleChainHintHandlerWithEigenDA;
 
 #[async_trait]
-impl HintHandler for SingleChainHintHandleWithEigenDA {
+impl HintHandler for SingleChainHintHandlerWithEigenDA {
     type Cfg = SingleChainHostWithEigenDA;
 
     /// A wrapper that route eigenda hint and kona hint
@@ -128,7 +128,7 @@ pub async fn fetch_eigenda_hint(
             blob_key[32..64].copy_from_slice(&y);
             (eigenda_blob, blob_length_fe, blob_key)
         },
-        _ => panic!("Invalid hint type: {hint_type}. SingleChainHintHandleWithEigenDA.prefetch only supports EigenDACommitment hints."),
+        _ => panic!("Invalid hint type: {hint_type}. SingleChainHintHandlerWithEigenDA.prefetch only supports EigenDACommitment hints."),
     };
 
     // Acquire a lock on the key-value store and set the preimages.
