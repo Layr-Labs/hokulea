@@ -70,7 +70,8 @@ where
     B: BlobProvider + Send + Sync + Debug + Clone,
     A: EigenDABlobProvider + Send + Sync + Debug + Clone,
 {
-    /// Constructs a new oracle-backed derivation pipeline.
+    /// Constructs a new oracle-backed derivation pipeline. Follow the pattern from kona
+    /// <https://github.com/op-rs/kona/blob/b3eef14771015f6f7427f4f05cf70e508b641802/crates/proof/proof/src/l1/pipeline.rs#L61-L68>
     pub fn new(
         cfg: Arc<RollupConfig>,
         sync_start: Arc<RwLock<PipelineCursor>>,

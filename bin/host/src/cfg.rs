@@ -36,6 +36,7 @@ pub struct SingleChainHostWithEigenDA {
 
 impl SingleChainHostWithEigenDA {
     /// Starts the [SingleChainHostWithEigenDA] application.
+    /// This is copy from 
     pub async fn start(self) -> Result<()> {
         if self.kona_cfg.server {
             let hint = FileChannel::new(FileDescriptor::HintRead, FileDescriptor::HintWrite);
