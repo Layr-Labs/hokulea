@@ -23,8 +23,14 @@ pub struct SingleChainHostWithEigenDA {
     pub kona_cfg: kona_host::single::SingleChainHost,
 
     /// URL of the EigenDA RPC endpoint.
-    #[clap(long, env)]
-    #[arg(required = true)]
+    #[clap(
+        long,
+        visible_alias = "eigenda",
+        requires = "l2_node_address",
+        requires = "l1_node_address",
+        requires = "l1_beacon_address",
+        env
+    )]
     pub eigenda_proxy_address: Option<String>,
 }
 
@@ -85,8 +91,9 @@ impl SingleChainHostWithEigenDA {
         let kona_providers = self.kona_cfg.create_providers().await?;
 
         let eigenda_blob_provider = OnlineEigenDABlobProvider::new_http(
-            //EIGENDA_ADDRESS.to_string(),
-            self.eigenda_proxy_address.clone().unwrap(),
+            self.eigenda_proxy_address
+                .clone()
+                .ok_or(anyhow!("EigenDA API URL must be set"))?,
         )
         .await
         .map_err(|e| anyhow!("Failed to load eigenda blob provider configuration: {e}"))?;

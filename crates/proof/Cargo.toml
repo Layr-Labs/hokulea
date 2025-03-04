@@ -23,7 +23,6 @@ ark-ff.workspace = true
 alloy-primitives.workspace = true
 
 # Op Alloy
-# op-alloy-genesis = { workspace = true, features = ["serde"] }
 alloy-rlp.workspace = true
 maili-protocol.workspace = true
 maili-genesis.workspace = true
