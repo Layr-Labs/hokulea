@@ -23,10 +23,11 @@ ark-ff.workspace = true
 alloy-primitives.workspace = true
 
 # Op Alloy
-op-alloy-rpc-types-engine.workspace = true
-op-alloy-genesis = { workspace = true, features = ["serde"] }
+# op-alloy-genesis = { workspace = true, features = ["serde"] }
 alloy-rlp.workspace = true
 maili-protocol.workspace = true
+maili-genesis.workspace = true
+maili-rpc.workspace = true
 
 # ZKVM
 risc0-zkvm.workspace = true
@@ -35,3 +36,4 @@ tracing.workspace = true
 
 # General
 async-trait.workspace = true
+spin.workspace = true

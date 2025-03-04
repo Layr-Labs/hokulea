@@ -17,9 +17,10 @@ use kona_derive::{
 use kona_driver::{DriverPipeline, PipelineCursor};
 use kona_preimage::CommsClient;
 use kona_proof::{l1::OracleL1ChainProvider, l2::OracleL2ChainProvider, FlushableCache};
+use maili_genesis::{RollupConfig, SystemConfig};
 use maili_protocol::{BlockInfo, L2BlockInfo};
-use op_alloy_genesis::{RollupConfig, SystemConfig};
-use op_alloy_rpc_types_engine::OpAttributesWithParent;
+use maili_rpc::OpAttributesWithParent;
+use spin::RwLock;
 
 /// An oracle-backed payload attributes builder for the `AttributesQueue` stage of the derivation
 /// pipeline.
@@ -72,7 +73,7 @@ where
     /// Constructs a new oracle-backed derivation pipeline.
     pub fn new(
         cfg: Arc<RollupConfig>,
-        sync_start: PipelineCursor,
+        sync_start: Arc<RwLock<PipelineCursor>>,
         caching_oracle: Arc<O>,
         blob_provider: B,
         chain_provider: OracleL1ChainProvider<O>,
@@ -94,7 +95,7 @@ where
             .l2_chain_provider(l2_chain_provider)
             .chain_provider(chain_provider)
             .builder(attributes)
-            .origin(sync_start.origin())
+            .origin(sync_start.read().origin())
             .build();
         Self {
             pipeline,
