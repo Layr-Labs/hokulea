@@ -8,7 +8,6 @@ edition = "2021"
 hokulea-proof.workspace = true
 hokulea-client.workspace = true
 hokulea-eigenda.workspace = true
-eigenda-v2-struct-rust.workspace = true
 
 # KZG Cryptography
 #hokulea-compute-kzg-proof.workspace = true
