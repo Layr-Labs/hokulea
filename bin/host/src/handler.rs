@@ -13,6 +13,7 @@ use kona_preimage::{PreimageKey, PreimageKeyType};
 use kona_proof::Hint;
 use tracing::trace;
 
+use hokulea_proof::get_eigenda_field_element_key_part;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 //use hokulea_compute_kzg_proof::compute_kzg_proof;
 use hokulea_eigenda::BlobInfo;
@@ -82,7 +83,9 @@ pub async fn fetch_eigenda_hint(
     // https://github.com/Layr-Labs/eigenda/blob/master/contracts/src/core/EigenDACertVerifier.sol#L165
     // then store empty byte in the kv_store
 
-    let (eigenda_blob, blob_length_fe, mut blob_key) = match hint_type {
+    let mut field_element_key = get_eigenda_field_element_key_part(&cert);
+
+    let (eigenda_blob, blob_length_fe) = match hint_type {
         ExtendedHintType::EigenDACertV1 => {
             // the fourth because 0x01010000 in the beginning is metadata
             let item_slice = cert.as_ref();
@@ -98,12 +101,7 @@ pub async fn fetch_eigenda_hint(
                     anyhow!("data size from cert is less than locally crafted blob cert data size {} locally crafted size {}", 
                         eigenda_blob.blob.len(), blob_length_fe * BYTES_PER_FIELD_ELEMENT));
             }
-
-            //  TODO figure out the key size, most likely dependent on smart contract parsing
-            let mut blob_key = [0u8; 96];
-            blob_key[..32].copy_from_slice(cert_blob_info.blob_header.commitment.x.as_ref());
-            blob_key[32..64].copy_from_slice(cert_blob_info.blob_header.commitment.y.as_ref());
-            (eigenda_blob, blob_length_fe, blob_key)
+            (eigenda_blob, blob_length_fe)
         },
         ExtendedHintType::EigenDACertV2 => {
             // the fourth because 0x01010000 in the beginning is metadata
@@ -119,16 +117,9 @@ pub async fn fetch_eigenda_hint(
                     anyhow!("data size from cert is less than locally crafted blob cert data size {} locally crafted size {}", 
                         eigenda_blob.blob.len(), blob_length_fe * BYTES_PER_FIELD_ELEMENT));
             }
-
-            let x: [u8; 32] = v2_cert.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.x.to_be_bytes();
-            let y: [u8; 32] = v2_cert.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.y.to_be_bytes();
-
-            let mut blob_key = [0u8; 96];
-            blob_key[..32].copy_from_slice(&x);
-            blob_key[32..64].copy_from_slice(&y);
-            (eigenda_blob, blob_length_fe, blob_key)
+            (eigenda_blob, blob_length_fe)
         },
-        _ => panic!("Invalid hint type: {hint_type}. SingleChainHintHandlerWithEigenDA.prefetch only supports EigenDACommitment hints."),
+        _ => panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints."),
     };
 
     // Acquire a lock on the key-value store and set the preimages.
@@ -140,12 +131,14 @@ pub async fn fetch_eigenda_hint(
 
     // populate every field element (fe) onto database
     for i in 0..blob_length_fe as u64 {
-        blob_key[88..].copy_from_slice(i.to_be_bytes().as_ref());
-        let blob_key_hash = keccak256(blob_key.as_ref());
+        field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
+
+        
+        let blob_key_hash = keccak256(field_element_key.as_ref());
 
         kv_write_lock.set(
             PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-            blob_key.into(),
+            field_element_key.into(),
         )?;
 
         if i < fetch_num_element {
@@ -161,7 +154,8 @@ pub async fn fetch_eigenda_hint(
             )?;
         }
     }
-    /*    Compute KZG proof
+
+    /*
     // Compute kzg proof for the entire blob on a deterministic random point
     let kzg_proof = match compute_kzg_proof(&eigenda_blob.blob) {
         Ok(p) => p,
@@ -169,11 +163,11 @@ pub async fn fetch_eigenda_hint(
     };
 
     // Write the KZG Proof as the last element, needed for ZK
-    blob_key[88..].copy_from_slice((blob_length_fe as u64).to_be_bytes().as_ref());
-    let blob_key_hash = keccak256(blob_key.as_ref());
+    field_element_key[72..].copy_from_slice((blob_length_fe as u64).to_be_bytes().as_ref());
+    let blob_key_hash = keccak256(field_element_key.as_ref());
     kv_write_lock.set(
         PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-        blob_key.into(),
+        field_element_key.into(),
     )?;
     kv_write_lock.set(
         PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
