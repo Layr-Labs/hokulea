@@ -10,8 +10,7 @@ use std::str::FromStr;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ExtendedHintType {
     Original(HintType),
-    EigenDACertV1,
-    EigenDACertV2,
+    EigenDACert,
 }
 
 impl ExtendedHintType {
@@ -27,8 +26,8 @@ impl FromStr for ExtendedHintType {
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         match value {
-            "eigenda-certificate-v1" => Ok(Self::EigenDACertV1),
-            "eigenda-certificate-v2" => Ok(Self::EigenDACertV2),
+            "eigenda-certificate" => Ok(Self::EigenDACert),
+
             _ => Ok(Self::Original(HintType::from_str(value)?)),
         }
     }
@@ -37,8 +36,7 @@ impl FromStr for ExtendedHintType {
 impl From<ExtendedHintType> for &str {
     fn from(value: ExtendedHintType) -> Self {
         match value {
-            ExtendedHintType::EigenDACertV1 => "eigenda-certificate-v1",
-            ExtendedHintType::EigenDACertV2 => "eigenda-certificate-v2",
+            ExtendedHintType::EigenDACert => "eigenda-certificate",
             ExtendedHintType::Original(hint_type) => hint_type.into(),
         }
     }

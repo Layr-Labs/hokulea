@@ -27,14 +27,14 @@ pub use eigenda_blobs::EigenDABlobSource;
 mod eigenda_data;
 pub use eigenda_data::EigenDABlobData;
 
-mod certificate;
-pub use certificate::BlobInfo;
+mod v1_certificate;
+pub use v1_certificate::BlobInfo;
 
 mod version;
 pub use version::CertVersion;
 
-mod cert_metadata;
-pub use cert_metadata::{CertMetaParseError, CertMetadata};
+mod altda_commitment;
+pub use altda_commitment::{AltDACommitment, EigenDAVersionedCert};
 
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;

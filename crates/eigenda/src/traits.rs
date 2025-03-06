@@ -1,8 +1,7 @@
-use crate::BlobInfo;
+use crate::AltDACommitment;
 use alloc::{boxed::Box, string::ToString};
 use async_trait::async_trait;
 use core::fmt::Display;
-use eigenda_v2_struct_rust::EigenDAV2Cert;
 use kona_derive::errors::PipelineErrorKind;
 use rust_kzg_bn254_primitives::blob::Blob;
 
@@ -13,13 +12,6 @@ pub trait EigenDABlobProvider {
     /// The error type for the [EigenDABlobProvider].
     type Error: Display + ToString + Into<PipelineErrorKind>;
 
-    /// Fetches a blob with v1 cert
-    async fn get_blob(&mut self, metadata: [u8; 4], cert: &BlobInfo) -> Result<Blob, Self::Error>;
-
-    /// Fetches a blob with v2 cert
-    async fn get_blob_v2(
-        &mut self,
-        metadata: [u8; 4],
-        cert: &EigenDAV2Cert,
-    ) -> Result<Blob, Self::Error>;
+    /// Fetches eigenda blob
+    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error>;
 }

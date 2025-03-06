@@ -1,24 +1,19 @@
 use alloy_primitives::keccak256;
-//use alloy_primitives::B256;
-use alloy_rlp::Decodable;
+
+use crate::cfg::SingleChainHostWithEigenDA;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use hokulea_eigenda::EigenDABlobData;
+use hokulea_eigenda::{AltDACommitment, EigenDAVersionedCert};
+use hokulea_eigenda::{BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0};
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
 use kona_host::{single::SingleChainHintHandler, HintHandler, OnlineHostBackendCfg};
-
-use crate::cfg::SingleChainHostWithEigenDA;
-
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use kona_proof::Hint;
 use tracing::trace;
-
-use hokulea_proof::get_eigenda_field_element_key_part;
-use eigenda_v2_struct_rust::EigenDAV2Cert;
 //use hokulea_compute_kzg_proof::compute_kzg_proof;
-use hokulea_eigenda::BlobInfo;
-use hokulea_eigenda::EigenDABlobData;
-use hokulea_eigenda::{BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0};
+//use alloy_primitives::B256;
 
 /// The [HintHandler] for the [SingleChainHostWithEigenDA].
 #[derive(Debug, Clone, Copy)]
@@ -37,7 +32,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
     ) -> Result<()> {
         // route the hint to the right fetcher based on the hint type.
         match hint.ty {
-            ExtendedHintType::EigenDACertV1 | ExtendedHintType::EigenDACertV2 => {
+            ExtendedHintType::EigenDACert => {
                 fetch_eigenda_hint(hint, cfg, providers, kv).await?;
             }
             ExtendedHintType::Original(ty) => {
@@ -67,15 +62,14 @@ pub async fn fetch_eigenda_hint(
     kv: SharedKeyValueStore,
 ) -> Result<()> {
     let hint_type = hint.ty;
-    let hint_data = hint.data;
+    let altda_commitment_bytes = hint.data;
 
-    trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {hint_data}");
+    trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
-    let cert = hint_data;
     // Fetch the blob sidecar from the blob provider.
     let rollup_data = providers
         .eigenda_blob_provider
-        .fetch_eigenda_blob(&cert)
+        .fetch_eigenda_blob(&altda_commitment_bytes)
         .await
         .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
@@ -83,44 +77,29 @@ pub async fn fetch_eigenda_hint(
     // https://github.com/Layr-Labs/eigenda/blob/master/contracts/src/core/EigenDACertVerifier.sol#L165
     // then store empty byte in the kv_store
 
-    let mut field_element_key = get_eigenda_field_element_key_part(&cert);
-
-    let (eigenda_blob, blob_length_fe) = match hint_type {
-        ExtendedHintType::EigenDACertV1 => {
-            // the fourth because 0x01010000 in the beginning is metadata
-            let item_slice = cert.as_ref();
-            let cert_blob_info = BlobInfo::decode(&mut &item_slice[4..]).unwrap();
-
-            // Proxy should return a cert whose data_length measured in symbol (i.e. 32 Bytes)
-            let blob_length_fe = cert_blob_info.blob_header.data_length as usize;
-
-            let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
-
-            if eigenda_blob.blob.len() > blob_length_fe * BYTES_PER_FIELD_ELEMENT {
-                return Err(
-                    anyhow!("data size from cert is less than locally crafted blob cert data size {} locally crafted size {}", 
-                        eigenda_blob.blob.len(), blob_length_fe * BYTES_PER_FIELD_ELEMENT));
-            }
-            (eigenda_blob, blob_length_fe)
-        },
-        ExtendedHintType::EigenDACertV2 => {
-            // the fourth because 0x01010000 in the beginning is metadata
-            let item_slice = cert.as_ref();
-            let v2_cert = EigenDAV2Cert::decode(&mut &item_slice[4..]).unwrap();
-
-            let blob_length_fe = v2_cert.blob_inclusion_info.blob_certificate.blob_header.commitment.length as usize;
-
-            let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
-
-            if eigenda_blob.blob.len() > blob_length_fe * BYTES_PER_FIELD_ELEMENT {
-                return Err(
-                    anyhow!("data size from cert is less than locally crafted blob cert data size {} locally crafted size {}", 
-                        eigenda_blob.blob.len(), blob_length_fe * BYTES_PER_FIELD_ELEMENT));
-            }
-            (eigenda_blob, blob_length_fe)
-        },
-        _ => panic!("Invalid hint type: {hint_type}. FetcherWithEigenDASupport.prefetch only supports EigenDACommitment hints."),
+    // given the client sent the hint, the cert itself must have been deserialized and serialized,
+    // so format of cert must be valid and the following try_into must not panic
+    let altda_commitment: AltDACommitment = match altda_commitment_bytes.as_ref().try_into() {
+        Ok(a) => a,
+        Err(e) => {
+            panic!("the error message above should have handled the issue {e}");
+        }
     };
+
+    let mut field_element_key = altda_commitment.digest_template();
+
+    let blob_length_fe = match &altda_commitment.versioned_cert {
+        EigenDAVersionedCert::V1(c) => c.blob_header.data_length as usize,
+        EigenDAVersionedCert::V2(c) => {
+            c.blob_inclusion_info
+                .blob_certificate
+                .blob_header
+                .commitment
+                .length as usize
+        }
+    };
+
+    let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
 
     // Acquire a lock on the key-value store and set the preimages.
     let mut kv_write_lock = kv.write().await;
@@ -133,7 +112,6 @@ pub async fn fetch_eigenda_hint(
     for i in 0..blob_length_fe as u64 {
         field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
 
-        
         let blob_key_hash = keccak256(field_element_key.as_ref());
 
         kv_write_lock.set(
