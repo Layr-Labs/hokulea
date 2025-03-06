@@ -9,6 +9,8 @@ use anyhow::Result;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 
 /// EigenDACert can be either v1 or v2
+/// TODO consider boxing them, since the variant has large size
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum EigenDAVersionedCert {
     /// V1
