@@ -1995,7 +1995,7 @@ dependencies = [
 [[package]]
 name = "eigenda-v2-struct-rust"
 version = "0.1.0"
-source = "git+https://github.com/bxue-l2/eigenda-v2-struct-rust?rev=0c7c85462d07da5889caf6bc11d13394adf692f2#0c7c85462d07da5889caf6bc11d13394adf692f2"
+source = "git+https://github.com/bxue-l2/eigenda-v2-struct-rust?rev=abf77a852d4f138046397c6f864e3dd33edde60c#abf77a852d4f138046397c6f864e3dd33edde60c"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",

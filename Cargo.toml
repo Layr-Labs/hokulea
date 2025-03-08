@@ -79,7 +79,7 @@ rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", r
 rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "b3e532e9aad533009849755d5ad7b9578a16bfb2", default-features = false }
 
 # EigenDA v2 struct
-eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "0c7c85462d07da5889caf6bc11d13394adf692f2" }
+eigenda-v2-struct-rust =  { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "abf77a852d4f138046397c6f864e3dd33edde60c" }
 
 ark-bn254 = "0.5.0"
 ark-ff = { version = "0.5.0", features = ["parallel"] }
