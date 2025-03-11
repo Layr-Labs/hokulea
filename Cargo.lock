@@ -2488,12 +2488,17 @@ name = "hokulea-client"
 version = "0.1.0"
 dependencies = [
  "alloy-consensus",
+ "alloy-primitives",
+ "async-trait",
+ "hokulea-compute-kzg-proof",
+ "hokulea-eigenda",
  "hokulea-proof",
  "kona-client",
  "kona-driver",
  "kona-executor",
  "kona-preimage",
  "kona-proof",
+ "rust-kzg-bn254-primitives",
  "tracing",
 ]
 

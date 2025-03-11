@@ -1,7 +1,6 @@
 use alloy_primitives::B256;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 
-use risc0_zkvm::is_dev_mode;
 use risc0_zkvm::Receipt;
 
 #[derive(Debug, Clone, Default)]
@@ -10,6 +9,7 @@ pub struct CertValidity {
     pub claimed_validity: bool,
     /// a zkvm proof attesting the above result
     /// in dev mode, receipt is ignored
+    /// in the future, to make it generic for sp1-contract-call
     pub receipt: Option<Receipt>,
 }
 
@@ -20,8 +20,9 @@ impl CertValidity {
         &self,
         eigenda_cert: &EigenDAV2Cert,
         validity_call_verifier_id: B256,
+        is_verify: bool,
     ) {
-        if !is_dev_mode() {
+        if is_verify {
             use crate::journal::CertValidityJournal;
             use alloy_rlp::Decodable;
             use risc0_zkvm::sha::Digest;

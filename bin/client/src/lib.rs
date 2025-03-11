@@ -20,6 +20,8 @@ use tracing::{error, info};
 
 use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
 
+pub mod witness;
+
 // kona uses the same function signature
 #[allow(clippy::type_complexity)]
 #[inline]

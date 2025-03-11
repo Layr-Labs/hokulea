@@ -13,9 +13,10 @@ use tracing::info;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// PreloadedEigenDABlobProvider implements EigenDABlobProvider
-/// (P0) Validate validity proof for eigenda cert is correct, regardless if cert itself is correct
+/// (P0) Validate validity proof for eigenda cert is valid. If the view call succeeds
 /// (P1) Given a cert is valid, then blob and the commitment in the cert must be consistent
 /// (P2) Given a cert is invalid, then blob must be empty
+/// Regardless if the cert is valid or not. 
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
@@ -31,12 +32,16 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..blobs.len() {
+            // if verify inside ZKVM. set is_verify = true;            
+            let is_verify = false;
+
             // always verify validity of the cert
             value.validity[i].validate_cert_receipt(
                 &value.eigenda_certs[i],
                 // TODO figure out a way to pass down validity_call_verifier_id
                 // at minimum, this value needs to come from system config from derivation
                 B256::default(),
+                is_verify,
             );
 
             // if valid, check blob kzg integrity

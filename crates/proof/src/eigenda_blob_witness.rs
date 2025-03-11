@@ -7,7 +7,7 @@ use rust_kzg_bn254_primitives::blob::Blob;
 
 use crate::cert_validity::CertValidity;
 
-/// stores  
+/// One EigenDABlobWitnessData corresponds to one EigenDA cert
 #[derive(Debug, Clone, Default)]
 pub struct EigenDABlobWitnessData {
     /// eigenda v2 cert
