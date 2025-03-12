@@ -1,13 +1,14 @@
 [package]
-name = "hokulea-host"
+name = "hokulea-host-bin"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 # Hokulea and EigenDA
 hokulea-proof.workspace = true
-hokulea-client.workspace = true
+hokulea-client-bin.workspace = true
 hokulea-eigenda.workspace = true
+hokulea-client.workspace = true
 
 # KZG Cryptography
 #hokulea-compute-kzg-proof.workspace = true

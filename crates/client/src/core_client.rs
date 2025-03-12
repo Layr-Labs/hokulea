@@ -5,6 +5,7 @@ use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_driver::Driver;
 use kona_preimage::{HintWriterClient, PreimageOracleClient};
 
+use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
 use alloc::sync::Arc;
 
 use core::fmt::Debug;
@@ -18,15 +19,10 @@ use kona_proof::{
 };
 use tracing::{error, info};
 
-use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
-
-pub mod witness;
-pub mod witgen;
-
 // kona uses the same function signature
 #[allow(clippy::type_complexity)]
 #[inline]
-pub async fn run<P, H>(
+pub async fn run_core_client<P, H>(
     oracle_client: P,
     hint_client: H,
     handle_register: Option<

@@ -31,8 +31,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         let cert = match &altda_commitment.versioned_cert {
             EigenDAVersionedCert::V1(_) => panic!("secure v1 integraiton is not supported"),
             EigenDAVersionedCert::V2(c) => c,
-        };
-        
+        };        
 
         // only a single blob is returned from a cert
         let blob = self.provider.get_blob(altda_commitment).await?;

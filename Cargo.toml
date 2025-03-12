@@ -15,7 +15,8 @@ kona-std-fpvm = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f62
 kona-providers-alloy = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.1.0" }
 
 # Workspace
-hokulea-client = { path = "bin/client", version = "0.1.0", default-features = false }
+hokulea-client-bin = { path = "bin/client", version = "0.1.0", default-features = false }
+hokulea-client = { path = "crates/client", version = "0.1.0", default-features = false }
 hokulea-eigenda = { path = "crates/eigenda", version = "0.1.0", default-features = false }
 hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = false }
 hokulea-compute-kzg-proof = { path = "crates/compute-kzg-proof", version = "0.1.0", default-features = false }

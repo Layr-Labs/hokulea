@@ -3,7 +3,7 @@
 use anyhow::Result;
 
 use clap::Parser;
-use hokulea_host::cfg::SingleChainHostWithEigenDA;
+use hokulea_host_bin::cfg::SingleChainHostWithEigenDA;
 use kona_host::cli::init_tracing_subscriber;
 use tracing::info;
 

@@ -1,5 +1,6 @@
 [package]
-name = "hokulea-client-bin"
+name = "hokulea-client"
+description = "Eigenda Hokulea Client"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,7 +15,6 @@ kona-executor.workspace = true
 
 hokulea-proof.workspace = true
 hokulea-eigenda.workspace = true
-hokulea-client.workspace = true
 
 tracing.workspace = true
 async-trait.workspace = true
