@@ -1,5 +1,6 @@
 extern crate alloc;
 use alloy_consensus::Sealed;
+use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::pipeline::OraclePipeline;
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_driver::Driver;
@@ -18,35 +19,36 @@ use kona_proof::{
     BootInfo, CachingOracle,
 };
 use tracing::{error, info};
+use anyhow;
 
-// kona uses the same function signature
-#[allow(clippy::type_complexity)]
-#[inline]
-pub async fn run_core_client<P, H>(
-    oracle_client: P,
-    hint_client: H,
+use alloy_primitives::{B256};
+use kona_preimage::{CommsClient, PreimageKey};
+use kona_proof::{FlushableCache, HintType};
+use kona_derive::traits::BlobProvider;
+
+pub async fn run_kailua_core_client<
+    O: CommsClient + FlushableCache + Send + Sync + Debug,
+    B: BlobProvider + Send + Sync + Debug + Clone,
+    E: EigenDABlobProvider + Send + Sync + Debug + Clone,
+>(
+    oracle: Arc<O>,
+    beacon: B,
+    eigenda: E,
     handle_register: Option<
         KonaHandleRegister<
-            OracleL2ChainProvider<CachingOracle<P, H>>,
-            OracleL2ChainProvider<CachingOracle<P, H>>,
+            OracleL2ChainProvider<O>, // TODO use CachingOracle as opposed to O
+            OracleL2ChainProvider<O>,
         >,
     >,
 ) -> Result<(), FaultProofProgramError>
 where
-    P: PreimageOracleClient + Send + Sync + Debug + Clone,
-    H: HintWriterClient + Send + Sync + Debug + Clone,
+    <B as BlobProvider>::Error: Debug,
+    <E as EigenDABlobProvider>::Error: Debug,    
 {
-    const ORACLE_LRU_SIZE: usize = 1024;
-
     ////////////////////////////////////////////////////////////////
     //                          PROLOGUE                          //
     ////////////////////////////////////////////////////////////////
-
-    let oracle = Arc::new(CachingOracle::new(
-        ORACLE_LRU_SIZE,
-        oracle_client,
-        hint_client,
-    ));
+    
     let boot = BootInfo::load(oracle.as_ref()).await?;
     let rollup_config = Arc::new(boot.rollup_config);
 
@@ -54,9 +56,7 @@ where
 
     let mut l1_provider = OracleL1ChainProvider::new(boot.l1_head, oracle.clone());
     let mut l2_provider =
-        OracleL2ChainProvider::new(safe_head_hash, rollup_config.clone(), oracle.clone());
-    let beacon = OracleBlobProvider::new(oracle.clone());
-    let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
+        OracleL2ChainProvider::new(safe_head_hash, rollup_config.clone(), oracle.clone());        
 
     // If the claimed L2 block number is less than the safe head of the L2 chain, the claim is
     // invalid.
@@ -113,7 +113,7 @@ where
         beacon,
         l1_provider.clone(),
         l2_provider.clone(),
-        eigenda_blob_provider.clone(),
+        eigenda.clone(),
     );
 
     let executor = KonaExecutor::new(

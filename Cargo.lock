@@ -2489,11 +2489,13 @@ version = "0.1.0"
 dependencies = [
  "alloy-consensus",
  "alloy-primitives",
+ "anyhow",
  "async-trait",
  "hokulea-compute-kzg-proof",
  "hokulea-eigenda",
  "hokulea-proof",
  "kona-client",
+ "kona-derive",
  "kona-driver",
  "kona-executor",
  "kona-preimage",

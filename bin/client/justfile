@@ -126,7 +126,7 @@ run-client-native block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigen
   mkdir ./data
 
   echo "Running host program with native client program..."
-  cargo r --bin hokulea-host  -- \
+  cargo r --bin hokulea-host-bin  -- \
     --l1-head $L1_HEAD \
     --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
     --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
