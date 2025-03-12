@@ -6,7 +6,6 @@ use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_driver::Driver;
 use kona_preimage::{HintWriterClient, PreimageOracleClient};
 
-use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
 use alloc::sync::Arc;
 
 use core::fmt::Debug;
@@ -26,7 +25,7 @@ use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{FlushableCache, HintType};
 use kona_derive::traits::BlobProvider;
 
-pub async fn run_kailua_core_client<
+pub async fn run_core_client<
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     B: BlobProvider + Send + Sync + Debug + Clone,
     E: EigenDABlobProvider + Send + Sync + Debug + Clone,

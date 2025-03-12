@@ -19,7 +19,7 @@ use kona_proof::{
 };
 use tracing::{error, info};
 
-use crate::core_client::run_kailua_core_client;
+use crate::core_client::run_core_client;
 
 // kona uses the same function signature
 #[allow(clippy::type_complexity)]
@@ -48,5 +48,5 @@ where
     let beacon = OracleBlobProvider::new(oracle.clone());
     let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
 
-    run_kailua_core_client(oracle, beacon, eigenda_blob_provider, None).await
+    run_core_client(oracle, beacon, eigenda_blob_provider, None).await
 }
