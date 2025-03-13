@@ -76,6 +76,8 @@ where
     const ORACLE_LRU_SIZE: usize = 1024;
 
     info!("done generating the wintess");
+    info!("eigenda_certs {}", wit.eigenda_certs.len());
+    info!("eigenda_blobs {}", wit.eigenda_blobs.len());
 
     let oracle = Arc::new(CachingOracle::new(
         ORACLE_LRU_SIZE,
@@ -90,6 +92,7 @@ where
     let preloaded_blob_provider = PreloadedEigenDABlobProvider::from(wit);
 
     info!("run preloaded provider");
+    info!("preloaded_blob_provider.entries {}", preloaded_blob_provider.entries.len());
 
     core_client::run_core_client(oracle, beacon, preloaded_blob_provider, None).await?;
 

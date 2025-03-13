@@ -31,7 +31,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
 
         let mut entries = vec![];
 
-        for i in 0..blobs.len() {
+        for i in 0..value.eigenda_blobs.len() {
             // if verify inside ZKVM. set is_verify = true;            
             let is_verify = false;
 
@@ -65,6 +65,9 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
             ));
         }
 
+        // for ease of when using
+        entries.reverse();
+
         // check (P1) if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));
 
@@ -84,7 +87,11 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
         let is_match = match &altda_commitment.versioned_cert {
             // secure integration is not implemented for v1, but feel free to contribute
             EigenDAVersionedCert::V1(_c) => unimplemented!(),
-            EigenDAVersionedCert::V2(c) => c == &eigenda_cert,
+            EigenDAVersionedCert::V2(c) =>{
+                info!("request cert is {:?}", c.digest());
+                info!("stored  cert is {:?}", eigenda_cert.digest());
+                c == &eigenda_cert
+            }
         };
 
         if is_match {

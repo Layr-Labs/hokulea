@@ -82,7 +82,7 @@ where
 
         // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
         // TODO check rbn + STALE_GAP < l1_block_number {
-
+        info!("altda_commitment {:?}", altda_commitment.digest_template());
         let eigenda_blob = self.eigenda_source.next(&altda_commitment).await?;
         Ok(eigenda_blob)
     }
