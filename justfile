@@ -41,6 +41,12 @@ fmt-native-fix:
 fmt-native-check:
   cargo +nightly fmt --all -- --check
 
+# Generate the hokulea/kona dependency graph shown in the README.
+generate-deps-graphviz:
+  #!/usr/bin/env bash
+  DEPS=$(cargo metadata --format-version=1 | jq -r '.packages[].dependencies[] | .name' | grep -E 'kona|hokulea' | tr '\n' ',')
+  cargo depgraph --include "${DEPS%,}" | dot -Tpng > dependencies_graph.png
+
 ############################### BUILD ###############################
 
 # Build the workspace for all available targets
