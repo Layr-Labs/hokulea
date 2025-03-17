@@ -11,3 +11,4 @@ num.workspace = true
 
 alloy-primitives.workspace = true
 risc0-zkvm.workspace = true
+eigenda-v2-struct-rust.workspace = true

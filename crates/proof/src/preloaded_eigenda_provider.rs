@@ -1,5 +1,5 @@
 use crate::eigenda_blob_witness::EigenDABlobWitnessData;
-use alloy_primitives::{FixedBytes, B256, U256};
+use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;

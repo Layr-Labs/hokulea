@@ -1,5 +1,5 @@
-//! This is the temporary crate for generating a kzg proof using eigenda blob. In the future,
-//! such proof is carried inside the blob header. Then this crate can be removed. This crate access filesystem,
+//! This is a crate for generating a kzg proof using eigenda blob. In the future,
+//! such proof is carried inside the blob header. Then it can be removed. This crate access filesystem,
 //! cannot be used in any fault proof or zk vm.
 extern crate alloc;
 use alloc::vec::Vec;
