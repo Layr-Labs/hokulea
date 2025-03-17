@@ -50,6 +50,7 @@ where
 /// The first round runs run_witgen_client only to populate the witness. This produces an artifact
 /// that contains all the necessary preimage to run the derivation.
 /// The second round uses the populated witness to run against
+#[allow(clippy::type_complexity)]
 pub async fn run_preloaded_eigenda_client<P, H>(
     oracle_client: P,
     hint_client: H,
