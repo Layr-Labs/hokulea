@@ -11,6 +11,8 @@ use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 use tracing::info;
 
+#[cfg(feature = "eigenda-view-proof")]
+use alloy_primitives::B256;
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// PreloadedEigenDABlobProvider implements EigenDABlobProvider
 /// (P0) Validate validity proof for eigenda cert is valid. If the view call succeeds
@@ -37,9 +39,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
             value.validity[i].validate_cert_receipt(
                 &value.eigenda_certs[i],
                 // TODO figure out a way to pass down validity_call_verifier_id
-                // at minimum, this value needs to come from system config from derivation
                 B256::default(),
-                is_verify,
             );
 
             // if valid, check blob kzg integrity
