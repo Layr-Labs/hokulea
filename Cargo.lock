@@ -2490,7 +2490,7 @@ dependencies = [
  "alloy-consensus",
  "alloy-primitives",
  "async-trait",
- "hokulea-compute-kzg-proof",
+ "hokulea-compute-proof",
  "hokulea-eigenda",
  "hokulea-proof",
  "kona-client",
@@ -2517,11 +2517,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "hokulea-compute-kzg-proof"
+name = "hokulea-compute-proof"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives",
  "num",
+ "risc0-zkvm",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-prover",
 ]

@@ -12,8 +12,6 @@ use kona_host::{single::SingleChainHintHandler, HintHandler, OnlineHostBackendCf
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use kona_proof::Hint;
 use tracing::trace;
-//use hokulea_compute_kzg_proof::compute_kzg_proof;
-//use alloy_primitives::B256;
 
 /// The [HintHandler] for the [SingleChainHostWithEigenDA].
 #[derive(Debug, Clone, Copy)]

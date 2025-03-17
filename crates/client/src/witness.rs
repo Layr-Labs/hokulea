@@ -1,6 +1,6 @@
 use alloy_primitives::FixedBytes;
 use async_trait::async_trait;
-use hokulea_compute_kzg_proof::compute_kzg_proof;
+use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
@@ -25,6 +25,13 @@ pub struct OracleEigenDAWitnessProvider<T: EigenDABlobProvider> {
 impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitnessProvider<T> {
     type Error = T::Error;
 
+    /// This function populates
+    /// 1. eigenda cert
+    /// 2. eigenda blob
+    /// 3. kzg blob proof on the random FS point
+    /// 4. CertValidity with claimed_validity = true, and receipt = None
+    /// The receipt is intended to assert the eigenda cert passing the view call on chain
+    /// The receipt generation is not included, it is expected that it takes significantly more time
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
         // V1 is not supported for secure integration, feel free to contribute
         let cert = match &altda_commitment.versioned_cert {
