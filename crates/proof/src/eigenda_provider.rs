@@ -9,13 +9,13 @@ use kona_preimage::{errors::PreimageOracleError, CommsClient, PreimageKey, Preim
 use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 
-use crate:: hint::ExtendedHintType;
+use crate::hint::ExtendedHintType;
 
 /// The oracle-backed EigenDA provider for the client program.
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone)]
 pub struct OracleEigenDAProvider<T: CommsClient> {
     /// The preimage oracle client.
-    oracle: Arc<T>,    
+    oracle: Arc<T>,
 }
 
 impl<T: CommsClient> OracleEigenDAProvider<T> {

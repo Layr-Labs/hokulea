@@ -4,21 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-consensus.workspace = true
-
 kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
-kona-driver.workspace = true
 kona-executor.workspace = true
 
 hokulea-proof.workspace = true
-hokulea-eigenda.workspace = true
 hokulea-client.workspace = true
 
 tracing.workspace = true
-async-trait.workspace = true
-
-rust-kzg-bn254-primitives.workspace = true
-hokulea-compute-kzg-proof.workspace = true
-alloy-primitives.workspace = true

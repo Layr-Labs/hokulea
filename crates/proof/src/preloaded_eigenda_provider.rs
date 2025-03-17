@@ -16,7 +16,7 @@ use tracing::info;
 /// (P0) Validate validity proof for eigenda cert is valid. If the view call succeeds
 /// (P1) Given a cert is valid, then blob and the commitment in the cert must be consistent
 /// (P2) Given a cert is invalid, then blob must be empty
-/// Regardless if the cert is valid or not. 
+/// Regardless if the cert is valid or not.
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
@@ -32,7 +32,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
-            // if verify inside ZKVM. set is_verify = true;            
+            // if verify inside ZKVM. set is_verify = true;
             let is_verify = false;
 
             // always verify validity of the cert
@@ -87,7 +87,7 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
         let is_match = match &altda_commitment.versioned_cert {
             // secure integration is not implemented for v1, but feel free to contribute
             EigenDAVersionedCert::V1(_c) => unimplemented!(),
-            EigenDAVersionedCert::V2(c) =>{
+            EigenDAVersionedCert::V2(c) => {
                 info!("request cert is {:?}", c.digest());
                 info!("stored  cert is {:?}", eigenda_cert.digest());
                 c == &eigenda_cert

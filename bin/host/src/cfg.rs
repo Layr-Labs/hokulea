@@ -113,13 +113,13 @@ impl SingleChainHostWithEigenDA {
 
         let server_task = self.start_server(hint.host, preimage.host).await?;
         // Start the client program in a separate child process.
-        let client_task = task::spawn(hokulea_client_bin::witgen::run_preloaded_eigenda_client(
+        let client_task = task::spawn(hokulea_client_bin::clients::run_preloaded_eigenda_client(
             OracleReader::new(preimage.client),
             HintWriter::new(hint.client),
             None,
         ));
         /*
-        let client_task = task::spawn(hokulea_client::native_client::run_native_client(
+        let client_task = task::spawn(hokulea_client::native_client::run_direct_client(
             OracleReader::new(preimage.client),
             HintWriter::new(hint.client),
             None,

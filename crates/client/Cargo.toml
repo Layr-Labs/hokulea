@@ -23,5 +23,3 @@ async-trait.workspace = true
 rust-kzg-bn254-primitives.workspace = true
 hokulea-compute-kzg-proof.workspace = true
 alloy-primitives.workspace = true
-
-anyhow.workspace = true

@@ -4,27 +4,22 @@ use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::pipeline::OraclePipeline;
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_driver::Driver;
-use kona_preimage::{HintWriterClient, PreimageOracleClient};
 
 use alloc::sync::Arc;
 
 use core::fmt::Debug;
 use kona_executor::{KonaHandleRegister, TrieDBProvider};
 use kona_proof::{
-    executor::KonaExecutor,
-    l1::{OracleBlobProvider, OracleL1ChainProvider},
-    l2::OracleL2ChainProvider,
-    sync::new_pipeline_cursor,
-    BootInfo, CachingOracle,
+    executor::KonaExecutor, l1::OracleL1ChainProvider, l2::OracleL2ChainProvider,
+    sync::new_pipeline_cursor, BootInfo,
 };
 use tracing::{error, info};
-use anyhow;
 
-use alloy_primitives::{B256};
-use kona_preimage::{CommsClient, PreimageKey};
-use kona_proof::{FlushableCache, HintType};
 use kona_derive::traits::BlobProvider;
+use kona_preimage::CommsClient;
+use kona_proof::FlushableCache;
 
+// The core client takes both beacon and eigenda struct, this is
 pub async fn run_core_client<
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     B: BlobProvider + Send + Sync + Debug + Clone,
@@ -42,12 +37,12 @@ pub async fn run_core_client<
 ) -> Result<(), FaultProofProgramError>
 where
     <B as BlobProvider>::Error: Debug,
-    <E as EigenDABlobProvider>::Error: Debug,    
+    <E as EigenDABlobProvider>::Error: Debug,
 {
     ////////////////////////////////////////////////////////////////
     //                          PROLOGUE                          //
     ////////////////////////////////////////////////////////////////
-    
+
     let boot = BootInfo::load(oracle.as_ref()).await?;
     let rollup_config = Arc::new(boot.rollup_config);
 
@@ -55,7 +50,7 @@ where
 
     let mut l1_provider = OracleL1ChainProvider::new(boot.l1_head, oracle.clone());
     let mut l2_provider =
-        OracleL2ChainProvider::new(safe_head_hash, rollup_config.clone(), oracle.clone());        
+        OracleL2ChainProvider::new(safe_head_hash, rollup_config.clone(), oracle.clone());
 
     // If the claimed L2 block number is less than the safe head of the L2 chain, the claim is
     // invalid.

@@ -8,10 +8,6 @@ edition = "2021"
 hokulea-proof.workspace = true
 hokulea-client-bin.workspace = true
 hokulea-eigenda.workspace = true
-hokulea-client.workspace = true
-
-# KZG Cryptography
-#hokulea-compute-kzg-proof.workspace = true
 
 # Kona
 kona-preimage = { workspace = true, features = ["std"] }
