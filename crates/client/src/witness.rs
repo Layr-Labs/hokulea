@@ -43,7 +43,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         let blob = self.provider.get_blob(altda_commitment).await?;
 
         // Compute kzg proof for the entire blob on a deterministic random point
-        let kzg_proof = match compute_kzg_proof(&blob.data()) {
+        let kzg_proof = match compute_kzg_proof(blob.data()) {
             Ok(p) => p,
             Err(e) => panic!("cannot generate a kzg proof {}", e),
         };

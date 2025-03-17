@@ -12,13 +12,16 @@ use std::{
     ops::DerefMut,
     sync::{Arc, Mutex},
 };
+
 /// A run_witgen_client calls [core_client] functopm to run kona derivation.
 /// This client uses a special [OracleEigenDAWitnessProvider] that wraps around ][OracleEigenDAProvider]
 /// It returns the eigenda blob witness to the caller, those blob witnesses can be used to prove
 /// used only at the preparation phase.
 /// 1. a KZG commitment is consistent to the retrieved eigenda blob. This function is intended to be
 /// 2. the cert is correct
+/// 
 /// Its usage is contained in the crate hokulea-client-bin
+#[allow(clippy::type_complexity)]
 pub async fn run_witgen_client<P, H>(
     oracle_client: P,
     hint_client: H,
