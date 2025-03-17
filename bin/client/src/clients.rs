@@ -69,7 +69,12 @@ where
         witgen_client::run_witgen_client(oracle_client.clone(), hint_client.clone(), None).await?;
     const ORACLE_LRU_SIZE: usize = 1024;
 
-    info!("done generating the wintess");
+    info!("done generating the witness");
+
+    // Generate view proof by calling compute_view_proof(), and pass it into wit
+    // When securely verify the eigenda integration, PreloadedEigenDABlobProvider::from shall be run inside the ZKVM in the
+    // form of ELF. It is important to pass it to witness before calling PreloadedEigenDABlobProvider::from. Because the
+    // verification is checked within the elf
 
     let oracle = Arc::new(CachingOracle::new(
         ORACLE_LRU_SIZE,

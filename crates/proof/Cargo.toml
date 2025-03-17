@@ -36,3 +36,6 @@ tracing.workspace = true
 # General
 async-trait.workspace = true
 spin.workspace = true
+
+[features]
+eigenda-view-proof = []

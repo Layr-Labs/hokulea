@@ -32,10 +32,8 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
-            // if verify inside ZKVM. set is_verify = true;
-            let is_verify = false;
-
-            // always verify validity of the cert
+            // verify validity of the cert, in dev mode the argument is ignored
+            #[cfg(feature = "eigenda-view-proof")]
             value.validity[i].validate_cert_receipt(
                 &value.eigenda_certs[i],
                 // TODO figure out a way to pass down validity_call_verifier_id
