@@ -4,8 +4,8 @@ use kona_executor::KonaHandleRegister;
 use kona_preimage::{HintWriterClient, PreimageOracleClient};
 use kona_proof::{l1::OracleBlobProvider, l2::OracleL2ChainProvider, CachingOracle};
 
-use crate::core_client;
 use crate::witness::OracleEigenDAWitnessProvider;
+use hokulea_client::fp_client;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
 use std::{
@@ -51,7 +51,7 @@ where
         witness: eigenda_blobs_witness.clone(),
     };
 
-    core_client::run_core_client(oracle, beacon, eigenda_blob_and_witness_provider, None).await?;
+    fp_client::run_core_client(oracle, beacon, eigenda_blob_and_witness_provider, None).await?;
 
     let wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
 

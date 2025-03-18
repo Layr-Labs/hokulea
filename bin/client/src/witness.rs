@@ -1,6 +1,6 @@
 use alloy_primitives::FixedBytes;
 use async_trait::async_trait;
-use hokulea_compute_proof::compute_kzg_proof;
+use hokulea_compute_proof_kzg::compute_kzg_proof;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
