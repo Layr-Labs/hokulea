@@ -1,0 +1,20 @@
+[package]
+name = "hokulea-steel-view-call-apps"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+alloy = { workspace = true }
+alloy-primitives = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true, features = ["derive", "env"] }
+dacert-v2-verifier-methods = { workspace = true }
+risc0-steel = { workspace = true, features = ["host"] }
+risc0-zkvm = { workspace = true, features = ["client", "bonsai"] }
+tokio = { workspace = true }
+url = { workspace = true }
+eigenda-v2-struct-rust = { workspace = true }
+
+
+[features]
+beacon = []
