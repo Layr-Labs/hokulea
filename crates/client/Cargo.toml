@@ -18,8 +18,3 @@ hokulea-proof.workspace = true
 hokulea-eigenda.workspace = true
 
 tracing.workspace = true
-async-trait.workspace = true
-
-rust-kzg-bn254-primitives.workspace = true
-hokulea-compute-proof.workspace = true
-alloy-primitives.workspace = true
