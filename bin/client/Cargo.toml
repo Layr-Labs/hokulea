@@ -11,7 +11,7 @@ kona-executor.workspace = true
 
 hokulea-proof.workspace = true
 hokulea-client.workspace = true
-hokulea-compute-proof.workspace = true
+hokulea-compute-proof-kzg.workspace = true
 
 alloy-primitives.workspace = true
 async-trait.workspace = true
