@@ -20,7 +20,7 @@ use kona_preimage::CommsClient;
 use kona_proof::FlushableCache;
 
 // The core client takes both beacon and eigenda struct, this is
-pub async fn run_core_client<
+pub async fn run_fp_client<
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     B: BlobProvider + Send + Sync + Debug + Clone,
     E: EigenDABlobProvider + Send + Sync + Debug + Clone,

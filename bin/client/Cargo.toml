@@ -13,3 +13,12 @@ hokulea-proof.workspace = true
 hokulea-client.workspace = true
 
 tracing.workspace = true
+
+hokulea-compute-proof.workspace = true
+
+alloy-primitives.workspace = true
+async-trait.workspace = true
+
+rust-kzg-bn254-primitives.workspace = true
+
+hokulea-eigenda.workspace = true

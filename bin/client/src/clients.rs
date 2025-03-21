@@ -9,8 +9,8 @@ use core::fmt::Debug;
 use kona_executor::KonaHandleRegister;
 use kona_proof::{l1::OracleBlobProvider, l2::OracleL2ChainProvider, CachingOracle};
 
-use hokulea_client::core_client;
-use hokulea_client::witgen_client;
+use crate::witgen_client;
+use hokulea_client::fp_client;
 use hokulea_proof::preloaded_eigenda_provider::PreloadedEigenDABlobProvider;
 use tracing::info;
 
@@ -42,7 +42,7 @@ where
     let beacon = OracleBlobProvider::new(oracle.clone());
     let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
 
-    core_client::run_core_client(oracle, beacon, eigenda_blob_provider, None).await
+    fp_client::run_fp_client(oracle, beacon, eigenda_blob_provider, None).await
 }
 
 /// The function uses a variation of kona client function signature
@@ -90,7 +90,7 @@ where
     let preloaded_blob_provider = PreloadedEigenDABlobProvider::from(wit);
 
     info!("run preloaded provider");
-    core_client::run_core_client(oracle, beacon, preloaded_blob_provider, None).await?;
+    fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, None).await?;
 
     Ok(())
 }
