@@ -13,7 +13,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-/// A run_witgen_client calls [core_client] functopm to run kona derivation.
+/// A run_witgen_client calls [fp_client] functopm to run kona derivation.
 /// This client uses a special [OracleEigenDAWitnessProvider] that wraps around ][OracleEigenDAProvider]
 /// It returns the eigenda blob witness to the caller, those blob witnesses can be used to prove
 /// used only at the preparation phase. Its usage is contained in the crate hokulea-client-bin
