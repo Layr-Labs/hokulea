@@ -99,9 +99,9 @@ anyhow = "1.0.86"
 thiserror = "2.0.11"
 
 
-rust-kzg-bn254-primitives = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254", branch = "master", default-features = false }
-rust-kzg-bn254-prover = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254", branch = "master", default-features = false }
-rust-kzg-bn254-verifier = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254", branch = "master", default-features = false }
+rust-kzg-bn254-primitives = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "e9c6aac83f765cc5d90fcf78e329ca2177b027a1", default-features = false }
+rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "e9c6aac83f765cc5d90fcf78e329ca2177b027a1", default-features = false }
+rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "e9c6aac83f765cc5d90fcf78e329ca2177b027a1", default-features = false }
 
 # EigenDA v2 struct
 eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "abf77a852d4f138046397c6f864e3dd33edde60c" }
