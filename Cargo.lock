@@ -2636,7 +2636,6 @@ dependencies = [
  "kona-proof",
  "kona-protocol",
  "kona-rpc",
- "risc0-zkvm",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-verifier",
  "spin 0.10.0",

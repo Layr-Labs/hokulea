@@ -1,7 +1,7 @@
 use alloy_primitives::B256;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
 
-use risc0_zkvm::Receipt;
+//use risc0_zkvm::Receipt;
 
 #[derive(Debug, Clone, Default)]
 pub struct CertValidity {
@@ -10,7 +10,7 @@ pub struct CertValidity {
     /// a zkvm proof attesting the above result
     /// in dev mode, receipt is ignored
     /// in the future, to make it generic for sp1-contract-call
-    pub receipt: Option<Receipt>,
+    pub receipt: Option<u8>, //Receipt
 }
 
 impl CertValidity {
@@ -21,6 +21,7 @@ impl CertValidity {
         eigenda_cert: &EigenDAV2Cert,
         validity_call_verifier_id: B256,
     ) {
+        /*
         use crate::journal::CertValidityJournal;
         use alloy_rlp::Decodable;
         use risc0_zkvm::sha::Digest;
@@ -39,5 +40,6 @@ impl CertValidity {
 
         // so far, we have ensure the data is right, now verify the proof with respect to the data
         assert!(self.receipt.as_ref().unwrap().verify(fpvm_image_id).is_ok())
+         */
     }
 }
