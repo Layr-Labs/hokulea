@@ -1,5 +1,4 @@
 use alloy_primitives::Bytes;
-use anyhow::Ok;
 use reqwest;
 
 /// Fetches blobs from EigenDA via an eigenda-proxy instance.
@@ -19,9 +18,9 @@ impl OnlineEigenDABlobProvider {
     /// The `genesis_time` and `slot_interval` arguments are _optional_ and the
     /// [OnlineEigenDABlobProvider] will attempt to load them dynamically at runtime if they are not
     /// provided.
-    pub async fn new_http(base: String) -> Result<Self, anyhow::Error> {
+    pub fn new_http(base: String) -> Self {
         let inner = reqwest::Client::new();
-        Ok(Self { base, inner })
+        Self { base, inner }
     }
 
     pub async fn fetch_eigenda_blob(

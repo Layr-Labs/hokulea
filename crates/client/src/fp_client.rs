@@ -3,7 +3,7 @@ use alloy_consensus::Sealed;
 use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::pipeline::OraclePipeline;
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
-use kona_driver::Driver;
+use kona_driver::{Driver, DriverError};
 
 use alloc::sync::Arc;
 
@@ -108,7 +108,7 @@ where
         l1_provider.clone(),
         l2_provider.clone(),
         eigenda.clone(),
-    );
+    ).await?;
 
     let executor = KonaExecutor::new(
         rollup_config.as_ref(),
