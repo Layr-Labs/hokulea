@@ -50,7 +50,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
 
         // populate witness struct
         let mut witness = self.witness.lock().unwrap();
-        witness.eigenda_blobs.push(blob.clone());
+        witness.eigenda_blobs.push(blob.clone().into());
         let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
         witness.kzg_proofs.push(fixed_bytes);
         witness.eigenda_certs.push(cert.clone());
