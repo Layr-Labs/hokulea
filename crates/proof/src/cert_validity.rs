@@ -1,9 +1,10 @@
 use alloy_primitives::B256;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
+use serde::{Serialize, Deserialize};
 
 //use risc0_zkvm::Receipt;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CertValidity {
     /// the claim about if the cert is valid
     pub claimed_validity: bool,

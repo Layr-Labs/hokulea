@@ -104,7 +104,8 @@ rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", r
 rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "e9c6aac83f765cc5d90fcf78e329ca2177b027a1", default-features = false }
 
 # EigenDA v2 struct
-eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "abf77a852d4f138046397c6f864e3dd33edde60c" }
+eigenda-v2-struct-rust =  { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "ee96955f6f7f42582c6340ce306ab31897fb34ae" }
+#eigenda-v2-struct-rust =  { path = "../eigenda-v2-struct-rust" }
 
 ark-bn254 = "0.5.0"
 ark-ff = { version = "0.5.0", features = ["parallel"] }
@@ -133,10 +134,7 @@ revm = { version = "19.5.0", default-features = false }
 rocksdb = { version = "0.22.0", default-features = false }
 
 # ZKVM
-risc0-zkvm = { version = "1.2.3", features = [
-    "heap-embedded-alloc",
-    "unstable",
-] }
+# risc0-zkvm = { version = "1.2.3", features = ["heap-embedded-alloc", "unstable"] }
 
 [profile.dev]
 opt-level = 3

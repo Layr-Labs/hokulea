@@ -44,7 +44,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
 
             // if valid, check blob kzg integrity
             if value.validity[i].claimed_validity {
-                blobs.push(value.eigenda_blobs[i].clone());
+                blobs.push(Blob::new(&value.eigenda_blobs[i]));
                 proofs.push(value.kzg_proofs[i]);
                 let commitment = value.eigenda_certs[i]
                     .blob_inclusion_info
@@ -59,7 +59,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
             }
             entries.push((
                 value.eigenda_certs[i].clone(),
-                value.eigenda_blobs[i].clone(),
+                Blob::new(&value.eigenda_blobs[i]),
             ));
         }
 
