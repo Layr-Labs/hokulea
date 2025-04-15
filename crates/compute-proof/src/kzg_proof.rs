@@ -15,8 +15,10 @@ use rust_kzg_bn254_prover::srs::SRS;
 /// nitro code <https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141>
 /// could refactor in the future, such that both host and client can compute the proof
 pub fn compute_kzg_proof(blob: &[u8]) -> Result<Bytes, KzgError> {
+    let srs_file_path = "resources/g1.point";
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
-    let srs = SRS::new("resources/g1.point", 268435456, 1024).unwrap();
+    let srs = SRS::new(srs_file_path, 268435456, 1024)
+        .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err));
     let mut kzg = KZG::new();
 
     let input = Blob::new(blob);

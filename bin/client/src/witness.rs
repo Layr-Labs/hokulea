@@ -35,7 +35,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
         // V1 is not supported for secure integration, feel free to contribute
         let cert = match &altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V1(_) => panic!("secure v1 integraiton is not supported"),
+            EigenDAVersionedCert::V1(_) => panic!("secure v1 integration is not supported"),
             EigenDAVersionedCert::V2(c) => c,
         };
 

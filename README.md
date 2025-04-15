@@ -14,11 +14,11 @@ Hokulea host currently computes a challenge proof that validates the correctness
 First start the devnet on a local L1 that uses eigenda v1:
 ```bash
 git clone https://github.com/Layr-Labs/optimism.git
-cd optimism/kurtosis-devnet && just eigenda-memstore-devnet
+cd optimism/kurtosis-devnet && just eigenda-devnet-start
 ```
 Then request rollup config and save it:
 ```bash
-ROLLUP_NODE_RPC=$(kurtosis port print eigenda-memstore-devnet op-cl-1-op-node-op-geth-op-kurtosis http) && curl -X POST -H "Content-Type: application/json" --data     '{"jsonrpc":"2.0","method":"optimism_rollupConfig","params":[],"id":1}' $ROLLUP_NODE_RPC | jq .result > rollup.json
+kurtosis files inspect eigenda-devnet op-deployer-configs ./rollup-2151908.json 1> rollup.json
 ```
 Then run hokulea against v1:
 ```bash

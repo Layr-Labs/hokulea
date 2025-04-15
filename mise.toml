@@ -1,0 +1,9 @@
+[tools]
+cargo = "latest"
+cast = { version = "latest", exe = "cast" }
+just = "latest"
+rust = "latest"
+# Warning: version might need to be pinned manually.
+# It needs to be the same version as that used by the kurtosis engine that
+# was used to start the optimism kurtosis devnet.
+kurtosis = { version = "latest", exe = "kurtosis" }
