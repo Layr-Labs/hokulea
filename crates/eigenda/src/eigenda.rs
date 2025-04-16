@@ -86,6 +86,9 @@ where
         // This is measured by `reference_block_number + STALE_GAP < current_l1_block_number`.
         // If the certificate is too old we treat it as temporary data unavailability
         // and let the derivation pipeline retry on the next L1 block.
+        // Extract the reference block number for freshness check. Both v1 and v2
+        // certificates encode the reference block number, but on slightly
+        // different paths.
         if let Some(rbn) = match &altda_commitment.versioned_cert {
             EigenDAVersionedCert::V1(cert) => Some(
                 cert
@@ -94,11 +97,9 @@ where
                     .batch_header
                     .reference_block_number as u64,
             ),
-            // NOTE: V2 cert structure differs. If we cannot reliably extract the
-            // reference block number we skip the freshness check for V2 for now.
-            EigenDAVersionedCert::V2(_) => None,
+            EigenDAVersionedCert::V2(cert) => Some(cert.batch_header_v2.reference_block_number as u64),
         } {
-            if rbn.saturating_add(crate::STALE_GAP) < block_ref.number {
+            if rbn.saturating_add(crate::constant::stale_gap()) < block_ref.number {
                 warn!(
                     target: "eigenda-datasource",
                     "EigenDA cert stale: rbn {} + gap {} < current {}",
