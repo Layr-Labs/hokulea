@@ -6,23 +6,21 @@ Below is the dependency graph between hokulea and kona crates:
 <!-- Run `just generate-deps-graphviz` to regenerate/update this diagram -->
 ![](./generated/dependencies_graph.png)
 
-### Download SRS points
-Hokulea host currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the host to have access to sufficient KZG SRS points. Follow the [link](https://github.com/Layr-Labs/eigenda-proxy/tree/main/resources) to download the points and save it to ./resources/g1.point
+### Dependencies
 
-### Running against devnet
+We use mise to track and manage dependencies. Please first [install mise](https://mise.jdx.dev/getting-started.html), and then run `mise install` to install the dependencies.
 
-First start the devnet on a local L1 that uses eigenda v1:
+### SRS points
+Hokulea host currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the host to have access to sufficient KZG SRS points. The host is currently hardcoded to read the SRS points from `resources/g1.point`. You can download the SRS points to that location by running `just download-srs`, which downloads the `g1.point` file from the [eigenda repo](https://github.com/Layr-Labs/eigenda-proxy/tree/main/resources).
+
+### Local Manual Testing
+
+We use kurtosis to start an [optimism-package](https://github.com/ethpandaops/optimism-package/tree/main) devnet, and run the hokulea host and client against it.
+
 ```bash
-git clone https://github.com/Layr-Labs/optimism.git
-cd optimism/kurtosis-devnet && just eigenda-devnet-start
-```
-Then request rollup config and save it:
-```bash
-kurtosis files inspect eigenda-devnet op-deployer-configs ./rollup-2151908.json 1> rollup.json
-```
-Then run hokulea against v1:
-```bash
-cd bin/client
+just run-kurtosis-devnet
+# Before running the client, it will download the needed g1.point SRS file
+# and the rollup.json config file.
 just run-client-native-against-devnet
 ```
 

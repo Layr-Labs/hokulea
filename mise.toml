@@ -7,3 +7,4 @@ rust = "latest"
 # It needs to be the same version as that used by the kurtosis engine that
 # was used to start the optimism kurtosis devnet.
 kurtosis = { version = "latest", exe = "kurtosis" }
+jq = "latest"
