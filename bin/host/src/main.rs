@@ -35,10 +35,10 @@ fn init_tracing_subscriber(verbosity_level: u8) -> anyhow::Result<(), anyhow::Er
     // because of the multiple calls to the l1 and l2 nodes for block headers etc,
     // making it hard to focus on the actual debug logs related to eigenda stuff.
     filter_builder = filter_builder
-        .add_directive(format!("hyper_util=info").parse()?)
-        .add_directive(format!("reqwest=info").parse()?)
-        .add_directive(format!("alloy_rpc_client=info").parse()?)
-        .add_directive(format!("alloy_transport_http=info").parse()?);
+        .add_directive("hyper_util=info".parse()?)
+        .add_directive("reqwest=info".parse()?)
+        .add_directive("alloy_rpc_client=info".parse()?)
+        .add_directive("alloy_transport_http=info".parse()?);
 
     // Initialize the subscriber
     tracing_subscriber::registry()
