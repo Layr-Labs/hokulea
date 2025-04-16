@@ -12,6 +12,7 @@ use kona_host::{single::SingleChainHintHandler, HintHandler, OnlineHostBackendCf
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use kona_proof::Hint;
 use tracing::trace;
+use hokulea_compute_proof::compute_kzg_proof;
 
 /// The [HintHandler] for the [SingleChainHostWithEigenDA].
 #[derive(Debug, Clone, Copy)]
@@ -131,7 +132,6 @@ pub async fn fetch_eigenda_hint(
         }
     }
 
-    /*
     // Compute kzg proof for the entire blob on a deterministic random point
     let kzg_proof = match compute_kzg_proof(&eigenda_blob.blob) {
         Ok(p) => p,
@@ -149,6 +149,6 @@ pub async fn fetch_eigenda_hint(
         PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
         kzg_proof.to_vec(),
     )?;
-    */
+
     Ok(())
 }

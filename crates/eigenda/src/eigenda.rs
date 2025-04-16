@@ -3,6 +3,7 @@
 use crate::eigenda_blobs::EigenDABlobSource;
 use crate::traits::EigenDABlobProvider;
 use crate::AltDACommitment;
+use crate::EigenDAVersionedCert;
 
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{hex, Bytes};
@@ -81,7 +82,33 @@ where
         };
 
         // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
-        // TODO check rbn + STALE_GAP < l1_block_number {
+        // Freshness check: ensure the EigenDA certificate is not too old.
+        // This is measured by `reference_block_number + STALE_GAP < current_l1_block_number`.
+        // If the certificate is too old we treat it as temporary data unavailability
+        // and let the derivation pipeline retry on the next L1 block.
+        if let Some(rbn) = match &altda_commitment.versioned_cert {
+            EigenDAVersionedCert::V1(cert) => Some(
+                cert
+                    .blob_verification_proof
+                    .batch_medatada
+                    .batch_header
+                    .reference_block_number as u64,
+            ),
+            // NOTE: V2 cert structure differs. If we cannot reliably extract the
+            // reference block number we skip the freshness check for V2 for now.
+            EigenDAVersionedCert::V2(_) => None,
+        } {
+            if rbn.saturating_add(crate::STALE_GAP) < block_ref.number {
+                warn!(
+                    target: "eigenda-datasource",
+                    "EigenDA cert stale: rbn {} + gap {} < current {}",
+                    rbn,
+                    crate::STALE_GAP,
+                    block_ref.number
+                );
+                return Err(PipelineError::NotEnoughData.temp());
+            }
+        }
         info!(
             "altda_commitment 0x{}",
             hex::encode(altda_commitment.digest_template())

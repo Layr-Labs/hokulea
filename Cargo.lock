@@ -2556,6 +2556,7 @@ dependencies = [
  "async-trait",
  "clap",
  "hokulea-client-bin",
+ "hokulea-compute-proof",
  "hokulea-eigenda",
  "hokulea-proof",
  "kona-host",
