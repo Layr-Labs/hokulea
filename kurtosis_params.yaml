@@ -39,7 +39,6 @@ optimism_package:
           - --batch-type=1
           - --throttle-threshold=500_000
           - --throttle-block-size=1000
-        image: op-batcher:17750fb61425
       challenger_params:
         enabled: false
       proposer_params:
