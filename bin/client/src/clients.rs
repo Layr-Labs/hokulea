@@ -65,7 +65,7 @@ where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
 {
-    info!("run_preloaded_eigenda_client. The goal is to generate witneess");
+    info!("run_preloaded_eigenda_client: generating witness");
     let wit =
         witgen_client::run_witgen_client(oracle_client.clone(), hint_client.clone(), None).await?;
     const ORACLE_LRU_SIZE: usize = 1024;

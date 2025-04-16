@@ -45,7 +45,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         // Compute kzg proof for the entire blob on a deterministic random point
         let kzg_proof = match compute_kzg_proof(blob.data()) {
             Ok(p) => p,
-            Err(e) => panic!("cannot generate a kzg proof {}", e),
+            Err(e) => panic!("cannot generate a kzg proof: {}", e),
         };
 
         // populate witness struct
