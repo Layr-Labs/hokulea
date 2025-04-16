@@ -1,0 +1,67 @@
+ethereum_package:
+  network_params:
+    additional_preloaded_contracts: |
+      {
+        "0x4e59b44847b379578588920cA78FbF26c0B4956C": {
+          "balance": "0ETH",
+          "code": "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+          "storage": {},
+          "nonce": "1"
+        }
+      }
+    genesis_delay: 5
+    preset: minimal
+  participants:
+    - cl_type: teku
+      el_type: geth
+optimism_package:
+  altda_deploy_config:
+    da_bond_size: 0
+    da_challenge_window: 16
+    da_commitment_type: GenericCommitment
+    da_resolve_window: 16
+    da_resolver_refund_percentage: 0
+    use_altda: true
+  chains:
+    - additional_services:
+        - da_server
+      participants:
+        - cl_type: op-node
+          el_type: op-geth
+          count: 1
+      batcher_params:
+        extra_params:
+          - --max-channel-duration=10
+          - --altda.max-concurrent-da-requests=10
+          - --max-pending-tx=10
+          - --target-num-frames=5
+          - --max-l1-tx-size-bytes=1000
+          - --batch-type=1
+          - --throttle-threshold=500_000
+          - --throttle-block-size=1000
+        image: op-batcher:17750fb61425
+      challenger_params:
+        enabled: false
+      proposer_params:
+        game_type: 1
+        proposal_interval: 10m
+      da_server_params:
+        cmd:
+          - --addr=0.0.0.0
+          - --port=3100
+          - --storage.backends-to-enable=V1,V2
+          - --storage.dispersal-backend=v2
+          - --api-enabled=admin
+          - --eigenda.v2.max-blob-length=1MiB
+          - --memstore.enabled
+          - --memstore.expiration=30m
+        image: ghcr.io/layr-labs/eigenda-proxy:v1.7.0
+      network_params:
+        fjord_time_offset: 0
+        granite_time_offset: 0
+        holocene_time_offset: 0
+        fund_dev_accounts: true
+        name: op-kurtosis
+        network: kurtosis
+        network_id: "2151908"
+        seconds_per_slot: 2
