@@ -20,7 +20,7 @@ build-native *args='':
 
 # Will download resources/g1.point if it doesn't exist.
 [group('local-env')]
-_download-srs:
+download-srs:
     #!/usr/bin/env bash
     if [ ! -f "resources/g1.point" ]; then
         echo "Downloading SRS G1 points to resources/g1.point ..."
@@ -39,7 +39,7 @@ _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (_download-srs) (_download-rollup-config-from-kurtosis)
+run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (download-srs) (_download-rollup-config-from-kurtosis)
   #!/usr/bin/env bash
   L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
