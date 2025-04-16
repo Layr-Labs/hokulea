@@ -4,12 +4,20 @@ members = ["bin/*", "crates/*"]
 
 [workspace.dependencies]
 kona-client = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", default-features = false, version = "0.1.0" }
-kona-host = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", default-features = false, features = ["single"], version = "0.1.0" }
+kona-host = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", default-features = false, features = [
+    "single",
+], version = "0.1.0" }
 kona-derive = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
 kona-driver = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
 kona-executor = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
-kona-mpt = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", features = ["serde"], version = "0.1.2" }
-kona-preimage = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", features = ["serde", "rkyv", "std"], version = "0.2.1" }
+kona-mpt = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", features = [
+    "serde",
+], version = "0.1.2" }
+kona-preimage = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", features = [
+    "serde",
+    "rkyv",
+    "std",
+], version = "0.2.1" }
 kona-proof = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.2.3" }
 kona-std-fpvm = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.1.2" }
 kona-providers-alloy = { git = "https://github.com/op-rs/kona", rev = "96aba6aa72053f628ac1047548530f27f7c9d25c", version = "0.1.0" }
@@ -22,11 +30,19 @@ hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = f
 hokulea-compute-proof = { path = "crates/compute-proof", version = "0.1.0", default-features = false }
 
 # Maili
-maili-consensus = { version = "0.2.8", default-features = false, features = ["serde"] }
-maili-genesis = { version = "0.2.8", default-features = false, features = ["serde"] }
-maili-protocol = { version = "0.2.8", default-features = false, features = ["serde"] }
-maili-registry = { version = "0.2.8", default-features = false, features = ["map-hashbrown"] }
-maili-rpc =  { version = "0.2.8", default-features = false }
+maili-consensus = { version = "0.2.8", default-features = false, features = [
+    "serde",
+] }
+maili-genesis = { version = "0.2.8", default-features = false, features = [
+    "serde",
+] }
+maili-protocol = { version = "0.2.8", default-features = false, features = [
+    "serde",
+] }
+maili-registry = { version = "0.2.8", default-features = false, features = [
+    "map-hashbrown",
+] }
+maili-rpc = { version = "0.2.8", default-features = false }
 
 alloy-rlp = { version = "0.3.11", default-features = false }
 alloy-trie = { version = "0.7.9", default-features = false }
@@ -75,19 +91,19 @@ anyhow = "1.0.86"
 thiserror = "2.0.11"
 
 
-rust-kzg-bn254-primitives = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "b3e532e9aad533009849755d5ad7b9578a16bfb2", default-features = false }
-rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "b3e532e9aad533009849755d5ad7b9578a16bfb2", default-features = false }
-rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254", rev = "b3e532e9aad533009849755d5ad7b9578a16bfb2", default-features = false }
+rust-kzg-bn254-primitives = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254", branch = "master", default-features = false }
+rust-kzg-bn254-prover = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254", branch = "master", default-features = false }
+rust-kzg-bn254-verifier = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254", branch = "master", default-features = false }
 
 # EigenDA v2 struct
-eigenda-v2-struct-rust =  { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "abf77a852d4f138046397c6f864e3dd33edde60c" }
+eigenda-v2-struct-rust = { git = "https://github.com/bxue-l2/eigenda-v2-struct-rust", rev = "abf77a852d4f138046397c6f864e3dd33edde60c" }
 
 ark-bn254 = "0.5.0"
 ark-ff = { version = "0.5.0", features = ["parallel"] }
 
 # Tracing
 tracing-loki = "0.2.6"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = { version = "0.3.19", default-features = false }
 tracing = { version = "0.1.41", default-features = false }
 
 # Testing
@@ -109,7 +125,10 @@ revm = { version = "19.5.0", default-features = false }
 rocksdb = { version = "0.22.0", default-features = false }
 
 # ZKVM
-risc0-zkvm = { version = "1.2.3", features = ["heap-embedded-alloc", "unstable"] }
+risc0-zkvm = { version = "1.2.3", features = [
+    "heap-embedded-alloc",
+    "unstable",
+] }
 
 [profile.dev]
 opt-level = 3

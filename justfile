@@ -34,11 +34,12 @@ _download-srs:
 _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
   #!/usr/bin/env bash
   ROLLUP_NODE_RPC=$(kurtosis port print {{enclave}} op-cl-1-op-node-op-geth-op-kurtosis http)
+  echo "Downloading rollup config from kurtosis op-node at $ROLLUP_NODE_RPC"
   cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > rollup.json
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-native-against-devnet enclave='eigenda-devnet' verbosity='' block_number='' rollup_config_path='rollup.json': (_download-srs) (_download-rollup-config-from-kurtosis)
+run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (_download-srs) (_download-rollup-config-from-kurtosis)
   #!/usr/bin/env bash
   L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"

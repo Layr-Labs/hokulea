@@ -32,6 +32,16 @@ pub struct SingleChainHostWithEigenDA {
         env
     )]
     pub eigenda_proxy_address: Option<String>,
+
+    /// Verbosity level (-v, -vv, -vvv, etc.)
+    /// TODO: think this should be upstreamed to kona_cfg
+    #[clap(
+        short, 
+        long,
+        action = clap::ArgAction::Count,
+        default_value_t = 0
+    )]
+    pub verbose: u8,
 }
 
 impl SingleChainHostWithEigenDA {
