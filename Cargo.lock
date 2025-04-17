@@ -2264,7 +2264,7 @@ dependencies = [
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-verifier",
  "serde",
- "spin",
+ "spin 0.10.0",
  "tracing",
 ]
 
