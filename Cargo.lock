@@ -2194,7 +2194,6 @@ name = "hokulea-compute-proof"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives",
- "eigenda-v2-struct-rust",
  "num",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-prover",
@@ -2260,7 +2259,6 @@ dependencies = [
  "kona-proof",
  "kona-protocol",
  "kona-rpc",
- "rkyv",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-verifier",
  "serde",
@@ -4368,7 +4366,8 @@ checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
 [[package]]
 name = "rust-kzg-bn254-primitives"
 version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254?rev=e9c6aac83f765cc5d90fcf78e329ca2177b027a1#e9c6aac83f765cc5d90fcf78e329ca2177b027a1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6989f6e05d05fe20a940050d35a82d5697e16599a63f94fa75b28f723aa1abe"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -4383,8 +4382,9 @@ dependencies = [
 
 [[package]]
 name = "rust-kzg-bn254-prover"
-version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254?rev=e9c6aac83f765cc5d90fcf78e329ca2177b027a1#e9c6aac83f765cc5d90fcf78e329ca2177b027a1"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed1af11c66ca1e505ef959e398e86c39d9b2b20d0aa9a45a62e053a8a9044209"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -4400,8 +4400,9 @@ dependencies = [
 
 [[package]]
 name = "rust-kzg-bn254-verifier"
-version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254?rev=e9c6aac83f765cc5d90fcf78e329ca2177b027a1#e9c6aac83f765cc5d90fcf78e329ca2177b027a1"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c401f8b5f0469e11607b4f39872ea2abe642961a7860705f02baeb4c029c6af9"
 dependencies = [
  "ark-bn254",
  "ark-ec",

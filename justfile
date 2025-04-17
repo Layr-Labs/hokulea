@@ -114,7 +114,7 @@ lint: lint-native lint-docs
 alias l := lint-native
 [group('style')]
 lint-native: fmt-native-check lint-docs
-  cargo +nightly clippy --workspace --all --all-features --all-targets -- -D warnings
+  cargo clippy --workspace --all --all-features --all-targets -- -D warnings
 
 # Lint the Rust documentation
 [group('style')]
@@ -131,12 +131,12 @@ hack:
 alias f := fmt-native-fix
 [group('style')]
 fmt-native-fix:
-  cargo +nightly fmt --all
+  cargo fmt --all
 
 # Check the formatting of the workspace
 [group('style')]
 fmt-native-check:
-  cargo +nightly fmt --all -- --check
+  cargo fmt --all -- --check
 
 # Generate the hokulea/kona dependency graph shown in the README.
 [group('style')]

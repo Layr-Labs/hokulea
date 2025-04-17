@@ -11,8 +11,3 @@
 
 pub mod kzg_proof;
 pub use kzg_proof::compute_kzg_proof;
-
-pub mod view_proof;
-//pub use view_proof::compute_view_proof;
-
-pub mod steel;

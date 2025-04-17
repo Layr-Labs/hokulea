@@ -37,7 +37,7 @@ tracing.workspace = true
 async-trait.workspace = true
 spin.workspace = true
 
-rkyv.workspace = true
+#rkyv.workspace = true
 serde.workspace = true
 
 [features]

@@ -12,12 +12,12 @@ use kona_derive::{
         L1Retrieval, L1Traversal,
     },
     traits::{BlobProvider, OriginProvider, Pipeline, SignalReceiver},
-    types::{PipelineResult, Signal, ResetSignal, StepResult},
+    types::{PipelineResult, ResetSignal, Signal, StepResult},
 };
 use kona_driver::{DriverPipeline, PipelineCursor};
+use kona_genesis::{RollupConfig, SystemConfig};
 use kona_preimage::CommsClient;
 use kona_proof::{l1::OracleL1ChainProvider, l2::OracleL2ChainProvider, FlushableCache};
-use kona_genesis::{RollupConfig, SystemConfig};
 use kona_protocol::{BlockInfo, L2BlockInfo};
 use kona_rpc::OpAttributesWithParent;
 use spin::RwLock;
@@ -81,7 +81,7 @@ where
         l2_chain_provider: OracleL2ChainProvider<O>,
         eigenda_blob_provider: A,
     ) -> PipelineResult<Self> {
-        let system_config = cfg.genesis.system_config.clone();
+        let system_config = cfg.genesis.system_config;
         let attributes = StatefulAttributesBuilder::new(
             cfg.clone(),
             l2_chain_provider.clone(),
@@ -111,7 +111,8 @@ where
                     system_config,
                 }
                 .signal(),
-            ).await?;
+            )
+            .await?;
 
         Ok(Self {
             pipeline,

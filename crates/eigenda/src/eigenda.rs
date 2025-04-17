@@ -5,7 +5,7 @@ use crate::traits::EigenDABlobProvider;
 use crate::AltDACommitment;
 
 use alloc::{boxed::Box, fmt::Debug};
-use alloy_primitives::{Bytes, Address};
+use alloy_primitives::{Address, Bytes};
 use async_trait::async_trait;
 use kona_derive::{
     errors::PipelineError,
@@ -56,7 +56,11 @@ where
 {
     type Item = Bytes;
 
-    async fn next(&mut self, block_ref: &BlockInfo, batcher_addr: Address) -> PipelineResult<Self::Item> {
+    async fn next(
+        &mut self,
+        block_ref: &BlockInfo,
+        batcher_addr: Address,
+    ) -> PipelineResult<Self::Item> {
         info!("EigenDADataSource next {} {}", block_ref, batcher_addr);
 
         // data is either an op channel frame or an eigenda cert

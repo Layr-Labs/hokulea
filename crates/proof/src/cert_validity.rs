@@ -1,6 +1,6 @@
 use alloy_primitives::B256;
 use eigenda_v2_struct_rust::EigenDAV2Cert;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 //use risc0_zkvm::Receipt;
 
@@ -19,8 +19,8 @@ impl CertValidity {
     /// note this is different from if the cert itself is valid as in the is_valid field
     pub fn validate_cert_receipt(
         &self,
-        eigenda_cert: &EigenDAV2Cert,
-        validity_call_verifier_id: B256,
+        _eigenda_cert: &EigenDAV2Cert,
+        _validity_call_verifier_id: B256,
     ) {
         /*
         use crate::journal::CertValidityJournal;

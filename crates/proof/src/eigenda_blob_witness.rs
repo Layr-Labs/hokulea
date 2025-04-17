@@ -3,16 +3,12 @@ use alloc::vec::Vec;
 use alloy_primitives::FixedBytes;
 
 use eigenda_v2_struct_rust::EigenDAV2Cert;
-use rust_kzg_bn254_primitives::blob::Blob;
 
 use crate::cert_validity::CertValidity;
-use rkyv::{from_bytes, Archive};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// One EigenDABlobWitnessData corresponds to one EigenDA cert
-#[derive(
-    Default, Debug, Clone, Serialize, Deserialize
-)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDABlobWitnessData {
     /// eigenda v2 cert
     pub eigenda_certs: Vec<EigenDAV2Cert>,

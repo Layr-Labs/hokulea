@@ -108,7 +108,8 @@ where
         l1_provider.clone(),
         l2_provider.clone(),
         eigenda.clone(),
-    ).await?;
+    )
+    .await?;
 
     let executor = KonaExecutor::new(
         rollup_config.as_ref(),

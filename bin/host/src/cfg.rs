@@ -4,6 +4,7 @@ use anyhow::Result;
 use clap::Parser;
 use hokulea_proof::hint::ExtendedHintType;
 use kona_cli::cli_styles;
+use kona_host::single::SingleChainHostError;
 use kona_host::single::SingleChainProviders;
 use kona_host::PreimageServer;
 use kona_host::{OfflineHostBackend, OnlineHostBackend, OnlineHostBackendCfg};
@@ -14,7 +15,6 @@ use kona_std_fpvm::{FileChannel, FileDescriptor};
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::task::{self, JoinHandle};
-use kona_host::single::SingleChainHostError;
 
 use tracing::info;
 
@@ -63,7 +63,11 @@ impl SingleChainHostWithEigenDA {
     }
 
     /// Start a server with eigenda backend
-    pub async fn start_server<C>(&self, hint: C, preimage: C) -> Result<JoinHandle<Result<(), SingleChainHostError>>, SingleChainHostError>
+    pub async fn start_server<C>(
+        &self,
+        hint: C,
+        preimage: C,
+    ) -> Result<JoinHandle<Result<(), SingleChainHostError>>, SingleChainHostError>
     where
         C: Channel + Send + Sync + 'static,
     {
@@ -107,7 +111,9 @@ impl SingleChainHostWithEigenDA {
     }
 
     /// Creates the providers with eigenda
-    pub async fn create_providers(&self) -> Result<SingleChainProvidersWithEigenDA, SingleChainHostError> {
+    pub async fn create_providers(
+        &self,
+    ) -> Result<SingleChainProvidersWithEigenDA, SingleChainHostError> {
         let kona_providers = self.kona_cfg.create_providers().await?;
 
         let eigenda_blob_provider = OnlineEigenDABlobProvider::new_http(
@@ -130,22 +136,21 @@ impl SingleChainHostWithEigenDA {
 
         let server_task = self.start_server(hint.host, preimage.host).await?;
         // Start the client program in a separate child process.
-        
-        /* 
+
+        /*
         let client_task = task::spawn(hokulea_client_bin::clients::run_preloaded_eigenda_client(
             OracleReader::new(preimage.client),
             HintWriter::new(hint.client),
             None,
         ));
         */
-                
+
         let client_task = task::spawn(hokulea_client_bin::clients::run_direct_client(
             OracleReader::new(preimage.client),
             HintWriter::new(hint.client),
             None,
         ));
-        
-        
+
         let (_, client_result) = tokio::try_join!(server_task, client_task)?;
 
         // Bubble up the exit status of the client program if execution completes.
