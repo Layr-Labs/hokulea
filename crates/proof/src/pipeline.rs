@@ -12,14 +12,14 @@ use kona_derive::{
         L1Retrieval, L1Traversal,
     },
     traits::{BlobProvider, OriginProvider, Pipeline, SignalReceiver},
-    types::{PipelineResult, Signal, StepResult},
+    types::{PipelineResult, Signal, ResetSignal, StepResult},
 };
 use kona_driver::{DriverPipeline, PipelineCursor};
 use kona_preimage::CommsClient;
 use kona_proof::{l1::OracleL1ChainProvider, l2::OracleL2ChainProvider, FlushableCache};
-use maili_genesis::{RollupConfig, SystemConfig};
-use maili_protocol::{BlockInfo, L2BlockInfo};
-use maili_rpc::OpAttributesWithParent;
+use kona_genesis::{RollupConfig, SystemConfig};
+use kona_protocol::{BlockInfo, L2BlockInfo};
+use kona_rpc::OpAttributesWithParent;
 use spin::RwLock;
 
 /// An oracle-backed payload attributes builder for the `AttributesQueue` stage of the derivation
@@ -72,7 +72,7 @@ where
 {
     /// Constructs a new oracle-backed derivation pipeline. Follow the pattern from kona
     /// <https://github.com/op-rs/kona/blob/b3eef14771015f6f7427f4f05cf70e508b641802/crates/proof/proof/src/l1/pipeline.rs#L61-L68>
-    pub fn new(
+    pub async fn new(
         cfg: Arc<RollupConfig>,
         sync_start: Arc<RwLock<PipelineCursor>>,
         caching_oracle: Arc<O>,
@@ -80,7 +80,8 @@ where
         chain_provider: OracleL1ChainProvider<O>,
         l2_chain_provider: OracleL2ChainProvider<O>,
         eigenda_blob_provider: A,
-    ) -> Self {
+    ) -> PipelineResult<Self> {
+        let system_config = cfg.genesis.system_config.clone();
         let attributes = StatefulAttributesBuilder::new(
             cfg.clone(),
             l2_chain_provider.clone(),
@@ -90,7 +91,7 @@ where
         let eigenda_blob_source = EigenDABlobSource::new(eigenda_blob_provider);
         let dap = EigenDADataSource::new(dap, eigenda_blob_source);
 
-        let pipeline = PipelineBuilder::new()
+        let mut pipeline = PipelineBuilder::new()
             .rollup_config(cfg)
             .dap_source(dap)
             .l2_chain_provider(l2_chain_provider)
@@ -98,10 +99,24 @@ where
             .builder(attributes)
             .origin(sync_start.read().origin())
             .build();
-        Self {
+
+        // Reset the pipeline to populate the initial system configuration in L1 Traversal.
+        // TODO use proper handling like in kona to derive from l2_safe_head
+        let l2_safe_head = *sync_start.read().l2_safe_head();
+        pipeline
+            .signal(
+                ResetSignal {
+                    l2_safe_head,
+                    l1_origin: sync_start.read().origin(),
+                    system_config,
+                }
+                .signal(),
+            ).await?;
+
+        Ok(Self {
             pipeline,
             caching_oracle,
-        }
+        })
     }
 }
 

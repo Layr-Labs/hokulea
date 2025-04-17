@@ -30,7 +30,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
     type Error = OracleProviderError;
 
     /// Get V1 blobs. TODO remove in the future if not needed for testing
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
+    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {        
         let altda_commitment_bytes = altda_commitment.to_bytes();
         self.oracle
             .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))

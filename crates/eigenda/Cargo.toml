@@ -14,12 +14,12 @@ tracing.workspace = true
 async-trait.workspace = true
 bytes.workspace = true
 rust-kzg-bn254-primitives.workspace = true
-maili-protocol.workspace = true
+kona-protocol.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 
 [features]
 default = []
 serde = [
-  "maili-protocol/serde",
+  "kona-protocol/serde",
 ]

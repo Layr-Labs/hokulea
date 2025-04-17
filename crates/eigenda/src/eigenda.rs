@@ -5,7 +5,7 @@ use crate::traits::EigenDABlobProvider;
 use crate::AltDACommitment;
 
 use alloc::{boxed::Box, fmt::Debug};
-use alloy_primitives::{hex, Bytes};
+use alloy_primitives::{Bytes, Address};
 use async_trait::async_trait;
 use kona_derive::{
     errors::PipelineError,
@@ -13,7 +13,7 @@ use kona_derive::{
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
 };
-use maili_protocol::{BlockInfo, DERIVATION_VERSION_0};
+use kona_protocol::{BlockInfo, DERIVATION_VERSION_0};
 
 /// A factory for creating an Ethereum data source provider.
 #[derive(Debug, Clone)]
@@ -56,9 +56,11 @@ where
 {
     type Item = Bytes;
 
-    async fn next(&mut self, block_ref: &BlockInfo) -> PipelineResult<Self::Item> {
+    async fn next(&mut self, block_ref: &BlockInfo, batcher_addr: Address) -> PipelineResult<Self::Item> {
+        info!("EigenDADataSource next {} {}", block_ref, batcher_addr);
+
         // data is either an op channel frame or an eigenda cert
-        let data = self.ethereum_source.next(block_ref).await?;
+        let data = self.ethereum_source.next(block_ref, batcher_addr).await?;
 
         // if data is op channel framce
         if data[0] == DERIVATION_VERSION_0 {
@@ -82,10 +84,10 @@ where
 
         // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
         // TODO check rbn + STALE_GAP < l1_block_number {
-        info!(
-            "altda_commitment 0x{}",
-            hex::encode(altda_commitment.digest_template())
-        );
+        //info!(
+        //    "altda_commitment 0x{}",
+        //    hex::encode(altda_commitment.digest_template())
+        //);
         let eigenda_blob = self.eigenda_source.next(&altda_commitment).await?;
         Ok(eigenda_blob)
     }

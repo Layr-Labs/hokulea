@@ -24,9 +24,9 @@ alloy-primitives.workspace = true
 
 # Op Alloy
 alloy-rlp.workspace = true
-maili-protocol.workspace = true
-maili-genesis.workspace = true
-maili-rpc.workspace = true
+kona-protocol.workspace = true
+kona-genesis.workspace = true
+kona-rpc.workspace = true
 
 # ZKVM
 risc0-zkvm.workspace = true

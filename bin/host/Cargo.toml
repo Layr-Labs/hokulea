@@ -14,6 +14,7 @@ kona-preimage = { workspace = true, features = ["std"] }
 kona-host.workspace = true
 kona-proof.workspace = true
 kona-std-fpvm.workspace = true
+kona-cli.workspace = true
 
 # Alloy
 alloy-rlp.workspace = true
@@ -27,7 +28,7 @@ async-trait.workspace = true
 tokio = { workspace = true, features = ["full"] }
 clap = { workspace = true, features = ["derive", "env"] }
 serde.workspace = true
-tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true
