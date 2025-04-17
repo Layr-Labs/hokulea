@@ -45,6 +45,7 @@ _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
 [group('local-env')]
 _kurtosis_wait_for_first_l2_finalized_block:
   #!/usr/bin/env bash
+  FOUNDRY_DISABLE_NIGHTLY_WARNING=true
   L2_RPC=$(kurtosis port print eigenda-devnet op-el-1-op-geth-op-node-op-kurtosis rpc)
   echo "Waiting for first finalized block on L2 chain at $L2_RPC"
   while true; do
