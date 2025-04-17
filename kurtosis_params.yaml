@@ -13,8 +13,16 @@ ethereum_package:
     preset: minimal
   participants:
     - cl_type: teku
+      # 25.4.1 (current latest) is broken because optimism-package uses an old version of ethereum-package,
+      # which doesn't support 
+      # See https://github.com/ethpandaops/optimism-package/blob/c993cd0b9716fb063c1e514e19374e27e1b10b3c/kurtosis.yml#L6
+      # Once this gets updated, we can revert back to using latest teku.
+      # See https://github.com/ethpandaops/ethereum-package/issues/974 for more details.
+      cl_image: consensys/teku:25.4.0
       el_type: geth
 optimism_package:
+  observability:
+    enabled: false
   altda_deploy_config:
     da_bond_size: 0
     da_challenge_window: 16
