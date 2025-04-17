@@ -1,0 +1,22 @@
+name: Kurtosis Devnet
+
+on:
+  push:
+    branches: [master]
+  merge_group:
+  pull_request:
+
+env:
+  MISE_VERSION: 2024.12.14
+
+jobs:
+  kurtosis_devnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          version: ${{ env.MISE_VERSION }}
+          experimental: true
+      - run: just run-kurtosis-devnet
+      - run: just run-client-native-against-devnet
