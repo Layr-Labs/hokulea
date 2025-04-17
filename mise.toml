@@ -1,10 +1,29 @@
 [tools]
-cargo = "latest"
-cast = { version = "latest", exe = "cast" }
+
+# Rust dependencies
+# TODO: not sure what's the best way to manage these versions yet...
+# This version should ideally be the same as the rust-version in Cargo.toml.
+# I think mise also uses rust-toolchain.toml by default if it exists, so perhaps
+# we could use that instead...? Need to do some research on this.
+cargo = "0.87.1"
+rust = "1.83"
+
+# Foundry dependencies
+# Foundry is a special case because it supplies multiple binaries at the same
+# GitHub release, so we need to use the aliasing trick to get mise to not error
+# The git ref here should be on the `stable` branch.
+# Updated to use the specific nightly build
+forge = "nightly-654c8f01721e43dbc8a53c7a3b022548cb82b2f9"
+cast = "nightly-654c8f01721e43dbc8a53c7a3b022548cb82b2f9"
+anvil = "nightly-654c8f01721e43dbc8a53c7a3b022548cb82b2f9"
+
+
+# Miscellaneous dependencies
 just = "latest"
-rust = "latest"
-# Warning: version might need to be pinned manually.
-# It needs to be the same version as that used by the kurtosis engine that
-# was used to start the optimism kurtosis devnet.
-kurtosis = { version = "latest", exe = "kurtosis" }
 jq = "latest"
+kurtosis = "1.6.0"
+
+[alias]
+forge = "ubi:foundry-rs/foundry[exe=forge]"
+cast = "ubi:foundry-rs/foundry[exe=cast]"
+anvil = "ubi:foundry-rs/foundry[exe=anvil]"
