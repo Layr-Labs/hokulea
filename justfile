@@ -30,6 +30,9 @@ download-srs:
         echo "SRS file resources/g1.point already exists, skipping download"
     fi
 
+# This target runs as a prerequisite to `run-client-native-against-devnet` target.
+# The client assumes that rollup.json is present in the current working directory.
+# This target downloads the rollup config from the op-node running in the kurtosis enclave.
 [group('local-env')]
 _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
   #!/usr/bin/env bash
@@ -37,9 +40,25 @@ _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
   echo "Downloading rollup config from kurtosis op-node at $ROLLUP_NODE_RPC"
   cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > rollup.json
 
+# `run-client-native-against-devnet` requires a finalized L2 block before it can run.
+# In CI we thus run this command before running the client.
+[group('local-env')]
+_kurtosis_wait_for_first_l2_finalized_block:
+  #!/usr/bin/env bash
+  L2_RPC=$(kurtosis port print eigenda-devnet op-el-1-op-geth-op-node-op-kurtosis rpc)
+  echo "Waiting for first finalized block on L2 chain at $L2_RPC"
+  while true; do
+    BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
+    if [ $BLOCK_NUMBER -ne 0 ]; then
+      echo "First finalized block found: $BLOCK_NUMBER"
+      break
+    fi
+    sleep 5
+  done
+
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (download-srs) (_download-rollup-config-from-kurtosis)
+run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
   L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
@@ -67,6 +86,12 @@ run-client-native-against-devnet verbosity='' block_number='' rollup_config_path
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
   kurtosis run --enclave {{ENCLAVE_NAME}} github.com/ethpandaops/optimism-package --args-file {{ARGS_FILE}} --image-download always
+
+# If you have run run-kurtosis-devnet recently, which always downloads all images,
+# then it is safe to run this command, which skill use cached images instead, and is thus faster.
+[group('local-env')]
+run-kurtosis-devnet-with-cached-images ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
+  kurtosis run --enclave {{ENCLAVE_NAME}} github.com/ethpandaops/optimism-package --args-file {{ARGS_FILE}}
 
 ############################### STYLE ###############################
 
