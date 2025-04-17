@@ -22,7 +22,9 @@ ethereum_package:
       el_type: geth
 optimism_package:
   observability:
-    enabled: false
+    # Unfortunately can't be disabled, see https://github.com/ethpandaops/optimism-package/issues/221
+    # Would be nice to speed up CI...
+    enabled: true
   altda_deploy_config:
     da_bond_size: 0
     da_challenge_window: 16
