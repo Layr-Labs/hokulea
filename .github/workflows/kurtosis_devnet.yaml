@@ -19,4 +19,9 @@ jobs:
           version: ${{ env.MISE_VERSION }}
           experimental: true
       - run: just run-kurtosis-devnet
+      # We build the client here because `just run-client-native-against-devnet`
+      # first polls op-geth for a first finalized block, which takes a few minutes,
+      # and only after that runs `cargo run` which then builds the client, and takes another
+      # few minutes. Better to build here while waiting for first l2 block to finalize.
+      - run: just build-native
       - run: just run-client-native-against-devnet
