@@ -16,8 +16,6 @@ use serde::Serialize;
 use std::sync::Arc;
 use tokio::task::{self, JoinHandle};
 
-use tracing::info;
-
 /// The host Eigenda binary CLI application arguments.
 #[derive(Default, Parser, Serialize, Clone, Debug)]
 #[command(styles = cli_styles())]
@@ -84,9 +82,7 @@ impl SingleChainHostWithEigenDA {
                 .await
                 .map_err(SingleChainHostError::from)
             })
-        } else {
-            println!("not offline");
-            info!("not offline info");
+        } else {            
             let providers = self.create_providers().await?;
             let backend = OnlineHostBackend::new(
                 self.clone(),

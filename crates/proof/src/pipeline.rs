@@ -11,7 +11,7 @@ use kona_derive::{
         AttributesQueue, BatchProvider, BatchStream, ChannelProvider, ChannelReader, FrameQueue,
         L1Retrieval, L1Traversal,
     },
-    traits::{BlobProvider, OriginProvider, Pipeline, SignalReceiver},
+    traits::{BlobProvider, L2ChainProvider, OriginProvider, Pipeline, SignalReceiver},
     types::{PipelineResult, ResetSignal, Signal, StepResult},
 };
 use kona_driver::{DriverPipeline, PipelineCursor};
@@ -78,10 +78,9 @@ where
         caching_oracle: Arc<O>,
         blob_provider: B,
         chain_provider: OracleL1ChainProvider<O>,
-        l2_chain_provider: OracleL2ChainProvider<O>,
+        mut l2_chain_provider: OracleL2ChainProvider<O>,
         eigenda_blob_provider: A,
-    ) -> PipelineResult<Self> {
-        let system_config = cfg.genesis.system_config;
+    ) -> PipelineResult<Self> {        
         let attributes = StatefulAttributesBuilder::new(
             cfg.clone(),
             l2_chain_provider.clone(),
@@ -92,9 +91,9 @@ where
         let dap = EigenDADataSource::new(dap, eigenda_blob_source);
 
         let mut pipeline = PipelineBuilder::new()
-            .rollup_config(cfg)
+            .rollup_config(cfg.clone())
             .dap_source(dap)
-            .l2_chain_provider(l2_chain_provider)
+            .l2_chain_provider(l2_chain_provider.clone())
             .chain_provider(chain_provider)
             .builder(attributes)
             .origin(sync_start.read().origin())
@@ -108,7 +107,10 @@ where
                 ResetSignal {
                     l2_safe_head,
                     l1_origin: sync_start.read().origin(),
-                    system_config,
+                    system_config: l2_chain_provider
+                        .system_config_by_number(l2_safe_head.block_info.number, cfg.clone())
+                        .await
+                        .ok(),
                 }
                 .signal(),
             )

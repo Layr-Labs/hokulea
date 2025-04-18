@@ -13,6 +13,7 @@ pub struct EigenDABlobWitnessData {
     /// eigenda v2 cert
     pub eigenda_certs: Vec<EigenDAV2Cert>,
     /// blob empty if cert is invalid
+    /// ToDo make Blob Serializable
     pub eigenda_blobs: Vec<Vec<u8>>,
     /// kzg proof on Fiat Shamir points
     pub kzg_proofs: Vec<FixedBytes<64>>,

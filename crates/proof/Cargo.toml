@@ -29,7 +29,6 @@ kona-genesis.workspace = true
 kona-rpc.workspace = true
 
 # ZKVM
-#risc0-zkvm.workspace = true
 
 tracing.workspace = true
 
