@@ -80,7 +80,7 @@ where
         chain_provider: OracleL1ChainProvider<O>,
         mut l2_chain_provider: OracleL2ChainProvider<O>,
         eigenda_blob_provider: A,
-    ) -> PipelineResult<Self> {        
+    ) -> PipelineResult<Self> {
         let attributes = StatefulAttributesBuilder::new(
             cfg.clone(),
             l2_chain_provider.clone(),

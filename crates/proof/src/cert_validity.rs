@@ -12,7 +12,7 @@ pub struct CertValidity {
     /// in dev mode, receipt is ignored
     /// in the future, to make it generic for sp1-contract-call
     /// Opaque zk proof
-    pub receipt: Option<Vec<u8>>, 
+    pub receipt: Option<Vec<u8>>,
 }
 
 impl CertValidity {

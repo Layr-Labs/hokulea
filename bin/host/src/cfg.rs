@@ -82,7 +82,7 @@ impl SingleChainHostWithEigenDA {
                 .await
                 .map_err(SingleChainHostError::from)
             })
-        } else {            
+        } else {
             let providers = self.create_providers().await?;
             let backend = OnlineHostBackend::new(
                 self.clone(),
