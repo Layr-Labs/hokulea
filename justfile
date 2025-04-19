@@ -36,6 +36,7 @@ download-srs:
 [group('local-env')]
 _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
   #!/usr/bin/env bash
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
   ROLLUP_NODE_RPC=$(kurtosis port print {{enclave}} op-cl-1-op-node-op-geth-op-kurtosis http)
   echo "Downloading rollup config from kurtosis op-node at $ROLLUP_NODE_RPC"
   cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > rollup.json
@@ -45,15 +46,15 @@ _download-rollup-config-from-kurtosis enclave='eigenda-devnet':
 [group('local-env')]
 _kurtosis_wait_for_first_l2_finalized_block:
   #!/usr/bin/env bash
-  FOUNDRY_DISABLE_NIGHTLY_WARNING=true
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
   L2_RPC=$(kurtosis port print eigenda-devnet op-el-1-op-geth-op-node-op-kurtosis rpc)
-  echo "Waiting for first finalized block on L2 chain at $L2_RPC"
   while true; do
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
     if [ $BLOCK_NUMBER -ne 0 ]; then
       echo "First finalized block found: $BLOCK_NUMBER"
       break
     fi
+    echo "Waiting for first finalized block on L2 chain at $L2_RPC"
     sleep 5
   done
 
@@ -61,6 +62,7 @@ _kurtosis_wait_for_first_l2_finalized_block:
 [group('local-env')]
 run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
   L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
   L2_RPC="$(kurtosis port print {{enclave}} op-el-1-op-geth-op-node-op-kurtosis rpc)"
