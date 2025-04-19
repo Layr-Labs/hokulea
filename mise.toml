@@ -1,12 +1,5 @@
 [tools]
 
-# Rust dependencies
-# TODO: not sure what's the best way to manage these versions yet...
-# This version should ideally be the same as the rust-version in Cargo.toml.
-# I think mise also uses rust-toolchain.toml by default if it exists, so perhaps
-# we could use that instead...? Need to do some research on this.
-rust = "1.83"
-
 # Foundry dependencies
 forge = "nightly-654c8f01721e43dbc8a53c7a3b022548cb82b2f9"
 cast = "nightly-654c8f01721e43dbc8a53c7a3b022548cb82b2f9"
