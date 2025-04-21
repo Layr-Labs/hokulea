@@ -5,17 +5,17 @@ members = ["bin/*", "crates/*"]
 [workspace.dependencies]
 kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
 kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
-kona-derive = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
-kona-driver = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
-kona-executor = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
-kona-mpt = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
-kona-preimage = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", features = [
+kona-derive = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-driver = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
+kona-executor = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
+kona-mpt = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
+kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", features = [
     "rkyv",
     "serde",
 ] }
-kona-proof = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
-kona-std-fpvm = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
-kona-providers-alloy = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
+kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
+kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
+kona-providers-alloy = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
 
 # Workspace
 hokulea-client-bin = { path = "bin/client", version = "0.1.0", default-features = false }
@@ -25,13 +25,13 @@ hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = f
 hokulea-compute-proof = { path = "crates/compute-proof", version = "0.1.0", default-features = false }
 
 # Maili
-kona-genesis = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
-kona-protocol = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
-kona-registry = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
-kona-rpc = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false, features = [
+kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-protocol = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-registry = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false, features = [
     "serde",
 ] }
-kona-cli = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-cli = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 
 # Alloy (Network)
 alloy-signer-local = { version = "0.12.4" }

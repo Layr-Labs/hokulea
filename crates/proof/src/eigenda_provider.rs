@@ -10,6 +10,7 @@ use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 
 use crate::hint::ExtendedHintType;
+use tracing::info;
 
 /// The oracle-backed EigenDA provider for the client program.
 #[derive(Debug, Clone)]
@@ -38,8 +39,12 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .map_err(OracleProviderError::Preimage)?;
 
         let blob_length_fe: u64 = match &altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V1(c) => c.blob_header.data_length as u64,
+            EigenDAVersionedCert::V1(c) => {
+                info!(target: "eigenda-blobsource", "blob version: V1");
+                c.blob_header.data_length as u64
+            }
             EigenDAVersionedCert::V2(c) => {
+                info!(target: "eigenda-blobsource", "blob version: V2");
                 c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
