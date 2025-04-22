@@ -18,7 +18,7 @@ ethereum_package:
       # See https://github.com/ethpandaops/optimism-package/blob/c993cd0b9716fb063c1e514e19374e27e1b10b3c/kurtosis.yml#L6
       # Once this gets updated, we can revert back to using latest teku.
       # See https://github.com/ethpandaops/ethereum-package/issues/974 for more details.
-      cl_image: consensys/teku:25.4.0
+      cl_image: consensys/teku:25.3
       el_type: geth
 optimism_package:
   observability:
@@ -58,12 +58,12 @@ optimism_package:
         cmd:
           - --addr=0.0.0.0
           - --port=3100
-          - --storage.backends-to-enable=V1,V2
+          - --storage.backends-to-enable=V2
           - --storage.dispersal-backend=v2
           - --api-enabled=admin
           - --eigenda.v2.max-blob-length=1MiB
           - --memstore.enabled
-          - --memstore.expiration=30m
+          - --memstore.expiration=600m
         image: ghcr.io/layr-labs/eigenda-proxy:v1.7.0
       network_params:
         fjord_time_offset: 0
