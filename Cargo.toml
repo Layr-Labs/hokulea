@@ -65,7 +65,7 @@ alloy-primitives = { version = "0.8.21", default-features = false, features = [
     "sha3-keccak",
 ] }
 alloy-sol-types = { version = "0.8.21", default-features = false }
-alloy-sol-macro = { version = "0.8.21", default-features = false }
+alloy-sol-macro = { version = "0.8.25", default-features = false }
 
 # OP Alloy
 op-alloy-consensus = { version = "0.11.0", default-features = false }
