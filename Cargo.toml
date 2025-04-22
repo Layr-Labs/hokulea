@@ -61,7 +61,7 @@ alloy-rpc-types-eth = { version = "0.12.4", default-features = false }
 alloy-signer = { version = "0.12.4", default-features = false }
 
 # Keccak with the SHA3 patch is more efficient than the default Keccak.
-alloy-primitives = { version = "0.8.21", default-features = false, features = [
+alloy-primitives = { version = "0.8.25", default-features = false, features = [
     "sha3-keccak",
 ] }
 alloy-sol-types = { version = "0.8.21", default-features = false }
