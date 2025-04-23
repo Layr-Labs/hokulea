@@ -97,7 +97,6 @@ pub async fn fetch_eigenda_hint(
     };
 
     let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
-    println!("eigenda_blob.blob.len() {}", eigenda_blob.blob.len());
     // Acquire a lock on the key-value store and set the preimages.
     let mut kv_write_lock = kv.write().await;
 
