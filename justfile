@@ -7,14 +7,24 @@ default:
 ############################### BUILD ###############################
 
 # Build the workspace for all available targets
-alias b := build
+alias b := build-all
 [group('build')]
-build: build-native
+build-all: build-native build-client-for-asterisc
 
 # Build for the native target
 [group('build')]
 build-native *args='':
   cargo build --workspace $@
+
+# Build `hokulea-client` for the `asterisc` target.
+[group('build')]
+build-client-for-asterisc:
+  docker run \
+    --rm \
+    -v `pwd`/:/workdir \
+    -w="/workdir" \
+    ghcr.io/op-rs/kona/asterisc-builder:0.1.0 \
+    cargo build -Zbuild-std=core,alloc -p hokulea-client-bin --bin hokulea-client-bin --profile release-client-lto --no-default-features
 
 ############################### LOCAL DEVNET ###############################
 
@@ -34,20 +44,24 @@ download-srs:
 # The client assumes that rollup.json is present in the current working directory.
 # This target downloads the rollup config from the op-node running in the kurtosis enclave.
 [group('local-env')]
-_download-rollup-config-from-kurtosis enclave='eigenda-devnet':
+_download-rollup-config-from-kurtosis enclave='eigenda-devnet' chain_id='2151908':
   #!/usr/bin/env bash
+  set -o pipefail -o errexit -o nounset
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
-  ROLLUP_NODE_RPC=$(kurtosis port print {{enclave}} op-cl-1-op-node-op-geth-op-kurtosis http)
+
+  ROLLUP_NODE_RPC=$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)
   echo "Downloading rollup config from kurtosis op-node at $ROLLUP_NODE_RPC"
   cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > rollup.json
 
 # `run-client-native-against-devnet` requires a finalized L2 block before it can run.
 # In CI we thus run this command before running the client.
 [group('local-env')]
-_kurtosis_wait_for_first_l2_finalized_block:
+_kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
   #!/usr/bin/env bash
+  set -o pipefail -o errexit -o nounset
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
-  L2_RPC=$(kurtosis port print eigenda-devnet op-el-1-op-geth-op-node-op-kurtosis rpc)
+
+  L2_RPC=$(kurtosis port print eigenda-devnet op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)
   while true; do
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
     if [ $BLOCK_NUMBER -ne 0 ]; then
@@ -60,13 +74,15 @@ _kurtosis_wait_for_first_l2_finalized_block:
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-native-against-devnet verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
+  set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
+
   L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
-  L2_RPC="$(kurtosis port print {{enclave}} op-el-1-op-geth-op-node-op-kurtosis rpc)"
-  ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-1-op-node-op-geth-op-kurtosis http)"
+  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
+  ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
 
@@ -81,10 +97,11 @@ run-client-native-against-devnet verbosity='' block_number='' rollup_config_path
   else
     BLOCK_NUMBER={{block_number}}
   fi
+
   set -x
-  just --justfile bin/client/justfile run-client-native $BLOCK_NUMBER \
+  just --justfile bin/client/justfile run-client $BLOCK_NUMBER \
     $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \
-    $ROLLUP_CONFIG_PATH {{verbosity}}
+    {{native_or_asterisc}} $ROLLUP_CONFIG_PATH {{verbosity}}
 
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
