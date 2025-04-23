@@ -2,6 +2,12 @@
 resolver = "2"
 members = ["bin/*", "crates/*"]
 
+[profile.release-client-lto]
+inherits = "release"
+panic = "abort"
+codegen-units = 1
+lto = "fat"
+
 [workspace.dependencies]
 kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
 kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16" }
