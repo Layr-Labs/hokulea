@@ -3,7 +3,7 @@ use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
-use eigenda_v2_struct_rust::EigenDAV2Cert;
+use eigenda_v2_struct::EigenDAV2Cert;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use kona_preimage::errors::PreimageOracleError;
 use kona_proof::errors::OracleProviderError;

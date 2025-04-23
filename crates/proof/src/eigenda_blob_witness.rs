@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloy_primitives::FixedBytes;
 
-use eigenda_v2_struct_rust::EigenDAV2Cert;
+use eigenda_v2_struct::EigenDAV2Cert;
 
 use crate::cert_validity::CertValidity;
 use serde::{Deserialize, Serialize};

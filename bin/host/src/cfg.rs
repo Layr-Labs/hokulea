@@ -141,7 +141,7 @@ impl SingleChainHostWithEigenDA {
         ));
         */
 
-        let client_task = task::spawn(hokulea_client_bin::clients::run_direct_client(
+        let client_task = task::spawn(hokulea_client_bin::client::run_direct_client(
             OracleReader::new(preimage.client),
             HintWriter::new(hint.client),
             None,

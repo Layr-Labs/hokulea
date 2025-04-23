@@ -1,6 +1,6 @@
 use alloy_primitives::B256;
 use alloy_rlp::{RlpDecodable, RlpEncodable};
-use eigenda_v2_struct_rust::EigenDAV2Cert;
+use eigenda_v2_struct::EigenDAV2Cert;
 
 /// CertValidityJournal is a data structure committed by zkvm guest code, that comes with
 /// corresponding zk proof attesting its validity

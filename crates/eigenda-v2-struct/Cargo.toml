@@ -1,0 +1,11 @@
+[package]
+name = "eigenda-v2-struct"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+alloy-primitives = { workspace = true, features = ["rlp", "serde"] }
+alloy-rlp = { workspace = true, features = ["derive"] }
+alloy-sol-types.workspace = true
+serde = { workspace = true, features = ["derive"] }
+

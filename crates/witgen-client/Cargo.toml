@@ -1,18 +1,23 @@
 [package]
-name = "hokulea-client-bin"
+name = "witgen-client"
 version = "0.1.0"
 edition = "2021"
 
+
 [dependencies]
+alloy-primitives.workspace = true
+
 kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
 kona-executor.workspace = true
-kona-std-fpvm.workspace = true
-kona-std-fpvm-proc.workspace = true
 
 hokulea-proof.workspace = true
 hokulea-client.workspace = true
+hokulea-compute-proof.workspace = true
+hokulea-eigenda.workspace = true
 
+rust-kzg-bn254-primitives.workspace = true
+
+tracing.workspace = true
 async-trait.workspace = true
-cfg-if.workspace = true

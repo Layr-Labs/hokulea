@@ -1,5 +1,5 @@
 use alloy_primitives::B256;
-use eigenda_v2_struct_rust::EigenDAV2Cert;
+use eigenda_v2_struct::EigenDAV2Cert;
 use serde::{Deserialize, Serialize};
 
 //use risc0_zkvm::Receipt;
