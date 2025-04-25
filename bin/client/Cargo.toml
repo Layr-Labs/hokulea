@@ -14,5 +14,9 @@ kona-std-fpvm-proc.workspace = true
 hokulea-proof.workspace = true
 hokulea-client.workspace = true
 
-async-trait.workspace = true
 cfg-if.workspace = true
+
+[package.metadata.cargo-machete]
+# cfg-if is used by the `client_entry` macro in kona-client
+# but somehow machete doesn't see it as a dependency
+ignored = ["cfg-if"]

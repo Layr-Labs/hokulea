@@ -111,7 +111,6 @@ tracing = { version = "0.1.41", default-features = false }
 # Testing
 pprof = "0.14.0"
 arbtest = "0.3.2"
-proptest = "1.6.0"
 criterion = "0.5.1"
 
 # Serialization

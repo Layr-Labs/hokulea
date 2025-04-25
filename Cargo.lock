@@ -2151,7 +2151,6 @@ dependencies = [
 name = "hokulea-client-bin"
 version = "0.1.0"
 dependencies = [
- "async-trait",
  "cfg-if",
  "hokulea-client",
  "hokulea-proof",
@@ -2207,7 +2206,6 @@ dependencies = [
  "kona-preimage",
  "kona-proof",
  "kona-std-fpvm",
- "proptest",
  "reqwest",
  "serde",
  "tokio",
