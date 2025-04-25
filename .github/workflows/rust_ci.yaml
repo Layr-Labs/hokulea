@@ -11,6 +11,9 @@ env:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        justfile-target: [build-native, build-client-for-asterisc]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -21,21 +24,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-      - name: cargo build
-        run: just build
-  build-asterisc:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@just
-      - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-      - name: cargo build asterisc
-        run: just build-client-for-asterisc
+      - run: just ${{ matrix.justfile-target }}
   cargo-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
