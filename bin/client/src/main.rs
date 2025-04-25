@@ -25,9 +25,5 @@ static HINT_WRITER: HintWriter<FileChannel> = HintWriter::new(HINT_WRITER_PIPE);
 
 #[client_entry(100_000_000)]
 fn main() -> Result<(), String> {
-    kona_proof::block_on(run_direct_client(
-        ORACLE_READER,
-        HINT_WRITER,
-        None,
-    ))
+    kona_proof::block_on(run_direct_client(ORACLE_READER, HINT_WRITER, None))
 }
