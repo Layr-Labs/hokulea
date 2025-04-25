@@ -126,9 +126,8 @@ revm = { version = "19.5.0", default-features = false }
 # K/V database
 rocksdb = { version = "0.22.0", default-features = false }
 
-[profile.dev]
-opt-level = 3
-
-[profile.release]
-debug = 1
-lto = true
+# TODO: remove this patch before merging.
+[patch.crates-io]
+rust-kzg-bn254-primitives = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--make-asterisc-compile" }
+rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--make-asterisc-compile" }
+rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--make-asterisc-compile" }
