@@ -24,7 +24,7 @@ build-client-for-asterisc:
     -v `pwd`/:/workdir \
     -w="/workdir" \
     ghcr.io/op-rs/kona/asterisc-builder:0.1.0 \
-    cargo build -Zbuild-std=core,alloc -p hokulea-client-bin --bin hokulea-client-bin --profile release-client-lto --no-default-features
+    cargo build -Zbuild-std=core,alloc -p hokulea-client-bin --bin hokulea-client-bin --profile release-client-lto
 
 ############################### LOCAL DEVNET ###############################
 
