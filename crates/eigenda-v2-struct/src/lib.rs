@@ -1,9 +1,13 @@
+#![no_std]
 pub mod sol_struct;
 
 use alloy_primitives::Bytes;
-use alloy_primitives::{FixedBytes, U256, keccak256, B256};
+use alloy_primitives::{keccak256, FixedBytes, B256, U256};
 use alloy_rlp::{Decodable, Encodable, RlpDecodable, RlpEncodable};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+
+extern crate alloc;
+use alloc::vec::Vec;
 
 // G1Point represents a point on the BN254 G1 curve
 #[derive(Debug, Clone, Copy, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
@@ -69,7 +73,7 @@ pub struct BlobHeaderV2 {
     pub version: u16,
     pub quorum_numbers: Bytes,
     pub commitment: BlobCommitment,
-    pub payment_header_hash: [u8; 32],    
+    pub payment_header_hash: [u8; 32],
 }
 
 impl BlobHeaderV2 {
@@ -77,7 +81,7 @@ impl BlobHeaderV2 {
         sol_struct::BlobHeaderV2 {
             version: self.version,
             quorumNumbers: Bytes::copy_from_slice(&self.quorum_numbers),
-            paymentHeaderHash: FixedBytes::<32>(self.payment_header_hash),            
+            paymentHeaderHash: FixedBytes::<32>(self.payment_header_hash),
             commitment: self.commitment.to_sol(),
         }
     }
@@ -189,7 +193,7 @@ pub fn parse_blob_inclusion(data: &Vec<u8>) -> sol_struct::BlobInclusionInfo {
 pub struct EigenDAV2Cert {
     pub blob_inclusion_info: BlobInclusionInfo,
     pub batch_header_v2: BatchHeaderV2,
-    pub nonsigner_stake_and_signature: NonSignerStakesAndSignature,    
+    pub nonsigner_stake_and_signature: NonSignerStakesAndSignature,
     pub signed_quorum_numbers: Bytes,
 }
 
