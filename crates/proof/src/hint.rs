@@ -4,7 +4,8 @@ use alloc::{string::String, vec::Vec};
 use alloy_primitives::hex;
 use core::fmt::Display;
 use kona_proof::{errors::HintParsingError, HintType};
-use std::str::FromStr;
+
+use alloc::str::FromStr;
 
 /// The [ExtendedHintType] extends the [HintType] enum and is used to specify the type of hint that was received.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -12,6 +12,9 @@ use rust_kzg_bn254_primitives::blob::Blob;
 use crate::hint::ExtendedHintType;
 use tracing::info;
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 /// The oracle-backed EigenDA provider for the client program.
 #[derive(Debug, Clone)]
 pub struct OracleEigenDAProvider<T: CommsClient> {

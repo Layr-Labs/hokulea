@@ -2,7 +2,7 @@ use alloy_primitives::B256;
 use eigenda_v2_struct::EigenDAV2Cert;
 use serde::{Deserialize, Serialize};
 
-//use risc0_zkvm::Receipt;
+use alloc::vec::Vec;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CertValidity {

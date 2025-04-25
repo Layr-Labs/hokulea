@@ -11,6 +11,10 @@ use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 use tracing::info;
 
+use alloc::boxed::Box;
+use alloc::vec;
+use alloc::vec::Vec;
+
 #[cfg(feature = "eigenda-view-proof")]
 use alloy_primitives::B256;
 /// PreloadedEigenDABlobProvider ensures the following invariants
