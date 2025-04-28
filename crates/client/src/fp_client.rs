@@ -1,7 +1,6 @@
 extern crate alloc;
 use alloc::sync::Arc;
 use core::fmt::Debug;
-use core::prelude::v1::*;
 
 use alloy_consensus::Sealed;
 use tracing::{error, info};
