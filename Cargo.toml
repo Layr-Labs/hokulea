@@ -99,7 +99,6 @@ thiserror = { version = "2.0.11", default-features = false }
 anyhow = { version = "1.0.86", default-features = false }
 lazy_static = { version = "1.5.0", default-features = false }
 
-
 rust-kzg-bn254-primitives = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct", default-features = false }
 rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct", default-features = false }
 rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct", default-features = false }
@@ -124,33 +123,8 @@ serde_json = { version = "1.0.140", default-features = false }
 
 # Ethereum
 unsigned-varint = "0.8.0"
-revm = { version = "22.0.1", default-features = false }
+revm = { version = "19.5.0", default-features = false }
 
 # K/V database
 rocksdb = { version = "0.22.0", default-features = false }
 
-# Steel
-canoe-steel-apps = { path = "./canoe/steel/apps" }
-canoe-steel-methods = { path = "./canoe/steel/methods" }
-
-risc0-zkvm = { version = "2.0.2" }
-risc0-ethereum-contracts = { version = "2.0.2" }
-risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", tag = "steel-v2.0.0-rc.7", default-features = false}
-risc0-build-ethereum = { version = "2.0.2" }
-risc0-build = { version = "2.0.2", default-features = false }
-risc0-zkp = { version = "2.0.1", default-features = false }
-
-# Sp1-contract-call
-#canoe-sp1-contract-call-host = { path = "./canoe/sp1-contract-call/host" }
-#canoe-sp1-contract-call-client = { path = "./canoe/sp1-contract-call/client" }
-
-#sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4"}
-#sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4"}
-#sp1-sdk = "4.2.0"
-#sp1-build = "4.2.0"
-#sp1-zkvm = "4.2.0"
-
-# ZKVM deps (ToDo cleanup)
-log = { version = "0.4" }
-hex = "0.4"
-url = { version = "2.5" }
