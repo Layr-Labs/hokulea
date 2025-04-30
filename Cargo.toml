@@ -1,6 +1,9 @@
 [workspace]
 resolver = "2"
-members = ["bin/*", "crates/*"]
+members = [
+    "bin/*",
+    "crates/*",
+]
 
 [profile.release-client-lto]
 inherits = "release"
@@ -35,6 +38,7 @@ hokulea-client = { path = "crates/client", version = "0.1.0", default-features =
 hokulea-eigenda = { path = "crates/eigenda", version = "0.1.0", default-features = false }
 hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = false }
 hokulea-compute-proof = { path = "crates/compute-proof", version = "0.1.0", default-features = false }
+hokulea-witgen-client = { path = "crates/witgen-client", version = "0.1.0", default-features = false }
 
 # EigenDA v2 struct
 # TODO: this should be moved elsewhere, probably to https://github.com/Layr-Labs/eigenda-rs
@@ -95,10 +99,9 @@ thiserror = { version = "2.0.11", default-features = false }
 anyhow = { version = "1.0.86", default-features = false }
 lazy_static = { version = "1.5.0", default-features = false }
 
-
-rust-kzg-bn254-primitives = { version = "0.1.2", default-features = false }
-rust-kzg-bn254-verifier = { version = "0.1.2", default-features = false }
-rust-kzg-bn254-prover = { version = "0.1.1", default-features = false }
+rust-kzg-bn254-primitives = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct", default-features = false }
+rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct", default-features = false }
+rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct", default-features = false }
 
 ark-bn254 = { version = "0.5.0", default-features = false }
 ark-ff = { version = "0.5.0", default-features = false }
@@ -124,3 +127,4 @@ revm = { version = "19.5.0", default-features = false }
 
 # K/V database
 rocksdb = { version = "0.22.0", default-features = false }
+
