@@ -99,7 +99,7 @@ async fn fetch_blob<T: CommsClient>(
             .map_err(OracleProviderError::Preimage)?;
 
         // if field element is 0, it means the host has identified that the data
-        // has breached eigenda invariant, i.e cert is valid
+        // has breached eigenda invariant, i.e cert is invalid
         if field_element.is_empty() {
             return Err(OracleProviderError::Preimage(PreimageOracleError::Other(
                 "field elememnt is empty, breached eigenda invariant".into(),
@@ -107,6 +107,8 @@ async fn fetch_blob<T: CommsClient>(
         }
 
         // an eigenda field element contains 32 bytes
+        // if not, host is malicious, just simply abort
+        // If blob is not multiple of 32, at least the host can pad them
         assert!(field_element.len() == 32);
 
         blob[(idx_fe as usize) << 5..(idx_fe as usize + 1) << 5]

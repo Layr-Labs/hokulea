@@ -1,4 +1,4 @@
-use alloy_primitives::FixedBytes;
+use alloy_primitives::{Bytes, FixedBytes};
 use async_trait::async_trait;
 use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
@@ -6,6 +6,7 @@ use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;
 use std::sync::{Arc, Mutex};
+use eigenda_v2_struct::EigenDAV2Cert;
 
 /// This is a wrapper around OracleEigenDAProvider, with
 /// additional functionalities to generate eigenda witness
@@ -39,26 +40,41 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
             EigenDAVersionedCert::V2(c) => c,
         };
 
-        // only a single blob is returned from a cert
-        let blob = self.provider.get_blob(altda_commitment).await?;
-
-        // Compute kzg proof for the entire blob on a deterministic random point
-        let kzg_proof = match compute_kzg_proof(blob.data()) {
-            Ok(p) => p,
-            Err(e) => panic!("cannot generate a kzg proof: {}", e),
-        };
-
-        // populate witness struct
-        let mut witness = self.witness.lock().unwrap();
-        witness.eigenda_blobs.push(blob.clone().into());
-        let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
-        witness.kzg_proofs.push(fixed_bytes);
-        witness.eigenda_certs.push(cert.clone());
-        witness.validity.push(CertValidity {
-            claimed_validity: true,
-            receipt: None,
-        });
-
-        Ok(blob)
+        // only a single blob is returned from a cert        
+        match self.provider.get_blob(altda_commitment).await {
+            Ok(blob) => {
+                // Compute kzg proof for the entire blob on a deterministic random point
+                let kzg_proof = match compute_kzg_proof(blob.data()) {
+                    Ok(p) => p,
+                    Err(e) => panic!("cannot generate a kzg proof: {}", e),
+                };
+                populate_witness(cert, self.witness.clone(), &kzg_proof, true, &blob);
+                return Ok(blob);
+            }
+            Err(e) =>{
+                // If it returns an error, the cert must be invalid
+                let empty = vec![];
+                populate_witness(cert, self.witness.clone(), &Bytes::new(), false, &Blob::new(&empty));
+                return Err(e);
+            }
+        };        
     }
+}
+
+fn populate_witness(
+    cert: &EigenDAV2Cert,
+    witness: Arc<Mutex<EigenDABlobWitnessData>>, 
+    kzg_proof: &Bytes,
+    cert_validity: bool,
+    blob: &Blob,
+) {
+    let mut witness = witness.lock().unwrap();
+    witness.eigenda_blobs.push(blob.clone().into());
+    let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
+    witness.kzg_proofs.push(fixed_bytes);
+    witness.eigenda_certs.push(cert.clone());
+    witness.validity.push(CertValidity {
+        claimed_validity: cert_validity,
+        receipt: None,
+    });
 }

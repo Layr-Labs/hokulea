@@ -25,3 +25,13 @@ kona-proof.workspace = true
 alloy-evm.workspace = true
 op-revm.workspace = true
 op-alloy-consensus.workspace = true
+eigenda-v2-struct.workspace = true
+serde_json = { workspace = true }
+
+canoe-steel-apps = { workspace = true }
+#canoe-sp1-contract-call-host = { workspace = true, optional = true }
+
+[features]
+default = []
+#steel = ["canoe-steel-apps"]
+#sp1-contract-call = ["canoe-sp1-contract-call-host"]

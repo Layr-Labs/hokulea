@@ -27,6 +27,7 @@ use tracing::info;
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
 use op_alloy_consensus::OpTxEnvelope;
 use op_revm::OpSpecId;
+use canoe_steel_apps::apps::create_cert_validity_proof;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> anyhow::Result<()> {
@@ -72,6 +73,25 @@ where
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
+
+    info!("done generating the witness");
+
+    // Generate view proof by calling compute_view_proof(), and pass it into wit
+    // When securely verify the eigenda integration, PreloadedEigenDABlobProvider::from shall be run inside the ZKVM in the
+    // form of ELF. It is important to pass it to witness before calling PreloadedEigenDABlobProvider::from. Because the
+    // verification is checked within the elf
+    let num_cert = wit.validity.len();
+    for i in 0 .. num_cert {
+        let cert = &wit.eigenda_certs[i];
+        let canoe_proof = create_cert_validity_proof(
+            cert.batch_header_v2.clone(),
+            cert.nonsigner_stake_and_signature.clone(),
+            cert.blob_inclusion_info.clone(),
+            wit.validity[i].claimed_validity,
+        ).await.expect("must be able generate a canoe zk proof attesting eth state");
+        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
+        wit.validity[i].receipt = Some(canoe_proof_bytes);
+    }    
 
     let oracle = Arc::new(CachingOracle::new(
         ORACLE_LRU_SIZE,

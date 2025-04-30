@@ -1,0 +1,19 @@
+[package]
+name = "canoe-sp1-contract-call-client"
+description = ""
+edition = "2021"
+
+[dependencies]
+# workspace
+sp1-cc-client-executor.workspace = true
+
+# alloy
+alloy-primitives = { workspace = true, features = ["serde"] }
+alloy-sol-types.workspace = true
+alloy-sol-macro.workspace = true
+
+# sp1
+sp1-zkvm.workspace = true
+
+# misc
+bincode = "1.3.3"
