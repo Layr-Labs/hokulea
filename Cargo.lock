@@ -4250,8 +4250,7 @@ checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
 [[package]]
 name = "rust-kzg-bn254-primitives"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a986f25bc8871261f26f4ec74ef9215d0920ec140f2ef2dfd441b33fd121738b"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?branch=chore--downgrade-lib-to-work-with-succinct#5d5cf1c45a72353b074f2cb11af7744b8deb5c77"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -4269,8 +4268,7 @@ dependencies = [
 [[package]]
 name = "rust-kzg-bn254-prover"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed1af11c66ca1e505ef959e398e86c39d9b2b20d0aa9a45a62e053a8a9044209"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?branch=chore--downgrade-lib-to-work-with-succinct#5d5cf1c45a72353b074f2cb11af7744b8deb5c77"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -4287,8 +4285,7 @@ dependencies = [
 [[package]]
 name = "rust-kzg-bn254-verifier"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13b1a1996f1d61c05d732aac54b1ecfc11abbf73a47b3e4ca72f92ecdd75214f"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?branch=chore--downgrade-lib-to-work-with-succinct#5d5cf1c45a72353b074f2cb11af7744b8deb5c77"
 dependencies = [
  "ark-bn254",
  "ark-ec",
