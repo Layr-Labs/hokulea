@@ -1,5 +1,5 @@
 [package]
-name = "witgen-client"
+name = "hokulea-witgen-client"
 version = "0.1.0"
 edition = "2021"
 
