@@ -56,17 +56,19 @@ sol! {
 
     interface IEigenDACertVerifier {
         #[sol(rpc)]
-        function verifyDACertV2(
-            BatchHeaderV2 calldata batchHeader,
-            BlobInclusionInfo calldata blobInclusionInfo,
-            NonSignerStakesAndSignature calldata nonSignerStakesAndSignature
-        ) external view;
-        #[sol(rpc)]
         function verifyDACertV2ForZKProof(
             BatchHeaderV2 calldata batchHeader,
             BlobInclusionInfo calldata blobInclusionInfo,
-            NonSignerStakesAndSignature calldata nonSignerStakesAndSignature
+            NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
+            bytes signedQuorumNumbers
         ) external view returns (bool);
+        #[sol(rpc)]
+        function alwaysReturnsTrue(
+            BatchHeaderV2 calldata batchHeader,
+            BlobInclusionInfo calldata blobInclusionInfo,
+            NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
+            bytes signedQuorumNumbers
+        ) external view returns (bool);        
     }
 
 }

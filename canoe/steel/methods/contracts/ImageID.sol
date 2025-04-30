@@ -20,5 +20,5 @@ pragma solidity ^0.8.20;
 
 library ImageID {
     bytes32 public constant DACERT_V2_VERIFIER_ID =
-        bytes32(0x31c79c053cb08c723292d9b0bd9c12470c0a5e2d1ec74d0c4136650bce464328);
+        bytes32(0x1ca0cd9a5a6544448a991e4f1ea2ace4791f21216471a82190543bf769c3a7b9);
 }

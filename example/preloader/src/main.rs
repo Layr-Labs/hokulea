@@ -88,6 +88,7 @@ where
             cert.nonsigner_stake_and_signature.clone(),
             cert.blob_inclusion_info.clone(),
             wit.validity[i].claimed_validity,
+            l1_node_address.clone(),
         ).await.expect("must be able generate a canoe zk proof attesting eth state");
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
         wit.validity[i].receipt = Some(canoe_proof_bytes);

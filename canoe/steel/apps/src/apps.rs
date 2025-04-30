@@ -31,8 +31,8 @@ use clap::Parser;
 #[derive(Parser, Clone, Debug)]
 pub struct SteelArgs {
     /// Ethereum private key
-    #[clap(long, env)]
-    eth_wallet_private_key: PrivateKeySigner,
+    //#[clap(long, env)]
+    //eth_wallet_private_key: PrivateKeySigner,
 
     /// Ethereum RPC endpoint URL
     #[clap(long, env)]
@@ -45,6 +45,7 @@ pub async fn create_cert_validity_proof(
     non_signer: eigenda_v2_struct::NonSignerStakesAndSignature,
     blob_inclusion: eigenda_v2_struct::BlobInclusionInfo,
     claimed_validity: bool,
+    l1_node_address: String,
 ) -> Result<Receipt> {
 
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -52,13 +53,14 @@ pub async fn create_cert_validity_proof(
     //    .with_env_filter(EnvFilter::from_default_env())
     //    .init();
     // Parse the command line arguments.
-    let args = SteelArgs::try_parse()?;
+    //let args = SteelArgs::try_parse()?;
+    let eth_rpc_url = Url::from_str(&l1_node_address).unwrap();
 
     // Create an alloy provider for that private key and URL.
-    let wallet = EthereumWallet::from(args.eth_wallet_private_key);
+    //let wallet = EthereumWallet::from(args.eth_wallet_private_key);
     let provider = ProviderBuilder::new()        
-        .wallet(wallet)
-        .on_http(args.eth_rpc_url);
+    //    .wallet(wallet)
+        .on_http(eth_rpc_url);
 
     let builder = EthEvmEnv::builder()
         .provider(provider.clone())
@@ -68,22 +70,25 @@ pub async fn create_cert_validity_proof(
     //  The `with_chain_spec` method is used to specify the chain configuration.
     env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
 
+    let blobInclusionInfo_sol = blob_inclusion.clone().to_sol();
+
     // Prepare the function call
-    let call = IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
+    let call = IEigenDACertVerifier::alwaysReturnsTrueCall {
         batchHeader: batch_header.to_sol(),
-        blobInclusionInfo: blob_inclusion.to_sol(),
+        blobInclusionInfo: blobInclusionInfo_sol.clone(),
         nonSignerStakesAndSignature: non_signer.to_sol(),
+        signedQuorumNumbers: blobInclusionInfo_sol.blobCertificate.blobHeader.quorumNumbers,
     };    
 
     let batch_header_abi = batch_header.to_sol().abi_encode();
-    let non_signer_abi = batch_header.to_sol().abi_encode();
-    let blob_inclusion_abi = batch_header.to_sol().abi_encode();
+    let non_signer_abi = non_signer.to_sol().abi_encode();
+    let blob_inclusion_abi = blob_inclusion.to_sol().abi_encode();
 
     // Preflight the call to prepare the input that is required to execute the function in
     // the guest without RPC access. It also returns the result of the call.
 
     // TODO make it configurable
-    let verifier_contract = Address::from_str("0xFe52fE1940858DCb6e12153E2104aD0fDFbE1162").unwrap();
+    let verifier_contract = Address::from_str("0x422A3492e218383753D8006C7Bfa97815B44373F").unwrap();
 
     let mut contract = Contract::preflight(verifier_contract, &mut env);
    

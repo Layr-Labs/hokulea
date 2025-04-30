@@ -86,6 +86,10 @@ run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
 
+  # used by steel client
+  ETH_RPC_URL=$L1_RPC
+
+
   if [ -z "{{block_number}}" ]; then
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
     if [ $BLOCK_NUMBER -eq 0 ]; then

@@ -15,8 +15,6 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-#[cfg(feature = "eigenda-view-proof")]
-use alloy_primitives::B256;
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// PreloadedEigenDABlobProvider implements EigenDABlobProvider
 /// (P0) Validate validity proof for eigenda cert is valid. If the view call succeeds
@@ -38,8 +36,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
-            // verify validity of the cert, in dev mode the argument is ignored
-            #[cfg(feature = "eigenda-view-proof")]
+            // verify validity of the cert, in dev mode the argument is ignored            
             value.validity[i].validate_cert_receipt(
                 &value.eigenda_certs[i],
                 // TODO figure out a way to pass down validity_call_verifier_id

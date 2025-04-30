@@ -23,7 +23,7 @@ impl CertValidity {
         _eigenda_cert: &EigenDAV2Cert,
         _validity_call_verifier_id: B256,
     ) {
-        /*
+        
         use crate::journal::CertValidityJournal;
         use alloy_rlp::Decodable;
         use risc0_zkvm::sha::Digest;
@@ -42,6 +42,6 @@ impl CertValidity {
 
         // so far, we have ensure the data is right, now verify the proof with respect to the data
         assert!(self.receipt.as_ref().unwrap().verify(fpvm_image_id).is_ok())
-         */
+         
     }
 }

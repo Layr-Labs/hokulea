@@ -1,0 +1,3 @@
+[submodule "canoe/contracts/mock/lib/forge-std"]
+	path = canoe/contracts/mock/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
