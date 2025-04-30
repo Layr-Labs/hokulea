@@ -101,11 +101,13 @@ sol! {
 /// ABI encodable journal data.
 sol! {
     struct Journal {
-        Commitment commitment;
-        address verifier_addr;
-        //BlobInclusionInfo blob_inclusion_info;
+        address contract;
+        bytes input;        
+        // add chain spec    
     }
 }
+
+// TODO burn address
 
 fn main() {
     // Read the input from the guest environment.
@@ -135,14 +137,19 @@ fn main() {
         signedQuorumNumbers: blob_inclusion_info.blobCertificate.blobHeader.quorumNumbers,
     };
 
+    let mut buffer = Vec::new();
+    buffer.extend(batch_header_abi);
+    buffer.extend(blob_inclusion_info_abi);
+    buffer.extend(non_signer_stakes_and_signature_abi);    
+
     let returns = Contract::new(contract, &env).call_builder(&call).call();
     // attest it to equal to expected result
     assert!(returns._0 == expected_result);
 
     // Commit the block hash and number used when deriving `view_call_env` to the journal.
     let journal = Journal {
-        commitment: env.into_commitment(),
-        verifier_addr: contract,        
+        contract: contract,
+        input: buffer.into(),
     };
     env::commit_slice(&journal.abi_encode());
 }

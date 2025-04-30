@@ -13,8 +13,6 @@ use risc0_steel::{
 use tokio::task;
 
 use alloy_provider::ProviderBuilder;
-use alloy_network::EthereumWallet;
-use alloy_signer_local::PrivateKeySigner;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 
 use canoe_steel_methods::DACERT_V2_VERIFIER_ELF;

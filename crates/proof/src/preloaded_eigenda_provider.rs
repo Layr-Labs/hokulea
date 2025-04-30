@@ -15,6 +15,8 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
+use canoe_steel_methods::DACERT_V2_VERIFIER_ID;
+
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// PreloadedEigenDABlobProvider implements EigenDABlobProvider
 /// (P0) Validate validity proof for eigenda cert is valid. If the view call succeeds
@@ -40,7 +42,7 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
             value.validity[i].validate_cert_receipt(
                 &value.eigenda_certs[i],
                 // TODO figure out a way to pass down validity_call_verifier_id
-                B256::default(),
+                DACERT_V2_VERIFIER_ID,
             );
 
             // if valid, check blob kzg integrity
