@@ -21,7 +21,7 @@ kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag 
 kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-providers-alloy = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 # Maili
-kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.0", default-features = false }
 kona-protocol = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-registry = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false, features = [
