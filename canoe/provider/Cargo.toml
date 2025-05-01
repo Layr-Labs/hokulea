@@ -1,0 +1,16 @@
+[package]
+name = "canoe-provider"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eigenda-v2-struct = { workspace = true }
+anyhow.workspace = true
+serde.workspace = true
+async-trait.workspace = true
+
+risc0-zkvm.workspace = true
+
+[features]
+steel = []
+sp1-contract-call = []
