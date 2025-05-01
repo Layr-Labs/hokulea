@@ -15,7 +15,7 @@ kona-derive = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = 
 kona-driver = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-executor = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-mpt = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
-kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
+kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.0", default-features = false }
 kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
 kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v0.1.0-beta.16", default-features = false }
