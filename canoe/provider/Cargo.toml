@@ -9,7 +9,5 @@ anyhow.workspace = true
 serde.workspace = true
 async-trait.workspace = true
 
-risc0-zkvm.workspace = true
-
 [features]
 default = []

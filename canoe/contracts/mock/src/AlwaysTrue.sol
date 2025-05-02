@@ -55,11 +55,11 @@ struct NonSignerStakesAndSignature {
 }
 
 contract AlwaysTrue {
-    function alwaysReturnsTrue(            
-        BatchHeaderV2 calldata batchHeader,
-        BlobInclusionInfo calldata blobInclusionInfo,
-        NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
-        bytes memory signedQuorumNumbers
+    function alwaysReturnsTrue(
+        BatchHeaderV2 calldata,
+        BlobInclusionInfo calldata,
+        NonSignerStakesAndSignature calldata,
+        bytes memory
     ) external view returns (bool) {
         return true;
     }

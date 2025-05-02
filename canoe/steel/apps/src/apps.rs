@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use alloy_primitives::Address;
 use eigenda_v2_struct;
-use eigenda_v2_struct::sol_struct::IEigenDACertVerifier;
+use canoe_bindings::IEigenDACertMockVerifier;
 
 use risc0_steel::{
     ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC},
@@ -91,7 +91,7 @@ pub async fn create_cert_validity_proof(
     let blob_inclusion_info_sol = blob_inclusion.clone().to_sol();
 
     // Prepare the function call
-    let call = IEigenDACertVerifier::alwaysReturnsTrueCall {
+    let call = IEigenDACertMockVerifier::alwaysReturnsTrueCall {
         batchHeader: batch_header.to_sol(),
         blobInclusionInfo: blob_inclusion_info_sol.clone(),
         nonSignerStakesAndSignature: non_signer.to_sol(),

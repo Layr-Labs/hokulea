@@ -14,7 +14,7 @@ alloy-primitives = { version = "0.8" }
 alloy-sol-types = { version = "0.8" }
 risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", tag = "steel-v2.0.0-rc.7", default-features = false}
 risc0-zkvm = { version = "1.2.0", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.140" }
+canoe-bindings = { path = "../../../bindings" }
 
 [patch.crates-io]
 # use optimized risc0 circuit
