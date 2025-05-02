@@ -61,7 +61,7 @@ where
         block_ref: &BlockInfo,
         batcher_addr: Address,
     ) -> PipelineResult<Self::Item> {
-        info!("EigenDADataSource next {} {}", block_ref, batcher_addr);
+        debug!("EigenDADataSource next {} {}", block_ref, batcher_addr);
 
         // data is either an op channel frame or an eigenda cert
         let data = self.ethereum_source.next(block_ref, batcher_addr).await?;

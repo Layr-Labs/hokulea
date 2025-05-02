@@ -22,11 +22,11 @@ impl EigenDABlobData {
             return Err(BlobDecodingError::InvalidLength);
         }
 
-        info!(target: "eigenda-datasource", "padded_eigenda_blob {:?}", blob);
+        debug!(target: "eigenda-datasource", "padded_eigenda_blob {:?}", blob);
 
         // see https://github.com/Layr-Labs/eigenda/blob/f8b0d31d65b29e60172507074922668f4ca89420/api/clients/codecs/default_blob_codec.go#L44
         let content_size = blob.slice(2..6).get_u32();
-        info!(target: "eigenda-datasource", "content_size {:?}", content_size);
+        debug!(target: "eigenda-datasource", "content_size {:?}", content_size);
 
         // the first 32 Bytes are reserved as the header field element
         let codec_data = blob.slice(32..);

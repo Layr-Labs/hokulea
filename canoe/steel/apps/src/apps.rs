@@ -22,8 +22,42 @@ use alloy_sol_types::SolValue;
 use anyhow::{Context, Result};
 use risc0_zkvm::Receipt;
 use url::Url;
+use async_trait::async_trait;
 
 use clap::Parser;
+
+use canoe_provider::CanoeProvider;
+use risc0_zkvm;
+
+/// A canoe provider implementation with steel
+#[derive(Debug, Clone)]
+pub struct CanoeSteelProvider {
+    /// rpc to l1 geth node
+    pub l1_node_address: String,
+}
+
+#[async_trait]
+impl CanoeProvider for CanoeSteelProvider {
+    type Receipt = risc0_zkvm::Receipt;
+
+    async fn create_cert_validity_proof(
+        &self,
+        eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
+        claimed_validity: bool,        
+    ) -> Result<Self::Receipt> {
+        create_cert_validity_proof(
+            eigenda_cert.batch_header_v2.clone(),
+            eigenda_cert.nonsigner_stake_and_signature.clone(),
+            eigenda_cert.blob_inclusion_info.clone(),
+            claimed_validity,
+            self.get_l1_address(),
+        ).await
+    }
+
+    fn get_l1_address(&self) -> String {
+        self.l1_node_address.clone()
+    }
+}
 
 /// Necessary data to run steel
 #[derive(Parser, Clone, Debug)]
@@ -68,14 +102,14 @@ pub async fn create_cert_validity_proof(
     //  The `with_chain_spec` method is used to specify the chain configuration.
     env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
 
-    let blobInclusionInfo_sol = blob_inclusion.clone().to_sol();
+    let blob_inclusion_info_sol = blob_inclusion.clone().to_sol();
 
     // Prepare the function call
     let call = IEigenDACertVerifier::alwaysReturnsTrueCall {
         batchHeader: batch_header.to_sol(),
-        blobInclusionInfo: blobInclusionInfo_sol.clone(),
+        blobInclusionInfo: blob_inclusion_info_sol.clone(),
         nonSignerStakesAndSignature: non_signer.to_sol(),
-        signedQuorumNumbers: blobInclusionInfo_sol.blobCertificate.blobHeader.quorumNumbers,
+        signedQuorumNumbers: blob_inclusion_info_sol.blobCertificate.blobHeader.quorumNumbers,
     };    
 
     let batch_header_abi = batch_header.to_sol().abi_encode();

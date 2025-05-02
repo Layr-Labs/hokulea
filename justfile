@@ -74,7 +74,7 @@ _kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea-host-bin' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea-host-bin' features='' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
@@ -85,10 +85,6 @@ run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea
   ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
-
-  # used by steel client
-  ETH_RPC_URL=$L1_RPC
-
 
   if [ -z "{{block_number}}" ]; then
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
@@ -104,8 +100,8 @@ run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea
 
   set -x
   just run-client $BLOCK_NUMBER \
-    $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \
-    {{native_or_asterisc}} {{native_bin_target}} $ROLLUP_CONFIG_PATH {{verbosity}}
+    $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \    
+    {{native_or_asterisc}} {{native_bin_target}} {{features}} $ROLLUP_CONFIG_PATH {{verbosity}}
 
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":

@@ -19,7 +19,7 @@ use alloy_primitives::Address;
 use alloy_sol_types::{sol, SolValue};
 use risc0_steel::{
     ethereum::{EthEvmInput, ETH_HOLESKY_CHAIN_SPEC},
-    Commitment, Contract,
+    Contract,
 };
 use risc0_zkvm::guest::env;
 

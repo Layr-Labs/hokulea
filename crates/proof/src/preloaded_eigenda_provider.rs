@@ -9,13 +9,13 @@ use kona_preimage::errors::PreimageOracleError;
 use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
-use tracing::info;
+use tracing::debug;
 
 use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use canoe_steel_methods::DACERT_V2_VERIFIER_ID;
+use crate::canoe_verifier::CanoeVerifier;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
 /// PreloadedEigenDABlobProvider implements EigenDABlobProvider
@@ -26,11 +26,12 @@ use canoe_steel_methods::DACERT_V2_VERIFIER_ID;
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
-    pub entries: Vec<(EigenDAV2Cert, Blob)>,
+    pub entries: Vec<(EigenDAV2Cert, Blob)>,    
 }
 
-impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
-    fn from(value: EigenDABlobWitnessData) -> Self {
+impl PreloadedEigenDABlobProvider {
+    /// Convert EigenDABlobWitnessData into the PreloadedEigenDABlobProvider
+    pub fn from_witness(value: EigenDABlobWitnessData, canoe_verifier: impl CanoeVerifier) -> PreloadedEigenDABlobProvider {
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
@@ -38,11 +39,10 @@ impl From<EigenDABlobWitnessData> for PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
-            // verify validity of the cert, in dev mode the argument is ignored            
-            value.validity[i].validate_cert_receipt(
-                &value.eigenda_certs[i],
-                // TODO figure out a way to pass down validity_call_verifier_id
-                DACERT_V2_VERIFIER_ID,
+
+            canoe_verifier.validate_cert_receipt(
+                value.validity[i].clone(), 
+                value.eigenda_certs[i].clone(),
             );
 
             // if valid, check blob kzg integrity
@@ -89,8 +89,8 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
             // secure integration is not implemented for v1, but feel free to contribute
             EigenDAVersionedCert::V1(_c) => unimplemented!(),
             EigenDAVersionedCert::V2(c) => {
-                info!("request cert is {:?}", c.digest());
-                info!("stored  cert is {:?}", eigenda_cert.digest());
+                debug!("request cert is {:?}", c.digest());
+                debug!("stored  cert is {:?}", eigenda_cert.digest());
                 c == &eigenda_cert
             }
         };
@@ -111,8 +111,7 @@ pub fn batch_verify(
     eigenda_blobs: Vec<Blob>,
     commitments: Vec<(U256, U256)>,
     proofs: Vec<FixedBytes<64>>,
-) -> bool {
-    info!("lib_blobs len {:?}", eigenda_blobs.len());
+) -> bool {    
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
     let lib_blobs: Vec<Blob> = eigenda_blobs;

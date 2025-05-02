@@ -6,18 +6,18 @@ edition = "2021"
 [dependencies]
 alloy-primitives = { workspace = true }
 alloy-provider = {workspace = true }
-alloy-network = { workspace = true }
-alloy-signer-local = { workspace = true }
 alloy-sol-types = { workspace = true }
 url = {workspace = true }
 
 anyhow = { workspace = true }
+async-trait = { workspace = true }
 clap = { workspace = true, features = ["derive", "env"] }
 canoe-steel-methods = { workspace = true }
 risc0-steel = { workspace = true, features = ["host"] }
 risc0-zkvm = { workspace = true, features = ["client", "bonsai"] }
 tokio = { workspace = true }
 eigenda-v2-struct = { workspace = true }
+canoe-provider.workspace = true
 
 [features]
 beacon = []

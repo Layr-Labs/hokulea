@@ -7,7 +7,7 @@ use alloc::vec::Vec;
 use risc0_zkvm::Receipt;
 
 use canoe_steel_methods::DACERT_V2_VERIFIER_ID;
-
+use tracing::info;
 
 #[derive(Clone)]
 pub struct CanoeSteelVerifier {}
@@ -15,9 +15,11 @@ pub struct CanoeSteelVerifier {}
 impl CanoeVerifier for CanoeSteelVerifier {    
 
     fn validate_cert_receipt(
+        &self,
         cert_validity: CertValidity,
         eigenda_cert: EigenDAV2Cert,
-    ) {                    
+    ) {         
+        info!("using CanoeSteelVerifier");
         // if not in dev mode, the receipt must be non empty
         assert!(cert_validity.receipt.is_some());
         let receipt_bytes = cert_validity.receipt.as_ref().unwrap();

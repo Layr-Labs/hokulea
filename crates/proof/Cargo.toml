@@ -28,21 +28,19 @@ kona-protocol.workspace = true
 kona-genesis.workspace = true
 kona-rpc.workspace = true
 
-# ZKVM
-
-tracing.workspace = true
-
 # General
 async-trait.workspace = true
 spin.workspace = true
-
-#rkyv.workspace = true
-serde.workspace = true
-
-canoe-steel-methods.workspace = true
-risc0-zkvm.workspace = true
-serde_json.workspace = true
 alloy-sol-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+# Steel 
+canoe-steel-methods = { workspace = true, optional = true }
+risc0-zkvm = { workspace = true, optional = true }
 
 [features]
-eigenda-view-proof = []
+default = []
+steel = ["canoe-steel-methods", "risc0-zkvm"]
+sp1-contract-call = []

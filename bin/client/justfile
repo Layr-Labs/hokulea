@@ -5,7 +5,8 @@ default:
   @just --list
 
 # Run the client program, either natively or on asterisc, depending on the 'native_or_asterisc' argument.
-run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' rollup_config_path='' verbosity='':
+# Currently only support features 'steel', used to generate a zk proof for DA certs. When no features is enabled, zk proof generation and verification are noop. 
+run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' features='' rollup_config_path='' verbosity='' :
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
 
@@ -46,9 +47,14 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_prox
     ETH_RPC_URL=$L1_NODE_ADDRESS
   set +a
 
+  FEATURES_FLAGS=""
+  if [ "{{features}}" != '' ]; then
+    FEATURES_FLAGS="--features {{features}}"
+  fi
+
   if [ "$NATIVE_OR_ASTERISC" = "native" ]; then
     echo "Running host program with native client program..."
-    cargo r --bin hokulea-host-bin  -- \
+    cargo r --bin hokulea-host-bin $FEATURES_FLAGS -- \
       --l1-head $L1_HEAD \
       --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
       --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \

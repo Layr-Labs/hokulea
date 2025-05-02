@@ -12,5 +12,4 @@ async-trait.workspace = true
 risc0-zkvm.workspace = true
 
 [features]
-steel = []
-sp1-contract-call = []
+default = []

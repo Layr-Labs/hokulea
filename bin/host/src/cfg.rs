@@ -142,7 +142,7 @@ impl SingleChainHostWithEigenDA {
                 OracleReader::new(preimage.client),
             ),
         ));
-        */
+        
 
         let (_, client_result) = tokio::try_join!(server_task, client_task)?;
 

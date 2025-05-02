@@ -72,27 +72,34 @@ where
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
+    // Generate zk view proof
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "steel")] {            
+            use canoe_steel_apps::apps::CanoeSteelProvider;
+            use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
+            info!("using CanoeSteelProvider");
+            let canoe_provider = CanoeSteelProvider{
+                l1_node_address,
+            };
+            let canoe_verifier = CanoeSteelVerifier{};
+        } else {            
+            use canoe_provider::CanoeNoOpProvider;
+            use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;
+            info!("using CanoeNoOpProvider");
+            let canoe_provider = CanoeNoOpProvider{};
+            let canoe_verifier = CanoeNoOpVerifier{};
+        }
+    }
+
+    info!("run_preloaded_eigenda_client: generating witness");
+    let wit = run_witgen_client(
+        oracle_client.clone(),
+        hint_client.clone(),
+        canoe_provider,
+        evm_factory.clone(),
+    )
+    .await?;
     const ORACLE_LRU_SIZE: usize = 1024;
-
-    info!("done generating the witness");
-
-    // Generate view proof by calling compute_view_proof(), and pass it into wit
-    // When securely verify the eigenda integration, PreloadedEigenDABlobProvider::from shall be run inside the ZKVM in the
-    // form of ELF. It is important to pass it to witness before calling PreloadedEigenDABlobProvider::from. Because the
-    // verification is checked within the elf
-    let num_cert = wit.validity.len();
-    for i in 0 .. num_cert {
-        let cert = &wit.eigenda_certs[i];
-        let canoe_proof = create_cert_validity_proof(
-            cert.batch_header_v2.clone(),
-            cert.nonsigner_stake_and_signature.clone(),
-            cert.blob_inclusion_info.clone(),
-            wit.validity[i].claimed_validity,
-            l1_node_address.clone(),
-        ).await.expect("must be able generate a canoe zk proof attesting eth state");
-        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        wit.validity[i].receipt = Some(canoe_proof_bytes);
-    }    
 
     let oracle = Arc::new(CachingOracle::new(
         ORACLE_LRU_SIZE,
@@ -115,7 +122,7 @@ where
     info!("convert eigenda blob witness into preloaded blob provider");
 
     // preloaded_blob_provider does not use oracle
-    let preloaded_blob_provider = PreloadedEigenDABlobProvider::from(wit);
+    let preloaded_blob_provider = PreloadedEigenDABlobProvider::from_witness(wit, canoe_verifier);
 
     info!("run preloaded provider");
     fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, evm_factory).await?;
@@ -139,6 +146,7 @@ where
     H: HintWriterClient + Send + Sync + Debug + Clone,
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
+    T: CanoeProvider,
 {
     let beacon = OracleBlobProvider::new(oracle.clone());
 
@@ -158,7 +166,20 @@ where
     )
     .await?;
 
-    let wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
+    let mut wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
+            
+    let num_cert = wit.validity.len();
+    for i in 0 .. num_cert {
+        let cert = &wit.eigenda_certs[i];
+        
+        let canoe_proof = canoe_provider.create_cert_validity_proof(
+            cert.clone(),
+            wit.validity[i].claimed_validity,            
+        ).await.expect("must be able generate a canoe zk proof attesting eth state");
+
+        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
+        wit.validity[i].receipt = Some(canoe_proof_bytes);
+    }
 
     Ok(wit)
 }

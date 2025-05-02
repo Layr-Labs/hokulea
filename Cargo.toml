@@ -136,9 +136,11 @@ revm = { version = "22.0.1", default-features = false }
 # K/V database
 rocksdb = { version = "0.22.0", default-features = false }
 
+canoe-provider = { path = "./canoe/provider", default-features = false  }
+
 # Steel
-canoe-steel-apps = { path = "./canoe/steel/apps" }
-canoe-steel-methods = { path = "./canoe/steel/methods" }
+canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
+canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }
 
 risc0-zkvm = { version = "2.0.2" }
 risc0-ethereum-contracts = { version = "2.0.2" }
@@ -161,9 +163,3 @@ risc0-zkp = { version = "2.0.1", default-features = false }
 log = { version = "0.4" }
 hex = "0.4"
 url = { version = "2.5" }
-
-# TODO: remove this patch before merging.
-[patch.crates-io]
-rust-kzg-bn254-primitives = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct" }
-rust-kzg-bn254-prover = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct" }
-rust-kzg-bn254-verifier = { git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", branch = "chore--downgrade-lib-to-work-with-succinct" }
