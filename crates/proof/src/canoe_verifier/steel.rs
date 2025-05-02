@@ -29,11 +29,6 @@ impl CanoeVerifier for CanoeSteelVerifier {
                  
         let journal = Journal::abi_decode(&canoe_receipt.journal.bytes, true).expect("valid journal");
 
-        // ensure journal attests the same outcome
-        // burn address into guest
-        //assert!(journal.contract == verifier_contract)
-
-
         let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
         let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();
         let non_signer_stakes_and_signature = eigenda_cert.nonsigner_stake_and_signature.to_sol().abi_encode();

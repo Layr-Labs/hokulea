@@ -138,6 +138,8 @@ rocksdb = { version = "0.22.0", default-features = false }
 
 canoe-provider = { path = "./canoe/provider", default-features = false  }
 
+canoe-contracts-eigenda-bindings = { path = "./canoe/contracts/eigenda-bindings", default-features = false  }
+
 # Steel
 canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
 canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }

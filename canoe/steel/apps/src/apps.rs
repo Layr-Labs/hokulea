@@ -24,8 +24,6 @@ use risc0_zkvm::Receipt;
 use url::Url;
 use async_trait::async_trait;
 
-use clap::Parser;
-
 use canoe_provider::CanoeProvider;
 use risc0_zkvm;
 
@@ -57,18 +55,6 @@ impl CanoeProvider for CanoeSteelProvider {
     fn get_l1_address(&self) -> String {
         self.l1_node_address.clone()
     }
-}
-
-/// Necessary data to run steel
-#[derive(Parser, Clone, Debug)]
-pub struct SteelArgs {
-    /// Ethereum private key
-    //#[clap(long, env)]
-    //eth_wallet_private_key: PrivateKeySigner,
-
-    /// Ethereum RPC endpoint URL
-    #[clap(long, env)]
-    eth_rpc_url: Url,
 }
 
 /// The function takes EigenDA v2 cert and generate a validity or invality proof

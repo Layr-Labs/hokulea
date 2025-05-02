@@ -113,6 +113,17 @@ run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yam
 run-kurtosis-devnet-with-cached-images ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
   kurtosis run --enclave {{ENCLAVE_NAME}} github.com/ethpandaops/optimism-package --args-file {{ARGS_FILE}}
 
+# Deploy a mock contract that always return true. Designed to work with a devnet that uses eigenda-proxy memstore feature
+# which does not return a legitimate DA cert
+[group('local-env')]
+deploy-mock-contract ENCLAVE_NAME="eigenda-devnet":
+  #!/usr/bin/env bash
+  set -o errexit -o nounset -o pipefail
+  cd canoe/contracts/mock
+  L1_RPC="http://$(kurtosis port print {{ENCLAVE_NAME}} el-1-geth-teku rpc)"
+  DEVNET_PRIVATE_KEY=bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31
+  forge script script/DeployAlwaysTrue.s.sol --rpc-url $L1_RPC --private-key $DEVNET_PRIVATE_KEY --broadcast
+
 ############################### STYLE ###############################
 
 # unused-deps finds unused dependencies in the workspace.
