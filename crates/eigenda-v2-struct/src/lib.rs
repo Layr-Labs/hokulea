@@ -1,10 +1,9 @@
 #![no_std]
-pub mod sol_struct;
-
 use alloy_primitives::Bytes;
 use alloy_primitives::{keccak256, FixedBytes, B256, U256};
 use alloy_rlp::{Decodable, Encodable, RlpDecodable, RlpEncodable};
 use serde::{Deserialize, Serialize};
+use canoe_bindings as sol_struct;
 
 extern crate alloc;
 use alloc::vec::Vec;

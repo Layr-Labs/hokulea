@@ -1858,13 +1858,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "canoe-bindings"
+version = "0.1.0"
+dependencies = [
+ "alloy-sol-types",
+]
+
+[[package]]
 name = "canoe-provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
  "eigenda-v2-struct",
- "risc0-zkvm",
  "serde",
 ]
 
@@ -1877,9 +1883,9 @@ dependencies = [
  "alloy-sol-types",
  "anyhow",
  "async-trait",
+ "canoe-bindings",
  "canoe-provider",
  "canoe-steel-methods",
- "clap",
  "eigenda-v2-struct",
  "risc0-steel",
  "risc0-zkvm",
@@ -1893,7 +1899,6 @@ version = "0.1.0"
 dependencies = [
  "alloy-primitives 0.8.25",
  "alloy-sol-types",
- "eigenda-v2-struct",
  "hex",
  "risc0-build",
  "risc0-build-ethereum",
@@ -2556,7 +2561,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-primitives 0.8.25",
  "alloy-rlp",
- "alloy-sol-types",
+ "canoe-bindings",
  "serde",
 ]
 
@@ -3244,11 +3249,11 @@ name = "hokulea-proof"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 0.8.25",
- "alloy-rlp",
  "alloy-sol-types",
  "ark-bn254",
  "ark-ff 0.5.0",
  "async-trait",
+ "canoe-bindings",
  "canoe-steel-methods",
  "eigenda-v2-struct",
  "hokulea-eigenda",
@@ -3278,7 +3283,6 @@ dependencies = [
  "async-trait",
 =======
  "alloy-primitives 0.8.25",
- "anyhow",
  "async-trait",
  "canoe-provider",
  "canoe-steel-apps",

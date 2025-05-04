@@ -6,7 +6,7 @@ default:
 
 # Run the client program, either natively or on asterisc, depending on the 'native_or_asterisc' argument.
 # Currently only support features 'steel', used to generate a zk proof for DA certs. When no features is enabled, zk proof generation and verification are noop. 
-run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' features='' rollup_config_path='' verbosity='' :
+run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' rollup_config_path='' features=''  verbosity='' :
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
 

@@ -79,7 +79,7 @@ where
             use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
             info!("using CanoeSteelProvider");
             let canoe_provider = CanoeSteelProvider{
-                _l1_node_address,
+                l1_node_address,
             };
             let canoe_verifier = CanoeSteelVerifier{};
         } else {            

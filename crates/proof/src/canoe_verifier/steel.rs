@@ -1,8 +1,9 @@
-use crate::canoe_verifier::{CanoeVerifier, Journal};
+use crate::canoe_verifier::CanoeVerifier;
 use crate::cert_validity::CertValidity;
 use eigenda_v2_struct::EigenDAV2Cert;
 use alloy_sol_types::SolValue;
 use alloc::vec::Vec;
+use canoe_bindings::Journal;
 
 use risc0_zkvm::Receipt;
 

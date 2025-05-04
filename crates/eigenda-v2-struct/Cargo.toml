@@ -6,6 +6,6 @@ edition = "2021"
 [dependencies]
 alloy-primitives = { workspace = true, features = ["rlp", "serde"] }
 alloy-rlp = { workspace = true, features = ["derive"] }
-alloy-sol-types = { workspace = true, features = ["json"] } 
 serde = { workspace = true, features = ["derive"] }
+canoe-bindings = { workspace = true }
 
