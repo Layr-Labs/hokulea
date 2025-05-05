@@ -10,7 +10,7 @@ pub trait CanoeProvider: Clone + Send + 'static {
     async fn create_cert_validity_proof(
         &self,
         eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        claimed_validity: bool,        
+        claimed_validity: bool,         
     ) -> Result<Self::Receipt>;
 
     fn get_l1_address(&self) -> String;
@@ -27,7 +27,7 @@ impl CanoeProvider for CanoeNoOpProvider {
     async fn create_cert_validity_proof(
         &self,
         _eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        _claimed_validity: bool,
+        _claimed_validity: bool,        
     ) -> Result<Self::Receipt> {
         Ok(())
     }

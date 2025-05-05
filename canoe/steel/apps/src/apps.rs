@@ -27,6 +27,8 @@ use async_trait::async_trait;
 use canoe_provider::CanoeProvider;
 use risc0_zkvm;
 
+use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
+
 /// A canoe provider implementation with steel
 #[derive(Debug, Clone)]
 pub struct CanoeSteelProvider {
@@ -49,6 +51,7 @@ impl CanoeProvider for CanoeSteelProvider {
             eigenda_cert.blob_inclusion_info.clone(),
             claimed_validity,
             self.get_l1_address(),
+            VERIFIER_ADDRESS,
         ).await
     }
 
@@ -64,6 +67,7 @@ pub async fn create_cert_validity_proof(
     blob_inclusion: eigenda_v2_struct::BlobInclusionInfo,
     claimed_validity: bool,
     l1_node_address: String,
+    verifier_contract: Address,
 ) -> Result<Receipt> {
 
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -103,10 +107,7 @@ pub async fn create_cert_validity_proof(
     let blob_inclusion_abi = blob_inclusion.to_sol().abi_encode();
 
     // Preflight the call to prepare the input that is required to execute the function in
-    // the guest without RPC access. It also returns the result of the call.
-
-    // TODO make it configurable
-    let verifier_contract = Address::from_str("0x422A3492e218383753D8006C7Bfa97815B44373F").unwrap();
+    // the guest without RPC access. It also returns the result of the call.    
 
     let mut contract = Contract::preflight(verifier_contract, &mut env);
    

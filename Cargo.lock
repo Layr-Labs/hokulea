@@ -2193,6 +2193,7 @@ dependencies = [
  "canoe-provider",
  "canoe-steel-methods",
  "eigenda-v2-struct",
+ "hokulea-proof",
  "risc0-steel",
  "risc0-zkvm",
  "tokio",

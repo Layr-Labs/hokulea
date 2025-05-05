@@ -28,7 +28,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
         let canoe_receipt: Receipt = serde_json::from_slice(&receipt_bytes).expect("serde error");
         canoe_receipt.verify(DACERT_V2_VERIFIER_ID).expect("receipt verify correctly");
                  
-        let journal = Journal::abi_decode(&canoe_receipt.journal.bytes, true).expect("valid journal");
+        let journal = Journal::abi_decode(&canoe_receipt.journal.bytes).expect("valid journal");
 
         let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
         let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();

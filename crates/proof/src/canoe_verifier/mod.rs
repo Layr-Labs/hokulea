@@ -5,6 +5,7 @@ pub mod steel;
 use eigenda_v2_struct::EigenDAV2Cert;
 use crate::cert_validity::CertValidity;
 use tracing::info;
+use alloy_primitives::{Address, address};
 
 pub trait CanoeVerifier: Clone + Send + 'static {    
 
@@ -18,3 +19,5 @@ pub trait CanoeVerifier: Clone + Send + 'static {
     }
 
 }
+
+pub const VERIFIER_ADDRESS: Address = address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051");
