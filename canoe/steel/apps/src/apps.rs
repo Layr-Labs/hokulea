@@ -2,8 +2,8 @@
 use std::str::FromStr;
 
 use alloy_primitives::Address;
-use eigenda_v2_struct;
 use canoe_bindings::IEigenDACertMockVerifier;
+use eigenda_v2_struct;
 
 use risc0_steel::{
     ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC},
@@ -20,9 +20,9 @@ use canoe_steel_methods::DACERT_V2_VERIFIER_ELF;
 use alloy_sol_types::SolValue;
 
 use anyhow::{Context, Result};
+use async_trait::async_trait;
 use risc0_zkvm::Receipt;
 use url::Url;
-use async_trait::async_trait;
 
 use canoe_provider::CanoeProvider;
 use risc0_zkvm;
@@ -43,7 +43,7 @@ impl CanoeProvider for CanoeSteelProvider {
     async fn create_cert_validity_proof(
         &self,
         eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        claimed_validity: bool,        
+        claimed_validity: bool,
     ) -> Result<Self::Receipt> {
         create_cert_validity_proof(
             eigenda_cert.batch_header_v2.clone(),
@@ -52,7 +52,8 @@ impl CanoeProvider for CanoeSteelProvider {
             claimed_validity,
             self.get_l1_address(),
             VERIFIER_ADDRESS,
-        ).await
+        )
+        .await
     }
 
     fn get_l1_address(&self) -> String {
@@ -69,7 +70,6 @@ pub async fn create_cert_validity_proof(
     l1_node_address: String,
     verifier_contract: Address,
 ) -> Result<Receipt> {
-
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
     //tracing_subscriber::fmt()
     //    .with_env_filter(EnvFilter::from_default_env())
@@ -80,13 +80,13 @@ pub async fn create_cert_validity_proof(
 
     // Create an alloy provider for that private key and URL.
     //let wallet = EthereumWallet::from(args.eth_wallet_private_key);
-    let provider = ProviderBuilder::new()        
-    //    .wallet(wallet)
+    let provider = ProviderBuilder::new()
+        //    .wallet(wallet)
         .on_http(eth_rpc_url);
 
     let builder = EthEvmEnv::builder()
         .provider(provider.clone())
-        .block_number_or_tag(BlockNumberOrTag::Parent);    
+        .block_number_or_tag(BlockNumberOrTag::Parent);
 
     let mut env = builder.build().await?;
     //  The `with_chain_spec` method is used to specify the chain configuration.
@@ -99,25 +99,29 @@ pub async fn create_cert_validity_proof(
         batchHeader: batch_header.to_sol(),
         blobInclusionInfo: blob_inclusion_info_sol.clone(),
         nonSignerStakesAndSignature: non_signer.to_sol(),
-        signedQuorumNumbers: blob_inclusion_info_sol.blobCertificate.blobHeader.quorumNumbers,
-    };    
+        signedQuorumNumbers: blob_inclusion_info_sol
+            .blobCertificate
+            .blobHeader
+            .quorumNumbers,
+    };
 
     let batch_header_abi = batch_header.to_sol().abi_encode();
     let non_signer_abi = non_signer.to_sol().abi_encode();
     let blob_inclusion_abi = blob_inclusion.to_sol().abi_encode();
 
     // Preflight the call to prepare the input that is required to execute the function in
-    // the guest without RPC access. It also returns the result of the call.    
+    // the guest without RPC access. It also returns the result of the call.
 
     let mut contract = Contract::preflight(verifier_contract, &mut env);
-   
+
     let returns = contract.call_builder(&call).call().await?;
     assert!(claimed_validity == returns);
 
     // Finally, construct the input from the environment.
     // There are two options: Use EIP-4788 for verification by providing a Beacon API endpoint,
     // or use the regular `blockhash' opcode.
-    let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> = env.into_input().await?;
+    let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> =
+        env.into_input().await?;
 
     // Create the steel proof.
     let prove_info = task::spawn_blocking(move || {
@@ -141,7 +145,6 @@ pub async fn create_cert_validity_proof(
     .await?
     .context("failed to create proof")?;
     let receipt = prove_info.receipt;
-
 
     Ok(receipt)
 }

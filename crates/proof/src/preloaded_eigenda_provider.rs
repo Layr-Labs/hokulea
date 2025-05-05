@@ -26,12 +26,15 @@ use crate::canoe_verifier::CanoeVerifier;
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
-    pub entries: Vec<(EigenDAV2Cert, Blob)>,    
+    pub entries: Vec<(EigenDAV2Cert, Blob)>,
 }
 
 impl PreloadedEigenDABlobProvider {
     /// Convert EigenDABlobWitnessData into the PreloadedEigenDABlobProvider
-    pub fn from_witness(value: EigenDABlobWitnessData, canoe_verifier: impl CanoeVerifier) -> PreloadedEigenDABlobProvider {
+    pub fn from_witness(
+        value: EigenDABlobWitnessData,
+        canoe_verifier: impl CanoeVerifier,
+    ) -> PreloadedEigenDABlobProvider {
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
@@ -39,11 +42,8 @@ impl PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
-
-            canoe_verifier.validate_cert_receipt(
-                value.validity[i].clone(), 
-                value.eigenda_certs[i].clone(),
-            );
+            canoe_verifier
+                .validate_cert_receipt(value.validity[i].clone(), value.eigenda_certs[i].clone());
 
             // if valid, check blob kzg integrity
             if value.validity[i].claimed_validity {
@@ -111,7 +111,7 @@ pub fn batch_verify(
     eigenda_blobs: Vec<Blob>,
     commitments: Vec<(U256, U256)>,
     proofs: Vec<FixedBytes<64>>,
-) -> bool {    
+) -> bool {
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
     let lib_blobs: Vec<Blob> = eigenda_blobs;

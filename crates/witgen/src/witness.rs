@@ -1,12 +1,12 @@
 use alloy_primitives::{Bytes, FixedBytes};
 use async_trait::async_trait;
+use eigenda_v2_struct::EigenDAV2Cert;
 use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;
 use std::sync::{Arc, Mutex};
-use eigenda_v2_struct::EigenDAV2Cert;
 
 /// This is a wrapper around OracleEigenDAProvider, with
 /// additional functionalities to generate eigenda witness
@@ -40,7 +40,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
             EigenDAVersionedCert::V2(c) => c,
         };
 
-        // only a single blob is returned from a cert        
+        // only a single blob is returned from a cert
         match self.provider.get_blob(altda_commitment).await {
             Ok(blob) => {
                 // Compute kzg proof for the entire blob on a deterministic random point
@@ -51,19 +51,25 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                 populate_witness(cert, self.witness.clone(), &kzg_proof, true, &blob);
                 return Ok(blob);
             }
-            Err(e) =>{
+            Err(e) => {
                 // If it returns an error, the cert must be invalid
                 let empty = vec![];
-                populate_witness(cert, self.witness.clone(), &Bytes::new(), false, &Blob::new(&empty));
+                populate_witness(
+                    cert,
+                    self.witness.clone(),
+                    &Bytes::new(),
+                    false,
+                    &Blob::new(&empty),
+                );
                 return Err(e);
             }
-        };        
+        };
     }
 }
 
 fn populate_witness(
     cert: &EigenDAV2Cert,
-    witness: Arc<Mutex<EigenDABlobWitnessData>>, 
+    witness: Arc<Mutex<EigenDABlobWitnessData>>,
     kzg_proof: &Bytes,
     cert_validity: bool,
     blob: &Blob,

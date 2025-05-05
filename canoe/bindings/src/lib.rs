@@ -3,8 +3,8 @@ use alloy_sol_types::sol;
 sol! {
     struct Journal {
         address contract;
-        bytes input;        
-        // add chain spec    
+        bytes input;
+        // add chain spec
     }
 }
 
@@ -62,7 +62,7 @@ sol! {
         uint32[][] nonSignerStakeIndices;
     }
 
-    interface IEigenDACertVerifier {        
+    interface IEigenDACertVerifier {
         #[sol(rpc)]
         function verifyDACertV2ForZKProof(
             BatchHeaderV2 calldata batchHeader,

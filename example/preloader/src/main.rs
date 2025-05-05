@@ -76,7 +76,7 @@ where
 {
     // Generate zk view proof
     cfg_if::cfg_if! {
-        if #[cfg(feature = "steel")] {            
+        if #[cfg(feature = "steel")] {
             use canoe_steel_apps::apps::CanoeSteelProvider;
             use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
             info!("using CanoeSteelProvider");
@@ -84,7 +84,7 @@ where
                 l1_node_address,
             };
             let canoe_verifier = CanoeSteelVerifier{};
-        } else {            
+        } else {
             use canoe_provider::CanoeNoOpProvider;
             use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;
             info!("using CanoeNoOpProvider");
@@ -169,15 +169,15 @@ where
     .await?;
 
     let mut wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
-            
+
     let num_cert = wit.validity.len();
-    for i in 0 .. num_cert {
+    for i in 0..num_cert {
         let cert = &wit.eigenda_certs[i];
-        
-        let canoe_proof = canoe_provider.create_cert_validity_proof(
-            cert.clone(),
-            wit.validity[i].claimed_validity,            
-        ).await.expect("must be able generate a canoe zk proof attesting eth state");
+
+        let canoe_proof = canoe_provider
+            .create_cert_validity_proof(cert.clone(), wit.validity[i].claimed_validity)
+            .await
+            .expect("must be able generate a canoe zk proof attesting eth state");
 
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
         wit.validity[i].receipt = Some(canoe_proof_bytes);

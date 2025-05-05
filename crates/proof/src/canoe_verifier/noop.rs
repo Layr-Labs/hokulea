@@ -6,14 +6,8 @@ use tracing::info;
 #[derive(Clone)]
 pub struct CanoeNoOpVerifier {}
 
-impl CanoeVerifier for CanoeNoOpVerifier {    
-
-    fn validate_cert_receipt(
-        &self,
-        _cert_validity: CertValidity,
-        _eigenda_cert: EigenDAV2Cert,
-    ) {
+impl CanoeVerifier for CanoeNoOpVerifier {
+    fn validate_cert_receipt(&self, _cert_validity: CertValidity, _eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeNoOpVerifier");
     }
-
 }

@@ -93,7 +93,7 @@ where
 
     // TODO refactor later to avoid large object movement
     #[allow(clippy::result_large_err)]
-    fn next_data(&mut self) -> Result<EigenDABlobData, PipelineResult<Bytes>> {    
+    fn next_data(&mut self) -> Result<EigenDABlobData, PipelineResult<Bytes>> {
         if self.data.is_empty() {
             return Err(Err(PipelineError::Eof.temp()));
         }
