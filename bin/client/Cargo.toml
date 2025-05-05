@@ -7,7 +7,6 @@ edition = "2021"
 kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
-kona-executor.workspace = true
 kona-std-fpvm.workspace = true
 kona-std-fpvm-proc.workspace = true
 
@@ -15,6 +14,11 @@ hokulea-proof.workspace = true
 hokulea-client.workspace = true
 
 cfg-if.workspace = true
+
+# Execution
+op-alloy-consensus.workspace = true
+op-revm.workspace = true
+alloy-evm.workspace = true
 
 [package.metadata.cargo-machete]
 # cfg-if is used by the `client_entry` macro in kona-client

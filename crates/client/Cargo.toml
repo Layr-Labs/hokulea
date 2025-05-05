@@ -6,6 +6,10 @@ edition = "2021"
 
 [dependencies]
 alloy-consensus.workspace = true
+alloy-evm.workspace = true
+
+op-alloy-consensus.workspace = true
+op-revm.workspace = true
 
 kona-client.workspace = true
 kona-preimage.workspace = true

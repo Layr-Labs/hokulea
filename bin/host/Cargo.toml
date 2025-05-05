@@ -8,6 +8,7 @@ edition = "2021"
 hokulea-proof.workspace = true
 hokulea-client-bin.workspace = true
 hokulea-eigenda.workspace = true
+hokulea-witgen-client.workspace = true
 
 # Kona
 kona-preimage = { workspace = true, features = ["std"] }
@@ -15,6 +16,7 @@ kona-host = { workspace = true, features = ["single"] }
 kona-proof.workspace = true
 kona-std-fpvm.workspace = true
 kona-cli.workspace = true
+kona-client.workspace = true
 
 # Alloy
 alloy-rlp.workspace = true

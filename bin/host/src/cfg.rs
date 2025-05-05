@@ -4,6 +4,7 @@ use anyhow::Result;
 use clap::Parser;
 use hokulea_proof::hint::ExtendedHintType;
 use kona_cli::cli_styles;
+use kona_client::fpvm_evm::FpvmOpEvmFactory;
 use kona_host::single::SingleChainHostError;
 use kona_host::single::SingleChainProviders;
 use kona_host::PreimageServer;
@@ -133,18 +134,25 @@ impl SingleChainHostWithEigenDA {
         let server_task = self.start_server(hint.host, preimage.host).await?;
         // Start the client program in a separate child process.
 
-        /*
-        let client_task = task::spawn(hokulea_client_bin::clients::run_preloaded_eigenda_client(
-            OracleReader::new(preimage.client),
-            HintWriter::new(hint.client),
-            None,
-        ));
-        */
+        // uncomment if running preloaded eigenda client
+        //let client_task = task::spawn(
+        //    hokulea_witgen_client::witgen_client::run_preloaded_eigenda_client(
+        //        OracleReader::new(preimage.client.clone()),
+        //        HintWriter::new(hint.client.clone()),
+        //        FpvmOpEvmFactory::new(
+        //            HintWriter::new(hint.client),
+        //            OracleReader::new(preimage.client),
+        //        ),
+        //    ),
+        //);
 
         let client_task = task::spawn(hokulea_client_bin::client::run_direct_client(
-            OracleReader::new(preimage.client),
-            HintWriter::new(hint.client),
-            None,
+            OracleReader::new(preimage.client.clone()),
+            HintWriter::new(hint.client.clone()),
+            FpvmOpEvmFactory::new(
+                HintWriter::new(hint.client),
+                OracleReader::new(preimage.client),
+            ),
         ));
 
         let (_, client_result) = tokio::try_join!(server_task, client_task)?;

@@ -1,8 +1,7 @@
 use core::fmt::Debug;
 use kona_client::single::FaultProofProgramError;
-use kona_executor::KonaHandleRegister;
 use kona_preimage::{HintWriterClient, PreimageOracleClient};
-use kona_proof::{l1::OracleBlobProvider, l2::OracleL2ChainProvider, CachingOracle};
+use kona_proof::{l1::OracleBlobProvider, CachingOracle};
 
 use crate::witness::OracleEigenDAWitnessProvider;
 use hokulea_client::fp_client;
@@ -17,28 +16,34 @@ use std::{
 };
 use tracing::info;
 
+use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use op_alloy_consensus::OpTxEnvelope;
+use op_revm::OpSpecId;
+
 /// The function uses a variation of kona client function signature
 /// A preloaded client runs derivation twice
 /// The first round runs run_witgen_client only to populate the witness. This produces an artifact
 /// that contains all the necessary preimage to run the derivation.
 /// The second round uses the populated witness to run against
 #[allow(clippy::type_complexity)]
-pub async fn run_preloaded_eigenda_client<P, H>(
+pub async fn run_preloaded_eigenda_client<P, H, Evm>(
     oracle_client: P,
     hint_client: H,
-    _handle_register: Option<
-        KonaHandleRegister<
-            OracleL2ChainProvider<CachingOracle<P, H>>,
-            OracleL2ChainProvider<CachingOracle<P, H>>,
-        >,
-    >,
+    evm_factory: Evm,
 ) -> Result<(), FaultProofProgramError>
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
+    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     info!("run_preloaded_eigenda_client: generating witness");
-    let wit = run_witgen_client(oracle_client.clone(), hint_client.clone(), None).await?;
+    let wit = run_witgen_client(
+        oracle_client.clone(),
+        hint_client.clone(),
+        evm_factory.clone(),
+    )
+    .await?;
     const ORACLE_LRU_SIZE: usize = 1024;
 
     info!("done generating the witness");
@@ -61,7 +66,7 @@ where
     let preloaded_blob_provider = PreloadedEigenDABlobProvider::from(wit);
 
     info!("run preloaded provider");
-    fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, None).await?;
+    fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, evm_factory).await?;
 
     Ok(())
 }
@@ -73,19 +78,16 @@ where
 /// 1. a KZG commitment is consistent to the retrieved eigenda blob
 /// 2. the cert is correct
 #[allow(clippy::type_complexity)]
-pub async fn run_witgen_client<P, H>(
+pub async fn run_witgen_client<P, H, Evm>(
     oracle_client: P,
     hint_client: H,
-    _handle_register: Option<
-        KonaHandleRegister<
-            OracleL2ChainProvider<CachingOracle<P, H>>,
-            OracleL2ChainProvider<CachingOracle<P, H>>,
-        >,
-    >,
+    evm_factory: Evm,
 ) -> Result<EigenDABlobWitnessData, FaultProofProgramError>
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
+    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
 
@@ -104,7 +106,13 @@ where
         witness: eigenda_blobs_witness.clone(),
     };
 
-    fp_client::run_fp_client(oracle, beacon, eigenda_blob_and_witness_provider, None).await?;
+    fp_client::run_fp_client(
+        oracle,
+        beacon,
+        eigenda_blob_and_witness_provider,
+        evm_factory,
+    )
+    .await?;
 
     let wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
 

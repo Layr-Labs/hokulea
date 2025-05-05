@@ -11,32 +11,33 @@ use hokulea_proof::pipeline::OraclePipeline;
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_derive::traits::BlobProvider;
 use kona_driver::Driver;
-use kona_executor::{KonaHandleRegister, TrieDBProvider};
+use kona_executor::TrieDBProvider;
 use kona_preimage::CommsClient;
 use kona_proof::{
     executor::KonaExecutor, l1::OracleL1ChainProvider, l2::OracleL2ChainProvider,
     sync::new_pipeline_cursor, BootInfo, FlushableCache,
 };
 
+use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use op_alloy_consensus::OpTxEnvelope;
+use op_revm::OpSpecId;
+
 // The core client takes both beacon and eigenda struct, this is
 pub async fn run_fp_client<
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     B: BlobProvider + Send + Sync + Debug + Clone,
     E: EigenDABlobProvider + Send + Sync + Debug + Clone,
+    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
 >(
     oracle: Arc<O>,
     beacon: B,
     eigenda: E,
-    handle_register: Option<
-        KonaHandleRegister<
-            OracleL2ChainProvider<O>, // TODO use CachingOracle as opposed to O
-            OracleL2ChainProvider<O>,
-        >,
-    >,
+    evm_factory: Evm,
 ) -> Result<(), FaultProofProgramError>
 where
     <B as BlobProvider>::Error: Debug,
     <E as EigenDABlobProvider>::Error: Debug,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     ////////////////////////////////////////////////////////////////
     //                          PROLOGUE                          //
@@ -114,7 +115,7 @@ where
         rollup_config.as_ref(),
         l2_provider.clone(),
         l2_provider,
-        handle_register,
+        evm_factory,
         None,
     );
 

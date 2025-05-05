@@ -1,5 +1,5 @@
 [package]
-name = "witgen-client"
+name = "hokulea-witgen-client"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,7 +10,6 @@ alloy-primitives.workspace = true
 kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
-kona-executor.workspace = true
 
 hokulea-proof.workspace = true
 hokulea-client.workspace = true
@@ -21,3 +20,8 @@ rust-kzg-bn254-primitives.workspace = true
 
 tracing.workspace = true
 async-trait.workspace = true
+
+# Execution
+alloy-evm.workspace = true
+op-revm.workspace = true
+op-alloy-consensus.workspace = true
