@@ -134,7 +134,7 @@ impl SingleChainHostWithEigenDA {
         let server_task = self.start_server(hint.host, preimage.host).await?;
         // Start the client program in a separate child process.
 
-        // ToDo (bx) create an example on how to use run_preloaded_eigenda_client 
+        // ToDo (bx) create an example on how to use run_preloaded_eigenda_client
         //let client_task = task::spawn(
         //    hokulea_witgen_client::witgen_client::run_preloaded_eigenda_client(
         //        OracleReader::new(preimage.client.clone()),
