@@ -13,7 +13,7 @@ kona-derive.workspace = true
 hokulea-eigenda.workspace = true
 
 eigenda-v2-struct.workspace = true
-canoe-bindings.workspace = true
+canoe-bindings = { workspace = true, optional = true }
 rust-kzg-bn254-primitives.workspace = true
 rust-kzg-bn254-verifier.workspace = true
 

@@ -1,3 +1,5 @@
+#![no_std]
+
 use alloy_sol_types::sol;
 
 sol! {
