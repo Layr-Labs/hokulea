@@ -1,2 +1,2 @@
 # lock files should not be rendered in diffs.
-Cargo.lock linguist-generated
+Cargo.lock linguist-generated=true
