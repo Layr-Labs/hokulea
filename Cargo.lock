@@ -2423,7 +2423,6 @@ dependencies = [
  "hokulea-client-bin",
  "hokulea-eigenda",
  "hokulea-proof",
- "hokulea-witgen-client",
  "kona-cli",
  "kona-client",
  "kona-host",
