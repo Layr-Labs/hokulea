@@ -32,6 +32,8 @@ optimism_package:
     da_resolve_window: 16
     da_resolver_refund_percentage: 0
     use_altda: true
+  challengers:
+    # no challengers for now
   chains:
     - additional_services:
         - da_server
@@ -49,8 +51,6 @@ optimism_package:
           - --batch-type=1
           - --throttle-threshold=500_000
           - --throttle-block-size=1000
-      challenger_params:
-        enabled: false
       proposer_params:
         game_type: 1
         proposal_interval: 10m
