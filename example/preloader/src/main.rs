@@ -27,7 +27,8 @@ use tracing::info;
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
 use op_alloy_consensus::OpTxEnvelope;
 use op_revm::OpSpecId;
-use canoe_steel_apps::apps::create_cert_validity_proof;
+
+use canoe_provider::CanoeProvider;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> anyhow::Result<()> {
@@ -137,8 +138,15 @@ where
 /// 1. a KZG commitment is consistent to the retrieved eigenda blob
 /// 2. the cert is correct
 #[allow(clippy::type_complexity)]
+<<<<<<< HEAD:example/preloader/src/main.rs
 pub async fn run_witgen_client<P, H, Evm>(
     oracle: Arc<CachingOracle<P, H>>,
+=======
+pub async fn run_witgen_client<P, H, Evm, T>(
+    oracle_client: P,
+    hint_client: H,
+    canoe_provider: T,
+>>>>>>> 9a9cb2f (rebase to master with kona 1.0):crates/witgen-client/src/witgen_client.rs
     evm_factory: Evm,
 ) -> Result<EigenDABlobWitnessData, FaultProofProgramError>
 where

@@ -38,9 +38,9 @@ fn main() {
     let expected_result: bool = env::read();
     // take another input called expected result
 
-    let batch_header = BatchHeaderV2::abi_decode(&batch_header_abi, true).expect("deserialize BatchHeaderV2");
-    let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi, true).expect("deserialize BlobInclusionInfo");
-    let non_signer_stakes_and_signature = NonSignerStakesAndSignature::abi_decode(&non_signer_stakes_and_signature_abi, true).expect("deserialize NonSignerStakesAndSignature");    
+    let batch_header = BatchHeaderV2::abi_decode(&batch_header_abi).expect("deserialize BatchHeaderV2");
+    let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi).expect("deserialize BlobInclusionInfo");
+    let non_signer_stakes_and_signature = NonSignerStakesAndSignature::abi_decode(&non_signer_stakes_and_signature_abi).expect("deserialize NonSignerStakesAndSignature");    
 
     // Converts the input into a `EvmEnv` for execution. The `with_chain_spec` method is used
     // to specify the chain configuration. It checks that the state matches the state root in the
@@ -62,7 +62,7 @@ fn main() {
 
     let returns = Contract::new(contract, &env).call_builder(&call).call();
     // attest it to equal to expected result
-    assert!(returns._0 == expected_result);
+    assert!(returns == expected_result);
 
     // Commit the block hash and number used when deriving `view_call_env` to the journal.
     let journal = Journal {

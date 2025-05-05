@@ -10,9 +10,9 @@ path = "src/bin/dacert_v2_verifier.rs"
 [workspace]
 
 [dependencies]
-alloy-primitives = { version = "0.8" }
-alloy-sol-types = { version = "0.8" }
-risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", tag = "steel-v2.0.0-rc.7", default-features = false}
+alloy-primitives = { version = "1.0.0", default-features = false }
+alloy-sol-types = { version = "1.0.0", default-features = false }
+risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", rev = "fd7e39bc3427abfa7e8b1837c55ecbd5e49351db", default-features = false}
 risc0-zkvm = { version = "1.2.0", default-features = false, features = ["std"] }
 canoe-bindings = { path = "../../../bindings" }
 

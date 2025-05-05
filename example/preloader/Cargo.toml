@@ -27,13 +27,14 @@ op-revm.workspace = true
 op-alloy-consensus.workspace = true
 eigenda-v2-struct.workspace = true
 serde_json = { workspace = true }
+anyhow = { workspace = true }
 cfg-if = { workspace = true }
 
-canoe-provider  = { workspace = true, optional = true }
+canoe-provider  = { workspace = true }
 canoe-steel-apps = { workspace = true, optional = true }
 
 
 [features]
 default = []
-#steel = ["canoe-steel-apps"]
+steel = ["canoe-steel-apps"]
 #sp1-contract-call = ["canoe-sp1-contract-call-host"]

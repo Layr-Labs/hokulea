@@ -110,13 +110,13 @@ pub async fn create_cert_validity_proof(
 
     let mut contract = Contract::preflight(verifier_contract, &mut env);
    
-    let returns = contract.call_builder(&call).call().await?._0;
+    let returns = contract.call_builder(&call).call().await?;
     assert!(claimed_validity == returns);
 
     // Finally, construct the input from the environment.
     // There are two options: Use EIP-4788 for verification by providing a Beacon API endpoint,
     // or use the regular `blockhash' opcode.
-    let evm_input = env.into_input().await?;
+    let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> = env.into_input().await?;
 
     // Create the steel proof.
     let prove_info = task::spawn_blocking(move || {
