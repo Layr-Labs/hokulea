@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn init_tracing_subscriber(verbosity_level: u8) -> anyhow::Result<(), anyhow::Error> {
+pub fn init_tracing_subscriber(verbosity_level: u8) -> anyhow::Result<(), anyhow::Error> {
     // Convert verbosity_level to a LevelFilter
     let level = match verbosity_level {
         0 => LevelFilter::INFO,

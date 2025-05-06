@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["bin/*", "crates/*"]
+members = ["bin/*", "crates/*", "example/preloader"]
 
 [profile.release-client-lto]
 inherits = "release"
@@ -30,6 +30,7 @@ kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "ko
 kona-cli = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.0", default-features = false }
 
 # Workspace
+hokulea-host-bin = { path = "bin/host", version = "0.1.0", default-features = false }
 hokulea-client-bin = { path = "bin/client", version = "0.1.0", default-features = false }
 hokulea-client = { path = "crates/client", version = "0.1.0", default-features = false }
 hokulea-eigenda = { path = "crates/eigenda", version = "0.1.0", default-features = false }
