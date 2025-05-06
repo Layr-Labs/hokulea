@@ -1,0 +1,36 @@
+[package]
+name = "hokulea-example-preloader"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+alloy-primitives.workspace = true
+
+kona-client.workspace = true
+kona-preimage.workspace = true
+kona-proof.workspace = true
+
+hokulea-proof.workspace = true
+hokulea-client.workspace = true
+hokulea-compute-proof.workspace = true
+hokulea-eigenda.workspace = true
+hokulea-host-bin.workspace = true
+hokulea-witgen-client.workspace = true
+
+rust-kzg-bn254-primitives.workspace = true
+
+# Execution
+alloy-evm.workspace = true
+op-revm.workspace = true
+op-alloy-consensus.workspace = true
+
+# General
+anyhow.workspace = true
+tracing.workspace = true
+reqwest.workspace = true
+async-trait.workspace = true
+tokio = { workspace = true, features = ["full"] }
+clap = { workspace = true, features = ["derive", "env"] }
+serde.workspace = true
+tracing-subscriber.workspace = true

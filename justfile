@@ -74,7 +74,7 @@ _kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-devnet native_or_asterisc='native' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' bin_justfile='bin/client/justfile' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
@@ -99,7 +99,7 @@ run-client-against-devnet native_or_asterisc='native' verbosity='' block_number=
   fi
 
   set -x
-  just --justfile bin/client/justfile run-client $BLOCK_NUMBER \
+  just --justfile {{bin_justfile}} run-client $BLOCK_NUMBER \
     $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \
     {{native_or_asterisc}} $ROLLUP_CONFIG_PATH {{verbosity}}
 
