@@ -1,13 +1,32 @@
 //! Main entrypoint for the example binary, which runs both host and client
 
 use clap::Parser;
-use hokulea_host_bin::{init_tracing_subscriber, cfg::SingleChainHostWithEigenDA};
-use kona_preimage::{
-    BidirectionalChannel, HintWriter, OracleReader,
-};
-use tokio::task;
+use hokulea_host_bin::{cfg::SingleChainHostWithEigenDA, init_tracing_subscriber};
 use kona_client::fpvm_evm::FpvmOpEvmFactory;
-use hokulea_witgen_client::witgen_client;
+use kona_preimage::{BidirectionalChannel, HintWriter, OracleReader};
+use tokio::task;
+
+use core::fmt::Debug;
+use kona_client::single::FaultProofProgramError;
+use kona_preimage::{HintWriterClient, PreimageOracleClient};
+use kona_proof::{l1::OracleBlobProvider, CachingOracle};
+
+use hokulea_client::fp_client;
+use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
+use hokulea_proof::{
+    eigenda_blob_witness::EigenDABlobWitnessData,
+    preloaded_eigenda_provider::PreloadedEigenDABlobProvider,
+};
+use hokulea_witgen::witness::OracleEigenDAWitnessProvider;
+use std::{
+    ops::DerefMut,
+    sync::{Arc, Mutex},
+};
+use tracing::info;
+
+use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use op_alloy_consensus::OpTxEnvelope;
+use op_revm::OpSpecId;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> anyhow::Result<()> {
@@ -19,20 +38,117 @@ async fn main() -> anyhow::Result<()> {
 
     let server_task = cfg.start_server(hint.host, preimage.host).await?;
     // Start the client program in a separate child process.
-    
-    let client_task = task::spawn(
-        witgen_client::run_preloaded_eigenda_client(
-            OracleReader::new(preimage.client.clone()),
-            HintWriter::new(hint.client.clone()),
-            FpvmOpEvmFactory::new(
-                HintWriter::new(hint.client),
-                OracleReader::new(preimage.client),
-            ),
+
+    let client_task = task::spawn(run_preloaded_eigenda_client(
+        OracleReader::new(preimage.client.clone()),
+        HintWriter::new(hint.client.clone()),
+        FpvmOpEvmFactory::new(
+            HintWriter::new(hint.client),
+            OracleReader::new(preimage.client),
         ),
-    );
+    ));
 
     let (_, client_result) = tokio::try_join!(server_task, client_task)?;
 
     // Bubble up the exit status of the client program if execution completes.
     std::process::exit(client_result.is_err() as i32)
+}
+
+/// The function uses a variation of kona client function signature
+/// A preloaded client runs derivation twice
+/// The first round runs run_witgen_client only to populate the witness. This produces an artifact
+/// that contains all the necessary preimage to run the derivation.
+/// The second round uses the populated witness to run against
+#[allow(clippy::type_complexity)]
+pub async fn run_preloaded_eigenda_client<P, H, Evm>(
+    oracle_client: P,
+    hint_client: H,
+    evm_factory: Evm,
+) -> Result<(), FaultProofProgramError>
+where
+    P: PreimageOracleClient + Send + Sync + Debug + Clone,
+    H: HintWriterClient + Send + Sync + Debug + Clone,
+    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
+{
+    info!("run_preloaded_eigenda_client: generating witness");
+    let wit = run_witgen_client(
+        oracle_client.clone(),
+        hint_client.clone(),
+        evm_factory.clone(),
+    )
+    .await?;
+    const ORACLE_LRU_SIZE: usize = 1024;
+
+    info!("done generating the witness");
+
+    // Generate view proof by calling compute_view_proof(), and pass it into wit
+    // When securely verify the eigenda integration, PreloadedEigenDABlobProvider::from shall be run inside the ZKVM in the
+    // form of ELF. It is important to pass it to witness before calling PreloadedEigenDABlobProvider::from. Because the
+    // verification is checked within the elf
+
+    let oracle = Arc::new(CachingOracle::new(
+        ORACLE_LRU_SIZE,
+        oracle_client,
+        hint_client,
+    ));
+    let beacon = OracleBlobProvider::new(oracle.clone());
+
+    info!("convert eigenda blob witness into preloaded blob provider");
+
+    // preloaded_blob_provider does not use oracle
+    let preloaded_blob_provider = PreloadedEigenDABlobProvider::from(wit);
+
+    info!("run preloaded provider");
+    fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, evm_factory).await?;
+
+    Ok(())
+}
+
+/// A run_witgen_client calls [fp_client] functopm to run kona derivation.
+/// This client uses a special [OracleEigenDAWitnessProvider] that wraps around [OracleEigenDAProvider]
+/// It returns the eigenda blob witness to the caller, those blob witnesses can be used to prove
+/// used only at the preparation phase. Its usage is contained in the crate hokulea-client-bin
+/// 1. a KZG commitment is consistent to the retrieved eigenda blob
+/// 2. the cert is correct
+#[allow(clippy::type_complexity)]
+pub async fn run_witgen_client<P, H, Evm>(
+    oracle_client: P,
+    hint_client: H,
+    evm_factory: Evm,
+) -> Result<EigenDABlobWitnessData, FaultProofProgramError>
+where
+    P: PreimageOracleClient + Send + Sync + Debug + Clone,
+    H: HintWriterClient + Send + Sync + Debug + Clone,
+    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
+{
+    const ORACLE_LRU_SIZE: usize = 1024;
+
+    let oracle = Arc::new(CachingOracle::new(
+        ORACLE_LRU_SIZE,
+        oracle_client,
+        hint_client,
+    ));
+    let beacon = OracleBlobProvider::new(oracle.clone());
+
+    let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
+    let eigenda_blobs_witness = Arc::new(Mutex::new(EigenDABlobWitnessData::default()));
+
+    let eigenda_blob_and_witness_provider = OracleEigenDAWitnessProvider {
+        provider: eigenda_blob_provider,
+        witness: eigenda_blobs_witness.clone(),
+    };
+
+    fp_client::run_fp_client(
+        oracle,
+        beacon,
+        eigenda_blob_and_witness_provider,
+        evm_factory,
+    )
+    .await?;
+
+    let wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
+
+    Ok(wit)
 }

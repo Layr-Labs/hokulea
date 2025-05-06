@@ -16,7 +16,7 @@ hokulea-client.workspace = true
 hokulea-compute-proof.workspace = true
 hokulea-eigenda.workspace = true
 hokulea-host-bin.workspace = true
-hokulea-witgen-client.workspace = true
+hokulea-witgen.workspace = true
 
 rust-kzg-bn254-primitives.workspace = true
 

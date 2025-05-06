@@ -2425,7 +2425,7 @@ dependencies = [
  "hokulea-eigenda",
  "hokulea-host-bin",
  "hokulea-proof",
- "hokulea-witgen-client",
+ "hokulea-witgen",
  "kona-client",
  "kona-preimage",
  "kona-proof",
@@ -2451,7 +2451,6 @@ dependencies = [
  "hokulea-client-bin",
  "hokulea-eigenda",
  "hokulea-proof",
- "hokulea-witgen-client",
  "kona-cli",
  "kona-client",
  "kona-host",
@@ -2491,7 +2490,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hokulea-witgen-client"
+name = "hokulea-witgen"
 version = "0.1.0"
 dependencies = [
  "alloy-evm",
