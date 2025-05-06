@@ -42,4 +42,13 @@ Then you can run
 just run-client-against-devnet 'asterisc'
 ```
 
+### Running the example preloaded client
+More information please see [here](./exmaple/preloader/README.md)
+
+```bash
+# Before running the client, it will download the needed g1.point SRS file
+# and the rollup.json config file.
+just run-client-against-devnet 'native' 'hokulea-example-preloader'
+```
+
 ![](./hokulea.jpeg)
