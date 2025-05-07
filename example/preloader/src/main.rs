@@ -37,8 +37,8 @@ async fn main() -> anyhow::Result<()> {
     let preimage = BidirectionalChannel::new()?;
 
     let server_task = cfg.start_server(hint.host, preimage.host).await?;
-    // Start the client program in a separate child process.
-
+    
+    // Spawn the client logic as a concurrent task
     let client_task = task::spawn(run_derivation_with_witgen_and_preloader(
         OracleReader::new(preimage.client.clone()),
         HintWriter::new(hint.client.clone()),
