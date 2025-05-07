@@ -144,7 +144,7 @@ lint: lint-native lint-docs
 alias l := lint-native
 [group('style')]
 lint-native: fmt-native-check lint-docs
-  cargo clippy --workspace --all --all-features --all-targets -- -D warnings
+  RISC0_SKIP_BUILD=1 cargo clippy --workspace --all --all-features --all-targets -- -D warnings
 
 # Lint the Rust documentation
 [group('style')]

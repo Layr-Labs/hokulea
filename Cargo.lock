@@ -3580,7 +3580,6 @@ version = "0.1.0"
 dependencies = [
  "alloy-evm 0.6.0",
  "alloy-primitives 1.1.0",
- "anyhow",
  "async-trait",
  "canoe-provider",
  "canoe-steel-apps",

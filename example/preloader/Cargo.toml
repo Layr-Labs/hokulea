@@ -27,7 +27,6 @@ op-revm.workspace = true
 op-alloy-consensus.workspace = true
 eigenda-v2-struct.workspace = true
 serde_json = { workspace = true }
-anyhow = { workspace = true }
 cfg-if = { workspace = true }
 
 canoe-provider  = { workspace = true }

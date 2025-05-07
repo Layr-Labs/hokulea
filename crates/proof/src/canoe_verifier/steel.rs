@@ -20,7 +20,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
         assert!(cert_validity.receipt.is_some());
         let receipt_bytes = cert_validity.receipt.as_ref().unwrap();
 
-        let canoe_receipt: Receipt = serde_json::from_slice(&receipt_bytes).expect("serde error");
+        let canoe_receipt: Receipt = serde_json::from_slice(receipt_bytes).expect("serde error");
         canoe_receipt
             .verify(DACERT_V2_VERIFIER_ID)
             .expect("receipt verify correctly");
