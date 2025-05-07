@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-primitives = { workspace = true }
 alloy-provider = { version = "0.14" }
 alloy-sol-types = { workspace = true }
 url = {workspace = true }
@@ -19,3 +18,4 @@ eigenda-v2-struct = { workspace = true }
 canoe-provider.workspace = true
 canoe-bindings.workspace = true
 hokulea-proof.workspace = true
+tracing.workspace = true

@@ -74,7 +74,11 @@ _kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
+<<<<<<< HEAD
 run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea-host-bin' features='' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+=======
+run-client-against-devnet native_or_asterisc='native' features='' mock_mode='true' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+>>>>>>> 2e6376b (cleanup)
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
@@ -99,9 +103,15 @@ run-client-against-devnet native_or_asterisc='native' native_bin_target='hokulea
   fi
 
   set -x
+<<<<<<< HEAD
   just run-client $BLOCK_NUMBER \
     $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \    
     {{native_or_asterisc}} {{native_bin_target}} {{features}} $ROLLUP_CONFIG_PATH {{verbosity}}
+=======
+  just --justfile bin/client/justfile run-client $BLOCK_NUMBER \
+    $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \
+    {{native_or_asterisc}} $ROLLUP_CONFIG_PATH {{features}} {{mock_mode}} {{verbosity}}
+>>>>>>> 2e6376b (cleanup)
 
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":

@@ -34,11 +34,7 @@ fn main() {
     let contract: Address = env::read();
     let batch_header_abi: Vec<u8> = env::read();
     let non_signer_stakes_and_signature_abi: Vec<u8> = env::read();
-    let blob_inclusion_info_abi: Vec<u8> = env::read();       
-    let expected_result: bool = env::read();
-    let l1_head_block_hash: [u8; 32] = env::read();
-    // take another input called expected result
-
+    let blob_inclusion_info_abi: Vec<u8> = env::read();
     
     let batch_header = BatchHeaderV2::abi_decode(&batch_header_abi).expect("deserialize BatchHeaderV2");
     let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi).expect("deserialize BlobInclusionInfo");
@@ -62,10 +58,7 @@ fn main() {
     buffer.extend(blob_inclusion_info_abi);
     buffer.extend(non_signer_stakes_and_signature_abi);    
 
-    let returns = Contract::new(contract, &env).call_builder(&call).call();
-    // attest it to equal to expected result
-    assert!(returns == expected_result);
-    assert!(env.header().seal() == l1_head_block_hash);
+    let returns = Contract::new(contract, &env).call_builder(&call).call();    
 
     // Commit the block hash and number used when deriving `view_call_env` to the journal.
     let journal = Journal {

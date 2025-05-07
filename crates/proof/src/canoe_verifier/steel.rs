@@ -13,6 +13,12 @@ use tracing::info;
 #[derive(Clone)]
 pub struct CanoeSteelVerifier {}
 
+/// Abort in any case that there is problem
+/// Expect for a given 1. inputs, 2. compute logics (contract address) 3. output 4. blockhash where it
+/// is evaluated. Everything should come as expected.
+///     CertValidity provides the output and blockhash which comes from boot info
+///     VERIFIER_ADDRESS is currently burned inside the client
+///     eigenda_cert contains all the inputs
 impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSteelVerifier");

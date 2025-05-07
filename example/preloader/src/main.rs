@@ -117,17 +117,31 @@ where
 
     info!("convert eigenda blob witness into preloaded blob provider");
 
-    let boot = BootInfo::load(oracle.as_ref()).await?;
+    let boot_info = BootInfo::load(oracle.as_ref()).await?;
 
     // get l1 block number
     let header_rlp = oracle
-        .get(PreimageKey::new_keccak256(*boot.l1_head))
+        .get(PreimageKey::new_keccak256(*boot_info.l1_head))
         .await
         .expect("get l1 header based on l1 head");
     // Decode the header RLP into a Header.
     let l1_head_header = Header::decode(&mut header_rlp.as_slice()).expect("rlp decode l1 header");
 
-    populate_witness_from_boot_info(&mut wit, &boot, &l1_head_header);
+    let num_cert = wit.validity.len();
+    for i in 0..num_cert {
+        wit.validity[i].l1_head_block_hash = boot_info.l1_head;
+        wit.validity[i].l1_head_block_number = l1_head_header.number;
+
+        let cert = &wit.eigenda_certs[i];
+
+        let canoe_proof = canoe_provider
+            .create_cert_validity_proof(cert.clone(), wit.validity[i].clone())
+            .await
+            .expect("must be able generate a canoe zk proof attesting eth state");
+
+        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
+        wit.validity[i].receipt = canoe_proof_bytes;
+    }
 
     // preloaded_blob_provider does not use oracle
     let preloaded_blob_provider = PreloadedEigenDABlobProvider::from_witness(wit, canoe_verifier);
@@ -136,18 +150,6 @@ where
     fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, evm_factory).await?;
 
     Ok(())
-}
-
-fn populate_witness_from_boot_info(
-    wit: &mut EigenDABlobWitnessData,
-    boot_info: &BootInfo,
-    l1_head_header: &Header,
-) {
-    let num_cert = wit.eigenda_blobs.len();
-    for i in 0..num_cert {
-        wit.validity[i].l1_head_block_hash = boot_info.l1_head;
-        wit.validity[i].l1_head_block_number = l1_head_header.number;
-    }
 }
 
 /// A run_witgen_client calls [fp_client] functopm to run kona derivation.
@@ -166,7 +168,6 @@ where
     H: HintWriterClient + Send + Sync + Debug + Clone,
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
-    T: CanoeProvider,
 {
     let beacon = OracleBlobProvider::new(oracle.clone());
 
@@ -186,20 +187,7 @@ where
     )
     .await?;
 
-    let mut wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
-
-    let num_cert = wit.validity.len();
-    for i in 0..num_cert {
-        let cert = &wit.eigenda_certs[i];
-
-        let canoe_proof = canoe_provider
-            .create_cert_validity_proof(cert.clone(), wit.validity[i].clone())
-            .await
-            .expect("must be able generate a canoe zk proof attesting eth state");
-
-        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        wit.validity[i].receipt = canoe_proof_bytes;
-    }
+    let wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
 
     Ok(wit)
 }

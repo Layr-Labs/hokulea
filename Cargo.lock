@@ -2185,7 +2185,6 @@ dependencies = [
 name = "canoe-steel-apps"
 version = "0.1.0"
 dependencies = [
- "alloy-primitives 1.1.0",
  "alloy-provider 0.14.0",
  "alloy-sol-types",
  "anyhow",
@@ -2198,6 +2197,7 @@ dependencies = [
  "risc0-steel",
  "risc0-zkvm",
  "tokio",
+ "tracing",
  "url",
 ]
 
