@@ -19,7 +19,7 @@ A host that runs the witgen client is responsible for populating all the data wi
 
 ## PreloadedEigenDABlobProvider
 
-A PreloadedEigenDABlobProvider is a data structure that implements EigenDABlobProvider traits. It can be used as the eigenda data source for the derivation. The internal of the PreloadedEigenDABlobProvider is a vector of eigenda blobs. Whenever called by the upstream to get a blob, the internal strucutre pop out a blob.
+A PreloadedEigenDABlobProvider is a data structure that implements the EigenDABlobProvider trait. It can be used as the eigenda data source for the derivation. The internal of the PreloadedEigenDABlobProvider is a vector of eigenda blobs. Whenever called by the upstream to get a blob, the internal structure pops out and returns the next blob.
 
 The PreloadedEigenDABlobProvider is converted from the EigenDABlobWitnessData which is an artifact from running Witgen client. During the conversion, we checks
 - the kzg proof is indeed correct
