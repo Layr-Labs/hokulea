@@ -43,7 +43,7 @@ just run-client-against-devnet 'asterisc'
 ```
 
 ### Running the example preloaded client
-More information please see [here](./exmaple/preloader/README.md)
+More information please see [here](./example/preloader/README.md)
 
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
