@@ -4,7 +4,7 @@ Use the preloading method to verify the eigenda blob by converting witness data.
 
 ## Witgen client
 
-Witgen client is a variant of the default fault proof client (that runs derivation pipeline and execution to check if output state matches). Running the default fault proof client produce an data oracle in the form of Key-Value map. There is data organization, all the keys are 32 bytes hash digest. A witgen client is a wrapper around the default client, that not only returns the oracle, but also an organized data structure called EigenDABlobWitnessData.
+Witgen client is a variant of the default fault proof client (that runs derivation pipeline and execution to check if output state matches). Running the default fault proof client produce a data oracle in the form of Key-Value map where the keys are 32 bytes hash digests. A witgen client is a wrapper around the default client, that not only returns the oracle, but also an organized data structure called EigenDABlobWitnessData.
 
 ### EigenDABlobWitnessData
 
