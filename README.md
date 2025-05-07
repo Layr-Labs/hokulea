@@ -51,4 +51,23 @@ More information please see [here](./example/preloader/README.md)
 just run-client-against-devnet 'native' 'hokulea-example-preloader'
 ```
 
+### Running the example preloaded client with steel
+More information please see [here](./example/preloader/README.md)
+
+We turned on the steel feature flag to activate the workflow to generate the steel proof, and verify the steel proof in the guest code. The proof generation is in mock mode, and there is no significant computation done. 
+
+```bash
+# Before running the client, it will download the needed g1.point SRS file
+# and the rollup.json config file.
+just run-client-against-devnet 'native' 'hokulea-example-preloader' 
+```
+
+To turn off the mock mode for creating a steel proof. Currently local proof generation requries a machine with x84 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
+
+```bash
+# Before running the client, it will download the needed g1.point SRS file
+# and the rollup.json config file.
+just run-client-against-devnet 'native' 'hokulea-example-preloader' 'false'
+```
+
 ![](./hokulea.jpeg)
