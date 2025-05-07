@@ -35,5 +35,5 @@ op-alloy-consensus.workspace = true
 
 [features]
 default = []
-steel = ["canoe-steel-apps"]
+steel = ["canoe-steel-apps", "hokulea-proof/steel"]
 #sp1-contract-call = ["canoe-sp1-contract-call-host"]

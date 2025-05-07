@@ -24,7 +24,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-      - run: just ${{ matrix.justfile-target }}
+      - run: RISC0_SKIP_BUILD=1 just ${{ matrix.justfile-target }}
   cargo-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -40,7 +40,7 @@ jobs:
           cache-on-failure: true
       - uses: taiki-e/install-action@nextest
       - name: cargo test
-        run: just test
+        run: RISC0_SKIP_BUILD=1 just test
   cargo-lint:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -86,7 +86,7 @@ jobs:
         with:
           cache-on-failure: true
       - name: doclint
-        run: just lint-docs
+        run: RISC0_SKIP_BUILD=1 just lint-docs
       - name: doctest
         run: just test-docs
   cargo-hack:
@@ -103,7 +103,7 @@ jobs:
         with:
           cache-on-failure: true
       - name: cargo hack
-        run: just hack
+        run: RISC0_SKIP_BUILD=1 just hack
   unused-deps:
     runs-on: ubuntu-latest
     timeout-minutes: 5 # machete runs very quickly but need longer timeout to install the tools
