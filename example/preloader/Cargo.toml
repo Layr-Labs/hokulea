@@ -23,6 +23,8 @@ kona-proof.workspace = true
 
 # Execution
 alloy-evm.workspace = true
+alloy-consensus.workspace = true
+alloy-rlp.workspace = true
 op-revm.workspace = true
 op-alloy-consensus.workspace = true
 eigenda-v2-struct.workspace = true

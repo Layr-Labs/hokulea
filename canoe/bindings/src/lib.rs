@@ -4,9 +4,9 @@ use alloy_sol_types::sol;
 
 sol! {
     struct Journal {
-        address contract;
+        bytes32 blockhash;
+        address contractAddress;
         bytes input;
-        // add chain spec
     }
 }
 

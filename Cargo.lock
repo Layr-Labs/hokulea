@@ -2177,6 +2177,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "eigenda-v2-struct",
+ "hokulea-proof",
  "serde",
 ]
 
@@ -3578,8 +3579,10 @@ dependencies = [
 name = "hokulea-witgen-client"
 version = "0.1.0"
 dependencies = [
+ "alloy-consensus 0.15.9",
  "alloy-evm 0.6.0",
  "alloy-primitives 1.1.0",
+ "alloy-rlp",
  "async-trait",
  "canoe-provider",
  "canoe-steel-apps",

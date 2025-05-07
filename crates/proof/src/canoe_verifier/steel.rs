@@ -7,7 +7,7 @@ use eigenda_v2_struct::EigenDAV2Cert;
 
 use risc0_zkvm::Receipt;
 
-use canoe_steel_methods::DACERT_V2_VERIFIER_ID;
+use canoe_steel_methods::V2CERT_VERIFICATION_ID;
 use tracing::info;
 
 #[derive(Clone)]
@@ -22,7 +22,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
 
         let canoe_receipt: Receipt = serde_json::from_slice(receipt_bytes).expect("serde error");
         canoe_receipt
-            .verify(DACERT_V2_VERIFIER_ID)
+            .verify(V2CERT_VERIFICATION_ID)
             .expect("receipt verify correctly");
 
         let journal = Journal::abi_decode(&canoe_receipt.journal.bytes).expect("valid journal");

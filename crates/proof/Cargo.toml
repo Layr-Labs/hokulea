@@ -42,5 +42,5 @@ risc0-zkvm = { workspace = true, optional = true }
 
 [features]
 default = []
-steel = ["canoe-steel-methods", "risc0-zkvm"]
+steel = ["canoe-steel-methods", "risc0-zkvm", "canoe-bindings"]
 sp1-contract-call = []

@@ -1,11 +1,11 @@
 [package]
-name = "dacert-v2-verifier-guests"
+name = "v2cert-verification-guests"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "dacert_v2_verifier"
-path = "src/bin/dacert_v2_verifier.rs"
+name = "v2cert_verification"
+path = "src/bin/v2cert_verification.rs"
 
 [workspace]
 

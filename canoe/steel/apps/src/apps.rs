@@ -5,17 +5,13 @@ use alloy_primitives::Address;
 use canoe_bindings::IEigenDACertMockVerifier;
 use eigenda_v2_struct;
 
-use risc0_steel::{
-    ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC},
-    host::BlockNumberOrTag,
-    Contract,
-};
+use risc0_steel::{ethereum::EthEvmEnv, host::BlockNumberOrTag, Contract};
 use tokio::task;
 
 use alloy_provider::ProviderBuilder;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 
-use canoe_steel_methods::DACERT_V2_VERIFIER_ELF;
+use canoe_steel_methods::V2CERT_VERIFICATION_ELF;
 
 use alloy_sol_types::SolValue;
 
@@ -27,7 +23,7 @@ use url::Url;
 use canoe_provider::CanoeProvider;
 use risc0_zkvm;
 
-use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
+use hokulea_proof::{canoe_verifier::VERIFIER_ADDRESS, cert_validity::CertValidity};
 
 /// A canoe provider implementation with steel
 #[derive(Debug, Clone)]
@@ -43,7 +39,7 @@ impl CanoeProvider for CanoeSteelProvider {
     async fn create_cert_validity_proof(
         &self,
         eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        claimed_validity: bool,
+        claimed_validity: CertValidity,
     ) -> Result<Self::Receipt> {
         create_cert_validity_proof(
             eigenda_cert.batch_header_v2.clone(),
@@ -66,31 +62,22 @@ pub async fn create_cert_validity_proof(
     batch_header: eigenda_v2_struct::BatchHeaderV2,
     non_signer: eigenda_v2_struct::NonSignerStakesAndSignature,
     blob_inclusion: eigenda_v2_struct::BlobInclusionInfo,
-    claimed_validity: bool,
+    cert_validity: CertValidity,
     l1_node_address: String,
     verifier_contract: Address,
 ) -> Result<Receipt> {
-    // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
-    //tracing_subscriber::fmt()
-    //    .with_env_filter(EnvFilter::from_default_env())
-    //    .init();
-    // Parse the command line arguments.
-    //let args = SteelArgs::try_parse()?;
     let eth_rpc_url = Url::from_str(&l1_node_address).unwrap();
 
     // Create an alloy provider for that private key and URL.
-    //let wallet = EthereumWallet::from(args.eth_wallet_private_key);
-    let provider = ProviderBuilder::new()
-        //    .wallet(wallet)
-        .on_http(eth_rpc_url);
+    let provider = ProviderBuilder::new().on_http(eth_rpc_url); //.await?;
 
     let builder = EthEvmEnv::builder()
         .provider(provider.clone())
-        .block_number_or_tag(BlockNumberOrTag::Parent);
+        .block_number_or_tag(BlockNumberOrTag::Number(cert_validity.l1_head_block_number));
 
     let mut env = builder.build().await?;
     //  The `with_chain_spec` method is used to specify the chain configuration.
-    env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
+    //env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
 
     let blob_inclusion_info_sol = blob_inclusion.clone().to_sol();
 
@@ -115,7 +102,7 @@ pub async fn create_cert_validity_proof(
     let mut contract = Contract::preflight(verifier_contract, &mut env);
 
     let returns = contract.call_builder(&call).call().await?;
-    assert!(claimed_validity == returns);
+    assert!(cert_validity.claimed_validity == returns);
 
     // Finally, construct the input from the environment.
     // There are two options: Use EIP-4788 for verification by providing a Beacon API endpoint,
@@ -131,14 +118,15 @@ pub async fn create_cert_validity_proof(
             .write(&batch_header_abi)?
             .write(&non_signer_abi)?
             .write(&blob_inclusion_abi)?
-            .write(&claimed_validity)?
+            .write(&cert_validity.claimed_validity)?
+            .write(&cert_validity.l1_head_block_hash)?
             .build()
             .unwrap();
 
         default_prover().prove_with_ctx(
             env,
             &VerifierContext::default(),
-            DACERT_V2_VERIFIER_ELF,
+            V2CERT_VERIFICATION_ELF,
             &ProverOpts::groth16(),
         )
     })

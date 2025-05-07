@@ -1241,17 +1241,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dacert-v2-verifier-guests"
-version = "0.1.0"
-dependencies = [
- "alloy-primitives",
- "alloy-sol-types",
- "canoe-bindings",
- "risc0-steel",
- "risc0-zkvm",
-]
-
-[[package]]
 name = "darling"
 version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3528,6 +3517,17 @@ name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
+
+[[package]]
+name = "v2cert-verification-guests"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives",
+ "alloy-sol-types",
+ "canoe-bindings",
+ "risc0-steel",
+ "risc0-zkvm",
+]
 
 [[package]]
 name = "valuable"

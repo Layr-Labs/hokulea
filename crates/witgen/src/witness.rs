@@ -1,4 +1,4 @@
-use alloy_primitives::{Bytes, FixedBytes};
+use alloy_primitives::{Bytes, FixedBytes, B256};
 use async_trait::async_trait;
 use eigenda_v2_struct::EigenDAV2Cert;
 use hokulea_compute_proof::compute_kzg_proof;
@@ -81,6 +81,8 @@ fn populate_witness(
     witness.eigenda_certs.push(cert.clone());
     witness.validity.push(CertValidity {
         claimed_validity: cert_validity,
-        receipt: None,
+        receipt: Vec::new(),
+        l1_head_block_hash: B256::ZERO,
+        l1_head_block_number: 0,
     });
 }

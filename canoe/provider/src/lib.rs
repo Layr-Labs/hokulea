@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use hokulea_proof::cert_validity::CertValidity;
 use serde::{Deserialize, Serialize};
 
 #[async_trait]
@@ -9,7 +10,7 @@ pub trait CanoeProvider: Clone + Send + 'static {
     async fn create_cert_validity_proof(
         &self,
         eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        claimed_validity: bool,
+        cert_validity: CertValidity,
     ) -> Result<Self::Receipt>;
 
     fn get_l1_address(&self) -> String;
@@ -25,7 +26,7 @@ impl CanoeProvider for CanoeNoOpProvider {
     async fn create_cert_validity_proof(
         &self,
         _eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        _claimed_validity: bool,
+        _claimed_validity: CertValidity,
     ) -> Result<Self::Receipt> {
         Ok(())
     }

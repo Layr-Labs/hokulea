@@ -19,6 +19,6 @@
 pragma solidity ^0.8.20;
 
 library Elf {
-    string public constant DACERT_V2_VERIFIER_PATH =
-        "/Users/bxue/Documents/eigenda-integration/hokulea/target/riscv-guest/canoe-steel-methods/dacert-v2-verifier-guests/riscv32im-risc0-zkvm-elf/release/dacert_v2_verifier.bin";
+    string public constant V2CERT_VERIFICATION_PATH =
+        "/Users/bxue/Documents/eigenda-integration/hokulea/target/riscv-guest/canoe-steel-methods/v2cert-verification-guests/riscv32im-risc0-zkvm-elf/release/v2cert_verification.bin";
 }
