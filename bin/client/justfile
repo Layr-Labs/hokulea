@@ -6,7 +6,7 @@ default:
 
 # Run the client program, either natively or on asterisc, depending on the 'native_or_asterisc' argument.
 # Currently only support features 'steel', used to generate a zk proof for DA certs. When no features is enabled, zk proof generation and verification are noop. 
-run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' rollup_config_path='' features=''  verbosity='' :
+run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' rollup_config_path='' features='' mock_mode='true' verbosity='':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
 
@@ -42,10 +42,11 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_prox
   rm -rf ./data
   mkdir ./data
 
-  set -a
-    # RISC0_DEV_MODE=true
-    ETH_RPC_URL=$L1_NODE_ADDRESS
-  set +a
+  if [ "{{mock_mode}}" == 'true' ]; then
+    set -a
+      RISC0_DEV_MODE=true
+    set +a
+  fi
 
   FEATURES_FLAGS=""
   if [ "{{features}}" != '' ]; then
