@@ -1,4 +1,4 @@
-use crate::canoe_verifier::CanoeVerifier;
+use crate::canoe_verifier::{CanoeVerifier, VERIFIER_ADDRESS};
 use crate::cert_validity::CertValidity;
 use alloc::vec::Vec;
 use alloy_sol_types::SolValue;
@@ -16,9 +16,7 @@ pub struct CanoeSteelVerifier {}
 impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSteelVerifier");
-        // if not in dev mode, the receipt must be non empty
-        assert!(cert_validity.receipt.is_some());
-        let receipt_bytes = cert_validity.receipt.as_ref().unwrap();
+        let receipt_bytes = cert_validity.receipt.as_ref();
 
         let canoe_receipt: Receipt = serde_json::from_slice(receipt_bytes).expect("serde error");
         canoe_receipt
@@ -34,6 +32,16 @@ impl CanoeVerifier for CanoeSteelVerifier {
             .to_sol()
             .abi_encode();
 
+        // ensure block hash (block number) is constrainted
+        assert!(journal.blockhash == cert_validity.l1_head_block_hash);
+
+        // ensure function being used is constrained
+        assert!(journal.contractAddress == VERIFIER_ADDRESS);
+
+        // ensure output is constrained
+        assert!(journal.output == cert_validity.claimed_validity);
+
+        // ensure inputs are constrained
         let mut buffer = Vec::new();
         buffer.extend(batch_header);
         buffer.extend(blob_inclusion_info);

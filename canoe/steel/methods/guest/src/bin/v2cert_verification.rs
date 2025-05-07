@@ -72,8 +72,7 @@ fn main() {
         contractAddress: contract,
         input: buffer.into(),
         blockhash: env.header().seal(),
-        //input: Vec::new().into(),
-        //blockhash: [0; 32].into(),
+        output: returns,        
     };
     env::commit_slice(&journal.abi_encode());
 }

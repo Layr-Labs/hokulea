@@ -20,5 +20,5 @@ pragma solidity ^0.8.20;
 
 library ImageID {
     bytes32 public constant V2CERT_VERIFICATION_ID =
-        bytes32(0x5320df894044ae21b0b1cfa088e3517b763deff761ebf4c060ee23927e6f1e71);
+        bytes32(0xbb28ecefdf7863d907638e7e5a5e2f305af7d54868ccc1ccbeef963bdd6328c8);
 }
