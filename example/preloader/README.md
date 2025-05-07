@@ -1,6 +1,16 @@
 # Preloader
 
-Use the preloading method to verify the eigenda blob by converting witness data.
+
+This preloader example demonstrates a workflow how to securely integrate with eigenda in the zk secure integration stack, by using the preloading method.
+
+At the high level, in a zk secure integration stack, a data oracle is first generated and then passed into zkVM along with the software that verifies and consumes those data. The zk secure integration stack already has logics for all three parts. When integrating with eigenda, we adds implementation to witness(eigenda blob and metadata) generation, eigenda blob consumption logics and eigenda blob verificaton.
+
+Notably, this implies that in op-succinct and kailua stack integration, we handle
+- witness generation by the Witgen client
+- verification by PreloadedEigenDABlobProvider as a part of guest code to be run inside zkVM
+- logics of consume eigenda blob into op channel frame by initialization of derivation pipeline with hokulea
+
+This preloader example demonstrate the witness generation and witness verification
 
 ## Witgen client
 
@@ -8,7 +18,7 @@ Witgen client is a variant of the default fault proof client (that runs derivati
 
 ### EigenDABlobWitnessData
 
-EigenDABlobWitnessData contains the EigenDA certificates (aka eigenda cert). The certificate is stored in an append only vector. For each cert, there is a corresponding eigenda blob, a kzg proof (which shows the kzg commitment relation between the blob and the eigenda cert) and a cert validity zk proof that contains the kzg commitment. 
+EigenDABlobWitnessData contains the EigenDA certificates (aka eigenda cert). The certificate is stored in an append only vector. For each cert, there is a corresponding eigenda blob, a kzg proof (which shows the kzg commitment relation between the blob and the eigenda cert) and a cert validity zk proof that attests the validity of the eigenda cert. 
 
 Inside EigenDABlobWitnessData, only the eigenda cert comes directly from derivation pipeline, the rest of data structure
 - eigenda blob : comes from hokulea host which downloads from eigenda-proxy.
