@@ -155,11 +155,15 @@ risc0-zkp = { version = "2.0.1", default-features = false }
 #canoe-sp1-contract-call-host = { path = "./canoe/sp1-contract-call/host" }
 #canoe-sp1-contract-call-client = { path = "./canoe/sp1-contract-call/client" }
 
-#sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4"}
-#sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4"}
-#sp1-sdk = "4.2.0"
-#sp1-build = "4.2.0"
-#sp1-zkvm = "4.2.0"
+# Sp1-contract-call
+canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false  }
+canoe-sp1-cc-client  = { path = "./canoe/sp1-cc/client", default-features = false  }
+
+sp1-sdk = "4.2.0"
+sp1-build = "4.2.0"
+sp1-zkvm = { version = "4.2.0", default-features = false }
+sp1-lib = "4.2.0"
+bincode = { version = "1.3.3", default-features = false }
 
 # ZKVM deps (ToDo cleanup)
 log = { version = "0.4" }

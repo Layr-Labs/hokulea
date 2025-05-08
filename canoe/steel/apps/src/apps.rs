@@ -59,13 +59,12 @@ impl CanoeProvider for CanoeSteelProvider {
         let mut env = builder.build().await?;
         //  The `with_chain_spec` method is used to specify the chain configuration.
         //env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
-
-        let blob_inclusion_info_sol = eigenda_cert.blob_inclusion_info.clone().to_sol();
+        
 
         // Prepare the function call
         let call = IEigenDACertMockVerifier::alwaysReturnsTrueCall {
             batchHeader: eigenda_cert.batch_header_v2.to_sol(),
-            blobInclusionInfo: blob_inclusion_info_sol.clone(),
+            blobInclusionInfo: eigenda_cert.blob_inclusion_info.clone().to_sol(),
             nonSignerStakesAndSignature: eigenda_cert.nonsigner_stake_and_signature.to_sol(),
             signedQuorumNumbers: eigenda_cert.signed_quorum_numbers,
         };

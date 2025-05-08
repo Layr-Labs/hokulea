@@ -89,6 +89,14 @@ where
                 l1_node_address,
             };
             let canoe_verifier = CanoeSteelVerifier{};
+        } else if #[cfg(feature = "sp1-cc")] {
+            use canoe_sp1_cc_host::CanoeSp1CCProvider;
+            use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
+            info!("using CanoeSp1CCProvider");
+            let canoe_provider = CanoeSp1CCProvider{
+                l1_node_address,
+            };
+            let canoe_verifier = CanoeSp1CCVerifier{};            
         } else {
             use canoe_provider::CanoeNoOpProvider;
             use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;

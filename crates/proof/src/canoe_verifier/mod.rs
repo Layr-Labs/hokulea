@@ -2,6 +2,9 @@ pub mod noop;
 #[cfg(feature = "steel")]
 pub mod steel;
 
+#[cfg(feature = "sp1-cc")]
+pub mod sp1_cc;
+
 use crate::cert_validity::CertValidity;
 use alloy_primitives::{address, Address};
 use eigenda_v2_struct::EigenDAV2Cert;

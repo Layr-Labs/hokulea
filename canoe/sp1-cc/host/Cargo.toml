@@ -1,0 +1,41 @@
+[package]
+version = "0.1.0"
+name = "canoe-sp1-cc-host"
+edition = "2021"
+
+[dependencies]
+# workspace
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4" }
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4" }
+
+alloy-primitives.workspace = true
+alloy-sol-types = { workspace = true }
+alloy-rpc-types = { version = "0.14.0", features = ["eth"] }
+alloy-sol-macro.workspace = true
+alloy-provider = { version = "0.14" }
+bincode = "1.3.3"
+eyre = "0.6"
+
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+eigenda-v2-struct = { workspace = true }
+canoe-provider.workspace = true
+canoe-bindings.workspace = true
+hokulea-proof.workspace = true
+
+# misc:
+url.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+# sp1
+sp1-sdk.workspace = true
+
+[build-dependencies]
+sp1-build.workspace = true
+
+[features]
+default = []
+cuda = ["sp1-sdk/cuda"]

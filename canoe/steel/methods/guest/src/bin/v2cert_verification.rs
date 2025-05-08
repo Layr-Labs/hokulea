@@ -35,6 +35,7 @@ fn main() {
     let batch_header_abi: Vec<u8> = env::read();
     let non_signer_stakes_and_signature_abi: Vec<u8> = env::read();
     let blob_inclusion_info_abi: Vec<u8> = env::read();
+    let signed_quorum_numbers_abi: Vec<u8> = env::read();
     
     let batch_header = BatchHeaderV2::abi_decode(&batch_header_abi).expect("deserialize BatchHeaderV2");
     let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi).expect("deserialize BlobInclusionInfo");
@@ -50,13 +51,14 @@ fn main() {
         batchHeader: batch_header,
         blobInclusionInfo: blob_inclusion_info.clone(),
         nonSignerStakesAndSignature: non_signer_stakes_and_signature,
-        signedQuorumNumbers: blob_inclusion_info.blobCertificate.blobHeader.quorumNumbers,
+        signedQuorumNumbers: signed_quorum_numbers_abi.clone().into(),
     };
 
     let mut buffer = Vec::new();
     buffer.extend(batch_header_abi);
     buffer.extend(blob_inclusion_info_abi);
     buffer.extend(non_signer_stakes_and_signature_abi);    
+    buffer.extend(signed_quorum_numbers_abi);    
 
     let returns = Contract::new(contract, &env).call_builder(&call).call();    
 

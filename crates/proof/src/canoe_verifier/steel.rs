@@ -37,6 +37,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
             .nonsigner_stake_and_signature
             .to_sol()
             .abi_encode();
+        let signed_quorum_numbers_abi = eigenda_cert.signed_quorum_numbers.abi_encode();
 
         // ensure block hash (block number) is constrainted
         assert!(journal.blockhash == cert_validity.l1_head_block_hash);
@@ -52,6 +53,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
         buffer.extend(batch_header);
         buffer.extend(blob_inclusion_info);
         buffer.extend(non_signer_stakes_and_signature);
+        buffer.extend(signed_quorum_numbers_abi);
         assert!(buffer == journal.input);
     }
 }
