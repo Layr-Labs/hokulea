@@ -2,13 +2,13 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import "../src/AlwaysTrue.sol";
+import "../src/EigenDACertMockVerifier.sol";
 
 contract AlwaysTrueTest is Test {
-    AlwaysTrue public at;
+    EigenDACertMockVerifier public at;
 
     function setUp() public {
-        at = new AlwaysTrue();        
+        at = new EigenDACertMockVerifier();        
     }
 
     function test_return() public view {
@@ -16,7 +16,7 @@ contract AlwaysTrueTest is Test {
         BlobInclusionInfo memory bi;
         NonSignerStakesAndSignature memory nss;
         bytes memory quorums;
-        assertEq(at.alwaysReturnsTrue(bh, bi, nss, quorums), true);
+        assertEq(at.verifyDACertV2ForZKProof(bh, bi, nss, quorums), true);
     }
 }
 

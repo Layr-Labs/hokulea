@@ -13,7 +13,7 @@ pub trait CanoeProvider: Clone + Send + 'static {
         cert_validity: CertValidity,
     ) -> Result<Self::Receipt>;
 
-    fn get_l1_address(&self) -> String;
+    fn get_eth_rpc_url(&self) -> String;
 }
 
 #[derive(Clone)]
@@ -31,7 +31,7 @@ impl CanoeProvider for CanoeNoOpProvider {
         Ok(())
     }
 
-    fn get_l1_address(&self) -> String {
+    fn get_eth_rpc_url(&self) -> String {
         "".to_string()
     }
 }

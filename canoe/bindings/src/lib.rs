@@ -75,7 +75,7 @@ sol! {
     }
 
     interface IEigenDACertMockVerifier {
-        function alwaysReturnsTrue(
+        function verifyDACertV2ForZKProof(
             BatchHeaderV2 calldata batchHeader,
             BlobInclusionInfo calldata blobInclusionInfo,
             NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,

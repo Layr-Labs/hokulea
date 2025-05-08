@@ -63,7 +63,7 @@ impl CanoeProvider for CanoeSteelProvider {
         let blob_inclusion_info_sol = eigenda_cert.blob_inclusion_info.clone().to_sol();
 
         // Prepare the function call
-        let call = IEigenDACertMockVerifier::alwaysReturnsTrueCall {
+        let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
             batchHeader: eigenda_cert.batch_header_v2.to_sol(),
             blobInclusionInfo: blob_inclusion_info_sol.clone(),
             nonSignerStakesAndSignature: eigenda_cert.nonsigner_stake_and_signature.to_sol(),
@@ -112,7 +112,7 @@ impl CanoeProvider for CanoeSteelProvider {
         Ok(receipt)
     }
 
-    fn get_l1_address(&self) -> String {
+    fn get_eth_rpc_url(&self) -> String {
         self.l1_node_address.clone()
     }
 }

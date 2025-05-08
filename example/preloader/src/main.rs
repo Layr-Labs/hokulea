@@ -70,8 +70,8 @@ async fn main() -> anyhow::Result<()> {
 pub async fn run_derivation_with_witgen_and_preloader<P, H, Evm>(
     oracle_client: P,
     hint_client: H,
-    evm_factory: Evm,
-    l1_node_address: String,
+    evm_factory: Evm,    
+    eth_rpc_url: String,
 ) -> Result<(), FaultProofProgramError>
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
@@ -86,7 +86,7 @@ where
             use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
             info!("using CanoeSteelProvider");
             let canoe_provider = CanoeSteelProvider{
-                l1_node_address,
+                eth_rpc_url,
             };
             let canoe_verifier = CanoeSteelVerifier{};
         } else {

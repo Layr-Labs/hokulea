@@ -54,8 +54,8 @@ struct NonSignerStakesAndSignature {
     uint32[][] nonSignerStakeIndices;
 }
 
-contract AlwaysTrue {
-    function alwaysReturnsTrue(
+contract EigenDACertMockVerifier {
+    function verifyDACertV2ForZKProof(
         BatchHeaderV2 calldata,
         BlobInclusionInfo calldata,
         NonSignerStakesAndSignature calldata,

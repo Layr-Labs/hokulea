@@ -18,16 +18,17 @@ use alloc::vec::Vec;
 use crate::canoe_verifier::CanoeVerifier;
 
 /// PreloadedEigenDABlobProvider ensures the following invariants
-/// PreloadedEigenDABlobProvider implements EigenDABlobProvider
-/// (P0) Validate validity proof for eigenda cert is valid. If the view call succeeds
-/// (P1) Given a cert is valid, then blob and the commitment in the cert must be consistent
-/// (P2) Given a cert is invalid, then blob must be empty
-/// Regardless if the cert is valid or not.
+///     there is a zk proof for each cert
+///     verification of each zk proof must be valid
+/// The system reverts if any of them fails. If the claim validity from EigenDABlobWitnessData from for the cert is 
+///     true , then return the eigenda blob
+///     false, then return the empty byte
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
     pub entries: Vec<(EigenDAV2Cert, Blob)>,
 }
+
 
 impl PreloadedEigenDABlobProvider {
     /// Convert EigenDABlobWitnessData into the PreloadedEigenDABlobProvider
