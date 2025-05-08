@@ -1,0 +1,19 @@
+[package]
+name = "canoe-sp1-cc-client"
+description = ""
+edition = "2021"
+
+[dependencies]
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "4752cebf7784f5ac78117a0e004275c6f53f0af4" }
+
+# alloy
+alloy-primitives = { workspace = true, features = ["serde"] }
+alloy-sol-types.workspace = true
+alloy-sol-macro.workspace = true
+canoe-bindings = { path = "../../bindings" }
+
+# sp1
+sp1-zkvm = { workspace = true, features = ["default"] }
+
+# misc
+bincode = "1.3.3"
