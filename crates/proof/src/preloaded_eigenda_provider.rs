@@ -43,6 +43,7 @@ impl PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
+            assert!(value.validity[i].receipt.len() > 0); 
             canoe_verifier
                 .validate_cert_receipt(value.validity[i].clone(), value.eigenda_certs[i].clone());
 
