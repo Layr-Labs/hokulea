@@ -29,7 +29,7 @@ pub fn main() {
     let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi).expect("deserialize BlobInclusionInfo");
     let non_signer_stakes_and_signature = NonSignerStakesAndSignature::abi_decode(&non_signer_stakes_and_signature_abi).expect("deserialize NonSignerStakesAndSignature");    
 
-    let mock_call = IEigenDACertMockVerifier::alwaysReturnsTrueCall {        
+    let mock_call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {        
         batchHeader: batch_header,
         blobInclusionInfo: blob_inclusion_info.clone(),
         nonSignerStakesAndSignature: non_signer_stakes_and_signature,

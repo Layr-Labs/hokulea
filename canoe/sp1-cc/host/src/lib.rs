@@ -24,7 +24,7 @@ pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
     /// rpc to l1 geth node
-    pub l1_node_address: String,
+    pub eth_rpc_url: String,
 }
 
 #[async_trait]
@@ -45,7 +45,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
         // Which block transactions are executed on.
         let block_number = BlockNumberOrTag::Number(cert_validity.l1_head_block_number);
         
-        let rpc_url = Url::from_str(&self.l1_node_address).unwrap();
+        let rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
         let provider = RootProvider::new_http(rpc_url);
         let host_executor = HostExecutor::new(provider.clone(), block_number).await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
@@ -54,7 +54,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
         // let block_hash = host_executor.header.hash_slow();
 
         // Make the call
-        let call = IEigenDACertMockVerifier::alwaysReturnsTrueCall {
+        let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
             batchHeader: eigenda_cert.batch_header_v2.to_sol(),
             blobInclusionInfo: eigenda_cert.blob_inclusion_info.clone().to_sol(),
             nonSignerStakesAndSignature: eigenda_cert.nonsigner_stake_and_signature.to_sol(),
@@ -95,7 +95,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
         Ok(proof)
     }
 
-    fn get_l1_address(&self) -> String {
-        self.l1_node_address.clone()
+    fn get_eth_rpc_url(&self) -> String {
+        self.eth_rpc_url.clone()
     }
 }

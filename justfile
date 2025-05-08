@@ -122,7 +122,7 @@ deploy-mock-contract ENCLAVE_NAME="eigenda-devnet":
   cd canoe/contracts/mock
   L1_RPC="http://$(kurtosis port print {{ENCLAVE_NAME}} el-1-geth-teku rpc)"
   DEVNET_PRIVATE_KEY=bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31
-  forge script script/DeployAlwaysTrue.s.sol --rpc-url $L1_RPC --private-key $DEVNET_PRIVATE_KEY --broadcast
+  forge script script/DeployEigenDACertMockVerifier.s.sol --rpc-url $L1_RPC --private-key $DEVNET_PRIVATE_KEY --broadcast
 
 ############################### STYLE ###############################
 

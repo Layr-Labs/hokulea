@@ -47,6 +47,7 @@ sp1-sdk = { workspace = true, optional = true }
 sp1-lib = { workspace = true, features = ["verify"], optional = true}
 sha2 = { workspace = true, optional = true }
 
+
 [features]
 default = []
 steel = ["canoe-steel-methods", "risc0-zkvm", "canoe-bindings"]
