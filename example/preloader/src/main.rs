@@ -70,7 +70,7 @@ async fn main() -> anyhow::Result<()> {
 pub async fn run_derivation_with_witgen_and_preloader<P, H, Evm>(
     oracle_client: P,
     hint_client: H,
-    evm_factory: Evm,    
+    evm_factory: Evm,
     eth_rpc_url: String,
 ) -> Result<(), FaultProofProgramError>
 where

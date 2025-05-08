@@ -29,7 +29,7 @@ use tracing::info;
 #[derive(Debug, Clone)]
 pub struct CanoeSteelProvider {
     /// rpc to l1 geth node
-    pub l1_node_address: String,
+    pub eth_rpc_url: String,
 }
 
 #[async_trait]
@@ -47,7 +47,7 @@ impl CanoeProvider for CanoeSteelProvider {
         );
         let start = Instant::now();
 
-        let eth_rpc_url = Url::from_str(&self.l1_node_address).unwrap();
+        let eth_rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
         // Create an alloy provider for that private key and URL.
         let provider = ProviderBuilder::new().on_http(eth_rpc_url); //.await?;
@@ -113,6 +113,6 @@ impl CanoeProvider for CanoeSteelProvider {
     }
 
     fn get_eth_rpc_url(&self) -> String {
-        self.l1_node_address.clone()
+        self.eth_rpc_url.clone()
     }
 }

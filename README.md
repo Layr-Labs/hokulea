@@ -60,7 +60,7 @@ By default, a mock steel proof (which is cheap to generate) is created and verif
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file.
-just run-client-against-devnet 'native' 'hokulea-example-preloader' 
+just run-client-against-devnet 'native' 'hokulea-example-preloader' 'steel'
 ```
 
 To turn off the mock mode for creating a steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
@@ -68,7 +68,7 @@ To turn off the mock mode for creating a steel proof. Currently local proof gene
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file.
-just run-client-against-devnet 'native' 'hokulea-example-preloader' 'false'
+just run-client-against-devnet 'native' 'hokulea-example-preloader' 'steel' 'false'
 ```
 
 ![](./hokulea.jpeg)
