@@ -24,7 +24,7 @@ jobs:
       # first polls op-geth for a first finalized block, which takes a few minutes,
       # and only after that runs `cargo run` which then builds the client, and takes another
       # few minutes. Better to build here while waiting for first l2 block to finalize.
-      - run: just build-native
+      - run: RISC0_SKIP_BUILD=1 just build-native
       # We run this explicitly here even though its run implicitly as a dependency of `run-client-native-against-devnet`
       # just so that we can see the breakdown timing requirements for each step.
       - run: just _kurtosis_wait_for_first_l2_finalized_block
