@@ -27,8 +27,7 @@ impl CanoeProvider for CanoeNoOpProvider {
         &self,
         _eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
         _claimed_validity: CertValidity,
-    ) ->
-     Result<Self::Receipt> {
+    ) -> Result<Self::Receipt> {
         Ok(())
     }
 

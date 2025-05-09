@@ -7,7 +7,7 @@ sol! {
         bytes32 blockhash;
         address contractAddress;
         bytes input;
-        bool output;        
+        bool output;
     }
 }
 

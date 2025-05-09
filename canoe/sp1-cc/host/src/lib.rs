@@ -1,20 +1,19 @@
+use alloy_primitives::Address;
 use alloy_provider::RootProvider;
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::SolValue;
+use anyhow::Result;
+use async_trait::async_trait;
+use canoe_bindings::{IEigenDACertMockVerifier, Journal};
+use canoe_provider::CanoeProvider;
+use hokulea_proof::{canoe_verifier::VERIFIER_ADDRESS, cert_validity::CertValidity};
+use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
 use sp1_sdk::{ProverClient, SP1Stdin};
-use url::Url;
-use async_trait::async_trait;
-use eigenda_v2_struct;
-use canoe_provider::CanoeProvider;
-use anyhow::Result;
-use hokulea_proof::{canoe_verifier::VERIFIER_ADDRESS, cert_validity::CertValidity};
 use std::str::FromStr;
 use std::time::Instant;
 use tracing::info;
-use canoe_bindings::{IEigenDACertMockVerifier, Journal};
-use sp1_cc_client_executor::ContractInput;
-use alloy_primitives::Address;
+use url::Url;
 
 /// The ELF we want to execute inside the zkVM.
 //pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
@@ -47,11 +46,13 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         // Which block transactions are executed on.
         let block_number = BlockNumberOrTag::Number(cert_validity.l1_head_block_number);
-        
+
         let rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
         let provider = RootProvider::new_http(rpc_url);
-        let mut host_executor = HostExecutor::new(provider.clone(), block_number).await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
+        let mut host_executor = HostExecutor::new(provider.clone(), block_number)
+            .await
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         // Keep track of the block hash. Later, validate the client's execution against this.
         // let block_hash = host_executor.header.hash_slow();
@@ -65,11 +66,20 @@ impl CanoeProvider for CanoeSp1CCProvider {
         };
 
         let _returns = host_executor
-            .execute(ContractInput::new_call(VERIFIER_ADDRESS, Address::default(), call.clone()))
-            .await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
+            .execute(ContractInput::new_call(
+                VERIFIER_ADDRESS,
+                Address::default(),
+                call.clone(),
+            ))
+            .await
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
-        let input = host_executor.finalize().await.map_err(|e| anyhow::anyhow!(e.to_string())).map_err(|e| anyhow::anyhow!(e.to_string()))?;
+        let input = host_executor
+            .finalize()
+            .await
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         let batch_header_abi = call.batchHeader.abi_encode();
         let non_signer_abi = call.nonSignerStakesAndSignature.abi_encode();
@@ -79,19 +89,22 @@ impl CanoeProvider for CanoeSp1CCProvider {
         // Feed the sketch into the client.
         let input_bytes = bincode::serialize(&input)?;
         let mut stdin = SP1Stdin::new();
-        stdin.write(&input_bytes);    
+        stdin.write(&input_bytes);
         stdin.write(&VERIFIER_ADDRESS);
         stdin.write(&batch_header_abi);
         stdin.write(&non_signer_abi);
         stdin.write(&blob_inclusion_abi);
-        stdin.write(&signed_quorum_numbers);        
+        stdin.write(&signed_quorum_numbers);
 
         // Create a `ProverClient`.
         let client = ProverClient::from_env();
 
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
         let (_, report) = client.execute(ELF, &stdin).run().unwrap();
-        println!("executed program with {} cycles", report.total_instruction_count());
+        println!(
+            "executed program with {} cycles",
+            report.total_instruction_count()
+        );
 
         // Generate the proof for the given program and input.
         let (pk, _vk) = client.setup(ELF);
@@ -99,13 +112,17 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         //let journal_bytes = ;
 
-        let journal = Journal::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
+        let journal =
+            Journal::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
 
-        info!("sp1-cc commited: blockHash {:?} contractOutput {:?}", journal.blockhash, journal.output);
+        info!(
+            "sp1-cc commited: blockHash {:?} contractOutput {:?}",
+            journal.blockhash, journal.output
+        );
 
         let elapsed = start.elapsed();
         info!("finish a sp1-cc proof generation spent {:?}", elapsed);
-        
+
         Ok(proof)
     }
 

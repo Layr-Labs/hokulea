@@ -59,7 +59,6 @@ impl CanoeProvider for CanoeSteelProvider {
         let mut env = builder.build().await?;
         //  The `with_chain_spec` method is used to specify the chain configuration.
         //env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
-        
 
         // Prepare the function call
         let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {

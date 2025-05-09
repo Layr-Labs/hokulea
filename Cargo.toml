@@ -4,6 +4,12 @@ members = [
     "bin/*",
     "crates/*",
     "example/preloader",
+    "canoe/bindings",
+    "canoe/provider",
+    "canoe/steel/apps",
+    "canoe/steel/methods", 
+    "canoe/sp1-cc/host",
+    "canoe/sp1-cc/client",    
 ]
 
 [profile.release-client-lto]
