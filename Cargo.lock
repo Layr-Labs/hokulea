@@ -2398,10 +2398,13 @@ dependencies = [
 name = "canoe-steel-methods"
 version = "0.1.0"
 dependencies = [
+ "alloy-primitives 1.1.0",
+ "alloy-sol-types",
  "hex",
  "risc0-build",
  "risc0-build-ethereum",
  "risc0-zkp",
+ "risc0-zkvm",
 ]
 
 [[package]]
