@@ -11,9 +11,9 @@ use alloy_sol_types::SolValue;
 
 use tracing::info;
 
-// ToDo(bx) how to automtically update it 
+// ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it 
 pub const VKEYHEXSTRING: &str = "0039b09c4f5cfc58ca7cbabd5eb5997de2cfdfa336a5ced1b640084c165718fa";   
-pub const ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
+pub const ELF: &[u8] = include_bytes!("../../../../canoe/sp1-cc/elf/canoe-sp1-cc-client");
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -24,8 +24,8 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         // if not in dev mode, the receipt must be non empty        
         let receipt_bytes = cert_validity.receipt.as_ref();
 
-        // Because we have the sp1-cc dependancy issue, the verification must happen inside the sp1cc call
-        // It is because if we have to deserialize it here, the proof need to import sp1_cc_client_executor::ContractPublicValues
+        // Because we have the sp1-cc dependancy issue, we cannot deserialize the bytes into SContractPublicValues
+        // So instead we define custom struct Journal and compare opaque bytes array to ensure inputs are identical
         let canoe_receipt: SP1ProofWithPublicValues = serde_json::from_slice(&receipt_bytes).expect("serde error");    
                 
         cfg_if::cfg_if! {

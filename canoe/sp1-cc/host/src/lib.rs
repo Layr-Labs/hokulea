@@ -2,7 +2,7 @@ use alloy_provider::RootProvider;
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::SolValue;
 use sp1_cc_host_executor::HostExecutor;
-use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
+use sp1_sdk::{ProverClient, SP1Stdin};
 use url::Url;
 use async_trait::async_trait;
 use eigenda_v2_struct;
@@ -17,8 +17,8 @@ use sp1_cc_client_executor::ContractInput;
 use alloy_primitives::Address;
 
 /// The ELF we want to execute inside the zkVM.
-pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
-//pub const ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
+//pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
+pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 // To get vKey of ELF above
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
