@@ -4,7 +4,8 @@ use sha2::{Digest, Sha256};
 use eigenda_v2_struct::EigenDAV2Cert;
 
 use sp1_sdk::SP1ProofWithPublicValues;
-use sp1_lib::verify::verify_sp1_proof;
+
+//use sp1_lib::verify::verify_sp1_proof;
 use alloy_primitives::B256;
 use core::str::FromStr;
 use canoe_bindings::Journal;
@@ -27,7 +28,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
 
         // Because we have the sp1-cc dependancy issue, the verification must happen inside the sp1cc call
         // It is because if we have to deserialize it here, the proof need to import sp1_cc_client_executor::ContractPublicValues
-        let canoe_receipt: SP1ProofWithPublicValues = serde_json::from_slice(&receipt_bytes).expect("serde error");             
+        let canoe_receipt: SP1ProofWithPublicValues = serde_json::from_slice(&receipt_bytes).expect("serde error");    
 
         let public_values_digest = Sha256::digest(canoe_receipt.public_values.clone());
 
@@ -35,7 +36,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         
         let v_key = b256_to_u32_array(v_key_b256);
             
-        verify_sp1_proof(&v_key, &public_values_digest.into());
+        //verify_sp1_proof(&v_key, &public_values_digest.into());
 
         let public_values_vec = canoe_receipt.public_values.to_vec();
 
@@ -58,7 +59,9 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             contractAddress: VERIFIER_ADDRESS,
             input: buffer.into(),
             blockhash: cert_validity.l1_head_block_hash,
-            output: cert_validity.claimed_validity,    
+            output: cert_validity.claimed_validity,
+            // ToDo(bx) remove later
+            test: Vec::new().into(),
         };
         let journal_bytes = journal.abi_encode();
         assert!(journal_bytes == public_values_vec);

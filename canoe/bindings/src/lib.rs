@@ -8,6 +8,7 @@ sol! {
         address contractAddress;
         bytes input;
         bool output;
+        bytes test;
     }
 }
 

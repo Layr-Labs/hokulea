@@ -47,20 +47,22 @@ pub fn main() {
     buffer.extend(signed_quorum_numbers_abi);
 
     // TODO(bx) check if this is true
-    let returns = match output[0] {
-        0 => true,
-        _ => false,
-    };
+    //let returns = match output[0] {
+    //    0 => true,
+    //    _ => false,
+    //};
 
-    let journal = Journal {
-        contractAddress: verifier_address,
-        input: buffer.into(),
-        blockhash: public_vals.blockHash,
-        output: returns,        
-    };
+    //let journal = Journal {
+    //    contractAddress: verifier_address,
+    //    input: buffer.into(),
+    //    blockhash: public_vals.blockHash,
+    //    output: public_vals.contractOutput.is_empty(),
+    //    test: public_vals.contractOutput.to_ascii_lowercase().into(),
+    //};
 
     // Commit the abi-encoded output.
     // We can't use ContractPublicValues because sp1_cc_client_executor currently has deps issue.
     // Instead we define custom struct to commit
-    sp1_zkvm::io::commit_slice(&journal.abi_encode());
+    //sp1_zkvm::io::commit_slice(&journal.abi_encode());
+    sp1_zkvm::io::commit_slice(&public_vals.abi_encode());
 }

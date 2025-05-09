@@ -12,10 +12,13 @@ use hokulea_proof::{canoe_verifier::VERIFIER_ADDRESS, cert_validity::CertValidit
 use std::str::FromStr;
 use std::time::Instant;
 use tracing::info;
-use canoe_bindings::IEigenDACertMockVerifier;
+use canoe_bindings::{IEigenDACertMockVerifier, Journal};
+use sp1_cc_client_executor::{ContractInput, ContractPublicValues};
+use alloy_primitives::Address;
 
 /// The ELF we want to execute inside the zkVM.
-pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
+//pub const ELF: &[u8] = include_elf!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
+pub const ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
 
 // To get vKey of ELF above
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
@@ -48,7 +51,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
         let rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
         let provider = RootProvider::new_http(rpc_url);
-        let host_executor = HostExecutor::new(provider.clone(), block_number).await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
+        let mut host_executor = HostExecutor::new(provider.clone(), block_number).await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         // Keep track of the block hash. Later, validate the client's execution against this.
         // let block_hash = host_executor.header.hash_slow();
@@ -60,6 +63,11 @@ impl CanoeProvider for CanoeSp1CCProvider {
             nonSignerStakesAndSignature: eigenda_cert.nonsigner_stake_and_signature.to_sol(),
             signedQuorumNumbers: eigenda_cert.signed_quorum_numbers,
         };
+
+        let _returns = host_executor
+            .execute(ContractInput::new_call(VERIFIER_ADDRESS, Address::default(), call.clone()))
+            .await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
+
         // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
         let input = host_executor.finalize().await.map_err(|e| anyhow::anyhow!(e.to_string())).map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
@@ -88,6 +96,12 @@ impl CanoeProvider for CanoeSp1CCProvider {
         // Generate the proof for the given program and input.
         let (pk, _vk) = client.setup(ELF);
         let proof = client.prove(&pk, &stdin).plonk().run().unwrap();
+
+        //let journal_bytes = ;
+
+        let journal = ContractPublicValues::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
+
+        info!("sp1-cc commited: blockHash {:?} contractOutput {:?} contractOutput len {:?}", journal.blockHash, journal.contractOutput, journal.contractOutput.len());
 
         let elapsed = start.elapsed();
         info!("finish a sp1-cc proof generation spent {:?}", elapsed);
