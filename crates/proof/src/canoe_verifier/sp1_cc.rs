@@ -59,9 +59,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             contractAddress: VERIFIER_ADDRESS,
             input: buffer.into(),
             blockhash: cert_validity.l1_head_block_hash,
-            output: cert_validity.claimed_validity,
-            // ToDo(bx) remove later
-            test: Vec::new().into(),
+            output: cert_validity.claimed_validity,            
         };
         let journal_bytes = journal.abi_encode();
         assert!(journal_bytes == public_values_vec);

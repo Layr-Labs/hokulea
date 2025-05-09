@@ -99,9 +99,9 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         //let journal_bytes = ;
 
-        let journal = ContractPublicValues::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
+        let journal = Journal::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
 
-        info!("sp1-cc commited: blockHash {:?} contractOutput {:?} contractOutput len {:?}", journal.blockHash, journal.contractOutput, journal.contractOutput.len());
+        info!("sp1-cc commited: blockHash {:?} contractOutput {:?}", journal.blockhash, journal.output);
 
         let elapsed = start.elapsed();
         info!("finish a sp1-cc proof generation spent {:?}", elapsed);

@@ -16,4 +16,4 @@ pub trait CanoeVerifier: Clone + Send + 'static {
     }
 }
 
-pub const VERIFIER_ADDRESS: Address = address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051");
+pub const VERIFIER_ADDRESS: Address = address!("0x703848F4c85f18e3acd8196c8eC91eb0b7Bd0797");

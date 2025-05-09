@@ -67,9 +67,7 @@ fn main() {
         contractAddress: contract,
         input: buffer.into(),
         blockhash: env.header().seal(),
-        output: returns,
-        // ToDo(bx) remove later
-        test: Vec::new().into(),
+        output: returns,        
     };
     env::commit_slice(&journal.abi_encode());
 }

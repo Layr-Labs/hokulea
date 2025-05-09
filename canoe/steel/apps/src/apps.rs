@@ -92,6 +92,7 @@ impl CanoeProvider for CanoeSteelProvider {
                 .write(&batch_header_abi)?
                 .write(&non_signer_abi)?
                 .write(&blob_inclusion_abi)?
+                .write(&call.signedQuorumNumbers)?
                 .build()
                 .unwrap();
 

@@ -46,23 +46,24 @@ pub fn main() {
     buffer.extend(non_signer_stakes_and_signature_abi);
     buffer.extend(signed_quorum_numbers_abi);
 
-    // TODO(bx) check if this is true
-    //let returns = match output[0] {
-    //    0 => true,
-    //    _ => false,
-    //};
+    // TODO(bx) 
+    // empricially if the function reverts, the output is empty, by checking at index 0, the guest code abort when evm revert takes place
+    // need to confirm that this is the defined behavior or find out the best way
+    let returns = match output[0] {
+        0 => true,
+        _ => false,
+    };
 
-    //let journal = Journal {
-    //    contractAddress: verifier_address,
-    //    input: buffer.into(),
-    //    blockhash: public_vals.blockHash,
-    //    output: public_vals.contractOutput.is_empty(),
-    //    test: public_vals.contractOutput.to_ascii_lowercase().into(),
-    //};
+    let journal = Journal {
+        contractAddress: verifier_address,
+        input: buffer.into(),
+        blockhash: public_vals.blockHash,
+        output: returns,
+    };
 
     // Commit the abi-encoded output.
     // We can't use ContractPublicValues because sp1_cc_client_executor currently has deps issue.
     // Instead we define custom struct to commit
     //sp1_zkvm::io::commit_slice(&journal.abi_encode());
-    sp1_zkvm::io::commit_slice(&public_vals.abi_encode());
+    sp1_zkvm::io::commit_slice(&journal.abi_encode());
 }
