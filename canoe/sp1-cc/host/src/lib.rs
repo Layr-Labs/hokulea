@@ -13,12 +13,12 @@ use std::str::FromStr;
 use std::time::Instant;
 use tracing::info;
 use canoe_bindings::{IEigenDACertMockVerifier, Journal};
-use sp1_cc_client_executor::{ContractInput, ContractPublicValues};
+use sp1_cc_client_executor::ContractInput;
 use alloy_primitives::Address;
 
 /// The ELF we want to execute inside the zkVM.
-//pub const ELF: &[u8] = include_elf!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
-pub const ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
+pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
+//pub const ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
 
 // To get vKey of ELF above
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client

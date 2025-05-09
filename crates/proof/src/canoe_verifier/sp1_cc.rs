@@ -1,21 +1,19 @@
 use crate::canoe_verifier::{CanoeVerifier, VERIFIER_ADDRESS};
 use crate::cert_validity::CertValidity;
-use sha2::{Digest, Sha256};
-use eigenda_v2_struct::EigenDAV2Cert;
 
+use eigenda_v2_struct::EigenDAV2Cert;
 use sp1_sdk::SP1ProofWithPublicValues;
 
-//use sp1_lib::verify::verify_sp1_proof;
 use alloy_primitives::B256;
-use core::str::FromStr;
 use canoe_bindings::Journal;
 use alloc::vec::Vec;
 use alloy_sol_types::SolValue;
 
 use tracing::info;
 
-pub const VKEYHEXSTRING: &str = 
-    include_str!("../../../../canoe/sp1-cc/elf/canoe-sp1-cc-client.vkey.json");    
+// ToDo(bx) how to automtically update it 
+pub const VKEYHEXSTRING: &str = "0039b09c4f5cfc58ca7cbabd5eb5997de2cfdfa336a5ced1b640084c165718fa";   
+pub const ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client");
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -29,15 +27,26 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         // Because we have the sp1-cc dependancy issue, the verification must happen inside the sp1cc call
         // It is because if we have to deserialize it here, the proof need to import sp1_cc_client_executor::ContractPublicValues
         let canoe_receipt: SP1ProofWithPublicValues = serde_json::from_slice(&receipt_bytes).expect("serde error");    
+                
+        cfg_if::cfg_if! {
+            if #[cfg(target_os = "zkvm")] { 
+                use sha2::{Digest, Sha256};
+                use sp1_lib::verify::verify_sp1_proof;
 
-        let public_values_digest = Sha256::digest(canoe_receipt.public_values.clone());
-
-        let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");                 
-        
-        let v_key = b256_to_u32_array(v_key_b256);
-            
-        //verify_sp1_proof(&v_key, &public_values_digest.into());
-
+                // used within zkVM
+                let public_values_digest = Sha256::digest(canoe_receipt.public_values.clone());
+                let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");                         
+                let v_key = b256_to_u32_array(v_key_b256);            
+                verify_sp1_proof(&v_key, &public_values_digest.into());                                
+            } else {
+                // in host mode
+                use sp1_sdk::ProverClient;
+                let client = ProverClient::from_env();
+                let (_, vk) = client.setup(ELF);
+                client.verify(&canoe_receipt, &vk).expect("verification failed");
+            }
+        }
+               
         let public_values_vec = canoe_receipt.public_values.to_vec();
 
         let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
@@ -66,7 +75,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
     }
 }
 
-fn b256_to_u32_array(b: B256) -> [u32; 8] {
+pub fn b256_to_u32_array(b: B256) -> [u32; 8] {
     let bytes: [u8; 32] = b.into();
 
     let mut out = [0u32; 8];

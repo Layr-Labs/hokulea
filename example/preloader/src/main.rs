@@ -140,7 +140,7 @@ where
     for i in 0..num_cert {
         wit.validity[i].l1_head_block_hash = boot_info.l1_head;
         wit.validity[i].l1_head_block_number = l1_head_header.number;
-
+        
         let cert = &wit.eigenda_certs[i];
 
         let canoe_proof = canoe_provider
@@ -149,7 +149,7 @@ where
             .expect("must be able generate a canoe zk proof attesting eth state");
 
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        wit.validity[i].receipt = canoe_proof_bytes;
+        wit.validity[i].receipt = canoe_proof_bytes;        
     }
 
     // preloaded_blob_provider does not use oracle

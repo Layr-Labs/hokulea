@@ -227,7 +227,7 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_prox
   AGREED_L2_OUTPUT_ROOT=$(cast rpc --rpc-url $OP_NODE_ADDRESS "optimism_outputAtBlock" $(cast 2h $((CLAIMED_L2_BLOCK_NUMBER - 1))) | jq -r .outputRoot)
   AGREED_L2_HEAD_HASH=$(cast block --rpc-url $L2_NODE_ADDRESS $((CLAIMED_L2_BLOCK_NUMBER - 1)) --json | jq -r .hash)
   L1_ORIGIN_NUM=$(cast rpc --rpc-url $OP_NODE_ADDRESS "optimism_outputAtBlock" $(cast 2h $((CLAIMED_L2_BLOCK_NUMBER - 1))) | jq -r .blockRef.l1origin.number)
-  L1_HEAD=$(cast block --rpc-url $L1_NODE_ADDRESS $((L1_ORIGIN_NUM + 4)) --json | jq -r .hash)
+  L1_HEAD=$(cast block --rpc-url $L1_NODE_ADDRESS $((L1_ORIGIN_NUM + 30)) --json | jq -r .hash)
 
   # Move to the workspace root
   cd $(git rev-parse --show-toplevel)

@@ -34,6 +34,7 @@ alloy-sol-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
+cfg-if.workspace = true
 
 canoe-bindings = { workspace = true, optional = true }
 
@@ -51,4 +52,4 @@ sha2 = { workspace = true, optional = true }
 [features]
 default = []
 steel = ["canoe-steel-methods", "risc0-zkvm", "canoe-bindings"]
-sp1-cc = ["canoe-sp1-cc-client", "sp1-sdk", "canoe-bindings", "sha2"] #"sp1-lib", 
+sp1-cc = ["canoe-sp1-cc-client", "sp1-sdk", "canoe-bindings", "sha2", "sp1-lib"]

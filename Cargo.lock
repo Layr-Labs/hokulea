@@ -4091,6 +4091,7 @@ dependencies = [
  "canoe-bindings",
  "canoe-sp1-cc-client",
  "canoe-steel-methods",
+ "cfg-if",
  "eigenda-v2-struct",
  "hokulea-eigenda",
  "kona-derive",
