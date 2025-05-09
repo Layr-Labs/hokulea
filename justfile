@@ -238,6 +238,10 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_prox
   if [ "{{mock_mode}}" == 'true' ]; then
     set -a
       RISC0_DEV_MODE=true
+
+      SP1_PROVER="mock"
+      OP_SUCCINCT_MOCK="true"
+      NETWORK_PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000001
     set +a
   fi
 

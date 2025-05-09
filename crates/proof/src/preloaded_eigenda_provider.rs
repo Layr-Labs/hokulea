@@ -22,7 +22,7 @@ use crate::canoe_verifier::CanoeVerifier;
 ///     verification of each zk proof must be valid
 /// The system reverts if any of them fails. If the claim validity from EigenDABlobWitnessData from for the cert is
 ///     true , then return the eigenda blob
-///     false, then return the empty byte
+///     false, then return the g byte
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains EigenDAV2Cert, Blob, isValid cert.
@@ -42,6 +42,8 @@ impl PreloadedEigenDABlobProvider {
         let mut entries = vec![];
 
         for i in 0..value.eigenda_blobs.len() {
+            // check cert validity
+
             assert!(!value.validity[i].receipt.is_empty());
             canoe_verifier
                 .validate_cert_receipt(value.validity[i].clone(), value.eigenda_certs[i].clone());

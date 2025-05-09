@@ -24,6 +24,7 @@ kona-proof.workspace = true
 
 canoe-provider  = { workspace = true }
 canoe-steel-apps = { workspace = true, optional = true }
+canoe-sp1-cc-host = { workspace = true, optional = true }
 
 alloy-consensus.workspace = true
 alloy-rlp.workspace = true
@@ -36,4 +37,4 @@ op-alloy-consensus.workspace = true
 [features]
 default = []
 steel = ["canoe-steel-apps", "hokulea-proof/steel"]
-#sp1-contract-call = ["canoe-sp1-contract-call-host"]
+sp1-cc = ["canoe-sp1-cc-host", "hokulea-proof/sp1-cc"]
