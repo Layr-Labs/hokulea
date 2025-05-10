@@ -74,8 +74,12 @@ This allows L1 contracts to trust EigenDA blobs without verifying the BLS aggreg
 
 The Chain Specification defines the rules of the EVM, which underpin the execution semantics of Solidity contracts. As such, any Ethereum hardfork that introduces changes to EVM behavior necessitates corresponding updates across the proof stack. Specifically, both RISC Zero Steel and SP1 Contract Call backends must be upgraded to align with the new EVM logic. To remain compatible, Hokulea must also integrate an updated version of the zkVM backend that reflects these changes.
 
-Before an Ethereum hardfork is activated, the zkVM backend must audit, prepare, and release an upgraded version to ensure compatibility.
+Before an Ethereum hardfork is activated, the zkVM backend must audit, prepare, and release an upgraded version to ensure compatibility. Importantly, the universal zkVM verifier deployed on L1 does not require an upgrade with each EVM change, since previously generated contract logic remains valid and backward-compatible across EVM upgrades.
 
-Canoe, which depends on the zkVM backend libraries, must rebuild its execution artifacts including the ELF image using the upgraded libraries. The image ID(Steel) or the verification key(sp1-contract-call) of the new ELF must then be deployed on Ethereum (L1). For rollups following the OP Stack, Ethereum hardforks typically require an OP protocol upgrade, at which point the updated Canoe artifacts should be bundled into the broader upgrade process.
+## Canoe and Hokulea Upgrade
 
-Importantly, the universal zkVM verifier deployed on L1 does not require an upgrade with each EVM change, since previously generated contract logic remains valid and backward-compatible across EVM upgrades.
+Canoe depends on the zkVM back‑end libraries, so every library upgrade forces a rebuild of its execution artifacts—most notably the ELF image. In the Hokulea workflow, the guest program’s fingerprint (an image ID for Steel, or a verification key for SP1‑Contract‑Call) is hard‑coded and verified inside the zkVM, meaning any new Hokulea ELF must also be registered on Ethereum L1: deploy the new image ID for Steel or publish the new verification key for SP1.
+
+For rollups built on the OP Stack, an Ethereum hardfork almost always triggers an accompanying OP protocol upgrade; the refreshed Canoe artifacts should be rolled into that same upgrade package.
+
+If a library change also alters the guest code’s smart‑contract interface, both Canoe and Hokulea need a fresh L1 registration of the new image ID (Risc Zero) or verification key (SP1). To eliminate this extra step, the team is developing a router layer inside the Solidity verifier that will automatically route to the correct image, removing the need for manual updates in the future.
