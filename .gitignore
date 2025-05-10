@@ -6,3 +6,4 @@ rollup.json
 resources/
 meta.json
 state.bin.gz
+.*.env
