@@ -1,0 +1,37 @@
+set fallback := true
+
+# default recipe to display help information
+default:
+  @just --list
+
+preloader env_file='.devnet.env' features='empty' mock_mode='true' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' verbosity='':
+  #!/usr/bin/env bash
+  L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}})
+  
+
+  RUN_ENV_FILE=".run{{env_file}}"
+  just --justfile ../../justfile save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
+  set a-
+    source {{env_file}}
+    source $RUN_ENV_FILE
+  set a+
+
+  # Move to the workspace root
+  #rm -rf ./data
+  #mkdir ./data
+
+  echo "Running host program with native client program..."
+  cargo r --bin hokulea-example-preloader  -- \
+    --l1-head {{l1_head}} \
+    --agreed-l2-head-hash {{agreed_l2_head_hash}} \
+    --claimed-l2-output-root {{claimed_l2_output_root}} \
+    --agreed-l2-output-root {{agreed_l2_output_root}} \
+    --claimed-l2-block-number {{claimed_l2_block_number}} \
+    --l1-node-address {{l1_rpc}} \
+    --l1-beacon-address {{l1_beacon_rpc}} \
+    --l2-node-address {{l2_rpc}} \
+    --eigenda-proxy-address {{eigenda_proxy_rpc}} \
+    --native \
+    --data-dir ./data \
+    $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
+    {{verbosity}}

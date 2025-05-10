@@ -72,36 +72,46 @@ _kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
     sleep 5
   done
 
+[group('local-env')]
+get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
+  #!/usr/bin/env bash  
+  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
+  L2_BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
+  if [ $L2_BLOCK_NUMBER -eq 0 ]; then
+    echo "No finalized blocks found on L2 chain. If devnet was just started, wait a bit and try again..."
+    echo "You can run the following command to check the latest finalized block."
+    echo "cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d"
+    exit 1
+  fi 
+  echo $L2_BLOCK_NUMBER
+
+
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-devnet native_or_asterisc='native' bin_target='hokulea-host-bin' features='' mock_mode='' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' features='' mock_mode='' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
-  set -o errexit -o nounset -o pipefail
-  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
-
-  L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
-  L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
-  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
-  ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
-  EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
-  ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
-
   if [ -z "{{block_number}}" ]; then
-    BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
-    if [ $BLOCK_NUMBER -eq 0 ]; then
-      echo "No finalized blocks found on L2 chain. If devnet was just started, wait a bit and try again..."
-      echo "You can run the following command to check the latest finalized block."
-      echo "cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d"
-      exit 1
-    fi
+    L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}})
   else
-    BLOCK_NUMBER={{block_number}}
+    L2_BLOCK_NUMBER={{block_number}}
   fi
 
+  RUN_ENV_FILE=".run{{env_file}}"
+  just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
+  set a-
+    source {{env_file}}
+    source $RUN_ENV_FILE
+  set a+
+ 
   set -x
-  just run-client $BLOCK_NUMBER \
-    $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC \
-    {{native_or_asterisc}} {{bin_target}} $ROLLUP_CONFIG_PATH {{features}} {{mock_mode}} {{verbosity}}
+  # note we don't need ROLLUP_NODE_RPC
+  just run-client $L2_BLOCK_NUMBER \
+    $L1_RPC $L1_BEACON_RPC $L2_RPC $EIGENDA_PROXY_RPC \
+    $ROLLUP_CONFIG_PATH \
+    $L1_HEAD $L1_ORIGIN_NUM \
+    $CLAIMED_L2_BLOCK_NUMBER $CLAIMED_L2_OUTPUT_ROOT \
+    $AGREED_L2_OUTPUT_ROOT $AGREED_L2_HEAD_HASH \
+    {{native_or_asterisc}} {{verbosity}}
 
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
@@ -197,37 +207,86 @@ test-online:
 test-docs:
   cargo test --doc --all --locked
 
-
-############################## RUN CLIENT #################################
-run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc native_or_asterisc='native' bin='hokulea-host-bin' rollup_config_path='' features='' mock_mode='true' verbosity='':
+############################## GET PARAMETERS #################################
+[group('local-env')]
+save-all-env env_file run_env_file block_number rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
 
-  L1_NODE_ADDRESS="{{l1_rpc}}"
-  L1_BEACON_ADDRESS="{{l1_beacon_rpc}}"
-  L2_NODE_ADDRESS="{{l2_rpc}}"
-  OP_NODE_ADDRESS="{{rollup_node_rpc}}"
-  EIGENDA_PROXY_ADDRESS="{{eigenda_proxy_rpc}}"
-  NATIVE_OR_ASTERISC="{{native_or_asterisc}}"
+  just save-chain-env {{env_file}} {{rollup_config_path}} {{enclave}} {{chain_id}}
+  set a-
+    source {{env_file}}
+  set a+
+  just save-run-env {{run_env_file}} {{block_number}} $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC
+  
 
-  L2_CHAIN_ID=$(cast chain-id --rpc-url $L2_NODE_ADDRESS)
+# save rpc variable in to .devnet.env
+[group('local-env')]
+save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908':
+  #!/usr/bin/env bash
+  set -o errexit -o nounset -o pipefail
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
+
+  L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
+  L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
+  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
+  ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
+  EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
+  ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
+  CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--rollup-config-path $(realpath {{rollup_config_path}})"
+
+  echo "L1_RPC=$L1_RPC" > {{env_file}}
+  echo "L1_BEACON_RPC=$L1_BEACON_RPC" >> {{env_file}}
+  echo "L2_RPC=$L2_RPC" >> {{env_file}}
+  echo "ROLLUP_NODE_RPC=$ROLLUP_NODE_RPC" >> {{env_file}}
+  echo "EIGENDA_PROXY_RPC=$EIGENDA_PROXY_RPC" >> {{env_file}}
+  echo "ROLLUP_CONFIG_PATH=$ROLLUP_CONFIG_PATH" >> {{env_file}}
+
+
+## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
+##           | l1_origin_bn                                 | l1_head  ##
+## L1  --------------------------------------------------------------- ##
+##            \                                                        ##
+##             | l2_agreed_output_root    | l2_claimed_output_root     ##
+##             | l2_agreed_head_hash      | l2_claimed_bn (finalized   ##
+## L2  =============================================================== ##
+## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
+[group('local-env')]
+save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc:  
+  #!/usr/bin/env bash
+  L2_CHAIN_ID=$(cast chain-id --rpc-url {{l2_rpc}})
+
+  CLAIMED_L2_BLOCK_NUMBER={{block_number}}
+  echo "Fetching configuration for block number $CLAIMED_L2_BLOCK_NUMBER"
+
+  # Get output root for block
+  CLAIMED_L2_OUTPUT_ROOT=$(cast rpc --rpc-url {{rollup_node_rpc}} "optimism_outputAtBlock" $(cast 2h $CLAIMED_L2_BLOCK_NUMBER) | jq -r .outputRoot)
+
+  # Get the info for the previous block
+  AGREED_L2_OUTPUT_ROOT=$(cast rpc --rpc-url {{rollup_node_rpc}} "optimism_outputAtBlock" $(cast 2h $((CLAIMED_L2_BLOCK_NUMBER - 1))) | jq -r .outputRoot)
+  AGREED_L2_HEAD_HASH=$(cast block --rpc-url {{l2_rpc}} $((CLAIMED_L2_BLOCK_NUMBER - 1)) --json | jq -r .hash)
+  L1_ORIGIN_NUM=$(cast rpc --rpc-url {{rollup_node_rpc}} "optimism_outputAtBlock" $(cast 2h $((CLAIMED_L2_BLOCK_NUMBER - 1))) | jq -r .blockRef.l1origin.number)
+  # L1 head must be far enough to be higher than l1_origin_bn of the l2_claimed_bn
+  L1_HEAD=$(cast block --rpc-url {{l1_rpc}} $((L1_ORIGIN_NUM + 30)) --json | jq -r .hash)
+
+  echo "L1_HEAD=$L1_HEAD" > {{run_env_file}}
+  echo "L1_ORIGIN_NUM=$L1_ORIGIN_NUM" >> {{run_env_file}}  
+  echo "CLAIMED_L2_BLOCK_NUMBER=$CLAIMED_L2_BLOCK_NUMBER" >> {{run_env_file}}
+  echo "CLAIMED_L2_OUTPUT_ROOT=$CLAIMED_L2_OUTPUT_ROOT" >> {{run_env_file}}
+  echo "AGREED_L2_OUTPUT_ROOT=$AGREED_L2_OUTPUT_ROOT" >> {{run_env_file}}
+  echo "AGREED_L2_HEAD_HASH=$AGREED_L2_HEAD_HASH" >> {{run_env_file}}  
+
+############################## RUN CLIENT #################################
+run-client block_number l1_rpc l1_beacon_rpc l2_rpc eigenda_proxy_rpc rollup_config_path l1_head l1_origin_number claimed_l2_block_number claimed_l2_output_root agreed_l2_output_root agreed_l2_head_hash native_or_asterisc='native' verbosity='':
+  #!/usr/bin/env bash
+  set -o errexit -o nounset -o pipefail
+  L2_CHAIN_ID=$(cast chain-id --rpc-url {{l2_rpc}})
   if [ -z "{{rollup_config_path}}" ]; then
     CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--l2-chain-id $L2_CHAIN_ID"
   else
     CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--rollup-config-path $(realpath {{rollup_config_path}})"
   fi
-
-  CLAIMED_L2_BLOCK_NUMBER={{block_number}}
-  echo "Fetching configuration for block #$CLAIMED_L2_BLOCK_NUMBER..."
-
-  # Get output root for block
-  CLAIMED_L2_OUTPUT_ROOT=$(cast rpc --rpc-url $OP_NODE_ADDRESS "optimism_outputAtBlock" $(cast 2h $CLAIMED_L2_BLOCK_NUMBER) | jq -r .outputRoot)
-
-  # Get the info for the previous block
-  AGREED_L2_OUTPUT_ROOT=$(cast rpc --rpc-url $OP_NODE_ADDRESS "optimism_outputAtBlock" $(cast 2h $((CLAIMED_L2_BLOCK_NUMBER - 1))) | jq -r .outputRoot)
-  AGREED_L2_HEAD_HASH=$(cast block --rpc-url $L2_NODE_ADDRESS $((CLAIMED_L2_BLOCK_NUMBER - 1)) --json | jq -r .hash)
-  L1_ORIGIN_NUM=$(cast rpc --rpc-url $OP_NODE_ADDRESS "optimism_outputAtBlock" $(cast 2h $((CLAIMED_L2_BLOCK_NUMBER - 1))) | jq -r .blockRef.l1origin.number)
-  L1_HEAD=$(cast block --rpc-url $L1_NODE_ADDRESS $((L1_ORIGIN_NUM + 30)) --json | jq -r .hash)
 
   # Move to the workspace root
   cd $(git rev-parse --show-toplevel)
@@ -235,38 +294,23 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_prox
   rm -rf ./data
   mkdir ./data
 
-  if [ "{{mock_mode}}" == 'true' ]; then
-    set -a
-      RISC0_DEV_MODE=true
-
-      SP1_PROVER="mock"
-      OP_SUCCINCT_MOCK="true"
-      NETWORK_PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000001
-    set +a
-  fi
-
-  FEATURES_FLAGS=""
-  if [ "{{features}}" != '' ]; then
-    FEATURES_FLAGS="--features {{features}}"
-  fi
-
-  if [ "$NATIVE_OR_ASTERISC" = "native" ]; then
+  if [ "{{native_or_asterisc}}" = "native" ]; then
     echo "Running host program with native client program..."
-    cargo r --bin {{bin}} $FEATURES_FLAGS  -- \
-      --l1-head $L1_HEAD \
-      --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
-      --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
-      --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
-      --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
-      --l1-node-address $L1_NODE_ADDRESS \
-      --l1-beacon-address $L1_BEACON_ADDRESS \
-      --l2-node-address $L2_NODE_ADDRESS \
-      --eigenda-proxy-address $EIGENDA_PROXY_ADDRESS \
+    cargo r --bin hokulea-host-bin  -- \
+      --l1-head {{l1_head}} \
+      --agreed-l2-head-hash {{agreed_l2_head_hash}} \
+      --claimed-l2-output-root {{claimed_l2_output_root}} \
+      --agreed-l2-output-root {{agreed_l2_output_root}} \
+      --claimed-l2-block-number {{claimed_l2_block_number}} \
+      --l1-node-address {{l1_rpc}} \
+      --l1-beacon-address {{l1_beacon_rpc}} \
+      --l2-node-address {{l2_rpc}} \
+      --eigenda-proxy-address {{eigenda_proxy_rpc}} \
       --native \
       --data-dir ./data \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
-  elif [ "$NATIVE_OR_ASTERISC" = "asterisc" ]; then
+  elif [ "{{native_or_asterisc}}" = "asterisc" ]; then
     HOST_BIN_PATH="./target/release/hokulea-host-bin"    
     CLIENT_BIN_PATH="./target/riscv64imac-unknown-none-elf/release-client-lto/hokulea-client-bin"
     STATE_PATH="./state.bin.gz"
@@ -284,80 +328,23 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_prox
       --proof-at never \
       --input $STATE_PATH \
       -- \
-      $HOST_BIN_PATH \
-      --l1-head $L1_HEAD \
-      --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
-      --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
-      --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
-      --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
+      $HOST_BIN_PATH \                              
+      --l1-head {{l1_head}} \
+      --agreed-l2-head-hash {{agreed_l2_head_hash}} \
+      --claimed-l2-output-root {{claimed_l2_output_root}} \
+      --agreed-l2-output-root {{agreed_l2_output_root}} \
+      --claimed-l2-block-number {{claimed_l2_block_number}} \
+      --l1-node-address {{l1_rpc}} \
+      --l1-beacon-address {{l1_beacon_rpc}} \
+      --l2-node-address {{l2_rpc}} \
+      --eigenda-proxy-address {{eigenda_proxy_rpc}} \
       --l2-chain-id $L2_CHAIN_ID \
-      --l1-node-address $L1_NODE_ADDRESS \
-      --l1-beacon-address $L1_BEACON_ADDRESS \
-      --l2-node-address $L2_NODE_ADDRESS \
-      --eigenda-proxy-address $EIGENDA_PROXY_ADDRESS \
       --server \
       --data-dir ./data \
-      {{verbosity}}
+      {{verbosity}}      
   else
-    echo "Unknown value for NATIVE_OR_ASTERISC: $NATIVE_OR_ASTERISC"
+    echo "Unknown value for NATIVE_OR_ASTERISC: "{{native_or_asterisc}}""
     exit 1
   fi
 
-# Run the client program natively with the host program attached, in offline mode.
-run-client-native-offline block_number l2_claim l2_output_root l2_head l1_head l2_chain_id verbosity='':
-  #!/usr/bin/env bash
 
-  CLAIMED_L2_BLOCK_NUMBER={{block_number}}
-  CLAIMED_L2_OUTPUT_ROOT={{l2_claim}}
-  AGREED_L2_OUTPUT_ROOT={{l2_output_root}}
-  AGREED_L2_HEAD_HASH={{l2_head}}
-  L1_HEAD={{l1_head}}
-  L2_CHAIN_ID={{l2_chain_id}}
-
-  # Move to the workspace root
-  cd $(git rev-parse --show-toplevel)
-
-  echo "Running host program with native client program..."
-  cargo r --bin hokulea-host-bin --release -- \
-    --l1-head $L1_HEAD \
-    --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
-    --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
-    --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
-    --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
-    --l2-chain-id $L2_CHAIN_ID \
-    --native \
-    --data-dir ./data \
-    {{verbosity}}
-
-# Run the client program on asterisc with the host program detached, in offline mode.
-run-client-asterisc-offline block_number l2_claim l2_output_root l2_head l1_head l2_chain_id verbosity='':
-  #!/usr/bin/env bash
-
-  HOST_BIN_PATH="./target/release/kona-host"
-  CLIENT_BIN_PATH="./target/riscv64gc-unknown-none-elf/release-client-lto/hokulea-client-bin"
-  STATE_PATH="./state.bin.gz"
-
-  CLAIMED_L2_BLOCK_NUMBER={{block_number}}
-  CLAIMED_L2_OUTPUT_ROOT={{l2_claim}}
-  AGREED_L2_OUTPUT_ROOT={{l2_output_root}}
-  AGREED_L2_HEAD_HASH={{l2_head}}
-  L1_HEAD={{l1_head}}
-  L2_CHAIN_ID={{l2_chain_id}}
-
-  # Move to the workspace root
-  cd $(git rev-parse --show-toplevel)
-
-  echo "Building client program for RISC-V target..."
-  just build-asterisc --bin hokulea-client-bin --profile release-client-lto
-
-  echo "Loading client program into Asterisc state format..."
-  asterisc load-elf --path=$CLIENT_BIN_PATH
-
-  echo "Building host program for native target..."
-  cargo build --bin hokulea-host-bin --release
-
-  echo "Running asterisc"
-  asterisc run \
-    --info-at '%10000000' \
-    --proof-at never \
-    --input $STATE_PATH
