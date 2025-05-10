@@ -6,16 +6,11 @@ edition = "2021"
 
 [dependencies]
 hokulea-proof.workspace = true
-hokulea-host-bin.workspace = true
 hokulea-witgen.workspace = true
 hokulea-client.workspace = true
 
 # General
-anyhow.workspace = true
 tracing.workspace = true
-tokio = { workspace = true, features = ["full"] }
-clap = { workspace = true, features = ["derive", "env"] }
-cfg-if = { workspace = true }
 serde_json = { workspace = true }
 
 kona-client.workspace = true
@@ -23,8 +18,6 @@ kona-preimage.workspace = true
 kona-proof.workspace = true
 
 canoe-provider  = { workspace = true }
-canoe-steel-apps = { workspace = true, optional = true }
-canoe-sp1-cc-host = { workspace = true, optional = true }
 
 alloy-consensus.workspace = true
 alloy-rlp.workspace = true
@@ -36,5 +29,3 @@ op-alloy-consensus.workspace = true
 
 [features]
 default = []
-steel = ["canoe-steel-apps", "hokulea-proof/steel"]
-sp1-cc = ["canoe-sp1-cc-host", "hokulea-proof/sp1-cc"]
