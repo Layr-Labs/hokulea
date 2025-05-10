@@ -6,9 +6,7 @@ edition = "2021"
 
 [dependencies]
 kona-preimage.workspace = true
-kona-driver.workspace = true
 kona-proof.workspace = true
-kona-derive.workspace = true
 
 hokulea-eigenda.workspace = true
 
@@ -23,14 +21,8 @@ ark-ff.workspace = true
 # Alloy
 alloy-primitives.workspace = true
 
-# Op Alloy
-kona-protocol.workspace = true
-kona-genesis.workspace = true
-kona-rpc.workspace = true
-
 # General
 async-trait.workspace = true
-spin.workspace = true
 alloy-sol-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
