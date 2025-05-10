@@ -4,34 +4,51 @@ set fallback := true
 default:
   @just --list
 
-preloader env_file='.devnet.env' features='empty' mock_mode='true' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' verbosity='':
+run-preloader env_file features='empty' mock_mode='true' rollup_config_path='../../rollup.json' enclave='eigenda-devnet' chain_id='2151908' verbosity='':
   #!/usr/bin/env bash
-  L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}})
-  
+  set -o errexit -o nounset -o pipefail
 
-  RUN_ENV_FILE=".run{{env_file}}"
-  just --justfile ../../justfile save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
+  L2_BLOCK_NUMBER=$(just --justfile ../../justfile get-l2-finalize-block-number {{enclave}} {{chain_id}})  
+  RUN_ENV_FILE="{{env_file}}.run"
+
+  # move to root
+  cd $(git rev-parse --show-toplevel)
+  
+  just --justfile justfile save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
   set a-
     source {{env_file}}
     source $RUN_ENV_FILE
   set a+
 
   # Move to the workspace root
-  #rm -rf ./data
-  #mkdir ./data
+  rm -rf ./data
+  mkdir ./data
+
+  if [ "{{mock_mode}}" == 'true' ]; then
+    set -a
+      RISC0_DEV_MODE=true
+      SP1_PROVER="mock"
+      OP_SUCCINCT_MOCK="true"
+    set +a
+  fi
+
+  FEATURES_FLAGS=""
+  if [ "{{features}}" != 'empty' ]; then
+    FEATURES_FLAGS="--features {{features}}"
+  fi
 
   echo "Running host program with native client program..."
-  cargo r --bin hokulea-example-preloader  -- \
-    --l1-head {{l1_head}} \
-    --agreed-l2-head-hash {{agreed_l2_head_hash}} \
-    --claimed-l2-output-root {{claimed_l2_output_root}} \
-    --agreed-l2-output-root {{agreed_l2_output_root}} \
-    --claimed-l2-block-number {{claimed_l2_block_number}} \
-    --l1-node-address {{l1_rpc}} \
-    --l1-beacon-address {{l1_beacon_rpc}} \
-    --l2-node-address {{l2_rpc}} \
-    --eigenda-proxy-address {{eigenda_proxy_rpc}} \
+  cargo r --bin hokulea-example-preloader $FEATURES_FLAGS -- \
+    --l1-head $L1_HEAD \
+    --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
+    --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
+    --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
+    --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
+    --l1-node-address $L1_RPC \
+    --l1-beacon-address $L1_BEACON_RPC \
+    --l2-node-address $L2_RPC \
+    --eigenda-proxy-address $EIGENDA_PROXY_RPC \
     --native \
     --data-dir ./data \
-    $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
+    --rollup-config-path $(realpath $ROLLUP_CONFIG_PATH) \
     {{verbosity}}

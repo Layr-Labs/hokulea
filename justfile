@@ -98,19 +98,10 @@ run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' fea
 
   RUN_ENV_FILE=".run{{env_file}}"
   just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
-  set a-
-    source {{env_file}}
-    source $RUN_ENV_FILE
-  set a+
- 
+
   set -x
   # note we don't need ROLLUP_NODE_RPC
-  just run-client $L2_BLOCK_NUMBER \
-    $L1_RPC $L1_BEACON_RPC $L2_RPC $EIGENDA_PROXY_RPC \
-    $ROLLUP_CONFIG_PATH \
-    $L1_HEAD $L1_ORIGIN_NUM \
-    $CLAIMED_L2_BLOCK_NUMBER $CLAIMED_L2_OUTPUT_ROOT \
-    $AGREED_L2_OUTPUT_ROOT $AGREED_L2_HEAD_HASH \
+  just run-client {{env_file}} $RUN_ENV_FILE \
     {{native_or_asterisc}} {{verbosity}}
 
 [group('local-env')]
@@ -212,8 +203,7 @@ test-docs:
 save-all-env env_file run_env_file block_number rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
-  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
-
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true  
   just save-chain-env {{env_file}} {{rollup_config_path}} {{enclave}} {{chain_id}}
   set a-
     source {{env_file}}
@@ -248,8 +238,8 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
 ##           | l1_origin_bn                                 | l1_head  ##
 ## L1  --------------------------------------------------------------- ##
 ##            \                                                        ##
-##             | l2_agreed_output_root    | l2_claimed_output_root     ##
-##             | l2_agreed_head_hash      | l2_claimed_bn (finalized   ##
+##             | agreed_l2_output_root    | claimed_l2_output_root     ##
+##             | agreed_l2_head_hash      | claimed_l2_bn (finalized   ##
 ## L2  =============================================================== ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
 [group('local-env')]
@@ -278,14 +268,19 @@ save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_r
   echo "AGREED_L2_HEAD_HASH=$AGREED_L2_HEAD_HASH" >> {{run_env_file}}  
 
 ############################## RUN CLIENT #################################
-run-client block_number l1_rpc l1_beacon_rpc l2_rpc eigenda_proxy_rpc rollup_config_path l1_head l1_origin_number claimed_l2_block_number claimed_l2_output_root agreed_l2_output_root agreed_l2_head_hash native_or_asterisc='native' verbosity='':
+run-client env_file run_env_file native_or_asterisc='native' verbosity='':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
-  L2_CHAIN_ID=$(cast chain-id --rpc-url {{l2_rpc}})
-  if [ -z "{{rollup_config_path}}" ]; then
+  set a-
+    source {{env_file}}
+    source {{run_env_file}}
+  set a+
+
+  L2_CHAIN_ID=$(cast chain-id --rpc-url $L2_RPC)
+  if [ -z "$ROLLUP_CONFIG_PATH" ]; then
     CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--l2-chain-id $L2_CHAIN_ID"
   else
-    CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--rollup-config-path $(realpath {{rollup_config_path}})"
+    CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--rollup-config-path $(realpath $ROLLUP_CONFIG_PATH)"
   fi
 
   # Move to the workspace root
@@ -297,15 +292,15 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc eigenda_proxy_rpc rollup_con
   if [ "{{native_or_asterisc}}" = "native" ]; then
     echo "Running host program with native client program..."
     cargo r --bin hokulea-host-bin  -- \
-      --l1-head {{l1_head}} \
-      --agreed-l2-head-hash {{agreed_l2_head_hash}} \
-      --claimed-l2-output-root {{claimed_l2_output_root}} \
-      --agreed-l2-output-root {{agreed_l2_output_root}} \
-      --claimed-l2-block-number {{claimed_l2_block_number}} \
-      --l1-node-address {{l1_rpc}} \
-      --l1-beacon-address {{l1_beacon_rpc}} \
-      --l2-node-address {{l2_rpc}} \
-      --eigenda-proxy-address {{eigenda_proxy_rpc}} \
+      --l1-head $L1_HEAD \
+      --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
+      --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
+      --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
+      --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
+      --l1-node-address $L1_RPC \
+      --l1-beacon-address $L1_BEACON_RPC \
+      --l2-node-address $L2_RPC \
+      --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --native \
       --data-dir ./data \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
@@ -329,15 +324,15 @@ run-client block_number l1_rpc l1_beacon_rpc l2_rpc eigenda_proxy_rpc rollup_con
       --input $STATE_PATH \
       -- \
       $HOST_BIN_PATH \                              
-      --l1-head {{l1_head}} \
-      --agreed-l2-head-hash {{agreed_l2_head_hash}} \
-      --claimed-l2-output-root {{claimed_l2_output_root}} \
-      --agreed-l2-output-root {{agreed_l2_output_root}} \
-      --claimed-l2-block-number {{claimed_l2_block_number}} \
-      --l1-node-address {{l1_rpc}} \
-      --l1-beacon-address {{l1_beacon_rpc}} \
-      --l2-node-address {{l2_rpc}} \
-      --eigenda-proxy-address {{eigenda_proxy_rpc}} \
+      --l1-head $L1_HEAD \
+      --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
+      --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
+      --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
+      --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
+      --l1-node-address $L1_RPC \
+      --l1-beacon-address $L1_BEACON_RPC \
+      --l2-node-address $L2_RPC \
+      --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --l2-chain-id $L2_CHAIN_ID \
       --server \
       --data-dir ./data \
