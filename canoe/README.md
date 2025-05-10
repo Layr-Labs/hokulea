@@ -23,7 +23,7 @@ In EigenDA V2 the certificate (DA cert) is returned to the requester immedia
 ### 3.1 Solidity Verifier
 Building on the V1 contract, the [certificate verifier](https://github.com/Layr-Labs/eigenda/blob/ee092f345dfbc37fce3c02f99a756ff446c5864a/contracts/src/periphery/cert/v2/EigenDACertVerifierV2.sol#L120) now replaces Merkle‑root checks with **BLS aggregate‑signature verification** across all quorums. But its gas cost scales linearly with the number of non‑signers. We can model the smart contract logic as
 
-$$ f(S, C) -> O $$
+$$ f(S, C; I) -> O $$
 
 | Symbol | Meaning |
 |--------|---------|
@@ -31,23 +31,24 @@ $$ f(S, C) -> O $$
 | `S` | Ethereum state at a specific block (hash & number) |
 | `C` | Call data (= EigenDA certificate) |
 | `O` | Boolean validity result |
+| `I` | L1 Chain ID |
 
 ### 3.2 Validity‑Proof Generation (Off‑chain)  
 
-1. An off‑chain prover reconstructs Ethereum state `S` at some block height `h_i`.  
-2. It invokes `f` with certificate `C` and records output `O`.  
-3. A zkVM produces proof `P` attesting that the tuple `(f,S,C,O)` is correct.
+1. An off‑chain prover reconstructs Ethereum state `S` at some block height `h`.  
+2. It invokes `f` with certificate `C` l1 chain `I` and records output `O`.  
+3. A zkVM produces proof `P` attesting that the tuple `(f,S,C,O,I)` is correct.
 
-### Verifying the validity proof on L1
 The proof `P` is verified by a **universal zkVM verifier** already deployed on L1 (Risc0 or SP1).
 
+## 4 · Use Case
 
-### 4.1 Blob Validity Inside a zkVM (Hokulea)  
+### 4.1 Blob Validity Inside a zkVM (Hokulea)
 
 The **Hokulea** rollup client runs inside a zkVM. During blob derivation it must:
 
 1. Receive proof `P` for every EigenDA certificate processed.  
-2. Reconstruct `(f,s,C,O)` locally (where `s` commits to state `S`).  
+2. Reconstruct `(f,s,C,O,I)` locally (where `s` commits to state `S`).  
 3. Abort if `P` fails; otherwise continue derivation.  
 
 Hokulea then emits its own zk‑proof, which can be posted to L1 to attest that:
@@ -55,9 +56,9 @@ Hokulea then emits its own zk‑proof, which can be posted to L1 to attest that:
 * All derived blobs are correct, and  
 * Malicious certificates were discarded.
 
-## Usage Case 2 - blob validity check on L1
+### 4.2 Blob Validity In Ethereum
 
-Another way to use Canoe is to verify the certificate validity proof on L1 directly. L1 must be able to construct $(f, s, C, O)$ or its equivalent. For instance, if we were to convert a L1 inbox to a smart contract. Let $f$ be the verifier contract, $C$ be eigenda certificate to be queued into the deriviation pipeline, $O$ be true. We need to ensure $s$ is at some block number higher than the L1 block number whose stake is used to disperse the EigenDA blob. It is achieved by checking the reference block number within the eigenda certificate is smaller than the block number with block hash $s$.### 4.2 Direct L1 Certificate Verification  
+Another way to use Canoe is to verify the certificate validity proof on L1 directly. L1 must be able to construct $(f, s, C, O, I)$ or its equivalent. For instance, if we were to convert a L1 inbox to a smart contract. Let $f$ be the verifier contract, $C$ be eigenda certificate to be queued into the deriviation pipeline, $O$ be true. We need to ensure $s$ is at some block number higher than the L1 block number whose stake is used to disperse the EigenDA blob. It is achieved by checking the reference block number within the eigenda certificate is smaller than the block number with block hash $s$.### 4.2 Direct L1 Certificate Verification  
 
 Protocols can also verify `P` **directly on Ethereum**:
 
@@ -65,5 +66,16 @@ Protocols can also verify `P` **directly on Ethereum**:
 * `C`: the EigenDA certificate to enqueue.  
 * `O = true`.  
 * `s`: a block *after* the stake snapshot referenced in `C` (enforced by checking the certificate’s reference block number).
+* `I`: ethereum chain ID.  
 
 This allows L1 contracts to trust EigenDA blobs without verifying the BLS aggregated signature onchain.
+
+## 5 · Remark
+
+The Chain Specification defines the rules of the EVM, which underpin the execution semantics of Solidity contracts. As such, any Ethereum hardfork that introduces changes to EVM behavior necessitates corresponding updates across the proof stack. Specifically, both RISC Zero Steel and SP1 Contract Call backends must be upgraded to align with the new EVM logic. To remain compatible, Hokulea must also integrate an updated version of the zkVM backend that reflects these changes.
+
+Before an Ethereum hardfork is activated, the zkVM backend must audit, prepare, and release an upgraded version to ensure compatibility.
+
+Canoe, which depends on the zkVM backend libraries, must rebuild its execution artifacts including the ELF image using the upgraded libraries. The image ID(Steel) or the verification key(sp1-contract-call) of the new ELF must then be deployed on Ethereum (L1). For rollups following the OP Stack, Ethereum hardforks typically require an OP protocol upgrade, at which point the updated Canoe artifacts should be bundled into the broader upgrade process.
+
+Importantly, the universal zkVM verifier deployed on L1 does not require an upgrade with each EVM change, since previously generated contract logic remains valid and backward-compatible across EVM upgrades.
