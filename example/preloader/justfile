@@ -4,14 +4,14 @@ set fallback := true
 default:
   @just --list
 
-run-preloader env_file features='empty' mock_mode='true' rollup_config_path='../../rollup.json' enclave='eigenda-devnet' chain_id='2151908' verbosity='':
+run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet' chain_id='2151908' verbosity='':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
 
   L2_BLOCK_NUMBER=$(just --justfile ../../justfile get-l2-finalize-block-number {{enclave}} {{chain_id}})  
   RUN_ENV_FILE="{{env_file}}.run"
 
-  # move to root
+  # move to project root
   cd $(git rev-parse --show-toplevel)
   
   just --justfile justfile save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
