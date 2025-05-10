@@ -4022,6 +4022,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "hokulea-example-common-preloader"
+version = "0.1.0"
+dependencies = [
+ "alloy-consensus 0.15.10",
+ "alloy-evm 0.6.0",
+ "alloy-rlp",
+ "anyhow",
+ "canoe-provider",
+ "canoe-sp1-cc-host",
+ "canoe-steel-apps",
+ "cfg-if",
+ "clap",
+ "hokulea-client",
+ "hokulea-host-bin",
+ "hokulea-proof",
+ "hokulea-witgen",
+ "kona-client",
+ "kona-preimage",
+ "kona-proof",
+ "op-alloy-consensus 0.15.4",
+ "op-revm",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "hokulea-example-preloader"
 version = "0.1.0"
 dependencies = [
@@ -4035,6 +4062,7 @@ dependencies = [
  "cfg-if",
  "clap",
  "hokulea-client",
+ "hokulea-example-common-preloader",
  "hokulea-host-bin",
  "hokulea-proof",
  "hokulea-witgen",

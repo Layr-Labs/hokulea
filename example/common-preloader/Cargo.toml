@@ -1,5 +1,5 @@
 [package]
-name = "hokulea-example-preloader"
+name = "hokulea-example-common-preloader"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,8 +9,6 @@ hokulea-proof.workspace = true
 hokulea-host-bin.workspace = true
 hokulea-witgen.workspace = true
 hokulea-client.workspace = true
-
-hokulea-example-common-preloader = { path = "../common-preloader" }
 
 # General
 anyhow.workspace = true
@@ -40,4 +38,3 @@ op-alloy-consensus.workspace = true
 default = []
 steel = ["canoe-steel-apps", "hokulea-proof/steel"]
 sp1-cc = ["canoe-sp1-cc-host", "hokulea-proof/sp1-cc"]
-
