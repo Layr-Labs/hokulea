@@ -2,10 +2,6 @@
 
 Hokulea is a library to provide the altda providers for a derivation pipeline built with [kona](https://github.com/anton-rs/kona) to understand eigenDA blobs, following the [kona book](https://op-rs.github.io/kona/protocol/derive/providers.html#implementing-a-custom-data-availability-provider) recommendation (also see this [comment](https://github.com/anton-rs/kona/pull/862#issuecomment-2515038089)).
 
-Below is the dependency graph between hokulea and kona crates:
-<!-- Run `just generate-deps-graphviz` to regenerate/update this diagram -->
-![](./generated/dependencies_graph.png)
-
 ## Dependencies
 
 We use mise to track and manage dependencies. Please first [install mise](https://mise.jdx.dev/getting-started.html), and then run `mise install` to install the dependencies.
@@ -44,7 +40,17 @@ just run-client-against-devnet 'asterisc'
 ```
 
 ### Running the example preloaded client with Steel or Sp1-contract-call
+```bash
+cd example/preloader
+just run-preloader .devnet.env
+```
 
-More information please see [here](./example/preloader/README.md)
+More information at [./example/preloader/README.md](./example/preloader/README.md)
+
+### If you are interested in looking at the dependancy graph of crates
+```bash
+just generate-deps-graphviz
+```
+
 
 ![](./hokulea.jpeg)
