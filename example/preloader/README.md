@@ -14,12 +14,13 @@ Steel Preloader, generate zk proof with steel backend. By default, a mock steel 
 ```bash
 just run-preloader .devnet.env steel
 ```
+Compiling rust code to zkVM bytecode requires installing Risc0 toolchain, see [rzup](https://dev.risczero.com/api/zkvm/install).
 
 Sp1 contract call Preloader, generate zk proof with sp1-cc backend, but in mock mode, no actual proof generated
 ```bash
 just run-preloader .devnet.env sp1-cc
 ```
-
+Compiling rust code to zkVM bytecode requires installing Sp1 toolchain, see [sp1up](https://docs.succinct.xyz/docs/sp1/getting-started/install).
 
 
 To turn off the mock mode for creating a Steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
