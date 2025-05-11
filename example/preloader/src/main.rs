@@ -6,31 +6,7 @@ use kona_client::fpvm_evm::FpvmOpEvmFactory;
 use kona_preimage::{BidirectionalChannel, HintWriter, OracleReader};
 use tokio::task;
 
-use core::fmt::Debug;
-use kona_client::single::FaultProofProgramError;
-use kona_preimage::{HintWriterClient, PreimageKey, PreimageOracleClient};
-use kona_proof::{l1::OracleBlobProvider, BootInfo, CachingOracle};
-
-use hokulea_client::fp_client;
-use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
-use hokulea_proof::{
-    eigenda_blob_witness::EigenDABlobWitnessData,
-    preloaded_eigenda_provider::PreloadedEigenDABlobProvider,
-};
-use hokulea_witgen::witness::OracleEigenDAWitnessProvider;
-use std::{
-    ops::DerefMut,
-    sync::{Arc, Mutex},
-};
-use tracing::info;
-
-use alloy_consensus::Header;
-use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
-use alloy_rlp::Decodable;
-use op_alloy_consensus::OpTxEnvelope;
-use op_revm::OpSpecId;
-
-use canoe_provider::CanoeProvider;
+use hokulea_example_common_preloader::run_witgen_and_zk_verification;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> anyhow::Result<()> {
@@ -42,161 +18,43 @@ async fn main() -> anyhow::Result<()> {
 
     let server_task = cfg.start_server(hint.host, preimage.host).await?;
 
-    let l1_node_address = cfg.kona_cfg.l1_node_address.clone().unwrap();
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "steel")] {
+            use canoe_steel_apps::apps::CanoeSteelProvider;
+            use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
+            let canoe_provider = CanoeSteelProvider{
+                eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
+            };
+            let canoe_verifier = CanoeSteelVerifier{};
+        } else if #[cfg(feature = "sp1-cc")] {
+            use canoe_sp1_cc_host::CanoeSp1CCProvider;
+            use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
+            let canoe_provider = CanoeSp1CCProvider{
+                eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
+            };
+            let canoe_verifier = CanoeSp1CCVerifier{};
+        } else {
+            use canoe_provider::CanoeNoOpProvider;
+            use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;
+            let canoe_provider = CanoeNoOpProvider{};
+            let canoe_verifier = CanoeNoOpVerifier{};
+        }
+    }
+
     // Spawn the client logic as a concurrent task
-    let client_task = task::spawn(run_derivation_with_witgen_and_preloader(
+    let client_task = task::spawn(run_witgen_and_zk_verification(
         OracleReader::new(preimage.client.clone()),
         HintWriter::new(hint.client.clone()),
         FpvmOpEvmFactory::new(
             HintWriter::new(hint.client),
             OracleReader::new(preimage.client),
         ),
-        l1_node_address,
+        canoe_provider,
+        canoe_verifier,
     ));
 
     let (_, client_result) = tokio::try_join!(server_task, client_task)?;
 
     // Bubble up the exit status of the client program if execution completes.
     std::process::exit(client_result.is_err() as i32)
-}
-
-/// The function uses a variation of kona client function signature
-/// A preloaded client runs derivation twice
-/// The first round runs run_witgen_client only to populate the witness. This produces an artifact
-/// that contains all the necessary preimage to run the derivation.
-/// The second round uses the populated witness to run against
-#[allow(clippy::type_complexity)]
-#[allow(unused_variables)]
-pub async fn run_derivation_with_witgen_and_preloader<P, H, Evm>(
-    oracle_client: P,
-    hint_client: H,
-    evm_factory: Evm,
-    eth_rpc_url: String,
-) -> Result<(), FaultProofProgramError>
-where
-    P: PreimageOracleClient + Send + Sync + Debug + Clone,
-    H: HintWriterClient + Send + Sync + Debug + Clone,
-    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
-{
-    // Generate zk view proof
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "steel")] {
-            use canoe_steel_apps::apps::CanoeSteelProvider;
-            use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
-            info!("using CanoeSteelProvider");
-            let canoe_provider = CanoeSteelProvider{
-                eth_rpc_url,
-            };
-            let canoe_verifier = CanoeSteelVerifier{};
-        } else if #[cfg(feature = "sp1-cc")] {
-            use canoe_sp1_cc_host::CanoeSp1CCProvider;
-            use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
-            info!("using CanoeSp1CCProvider");
-            let canoe_provider = CanoeSp1CCProvider{
-                eth_rpc_url,
-            };
-            let canoe_verifier = CanoeSp1CCVerifier{};
-        } else {
-            use canoe_provider::CanoeNoOpProvider;
-            use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;
-            info!("using CanoeNoOpProvider");
-            let canoe_provider = CanoeNoOpProvider{};
-            let canoe_verifier = CanoeNoOpVerifier{};
-        }
-    }
-
-    const ORACLE_LRU_SIZE: usize = 1024;
-
-    let oracle = Arc::new(CachingOracle::new(
-        ORACLE_LRU_SIZE,
-        oracle_client,
-        hint_client,
-    ));
-
-    // Run derivation for the first time to populate the witness data
-    let mut wit = run_witgen_client(oracle.clone(), evm_factory.clone()).await?;
-    info!("done generating the witness");
-
-    // By this time,both Oracle and EigenDABlobWitnessData are generated by some party that runs run_witgen_client.
-    // This party now needs to send both of them as inputs to ZKVM. So imagine wit and oracle are sent away, and
-    // the code region below are some codes that runs inside ZKVM. The ZKVM will convert EigenDABlobWitnessData into
-    // a preloaded eigenda provider, that implements the trait get_blob. The run_fp_client are also run inside zkVM
-    let beacon = OracleBlobProvider::new(oracle.clone());
-
-    info!("convert eigenda blob witness into preloaded blob provider");
-
-    let boot_info = BootInfo::load(oracle.as_ref()).await?;
-
-    // get l1 block number
-    let header_rlp = oracle
-        .get(PreimageKey::new_keccak256(*boot_info.l1_head))
-        .await
-        .expect("get l1 header based on l1 head");
-    // Decode the header RLP into a Header.
-    let l1_head_header = Header::decode(&mut header_rlp.as_slice()).expect("rlp decode l1 header");
-
-    let num_cert = wit.validity.len();
-    for i in 0..num_cert {
-        wit.validity[i].l1_head_block_hash = boot_info.l1_head;
-        wit.validity[i].l1_head_block_number = l1_head_header.number;
-
-        let cert = &wit.eigenda_certs[i];
-
-        let canoe_proof = canoe_provider
-            .create_cert_validity_proof(cert.clone(), wit.validity[i].clone())
-            .await
-            .expect("must be able generate a canoe zk proof attesting eth state");
-
-        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        wit.validity[i].receipt = canoe_proof_bytes;
-    }
-
-    // preloaded_blob_provider does not use oracle
-    let preloaded_blob_provider = PreloadedEigenDABlobProvider::from_witness(wit, canoe_verifier);
-
-    info!("run preloaded provider");
-    fp_client::run_fp_client(oracle, beacon, preloaded_blob_provider, evm_factory).await?;
-
-    Ok(())
-}
-
-/// A run_witgen_client calls [fp_client] functopm to run kona derivation.
-/// This client uses a special [OracleEigenDAWitnessProvider] that wraps around [OracleEigenDAProvider]
-/// It returns the eigenda blob witness to the caller, those blob witnesses can be used to prove
-/// used only at the preparation phase. Its usage is contained in the crate hokulea-client-bin
-/// 1. a KZG commitment is consistent to the retrieved eigenda blob
-/// 2. the cert is correct
-#[allow(clippy::type_complexity)]
-pub async fn run_witgen_client<P, H, Evm>(
-    oracle: Arc<CachingOracle<P, H>>,
-    evm_factory: Evm,
-) -> Result<EigenDABlobWitnessData, FaultProofProgramError>
-where
-    P: PreimageOracleClient + Send + Sync + Debug + Clone,
-    H: HintWriterClient + Send + Sync + Debug + Clone,
-    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
-{
-    let beacon = OracleBlobProvider::new(oracle.clone());
-
-    let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
-    let eigenda_blobs_witness = Arc::new(Mutex::new(EigenDABlobWitnessData::default()));
-
-    let eigenda_blob_and_witness_provider = OracleEigenDAWitnessProvider {
-        provider: eigenda_blob_provider,
-        witness: eigenda_blobs_witness.clone(),
-    };
-
-    fp_client::run_fp_client(
-        oracle,
-        beacon,
-        eigenda_blob_and_witness_provider,
-        evm_factory,
-    )
-    .await?;
-
-    let wit = core::mem::take(eigenda_blobs_witness.lock().unwrap().deref_mut());
-
-    Ok(wit)
 }
