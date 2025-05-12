@@ -17,10 +17,10 @@ Canoe is under active development and currently supports two zkVM back‑ends: [
 
 ## 2 · EigenDA V2 (“Blazar”) Upgrade  
 
-In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Verification is thus left as the responsibility of the rollup, which can do so optimistically to save on gas costs.
+In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Rollup wants to let Ethereum aware cert blob is available can use Canoe or directly verify the DA cert on Etheurem.
 
 
-## 3 · Implementation Details  
+## 3 · Canoe security
 
 ### 3.Smart contract Verifier
 Building on the V1 contract, the new [certificate verifier](https://github.com/Layr-Labs/eigenda/blob/ee092f345dfbc37fce3c02f99a756ff446c5864a/contracts/src/periphery/cert/v2/EigenDACertVerifierV2.sol#L120) can be modeled as
@@ -69,7 +69,7 @@ For `N` DA certs, protocols can aggregate them together into a single aggregated
 
 ### 4.3 Blob Validity Inside a zkVM (verified by Hokulea)
 
-In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a binary that runs inside the zkVM. After this binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
+In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. After this EFL binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
 While executing, the client validates each canoe certificate by:
 
 Accepting a proof P for every EigenDA certificate encountered.
@@ -85,14 +85,14 @@ These steps ensure that any invalid certificates are discarded.
 
 ## 5 · Remark
 
-The Chain Specification defines the rules of the EVM, which underpin the execution semantics of Solidity contracts. As such, any Ethereum hardfork that introduces changes to EVM behavior necessitates corresponding updates across the proof stack. Specifically, both RISC Zero Steel and SP1 Contract Call backends must be upgraded to align with the new EVM logic. To remain compatible, Hokulea must also integrate an updated version of the zkVM backend that reflects these changes.
+The Chain Specification defines the rules of the EVM, which underpin the execution semantics of smart contracts. As such, any Ethereum hardfork that introduces changes to EVM behavior necessitates corresponding updates across the proof stack. Specifically, both RISC Zero Steel and SP1 Contract Call backends must be upgraded to align with the new EVM logic. To remain compatible, Hokulea must also integrate an updated version of the zkVM backend that reflects these changes.
 
 Before an Ethereum hardfork is activated, the zkVM backend must audit, prepare, and release an upgraded version to ensure compatibility. Importantly, the universal zkVM verifier deployed on L1 does not require an upgrade with each EVM change, since previously generated contract logic remains valid and backward-compatible across EVM upgrades.
 
 ## Canoe and Hokulea Upgrade
 
-Canoe depends on the zkVM back‑end libraries, so every library upgrade forces a rebuild of its execution artifacts—most notably the ELF image. In the Hokulea workflow, the guest program’s fingerprint (an image ID for Steel, or a verification key for SP1‑Contract‑Call) is hard‑coded and verified inside the zkVM, meaning any new Hokulea ELF must also be registered on Ethereum L1: deploy the new image ID for Steel or publish the new verification key for SP1.
+Canoe depends on the zkVM back‑end libraries, so every library upgrade forces a rebuild of its execution artifacts most notably the ELF image of canoe guest(or client in SP1) program. In the Hokulea workflow, the guest program’s fingerprint (an image ID after compilation by Steel, or a verification key by SP1‑Contract‑Call) is hard‑coded into the Hokulea and produces a new ELF. It is used by the zkVM to verify the Canoe proof, meaning any new Hokulea ELF must also be registered on Ethereum L1: deploy the new image ID of Hokulea program that contains the new canoe guest fingerprint.
 
 For rollups built on the OP Stack, an Ethereum hardfork almost always triggers an accompanying OP protocol upgrade; the refreshed Canoe artifacts should be rolled into that same upgrade package.
 
-If a library change also alters the guest code’s smart‑contract interface, both Canoe and Hokulea need a fresh L1 registration of the new image ID (Risc Zero) or verification key (SP1). To eliminate this extra step, the team is developing a router layer inside the Solidity verifier that will automatically route to the correct image, removing the need for manual updates in the future.
+If any change alters the guest code’s smart‑contract interface, both Canoe and Hokulea need a fresh L1 registration of the new image ID (Risc Zero) or verification key (SP1). To eliminate this extra step, the team is developing a router layer inside the Solidity verifier that will automatically route to the correct image, removing the need for manual updates in the future.
