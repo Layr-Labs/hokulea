@@ -13,23 +13,23 @@ codegen-units = 1
 lto = "fat"
 
 [workspace.dependencies]
-kona-client = { git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-host = { git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-derive = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-driver = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-executor = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-mpt = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-providers-alloy = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
+kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-derive = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-driver = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-executor = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-mpt = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-providers-alloy = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
 # Maili
-kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-protocol = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-registry = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
-kona-cli = { version = "0.2.0", git = "https://github.com/op-rs/kona", rev = "b079a57fcfbb444d051e859f1e80f445daf5a2c7", default-features = false }
+kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-protocol = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-registry = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-cli = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
 
 # Workspace
 hokulea-host-bin = { path = "bin/host", version = "0.1.0", default-features = false }
