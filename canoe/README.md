@@ -8,7 +8,7 @@
 
 | Part | Role |
 |-------|------|
-| **Solidity Verifier** | Confirms that the total attested stake for *each* quorum meets or exceeds the required threshold. |
+| **Smart Contract CertVerifier** | Confirms that the total attested stake for *each* quorum meets or exceeds the required threshold. |
 | **Off‑chain Validity‑Proof Generator** | Invokes the Solidity verifier off‑chain and produces a zk‑proof attesting to its output. |
 | **On‑chain zk‑Proof Verifier** | Checks the zk‑proof and the metadata contained in the EigenDA certificate. |
 
