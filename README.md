@@ -71,4 +71,4 @@ To turn off the mock mode for creating a steel proof. Currently local proof gene
 just run-client-against-devnet 'native' 'hokulea-example-preloader' 'steel' 'false'
 ```
 
-![](./hokulea.jpeg)
+![](./assets/hokulea.jpeg)

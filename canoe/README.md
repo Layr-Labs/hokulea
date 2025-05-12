@@ -22,7 +22,7 @@ In EigenDA V2 the certificate (DA cert) is returned to the requester immedia
 
 ## 3 · Implementation Details  
 
-### 3.1 Solidity Verifier
+### 3.Smart contract Verifier
 Building on the V1 contract, the new [certificate verifier](https://github.com/Layr-Labs/eigenda/blob/ee092f345dfbc37fce3c02f99a756ff446c5864a/contracts/src/periphery/cert/v2/EigenDACertVerifierV2.sol#L120) can be modeled as
 
 $$ f(S, C; I) -> O $$
@@ -33,46 +33,55 @@ $$ f(S, C; I) -> O $$
 | `S` | Ethereum state at a specific block (hash & number) |
 | `C` | Call data (= EigenDA certificate) |
 | `O` | Boolean validity result |
-| `I` | L1 Chain Spec |
+| `I` | L1 Chain ID |
 
 ### 3.2 Validity‑Proof Generation (Off‑chain)  
 
 1. An off‑chain prover reconstructs Ethereum state `S` at some block height `h`.  
-2. It invokes `f` with certificate `C` l1 chain `I` and records output `O`.  
+2. It invokes `f` with certificate `C` with chain ID `I` and records output `O`.  
 3. A zkVM produces proof `P` attesting that the tuple `(f,S,C,O,I)` is correct.
 
 The proof `P` is verified by a **Validity‑Proof Verifier** already deployed on L1 (Risc0 or SP1).
 
 ## 4 · Use Cases
 
-### 4.1 Blob Validity Inside a zkVM (Hokulea)
+Canoe is versatile. We list three use cases below, starting with the simplest solution with tradeoff, then slowly working toward the use case which hokulea is integrating.
 
-The **Hokulea** rollup client runs inside a zkVM. During blob derivation it must:
+### 4.1 Direct L1 Certificate Verification  
 
-1. Receive proof `P` for every EigenDA certificate processed.  
-2. Reconstruct `(f,s,C,O,I)` locally (where `s` commits to state `S`).  
-3. Abort if `P` fails; otherwise continue derivation.  
-
-Hokulea then emits its own zk‑proof, which can be posted to L1 to attest that:
-
-* All derived blobs are correct, and  
-* Malicious certificates were discarded.
-
-### 4.2 Blob Validity In Ethereum
-
-Another way to use Canoe is to verify the certificate validity proof on L1 directly. L1 must be able to construct $(f, s, C, O, I)$ or its equivalent. For instance, if we were to convert a L1 inbox to a smart contract. Let $f$ be the verifier contract, $C$ be eigenda certificate to be queued into the deriviation pipeline, $O$ be true. We need to ensure $s$ is at some block number higher than the L1 block number whose stake is used to disperse the EigenDA blob. It is achieved by checking the reference block number within the eigenda certificate is smaller than the block number with block hash $s$.
-
-### 4.2 Direct L1 Certificate Verification  
-
-Protocols can also verify `P` **directly on Ethereum**:
+Protocols verifies `P` **directly on Ethereum**:
 
 * `f`: the on‑chain verifier contract.  
 * `C`: the EigenDA certificate to enqueue.  
 * `O = true`.  
-* `s`: a block *after* the stake snapshot referenced in `C` (enforced by checking the certificate’s reference block number).
+* `S`: the state of a block *after* the stake snapshot referenced in `C` (enforced by checking the certificate’s reference block number).
 * `I`: ethereum chain ID.  
 
-This allows L1 contracts to trust EigenDA blobs without verifying the BLS aggregated signature onchain.
+![](../assets/usecase1.png)
+
+This allows L1 contracts to trust EigenDA blobs without verifying the BLS aggregated signature onchain. The gas cost of verifying a snark proof onchain is 270K gas with  [Sp1](https://docs.succinct.xyz/docs/sp1/generating-proofs/proof-types#groth16-recommended)  and likewise for Risc0.
+
+### 4.2 Aggregate the validity proofs into one proof
+
+For `N` DA certs, protocols can aggregate them together into a single aggregated validity proof such the single proof can be verified on Ethereum
+
+![](../assets/usecase2.png)
+
+### 4.3 Blob Validity Inside a zkVM (verified by Hokulea)
+
+In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a binary that runs inside the zkVM. After this binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
+While executing, the client validates each canoe certificate by:
+
+Accepting a proof P for every EigenDA certificate encountered.
+
+Re‑creating (f, s, C, O, I) locally, where s commits to state S.
+
+Aborting if P fails; otherwise, continuing the derivation process.
+
+These steps ensure that any invalid certificates are discarded.
+
+![](../assets/usecase3.png)
+
 
 ## 5 · Remark
 
