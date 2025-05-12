@@ -17,7 +17,7 @@ Canoe is under active development and currently supports two zkVM back‑ends: [
 
 ## 2 · EigenDA V2 (“Blazar”) Upgrade  
 
-In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer verifies it on L1. It bears the question, how to securely bridge a blob to L1
+In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Verification is thus left as the responsibility of the rollup, which can do so optimistically to save on gas costs.
 
 
 ## 3 · Implementation Details  
