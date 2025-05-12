@@ -43,7 +43,7 @@ $$ f(S, C; I) -> O $$
 
 The proof `P` is verified by a **universal zkVM verifier** already deployed on L1 (Risc0 or SP1).
 
-## 4 · Use Case
+## 4 · Use Cases
 
 ### 4.1 Blob Validity Inside a zkVM (Hokulea)
 
