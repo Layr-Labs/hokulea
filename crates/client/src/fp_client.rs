@@ -6,7 +6,6 @@ use alloy_consensus::Sealed;
 use tracing::{error, info};
 
 use hokulea_eigenda::{EigenDABlobProvider, EigenDABlobSource, EigenDADataSource};
-//use hokulea_proof::pipeline::OraclePipeline;
 
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_derive::traits::BlobProvider;
