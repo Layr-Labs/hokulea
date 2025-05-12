@@ -1,6 +1,6 @@
 # Canoe
 
-*Securing the EigenDA → Ethereum (L1) Blob Bridge*
+*Securing the EigenDA → Ethereum (L1)*
 
 ## 1 · Protocol Overview  
 
