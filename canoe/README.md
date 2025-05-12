@@ -4,13 +4,13 @@
 
 ## 1 · Protocol Overview  
 
-**Canoe** is a module that proves—on Ethereum—that a given EigenDA blob has been attested by **sufficient stake across every quorum** of EigenDA operators.
+**Canoe** is a framework that proves—on Ethereum—that a given EigenDA blob has been attested by **sufficient stake across every quorum** of EigenDA operators.
 
 | Part | Role |
 |-------|------|
 | **Smart Contract CertVerifier** | Confirms that the total attested stake for *each* quorum meets or exceeds the required threshold. |
-| **Off‑chain Validity‑Proof Generator** | Invokes the Solidity verifier off‑chain and produces a zk‑proof attesting to its output. |
-| **On‑chain zk‑Proof Verifier** | Checks the zk‑proof and the metadata contained in the EigenDA certificate. |
+| **Off‑chain Validity‑Proof Generator** | Invokes the Solidity verifier off‑chain and produces a validity‑proof attesting to its output. |
+| **On‑chain Validity‑Proof Verifier** | Checks the validity‑proof and the metadata contained in the EigenDA certificate. |
 
 Canoe is under active development and currently supports two zkVM back‑ends: [RISC Zero Steel](https://risczero.com/steel) and [Succinct SP1 Contract Call](https://github.com/succinctlabs/sp1-contract-call).
 
@@ -23,7 +23,7 @@ In EigenDA V2 the certificate (DA cert) is returned to the requester immedia
 ## 3 · Implementation Details  
 
 ### 3.1 Solidity Verifier
-Building on the V1 contract, the [certificate verifier](https://github.com/Layr-Labs/eigenda/blob/ee092f345dfbc37fce3c02f99a756ff446c5864a/contracts/src/periphery/cert/v2/EigenDACertVerifierV2.sol#L120) now replaces Merkle‑root checks with **BLS aggregate‑signature verification** across all quorums. But its gas cost scales linearly with the number of non‑signers. We can model the smart contract logic as
+Building on the V1 contract, the new [certificate verifier](https://github.com/Layr-Labs/eigenda/blob/ee092f345dfbc37fce3c02f99a756ff446c5864a/contracts/src/periphery/cert/v2/EigenDACertVerifierV2.sol#L120) can be modeled as
 
 $$ f(S, C; I) -> O $$
 
@@ -33,7 +33,7 @@ $$ f(S, C; I) -> O $$
 | `S` | Ethereum state at a specific block (hash & number) |
 | `C` | Call data (= EigenDA certificate) |
 | `O` | Boolean validity result |
-| `I` | L1 Chain ID |
+| `I` | L1 Chain Spec |
 
 ### 3.2 Validity‑Proof Generation (Off‑chain)  
 
@@ -41,7 +41,7 @@ $$ f(S, C; I) -> O $$
 2. It invokes `f` with certificate `C` l1 chain `I` and records output `O`.  
 3. A zkVM produces proof `P` attesting that the tuple `(f,S,C,O,I)` is correct.
 
-The proof `P` is verified by a **universal zkVM verifier** already deployed on L1 (Risc0 or SP1).
+The proof `P` is verified by a **Validity‑Proof Verifier** already deployed on L1 (Risc0 or SP1).
 
 ## 4 · Use Cases
 
