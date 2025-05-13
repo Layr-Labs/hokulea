@@ -45,8 +45,7 @@ pub fn main() {
     };
 
     let call = ContractInput::new_call(verifier_address, Address::default(), mock_call);
-    let public_vals = executor.execute(call).unwrap();
-    let output = public_vals.contractOutput.to_vec();
+    let public_vals = executor.execute(call).unwrap();    
 
     let returns = Bool::abi_decode(&public_vals.contractOutput)
         .expect("deserialize NonSignerStakesAndSignature");
@@ -81,7 +80,7 @@ pub fn main() {
 
     let journal = Journal {
         contractAddress: verifier_address,
-        input: output.into(),
+        input: buffer.into(),
         blockhash: public_vals.blockHash,
         output: returns,
     };
