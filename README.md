@@ -53,4 +53,4 @@ just generate-deps-graphviz
 ```
 
 
-![](./hokulea.jpeg)
+![](./assets/hokulea.jpeg)

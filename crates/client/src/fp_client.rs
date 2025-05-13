@@ -5,8 +5,7 @@ use core::fmt::Debug;
 use alloy_consensus::Sealed;
 use tracing::{error, info};
 
-use hokulea_eigenda::EigenDABlobProvider;
-use hokulea_proof::pipeline::OraclePipeline;
+use hokulea_eigenda::{EigenDABlobProvider, EigenDABlobSource, EigenDADataSource};
 
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_derive::traits::BlobProvider;
@@ -14,9 +13,11 @@ use kona_driver::Driver;
 use kona_executor::TrieDBProvider;
 use kona_preimage::CommsClient;
 use kona_proof::{
-    executor::KonaExecutor, l1::OracleL1ChainProvider, l2::OracleL2ChainProvider,
-    sync::new_pipeline_cursor, BootInfo, FlushableCache,
+    executor::KonaExecutor, l1::OracleL1ChainProvider, l1::OraclePipeline,
+    l2::OracleL2ChainProvider, sync::new_oracle_pipeline_cursor, BootInfo, FlushableCache,
 };
+
+use kona_derive::sources::EthereumDataSource;
 
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
 use op_alloy_consensus::OpTxEnvelope;
@@ -91,7 +92,7 @@ where
     // Create a new derivation driver with the given boot information and oracle.
 
     // Create a new derivation driver with the given boot information and oracle.
-    let cursor = new_pipeline_cursor(
+    let cursor = new_oracle_pipeline_cursor(
         rollup_config.as_ref(),
         safe_head,
         &mut l1_provider,
@@ -100,14 +101,17 @@ where
     .await?;
     l2_provider.set_cursor(cursor.clone());
 
+    let dap = EthereumDataSource::new_from_parts(l1_provider.clone(), beacon, &rollup_config);
+    let eigenda_blob_source = EigenDABlobSource::new(eigenda);
+    let dap = EigenDADataSource::new(dap, eigenda_blob_source);
+
     let pipeline = OraclePipeline::new(
         rollup_config.clone(),
         cursor.clone(),
         oracle.clone(),
-        beacon,
+        dap,
         l1_provider.clone(),
         l2_provider.clone(),
-        eigenda.clone(),
     )
     .await?;
 
