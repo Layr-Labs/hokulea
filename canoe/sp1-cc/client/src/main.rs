@@ -47,30 +47,9 @@ pub fn main() {
     let call = ContractInput::new_call(verifier_address, Address::default(), mock_call);
     let public_vals = executor.execute(call).unwrap();    
 
+    // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place    
     let returns = Bool::abi_decode(&public_vals.contractOutput)
         .expect("deserialize NonSignerStakesAndSignature");
-
-    // TODO(bx)
-    // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
-    // need to confirm that this is the defined behavior or find out the best way
-
-    /*
-    if output.is_empty() {
-        panic!("the output of sp1-contract-call is empty");
-    }
-
-    // convert bytes into boolean
-    if output.len() > 32 {
-        panic!("the output is too long");
-    }
-
-    let mut returns = false;
-
-
-    if U256::from_be_slice(&output) == U256::from(1u8) {
-        returns = true;
-    }
-    */
 
     let mut buffer = Vec::new();
     buffer.extend(batch_header_abi);
