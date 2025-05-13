@@ -11,7 +11,7 @@ use canoe_bindings::Journal;
 
 use tracing::info;
 
-// ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
+// TODO(bx): how to automatically update it from the ELF directly as opposed to having to manually update it
 pub const VKEYHEXSTRING: &str = "0039b09c4f5cfc58ca7cbabd5eb5997de2cfdfa336a5ced1b640084c165718fa";
 pub const ELF: &[u8] = include_bytes!("../../../../canoe/sp1-cc/elf/canoe-sp1-cc-client");
 
