@@ -101,7 +101,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
         let (_, report) = client.execute(ELF, &stdin).run().unwrap();
-        println!(
+        info!(
             "executed program with {} cycles",
             report.total_instruction_count()
         );
