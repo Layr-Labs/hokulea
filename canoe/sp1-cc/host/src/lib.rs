@@ -117,7 +117,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
             journal.blockhash, journal.output
         );
 
-        let elapsed = start.elapsed();        
+        let elapsed = start.elapsed();
         info!(action = "sp1_cc_proof_generation", status = "completed", elapsed_time = ?elapsed);
 
         Ok(proof)
@@ -126,5 +126,4 @@ impl CanoeProvider for CanoeSp1CCProvider {
     fn get_eth_rpc_url(&self) -> String {
         self.eth_rpc_url.clone()
     }
-
 }

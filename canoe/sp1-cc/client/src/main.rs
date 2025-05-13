@@ -1,8 +1,8 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use alloy_primitives::{Address, U256};
-use alloy_sol_types::SolValue;
+use alloy_primitives::{Address, Bytes};
+use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 use canoe_bindings::{
     BatchHeaderV2, BlobInclusionInfo, IEigenDACertMockVerifier, Journal,
     NonSignerStakesAndSignature,
@@ -22,34 +22,40 @@ pub fn main() {
     let signed_quorum_numbers_abi = sp1_zkvm::io::read::<Vec<u8>>();
 
     // Initialize the client executor with the state sketch.
-    // This step also validates all of the storage against the provided state root.
+    // This step also validates all of the storage against state root provided by the host
     let executor = ClientExecutor::new(&state_sketch).unwrap();
 
     // Execute the slot0 call using the client executor.
-    let batch_header =
-        BatchHeaderV2::abi_decode(&batch_header_abi).expect("deserialize BatchHeaderV2");
-    let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi)
+    let batch_header = <BatchHeaderV2 as SolType>::abi_decode(&batch_header_abi)
+        .expect("deserialize BatchHeaderV2");
+    let blob_inclusion_info = <BlobInclusionInfo as SolType>::abi_decode(&blob_inclusion_info_abi)
         .expect("deserialize BlobInclusionInfo");
     let non_signer_stakes_and_signature =
-        NonSignerStakesAndSignature::abi_decode(&non_signer_stakes_and_signature_abi)
+        <NonSignerStakesAndSignature as SolType>::abi_decode(&non_signer_stakes_and_signature_abi)
             .expect("deserialize NonSignerStakesAndSignature");
+
+    let signed_quorum_numbers = Bytes::abi_decode(&signed_quorum_numbers_abi)
+        .expect("deserialize signed_quorum_numbers_abi");
 
     let mock_call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
         batchHeader: batch_header,
         blobInclusionInfo: blob_inclusion_info.clone(),
         nonSignerStakesAndSignature: non_signer_stakes_and_signature,
-        signedQuorumNumbers: signed_quorum_numbers_abi.clone().into(),
+        signedQuorumNumbers: signed_quorum_numbers,
     };
 
-    // CertVerifier function is permissionless so anyone can call it so we can use 0x0 address
     let call = ContractInput::new_call(verifier_address, Address::default(), mock_call);
     let public_vals = executor.execute(call).unwrap();
     let output = public_vals.contractOutput.to_vec();
+
+    let returns = Bool::abi_decode(&public_vals.contractOutput)
+        .expect("deserialize NonSignerStakesAndSignature");
 
     // TODO(bx)
     // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
     // need to confirm that this is the defined behavior or find out the best way
 
+    /*
     if output.is_empty() {
         panic!("the output of sp1-contract-call is empty");
     }
@@ -60,9 +66,12 @@ pub fn main() {
     }
 
     let mut returns = false;
+
+
     if U256::from_be_slice(&output) == U256::from(1u8) {
         returns = true;
     }
+    */
 
     let mut buffer = Vec::new();
     buffer.extend(batch_header_abi);
@@ -72,7 +81,7 @@ pub fn main() {
 
     let journal = Journal {
         contractAddress: verifier_address,
-        input: buffer.into(),
+        input: output.into(),
         blockhash: public_vals.blockHash,
         output: returns,
     };

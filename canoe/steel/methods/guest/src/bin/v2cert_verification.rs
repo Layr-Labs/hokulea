@@ -15,7 +15,7 @@
 #![allow(unused_doc_comments)]
 #![no_main]
 
-use alloy_primitives::Address;
+use alloy_primitives::{Address, Bytes};
 use alloy_sol_types::SolValue;
 use risc0_steel::{
     ethereum::EthEvmInput,
@@ -40,6 +40,7 @@ fn main() {
     let batch_header = BatchHeaderV2::abi_decode(&batch_header_abi).expect("deserialize BatchHeaderV2");
     let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi).expect("deserialize BlobInclusionInfo");
     let non_signer_stakes_and_signature = NonSignerStakesAndSignature::abi_decode(&non_signer_stakes_and_signature_abi).expect("deserialize NonSignerStakesAndSignature");    
+    let signed_quorum_numbers = Bytes::abi_decode(&signed_quorum_numbers_abi).expect("deserialize NonSignerStakesAndSignature");    
 
     // Converts the input into a `EvmEnv` for execution. The `with_chain_spec` method is used
     // to specify the chain configuration. It checks that the state matches the state root in the
@@ -51,7 +52,7 @@ fn main() {
         batchHeader: batch_header,
         blobInclusionInfo: blob_inclusion_info.clone(),
         nonSignerStakesAndSignature: non_signer_stakes_and_signature,
-        signedQuorumNumbers: signed_quorum_numbers_abi.clone().into(),
+        signedQuorumNumbers: signed_quorum_numbers,
     };
 
     let mut buffer = Vec::new();
