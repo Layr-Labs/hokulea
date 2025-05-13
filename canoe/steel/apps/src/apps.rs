@@ -71,6 +71,7 @@ impl CanoeProvider for CanoeSteelProvider {
         let batch_header_abi = call.batchHeader.abi_encode();
         let non_signer_abi = call.nonSignerStakesAndSignature.abi_encode();
         let blob_inclusion_abi = call.blobInclusionInfo.abi_encode();
+        let signed_quorum_numbers_abi = call.signedQuorumNumbers.abi_encode();
 
         // Preflight the call to prepare the input that is required to execute the function in
         // the guest without RPC access. It also returns the result of the call.
@@ -91,7 +92,7 @@ impl CanoeProvider for CanoeSteelProvider {
                 .write(&batch_header_abi)?
                 .write(&non_signer_abi)?
                 .write(&blob_inclusion_abi)?
-                .write(&call.signedQuorumNumbers)?
+                .write(&signed_quorum_numbers_abi)?
                 .build()
                 .unwrap();
 
