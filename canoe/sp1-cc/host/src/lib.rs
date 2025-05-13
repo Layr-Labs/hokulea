@@ -18,9 +18,6 @@ use url::Url;
 /// The ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
-// To get vKey of ELF above
-// cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
-
 /// A canoe provider implementation with steel
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
