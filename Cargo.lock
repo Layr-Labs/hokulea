@@ -4107,7 +4107,6 @@ dependencies = [
  "sha2 0.10.9",
  "sp1-lib",
  "sp1-sdk",
- "spin 0.10.0",
  "tracing",
 ]
 
