@@ -1,41 +1,104 @@
 # Preloader
 
+The preloader serves as an example to integrate EigenDA and OP security integration via zkVM. To try it yourself
 
-This preloader example demonstrates a workflow how to securely integrate with eigenda in the zk secure integration stack, by using the preloading method.
+## Run preloader
 
-At the high level, in a zk secure integration stack, a data oracle is first generated and then passed into zkVM along with the software that verifies and consumes those data. The zk secure integration stack already has logics for all three parts. When integrating with eigenda, we adds implementation to witness(eigenda blob and metadata) generation, eigenda blob consumption logics and eigenda blob verificaton.
+User must specify the name where to store the temporary .env file, which is always stored at the directory root
+```bash
+cd example/preloader
+```
 
-Notably, this implies that in op-succinct and kailua stack integration, we handle
-- witness generation by the Witgen client
-- verification by PreloadedEigenDABlobProvider as a part of guest code to be run inside zkVM
-- logics of consume eigenda blob into op channel frame by initialization of derivation pipeline with hokulea
+NoOp Preloader, that does not generate zk proof for eigenda certificate, used for fast testing. 
+```bash
+just run-preloader .devnet.env
+```
 
-This preloader example demonstrate the witness generation and witness verification
+### Run preloader with smart contract and Canoe
 
-## Witgen client
+Steel Preloader, generate zk proof with steel backend against a smart contract call. More see [Canoe](../../canoe) By default, a mock steel proof (which is cheap to generate) is created and verified by the guest. First we need deploy the contract
 
-Witgen client is a variant of the default fault proof client (that runs derivation pipeline and execution to check if output state matches). Running the default fault proof client produce a data oracle in the form of Key-Value map where the keys are 32 bytes hash digests. A witgen client is a wrapper around the default client, that not only returns the oracle, but also an organized data structure called EigenDABlobWitnessData.
+```bash
+just deploy-mock-contract
+```
 
-### EigenDABlobWitnessData
+Then copy the deployed contract address <MOCK_ADDRESS> to a rust constant called <VERIFIER_ADDRESS> under the filepath crates/proof/src/canoe_verifier/mod.rs. Then let' run against steel
 
-EigenDABlobWitnessData contains the EigenDA certificates (aka eigenda cert). The certificate is stored in an append only vector. For each cert, there is a corresponding eigenda blob, a kzg proof (which shows the kzg commitment relation between the blob and the eigenda cert) and a cert validity zk proof that attests the validity of the eigenda cert. 
+```bash
+just run-preloader .devnet.env steel
+```
+Compiling rust code to zkVM bytecode requires installing Risc0 toolchain, see [rzup](https://dev.risczero.com/api/zkvm/install).
 
-Inside EigenDABlobWitnessData, only the eigenda cert comes directly from derivation pipeline, the rest of data structure
+Sp1 contract call Preloader, generate zk proof with sp1-cc backend, but in mock mode, no actual proof generated
+```bash
+just run-preloader .devnet.env sp1-cc
+```
+Compiling rust code to zkVM bytecode requires installing Sp1 toolchain, see [sp1up](https://docs.succinct.xyz/docs/sp1/getting-started/install).
+
+
+To turn off the mock mode for creating a Steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
+
+```bash
+# Before running the client, it will download the needed g1.point SRS file
+# and the rollup.json config file.
+just run-preloader .devnet.env steel false
+```
+# Workflow and Data Structures
+
+At the high level, a zkVM secure integration uses hokulea+kona derivation twice. At the first run, it creates a data structure called `EigenDABlobWitnessData` and `oracle` for kona. In the second run, it feeds `EigenDABlobWitnessData` and `oracle` as a data inputs to the hokulea+kona derivation pipeline; but this time the execution of the derivation on the data is executed in the context of zkVM.
+
+<div align="center">
+    <img src="../../assets/zkVM-integration-basic-workflow.png"/>
+</div>
+
+## Witness Generation
+
+Let's look the first run in detail. We mentioned briefly about hokulea+kona derivation, it converts information from L1 and blob from EigenDA into transactions.
+In the diagram below, we represent this logic with the name fp_client (fault proof client). A nice feature about kona framework is that kona accepts all 
+types of data source implementations as long as they satisfy the data source trait, in our case, `EigenDABlobProvider`. For the witness generation, we are 
+interested in learning all `N` the DA certs derived from L1, and `N` blobs for each cert, an `N` kzg proof attesting blob is binding to kzg commitment within the cert.
+
+Hokulea provides an implementation called `OracleEigenDAWitnessProvider` that is not only used by the fp_client, it can also returns an organized data structure
+containing all the necessary information above. Running the run_fp_client produces two data structure: an key-value oracle containing all the preimage required by kona, and `EigenDABlobWitnessData` containing most of information required by EigenDA data derivation.
+
+<div align="center">
+    <img src="../../assets/zkVM-witness-generation.png"/>
+</div>
+
+The next step after the first run is to gather the DA cert validity proof, whose most important member is the canoe proof. See the canoe [crate](../../canoe/) 
+for more information about proof generation. As in current implementation, there is one canoe proof for each DA cert. 
+
+In the first pass, the fault proof client is allowed to connect to a host with internet access, capable of fetching necessary data with RPC.
+
+## EigenDABlobWitnessData
+
+`EigenDABlobWitnessData`
+- eigenda cert : derived from the derivation pipeline
 - eigenda blob : comes from hokulea host which downloads from eigenda-proxy.
 - kzg proof : deterministically generated based on the eigenda blob above.
-- cert validity zk proof : produced by running zk tools (steel or sp1-contrat-call) which prove the eigenda cert is valid in the sense it has sufficient stake attesting it on all quorums.
-
-A host that runs the witgen client is responsible for populating all the data within the EigenDABlobWitnessData
+- cert validity proof : contains a canoe proof and necessary information to verify the canoe proof. More see [canoe](../../canoe/).
 
 ## PreloadedEigenDABlobProvider
 
-A PreloadedEigenDABlobProvider is a data structure that implements the EigenDABlobProvider trait. It can be used as the eigenda data source for the derivation. The internal of the PreloadedEigenDABlobProvider is a vector of eigenda blobs. Whenever called by the upstream to get a blob, the internal structure pops out and returns the next blob.
+A PreloadedEigenDABlobProvider is a data structure that implements the `EigenDABlobProvider` trait. It can be used by kona as the eigenda data source for the derivation. 
+The internal of the PreloadedEigenDABlobProvider is a queue of eigenda blobs. Whenever it is called it pops out an eigenda blob. This replaces the role of the host
+mentioned in the first pass. 
 
-The PreloadedEigenDABlobProvider is converted from the EigenDABlobWitnessData which is an artifact from running Witgen client. During the conversion, we checks
-- the kzg proof is indeed correct
-- the zk proof is correct
+It is crucial to make sure all the blob in the PreloadedEigenDABlobProvider is correct. i.e 
+- eigenda cert itself is valid, verified by cert validity proof
+- kzg commitment within the eigenda cert is binding to the eigenda blob
 
-Both checks above must be verified within the zkVM, to present a malicious host from tempering the data.
+<div align="center">
+    <img src="../../assets/zkVM-executing-derivation.png"/>
+</div>
+
+Hokulea defines a transformation function to convert `EigenDABlobWitnessData` into `PreloadedEigenDABlobProvider`, and the transformation contains the two all the 
+necessary checks. It is crucial that the transformation itself is executed within the zkVM, such that there is a validity proof guarantee the eigenda blob are securely
+valid and binding to the kzg commitment.
+
+## Recency Check
+
+(ToDo)
 
 ## Acknowledge
 

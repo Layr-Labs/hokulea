@@ -1,0 +1,54 @@
+set fallback := true
+
+# default recipe to display help information
+default:
+  @just --list
+
+run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet' chain_id='2151908' verbosity='':
+  #!/usr/bin/env bash
+  set -o errexit -o nounset -o pipefail
+
+  L2_BLOCK_NUMBER=$(just --justfile ../../justfile get-l2-finalize-block-number {{enclave}} {{chain_id}})  
+  RUN_ENV_FILE="{{env_file}}.run"
+
+  # move to project root
+  cd $(git rev-parse --show-toplevel)
+  
+  just --justfile justfile save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
+  set a-
+    source {{env_file}}
+    source $RUN_ENV_FILE
+  set a+
+
+  # Move to the workspace root
+  rm -rf ./data
+  mkdir ./data
+
+  if [ "{{mock_mode}}" == 'true' ]; then
+    set -a
+      RISC0_DEV_MODE=true
+      SP1_PROVER="mock"
+      OP_SUCCINCT_MOCK="true"
+    set +a
+  fi
+
+  FEATURES_FLAGS=""
+  if [ "{{features}}" != 'empty' ]; then
+    FEATURES_FLAGS="--features {{features}}"
+  fi
+
+  echo "Running host program with native client program..."
+  cargo r --bin hokulea-example-preloader $FEATURES_FLAGS -- \
+    --l1-head $L1_HEAD \
+    --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
+    --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
+    --agreed-l2-output-root $AGREED_L2_OUTPUT_ROOT \
+    --claimed-l2-block-number $CLAIMED_L2_BLOCK_NUMBER \
+    --l1-node-address $L1_RPC \
+    --l1-beacon-address $L1_BEACON_RPC \
+    --l2-node-address $L2_RPC \
+    --eigenda-proxy-address $EIGENDA_PROXY_RPC \
+    --native \
+    --data-dir ./data \
+    --rollup-config-path $(realpath $ROLLUP_CONFIG_PATH) \
+    {{verbosity}}

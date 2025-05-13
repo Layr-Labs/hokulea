@@ -40,7 +40,7 @@ fn main() {
     let batch_header = BatchHeaderV2::abi_decode(&batch_header_abi).expect("deserialize BatchHeaderV2");
     let blob_inclusion_info = BlobInclusionInfo::abi_decode(&blob_inclusion_info_abi).expect("deserialize BlobInclusionInfo");
     let non_signer_stakes_and_signature = NonSignerStakesAndSignature::abi_decode(&non_signer_stakes_and_signature_abi).expect("deserialize NonSignerStakesAndSignature");    
-    let signed_quorum_numbers = Bytes::abi_decode(&signed_quorum_numbers_abi).expect("deserialize NonSignerStakesAndSignature");    
+    let signed_quorum_numbers = Bytes::abi_decode(&signed_quorum_numbers_abi).expect("deserialize signed_quorum_numbers");    
 
     // Converts the input into a `EvmEnv` for execution. The `with_chain_spec` method is used
     // to specify the chain configuration. It checks that the state matches the state root in the

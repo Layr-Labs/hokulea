@@ -2,10 +2,6 @@
 
 Hokulea is a library to provide the altda providers for a derivation pipeline built with [kona](https://github.com/anton-rs/kona) to understand eigenDA blobs, following the [kona book](https://op-rs.github.io/kona/protocol/derive/providers.html#implementing-a-custom-data-availability-provider) recommendation (also see this [comment](https://github.com/anton-rs/kona/pull/862#issuecomment-2515038089)).
 
-Below is the dependency graph between hokulea and kona crates:
-<!-- Run `just generate-deps-graphviz` to regenerate/update this diagram -->
-![](./generated/dependencies_graph.png)
-
 ## Dependencies
 
 We use mise to track and manage dependencies. Please first [install mise](https://mise.jdx.dev/getting-started.html), and then run `mise install` to install the dependencies.
@@ -25,7 +21,8 @@ just run-kurtosis-devnet
 
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
-# and the rollup.json config file.
+# and the rollup.json config file. Temporary env variables are stored at
+# .devnet.env and .devnet.env.run
 just run-client-against-devnet 'native'
 ```
 
@@ -42,33 +39,18 @@ Then you can run
 just run-client-against-devnet 'asterisc'
 ```
 
-### Running the example preloaded client
-More information please see [here](./example/preloader/README.md)
-
+### Running the example preloaded client with Steel or Sp1-contract-call
 ```bash
-# Before running the client, it will download the needed g1.point SRS file
-# and the rollup.json config file.
-just run-client-against-devnet 'native' 'hokulea-example-preloader'
+cd example/preloader
+just run-preloader .devnet.env
 ```
 
-### Running the example preloaded client with steel
-More information please see [here](./example/preloader/README.md)
+More information at [./example/preloader/README.md](./example/preloader/README.md)
 
-By default, a mock steel proof (which is cheap to generate) is created and verified by the guest.
-
-
+### If you are interested in looking at the dependancy graph of crates
 ```bash
-# Before running the client, it will download the needed g1.point SRS file
-# and the rollup.json config file.
-just run-client-against-devnet 'native' 'hokulea-example-preloader' 'steel'
+just generate-deps-graphviz
 ```
 
-To turn off the mock mode for creating a steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
-
-```bash
-# Before running the client, it will download the needed g1.point SRS file
-# and the rollup.json config file.
-just run-client-against-devnet 'native' 'hokulea-example-preloader' 'steel' 'false'
-```
 
 ![](./hokulea.jpeg)
