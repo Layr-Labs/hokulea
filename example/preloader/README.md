@@ -45,12 +45,10 @@ just run-preloader .devnet.env steel false
 ```
 # Workflow and Data Structures
 
-At the high level, a zkVM secure integration uses hokulea+kona derivation twice. At the first run, it creates a data structure called `EigenDABlobWitnessData`.
-In the second run, it feeds `EigenDABlobWitnessData` as a data inputs to the hokulea+kona derivation pipeline; but this time the execution of the derivation on
-the data is executed in the context of zkVM.
+At the high level, a zkVM secure integration uses hokulea+kona derivation twice. At the first run, it creates a data structure called `EigenDABlobWitnessData` and `oracle` for kona. In the second run, it feeds `EigenDABlobWitnessData` and `oracle` as a data inputs to the hokulea+kona derivation pipeline; but this time the execution of the derivation on the data is executed in the context of zkVM.
 
 <div align="center">
-    <img src="../../assets/zkVM-integration-basic-workflow.png" width="50%"/>
+    <img src="../../assets/zkVM-integration-basic-workflow.png"/>
 </div>
 
 ## Witness Generation
@@ -64,7 +62,7 @@ Hokulea provides an implementation called `OracleEigenDAWitnessProvider` that is
 containing all the necessary information above. Running the run_fp_client produces two data structure: an key-value oracle containing all the preimage required by kona, and `EigenDABlobWitnessData` containing most of information required by EigenDA data derivation.
 
 <div align="center">
-    <img src="../../assets/zkVM-witness-generation.png" width="50%"/>
+    <img src="../../assets/zkVM-witness-generation.png"/>
 </div>
 
 The next step after the first run is to gather the DA cert validity proof, whose most important member is the canoe proof. See the canoe [crate](../../canoe/) 
@@ -91,7 +89,7 @@ It is crucial to make sure all the blob in the PreloadedEigenDABlobProvider is c
 - kzg commitment within the eigenda cert is binding to the eigenda blob
 
 <div align="center">
-    <img src="../../assets/zkVM-executing-derivation.png" width="50%"/>
+    <img src="../../assets/zkVM-executing-derivation.png"/>
 </div>
 
 Hokulea defines a transformation function to convert `EigenDABlobWitnessData` into `PreloadedEigenDABlobProvider`, and the transformation contains the two all the 
