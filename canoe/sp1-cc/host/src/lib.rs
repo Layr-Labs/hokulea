@@ -126,7 +126,4 @@ impl CanoeProvider for CanoeSp1CCProvider {
         Ok(proof)
     }
 
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
-    }
 }
