@@ -16,7 +16,6 @@ use tracing::info;
 use url::Url;
 
 /// The ELF we want to execute inside the zkVM.
-//pub const ELF: &[u8] = include_elf!("canoe-sp1-cc-client");
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 // To get vKey of ELF above
@@ -75,7 +74,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
-        let input = host_executor
+        let evm_state_sketch = host_executor
             .finalize()
             .await
             .map_err(|e| anyhow::anyhow!(e.to_string()))
@@ -87,7 +86,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
         let signed_quorum_numbers = call.signedQuorumNumbers.abi_encode();
 
         // Feed the sketch into the client.
-        let input_bytes = bincode::serialize(&input)?;
+        let input_bytes = bincode::serialize(&evm_state_sketch)?;
         let mut stdin = SP1Stdin::new();
         stdin.write(&input_bytes);
         stdin.write(&VERIFIER_ADDRESS);
@@ -108,9 +107,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         // Generate the proof for the given program and input.
         let (pk, _vk) = client.setup(ELF);
-        let proof = client.prove(&pk, &stdin).plonk().run().unwrap();
-
-        //let journal_bytes = ;
+        let proof = client.prove(&pk, &stdin).compressed().run().unwrap();
 
         let journal =
             Journal::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
@@ -120,10 +117,14 @@ impl CanoeProvider for CanoeSp1CCProvider {
             journal.blockhash, journal.output
         );
 
-        let elapsed = start.elapsed();
-        info!("finish a sp1-cc proof generation spent {:?}", elapsed);
+        let elapsed = start.elapsed();        
+        info!(action = "sp1_cc_proof_generation", status = "completed", elapsed_time = ?elapsed);
 
         Ok(proof)
+    }
+
+    fn get_eth_rpc_url(&self) -> String {
+        self.eth_rpc_url.clone()
     }
 
 }

@@ -9,7 +9,7 @@ sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-c
 # alloy
 alloy-primitives = { workspace = true, features = ["serde"] }
 alloy-sol-types.workspace = true
-canoe-bindings = { path = "../../bindings" }
+canoe-bindings = { workspace = true }
 
 # sp1
 sp1-zkvm = { workspace = true, features = ["default"] }

@@ -41,6 +41,7 @@ pub fn main() {
         signedQuorumNumbers: signed_quorum_numbers_abi.clone().into(),
     };
 
+    // CertVerifier function is permissionless so anyone can call it so we can use 0x0 address
     let call = ContractInput::new_call(verifier_address, Address::default(), mock_call);
     let public_vals = executor.execute(call).unwrap();
     let output = public_vals.contractOutput.to_vec();
@@ -71,7 +72,7 @@ pub fn main() {
 
     let journal = Journal {
         contractAddress: verifier_address,
-        input: output.into(),
+        input: buffer.into(),
         blockhash: public_vals.blockHash,
         output: returns,
     };
