@@ -41,6 +41,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .await
             .map_err(OracleProviderError::Preimage)?;
 
+        info!(target: "eigenda-blobsource", "altda_commitment {:?}", altda_commitment);
+
         let blob_length_fe: u64 = match &altda_commitment.versioned_cert {
             EigenDAVersionedCert::V1(c) => {
                 info!(target: "eigenda-blobsource", "blob version: V1");

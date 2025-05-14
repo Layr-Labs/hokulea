@@ -2,9 +2,9 @@ target/
 data/
 optimism/
 tags
-rollup.json
+*rollup.json
 resources/
 meta.json
 state.bin.gz
 .*.env
-.*.env.run
+.run.*.env

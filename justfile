@@ -88,7 +88,7 @@ get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' verbosity='' env_file='.devnet.env' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
   if [ -z "{{block_number}}" ]; then
     L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}})
@@ -107,7 +107,7 @@ run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' ver
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-sepolia native_or_asterisc='native' env_file='.sepolia.env' rollup_config_path='sepolia.rollup.json' verbosity='' block_number='': (download-srs)
+run-client-against-sepolia native_or_asterisc='native' verbosity='' env_file='.sepolia.env' rollup_config_path='sepolia.rollup.json' block_number='': (download-srs)
   #!/usr/bin/env bash
   RUN_ENV_FILE=".run{{env_file}}"
 
