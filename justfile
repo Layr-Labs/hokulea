@@ -107,14 +107,14 @@ run-client-against-devnet native_or_asterisc='native' verbosity='' env_file='.de
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-sepolia native_or_asterisc='native' verbosity='' env_file='.sepolia.env' rollup_config_path='sepolia.rollup.json' block_number='': (download-srs)
+run-client-against-sepolia native_or_asterisc='native' verbosity='' env_file='.sepolia.env' block_number='': (download-srs)
   #!/usr/bin/env bash
   RUN_ENV_FILE=".run{{env_file}}"
-
+  
   set a-
     source {{env_file}}
   set a+
-
+  
   L2_BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
 
   just save-run-env $RUN_ENV_FILE $L2_BLOCK_NUMBER $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC
