@@ -9,6 +9,3 @@ anyhow.workspace = true
 serde.workspace = true
 async-trait.workspace = true
 hokulea-proof.workspace = true
-
-[features]
-default = []

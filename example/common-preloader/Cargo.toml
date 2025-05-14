@@ -26,6 +26,3 @@ alloy-rlp.workspace = true
 alloy-evm.workspace = true
 op-revm.workspace = true
 op-alloy-consensus.workspace = true
-
-[features]
-default = []
