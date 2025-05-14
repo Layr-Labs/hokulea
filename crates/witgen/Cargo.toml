@@ -15,3 +15,6 @@ eigenda-v2-struct.workspace = true
 rust-kzg-bn254-primitives.workspace = true
 
 async-trait.workspace = true
+canoe-provider  = { workspace = true }
+
+serde_json.workspace = true

@@ -3,8 +3,7 @@ resolver = "2"
 members = [
     "bin/*",
     "crates/*",
-    "example/preloader",
-    "example/common-preloader",
+    "example/preloader",    
     "canoe/bindings",
     "canoe/provider",
     "canoe/steel/apps",
@@ -46,6 +45,7 @@ hokulea-eigenda = { path = "crates/eigenda", version = "0.1.0", default-features
 hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = false }
 hokulea-compute-proof = { path = "crates/compute-proof", version = "0.1.0", default-features = false }
 hokulea-witgen = { path = "crates/witgen", version = "0.1.0", default-features = false }
+hokulea-zkvm-verification = { path = "crates/zkvm-verification", version = "0.1.0", default-features = false }
 
 # EigenDA v2 struct
 # TODO: this should be moved elsewhere, probably to https://github.com/Layr-Labs/eigenda-rs

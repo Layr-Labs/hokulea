@@ -7,8 +7,9 @@ edition = "2021"
 [dependencies]
 hokulea-proof.workspace = true
 hokulea-host-bin.workspace = true
-
-hokulea-example-common-preloader = { path = "../common-preloader" }
+hokulea-witgen.workspace = true
+hokulea-zkvm-verification.workspace = true
+hokulea-client.workspace = true
 
 # General
 anyhow.workspace = true
@@ -17,6 +18,16 @@ clap = { workspace = true, features = ["derive", "env"] }
 cfg-if = { workspace = true }
 kona-client.workspace = true
 kona-preimage.workspace = true
+kona-proof.workspace = true
+
+
+alloy-consensus.workspace = true
+alloy-rlp.workspace = true
+
+# Execution
+alloy-evm.workspace = true
+op-revm.workspace = true
+op-alloy-consensus.workspace = true
 
 canoe-provider  = { workspace = true }
 canoe-steel-apps = { workspace = true, optional = true }

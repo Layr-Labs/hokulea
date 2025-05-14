@@ -1,0 +1,26 @@
+[package]
+name = "hokulea-zkvm-verification"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hokulea-proof.workspace = true
+hokulea-client.workspace = true
+
+# General
+tracing.workspace = true
+
+kona-client.workspace = true
+kona-preimage.workspace = true
+kona-proof.workspace = true
+
+alloy-consensus.workspace = true
+alloy-rlp.workspace = true
+
+# Execution
+alloy-evm.workspace = true
+op-revm.workspace = true
+op-alloy-consensus.workspace = true
+
+[features]
+default = []
