@@ -97,7 +97,7 @@ run-client-against-devnet native_or_asterisc='native' verbosity='' env_file='.de
   fi
 
   RUN_ENV_FILE=".run{{env_file}}"
-  just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
+  just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER {{rollup_config_path}}
 
   set -x
   # note we don't need ROLLUP_NODE_RPC

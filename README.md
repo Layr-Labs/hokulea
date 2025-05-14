@@ -22,7 +22,7 @@ just run-kurtosis-devnet
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file. Temporary env variables are stored at
-# .devnet.env and .devnet.env.run
+# .devnet.env and .run.devnet.env
 just run-client-against-devnet 'native'
 ```
 
@@ -61,7 +61,7 @@ You will need to run an instance of [eigenda-proxy](https://github.com/Layr-Labs
 cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > sepolia.rollup.json
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file. Temporary env variables are stored at
-# .devnet.env and .devnet.env.run
+# .sepolia.env and .run.sepolia.env
 just run-client-against-sepolia 'native'
 ```
 
