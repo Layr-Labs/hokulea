@@ -88,7 +88,7 @@ get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' features='' mock_mode='' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' verbosity='' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
   #!/usr/bin/env bash
   if [ -z "{{block_number}}" ]; then
     L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}})
@@ -98,6 +98,26 @@ run-client-against-devnet native_or_asterisc='native' env_file='.devnet.env' fea
 
   RUN_ENV_FILE=".run{{env_file}}"
   just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER
+
+  set -x
+  # note we don't need ROLLUP_NODE_RPC
+  just run-client {{env_file}} $RUN_ENV_FILE \
+    {{native_or_asterisc}} {{verbosity}}
+
+
+# Run the client program natively with the host program attached, against the op-devnet.
+[group('local-env')]
+run-client-against-sepolia native_or_asterisc='native' env_file='.sepolia.env' rollup_config_path='sepolia.rollup.json' verbosity='' block_number='': (download-srs)
+  #!/usr/bin/env bash
+  RUN_ENV_FILE=".run{{env_file}}"
+
+  set a-
+    source {{env_file}}
+  set a+
+
+  L2_BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
+
+  just save-run-env $RUN_ENV_FILE $L2_BLOCK_NUMBER $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC
 
   set -x
   # note we don't need ROLLUP_NODE_RPC
@@ -208,7 +228,7 @@ save-all-env env_file run_env_file block_number rollup_config_path='rollup.json'
   set a-
     source {{env_file}}
   set a+
-  just save-run-env {{run_env_file}} {{block_number}} $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC $EIGENDA_PROXY_RPC
+  just save-run-env {{run_env_file}} {{block_number}} $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC
   
 
 # save rpc variable in to .devnet.env
@@ -223,8 +243,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
   ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
-  ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
-  CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--rollup-config-path $(realpath {{rollup_config_path}})"
+  ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"    
 
   echo "L1_RPC=$L1_RPC" > {{env_file}}
   echo "L1_BEACON_RPC=$L1_BEACON_RPC" >> {{env_file}}
@@ -243,7 +262,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
 ## L2  =============================================================== ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
 [group('local-env')]
-save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc eigenda_proxy_rpc:  
+save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc:  
   #!/usr/bin/env bash
   L2_CHAIN_ID=$(cast chain-id --rpc-url {{l2_rpc}})
 
