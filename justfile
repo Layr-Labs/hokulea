@@ -156,7 +156,7 @@ lint-docs:
 alias h := hack
 [group('style')]
 hack:
-  cargo hack check --feature-powerset --no-dev-deps
+  cargo hack check --feature-powerset --no-dev-deps --mutually-exclusive-features steel,sp1-cc
 
 # Fixes the formatting of the workspace
 alias f := fmt-native-fix
