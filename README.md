@@ -54,11 +54,11 @@ just generate-deps-graphviz
 
 ## Run Against Sepolia
 
-You will need to run an instance of [eigenda-proxy](https://github.com/Layr-Labs/eigenda-proxy) with V2 support.
-
-Then populate the `.sepolia.env` file. See a template at `.example.env`.
+You will need to run an instance of [eigenda-proxy](https://github.com/Layr-Labs/eigenda-proxy) with V2 support. Then populate the `.sepolia.env` file, see a template at `.example.env`.
 
 ```bash
+# To download a `sepolia.rollup.json` from a rollup consensus node, you can use the command
+cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > sepolia.rollup.json
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file. Temporary env variables are stored at
 # .devnet.env and .devnet.env.run
