@@ -16,6 +16,8 @@ anyhow.workspace = true
 tokio = { workspace = true, features = ["full"] }
 clap = { workspace = true, features = ["derive", "env"] }
 cfg-if = { workspace = true }
+tracing = { workspace = true }
+
 kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
