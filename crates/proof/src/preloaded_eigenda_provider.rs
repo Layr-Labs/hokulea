@@ -44,7 +44,7 @@ impl PreloadedEigenDABlobProvider {
         for i in 0..value.eigenda_blobs.len() {
             // check cert validity
 
-            assert!(!value.validity[i].receipt.is_empty());
+            assert!(!value.validity[i].canoe_proof.is_empty());
             canoe_verifier
                 .validate_cert_receipt(value.validity[i].clone(), value.eigenda_certs[i].clone());
 

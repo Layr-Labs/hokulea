@@ -35,12 +35,7 @@ pub struct CanoeSteelProvider {
 impl CanoeProvider for CanoeSteelProvider {
     type Receipt = risc0_zkvm::Receipt;
 
-    async fn create_cert_validity_proof(
-        &self,
-        canoe_input: CanoeInput,
-        //eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        //cert_validity: CertValidity,
-    ) -> Result<Self::Receipt> {
+    async fn create_cert_validity_proof(&self, canoe_input: CanoeInput) -> Result<Self::Receipt> {
         info!(
             "begin to generate a steel proof invoked at l1 bn {}",
             canoe_input.l1_head_block_number
@@ -85,7 +80,9 @@ impl CanoeProvider for CanoeSteelProvider {
         let mut contract = Contract::preflight(VERIFIER_ADDRESS, &mut env);
 
         let returns = contract.call_builder(&call).call().await?;
-        assert!(canoe_input.claimed_validity == returns);
+        if canoe_input.claimed_validity != returns {
+            panic!("in the preflight part, zkvm arrives to a different answer than claime. Something consistent in the view of eigenda-proxy and zkVM");
+        }
 
         // Finally, construct the input from the environment.
         let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> =

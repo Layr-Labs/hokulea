@@ -16,6 +16,8 @@ use alloc::sync::Arc;
 // The function overwrites information from bootInfo into EigenDABlobWitnessData, because information inside
 // bootInfo is secured. It uses all the secure information to verify against the canoe proof to ensure the
 // validity of the cert. Then it checks the consistency between kzg commitment from the cert and the blob.
+// The function takes an oracle at whole, and assume what is inside the oracle will be or already been verified
+// by kona or upstream secure integration
 #[allow(clippy::type_complexity)]
 pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,

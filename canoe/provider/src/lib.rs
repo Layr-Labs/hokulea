@@ -6,11 +6,14 @@ use serde::{Deserialize, Serialize};
 pub struct CanoeInput {
     /// eigenda cert
     pub eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-    /// the claim about if the cert is valid
+    /// the claim about if the cert is valid, received from the signature from OracleEigenDAProvider from the derivation pipeline
+    /// Added here only for a preventive measure, such that if in the state loading part, zkvm got a different answer than claimed
+    /// zkVM can stop early without proving anything.
     pub claimed_validity: bool,
-    /// block hash where view call anchored at, l1_head comes from kona_cfg    
+    /// block hash where canoe is anchoring cert verification view call at, l1_head comes from kona_cfg    
     pub l1_head_block_hash: B256,
-    /// block number corresponding to the hash above. This is checked against l1_head_block_hash in the zk view proof
+    /// Block number corresponding to l1_head_block_hash.
+    /// Their correspondence is checked in the zk view proof.
     pub l1_head_block_number: u64,
 }
 

@@ -1,7 +1,7 @@
 use alloy_primitives::Address;
 use alloy_provider::RootProvider;
 use alloy_rpc_types::BlockNumberOrTag;
-use alloy_sol_types::SolValue;
+use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{IEigenDACertMockVerifier, Journal};
@@ -64,7 +64,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
             signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
         };
 
-        let _returns = host_executor
+        let returns_bytes = host_executor
             .execute(ContractInput::new_call(
                 VERIFIER_ADDRESS,
                 Address::default(),
@@ -72,6 +72,14 @@ impl CanoeProvider for CanoeSp1CCProvider {
             ))
             .await
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+
+        // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
+        let returns =
+            Bool::abi_decode(&returns_bytes).expect("deserialize NonSignerStakesAndSignature");
+
+        if returns != canoe_input.claimed_validity {
+            panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something consistent in the view of eigenda-proxy and zkVM");
+        }
 
         // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
         let evm_state_sketch = host_executor
@@ -109,8 +117,8 @@ impl CanoeProvider for CanoeSp1CCProvider {
         let (pk, _vk) = client.setup(ELF);
         let proof = client.prove(&pk, &stdin).compressed().run().unwrap();
 
-        let journal =
-            Journal::abi_decode(proof.public_values.as_slice()).expect("deserialize journal");
+        let journal = <Journal as SolType>::abi_decode(proof.public_values.as_slice())
+            .expect("deserialize journal");
 
         info!(
             "sp1-cc commited: blockHash {:?} contractOutput {:?}",

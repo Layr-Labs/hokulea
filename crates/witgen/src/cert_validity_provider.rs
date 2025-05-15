@@ -2,8 +2,12 @@ use alloy_primitives::{BlockNumber, B256};
 use canoe_provider::{CanoeInput, CanoeProvider};
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 
-/// Populate canoe proof into cert validity. It is placed inside the normal crate because canoe
-/// currently assumes serde_json for serialization.
+/// Populate canoe proof into cert validity. It assumes that during the first run of derivation
+/// pipeline that eigenda_certs, eigenda_blobs and kzg_proof are already populated. The complete
+/// [EigenDABlobWitnessData] still misses cert validity field that requires a canoe proof.
+/// The goal of this function is to populate such canoe proof proving the cert is correct.
+/// It is placed inside the normal crate because canoe currently assumes serde_json for serialization.
+/// But probably a better idea is to define the trait within canoe provider and verifier.
 pub async fn populate_cert_validity_to_witness(
     witness: &mut EigenDABlobWitnessData,
     l1_head: B256,
@@ -27,6 +31,6 @@ pub async fn populate_cert_validity_to_witness(
             .expect("must be able generate a canoe zk proof attesting eth state");
 
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        witness.validity[i].receipt = canoe_proof_bytes;
+        witness.validity[i].canoe_proof = canoe_proof_bytes;
     }
 }

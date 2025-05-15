@@ -22,7 +22,7 @@ pub struct CanoeSteelVerifier {}
 impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSteelVerifier");
-        let receipt_bytes = cert_validity.receipt.as_ref();
+        let receipt_bytes = cert_validity.canoe_proof.as_ref();
 
         let canoe_receipt: Receipt = serde_json::from_slice(receipt_bytes).expect("serde error");
         canoe_receipt
