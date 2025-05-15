@@ -2,8 +2,8 @@ use alloy_primitives::{BlockNumber, B256};
 use canoe_provider::{CanoeInput, CanoeProvider};
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 
-/// Populate canoe proof into cert validity
-/// We put it inside the library because canoe currently use serde_json for serialization for now
+/// Populate canoe proof into cert validity. It is placed inside the normal crate because canoe
+/// currently assumes serde_json for serialization.
 pub async fn populate_cert_validity_to_witness(
     witness: &mut EigenDABlobWitnessData,
     l1_head: B256,

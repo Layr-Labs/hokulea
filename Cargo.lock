@@ -4042,6 +4042,7 @@ dependencies = [
  "op-alloy-consensus 0.15.4",
  "op-revm",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -4115,15 +4116,10 @@ dependencies = [
 name = "hokulea-zkvm-verification"
 version = "0.1.0"
 dependencies = [
- "alloy-evm 0.6.0",
- "hokulea-client",
  "hokulea-proof",
  "kona-client",
  "kona-preimage",
  "kona-proof",
- "op-alloy-consensus 0.15.4",
- "op-revm",
- "tracing",
 ]
 
 [[package]]

@@ -5,16 +5,6 @@ edition = "2021"
 
 [dependencies]
 hokulea-proof.workspace = true
-hokulea-client.workspace = true
-
-# General
-tracing.workspace = true
-
 kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
-
-# Execution
-alloy-evm.workspace = true
-op-revm.workspace = true
-op-alloy-consensus.workspace = true
