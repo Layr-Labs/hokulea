@@ -16,6 +16,4 @@ pub struct CertValidity {
     pub receipt: Vec<u8>,
     /// block hash where view call anchored at, l1_head comes from kona_cfg    
     pub l1_head_block_hash: B256,
-    /// block number corresponding to the hash above. This is checked against l1_head_block_hash in the zk view proof
-    pub l1_head_block_number: u64,
 }

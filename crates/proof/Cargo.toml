@@ -41,6 +41,5 @@ sha2 = { workspace = true, optional = true }
 
 
 [features]
-default = []
 steel = ["canoe-steel-methods", "risc0-zkvm", "canoe-bindings"]
 sp1-cc = ["sp1-sdk", "canoe-bindings", "sha2", "sp1-lib"]

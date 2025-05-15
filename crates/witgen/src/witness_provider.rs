@@ -83,6 +83,5 @@ fn populate_witness(
         claimed_validity: cert_validity,
         receipt: Vec::new(),
         l1_head_block_hash: B256::ZERO,
-        l1_head_block_number: 0,
     });
 }

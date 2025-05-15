@@ -15,7 +15,6 @@ bincode = "1.3.3"
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-eigenda-v2-struct = { workspace = true }
 canoe-provider.workspace = true
 canoe-bindings.workspace = true
 hokulea-proof.workspace = true

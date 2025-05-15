@@ -20,7 +20,6 @@ kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
 
-
 alloy-consensus.workspace = true
 alloy-rlp.workspace = true
 
@@ -34,7 +33,6 @@ canoe-steel-apps = { workspace = true, optional = true }
 canoe-sp1-cc-host = { workspace = true, optional = true }
 
 [features]
-default = []
 steel = ["canoe-steel-apps", "hokulea-proof/steel"]
 sp1-cc = ["canoe-sp1-cc-host", "hokulea-proof/sp1-cc"]
 

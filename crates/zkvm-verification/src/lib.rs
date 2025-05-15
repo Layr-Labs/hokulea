@@ -3,7 +3,7 @@
 extern crate alloc;
 use core::fmt::Debug;
 use kona_client::single::FaultProofProgramError;
-use kona_preimage::{CommsClient, PreimageKey};
+use kona_preimage::CommsClient;
 use kona_proof::{l1::OracleBlobProvider, BootInfo, FlushableCache};
 
 use hokulea_client::fp_client;
@@ -15,9 +15,7 @@ use hokulea_proof::{
 use alloc::sync::Arc;
 use tracing::info;
 
-use alloy_consensus::Header;
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
-use alloy_rlp::Decodable;
 use op_alloy_consensus::OpTxEnvelope;
 use op_revm::OpSpecId;
 
@@ -41,20 +39,11 @@ where
     let beacon = OracleBlobProvider::new(oracle.clone());
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
 
-    // get l1 block number, must come from oracle directly
-    let header_rlp = oracle
-        .get(PreimageKey::new_keccak256(*boot_info.l1_head))
-        .await
-        .expect("get l1 header based on l1 head");
-    // Decode the header RLP into a Header.
-    let l1_head_header = Header::decode(&mut header_rlp.as_slice()).expect("rlp decode l1 header");
-
     // it is critical that some field of the witness is populated inside the zkVM using the source
     // of truth within the zkVM
     let num_cert = witness.validity.len();
     for i in 0..num_cert {
         witness.validity[i].l1_head_block_hash = boot_info.l1_head;
-        witness.validity[i].l1_head_block_number = l1_head_header.number;
     }
 
     // verify all the eigenda blobs

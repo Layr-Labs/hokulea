@@ -5,8 +5,8 @@ use alloy_sol_types::SolValue;
 use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{IEigenDACertMockVerifier, Journal};
-use canoe_provider::CanoeProvider;
-use hokulea_proof::{canoe_verifier::VERIFIER_ADDRESS, cert_validity::CertValidity};
+use canoe_provider::{CanoeInput, CanoeProvider};
+use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
 use sp1_sdk::{ProverClient, SP1Stdin};
@@ -29,19 +29,15 @@ pub struct CanoeSp1CCProvider {
 impl CanoeProvider for CanoeSp1CCProvider {
     type Receipt = sp1_sdk::SP1ProofWithPublicValues;
 
-    async fn create_cert_validity_proof(
-        &self,
-        eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        cert_validity: CertValidity,
-    ) -> Result<Self::Receipt> {
+    async fn create_cert_validity_proof(&self, canoe_input: CanoeInput) -> Result<Self::Receipt> {
         info!(
             "begin to generate a sp1-cc proof invoked at l1 bn {}",
-            cert_validity.l1_head_block_number
+            canoe_input.l1_head_block_number
         );
         let start = Instant::now();
 
         // Which block transactions are executed on.
-        let block_number = BlockNumberOrTag::Number(cert_validity.l1_head_block_number);
+        let block_number = BlockNumberOrTag::Number(canoe_input.l1_head_block_number);
 
         let rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
@@ -55,10 +51,17 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         // Make the call
         let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
-            batchHeader: eigenda_cert.batch_header_v2.to_sol(),
-            blobInclusionInfo: eigenda_cert.blob_inclusion_info.clone().to_sol(),
-            nonSignerStakesAndSignature: eigenda_cert.nonsigner_stake_and_signature.to_sol(),
-            signedQuorumNumbers: eigenda_cert.signed_quorum_numbers,
+            batchHeader: canoe_input.eigenda_cert.batch_header_v2.to_sol(),
+            blobInclusionInfo: canoe_input
+                .eigenda_cert
+                .blob_inclusion_info
+                .clone()
+                .to_sol(),
+            nonSignerStakesAndSignature: canoe_input
+                .eigenda_cert
+                .nonsigner_stake_and_signature
+                .to_sol(),
+            signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
         };
 
         let _returns = host_executor

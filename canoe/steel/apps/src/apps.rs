@@ -3,7 +3,6 @@ use std::str::FromStr;
 use std::time::Instant;
 
 use canoe_bindings::IEigenDACertMockVerifier;
-use eigenda_v2_struct;
 
 use risc0_steel::{ethereum::EthEvmEnv, host::BlockNumberOrTag, Contract};
 use tokio::task;
@@ -19,10 +18,10 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use url::Url;
 
-use canoe_provider::CanoeProvider;
+use canoe_provider::{CanoeInput, CanoeProvider};
 use risc0_zkvm;
 
-use hokulea_proof::{canoe_verifier::VERIFIER_ADDRESS, cert_validity::CertValidity};
+use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
 use tracing::info;
 
 /// A canoe provider implementation with steel
@@ -38,12 +37,13 @@ impl CanoeProvider for CanoeSteelProvider {
 
     async fn create_cert_validity_proof(
         &self,
-        eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
-        cert_validity: CertValidity,
+        canoe_input: CanoeInput,
+        //eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
+        //cert_validity: CertValidity,
     ) -> Result<Self::Receipt> {
         info!(
             "begin to generate a steel proof invoked at l1 bn {}",
-            cert_validity.l1_head_block_number
+            canoe_input.l1_head_block_number
         );
         let start = Instant::now();
 
@@ -54,7 +54,7 @@ impl CanoeProvider for CanoeSteelProvider {
 
         let builder = EthEvmEnv::builder()
             .provider(provider.clone())
-            .block_number_or_tag(BlockNumberOrTag::Number(cert_validity.l1_head_block_number));
+            .block_number_or_tag(BlockNumberOrTag::Number(canoe_input.l1_head_block_number));
 
         let mut env = builder.build().await?;
         //  The `with_chain_spec` method is used to specify the chain configuration.
@@ -62,10 +62,17 @@ impl CanoeProvider for CanoeSteelProvider {
 
         // Prepare the function call
         let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
-            batchHeader: eigenda_cert.batch_header_v2.to_sol(),
-            blobInclusionInfo: eigenda_cert.blob_inclusion_info.clone().to_sol(),
-            nonSignerStakesAndSignature: eigenda_cert.nonsigner_stake_and_signature.to_sol(),
-            signedQuorumNumbers: eigenda_cert.signed_quorum_numbers,
+            batchHeader: canoe_input.eigenda_cert.batch_header_v2.to_sol(),
+            blobInclusionInfo: canoe_input
+                .eigenda_cert
+                .blob_inclusion_info
+                .clone()
+                .to_sol(),
+            nonSignerStakesAndSignature: canoe_input
+                .eigenda_cert
+                .nonsigner_stake_and_signature
+                .to_sol(),
+            signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
         };
 
         let batch_header_abi = call.batchHeader.abi_encode();
@@ -78,7 +85,7 @@ impl CanoeProvider for CanoeSteelProvider {
         let mut contract = Contract::preflight(VERIFIER_ADDRESS, &mut env);
 
         let returns = contract.call_builder(&call).call().await?;
-        assert!(cert_validity.claimed_validity == returns);
+        assert!(canoe_input.claimed_validity == returns);
 
         // Finally, construct the input from the environment.
         let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> =

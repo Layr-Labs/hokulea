@@ -8,4 +8,4 @@ eigenda-v2-struct = { workspace = true }
 anyhow.workspace = true
 serde.workspace = true
 async-trait.workspace = true
-hokulea-proof.workspace = true
+alloy-primitives.workspace = true

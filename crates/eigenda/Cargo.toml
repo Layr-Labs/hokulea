@@ -19,7 +19,6 @@ anyhow.workspace = true
 thiserror.workspace = true
 
 [features]
-default = []
 serde = [
   "kona-protocol/serde",
 ]

@@ -2332,10 +2332,10 @@ dependencies = [
 name = "canoe-provider"
 version = "0.1.0"
 dependencies = [
+ "alloy-primitives 1.1.0",
  "anyhow",
  "async-trait",
  "eigenda-v2-struct",
- "hokulea-proof",
  "serde",
 ]
 
@@ -2364,7 +2364,6 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
- "eigenda-v2-struct",
  "hokulea-proof",
  "sp1-build",
  "sp1-cc-client-executor",
@@ -2385,7 +2384,6 @@ dependencies = [
  "canoe-bindings",
  "canoe-provider",
  "canoe-steel-methods",
- "eigenda-v2-struct",
  "hokulea-proof",
  "risc0-steel",
  "risc0-zkvm",
@@ -4117,9 +4115,7 @@ dependencies = [
 name = "hokulea-zkvm-verification"
 version = "0.1.0"
 dependencies = [
- "alloy-consensus 0.15.10",
  "alloy-evm 0.6.0",
- "alloy-rlp",
  "hokulea-client",
  "hokulea-proof",
  "kona-client",

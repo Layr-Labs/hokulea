@@ -9,7 +9,7 @@ run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet
   set -o errexit -o nounset -o pipefail
 
   L2_BLOCK_NUMBER=$(just --justfile ../../justfile get-l2-finalize-block-number {{enclave}} {{chain_id}})  
-  RUN_ENV_FILE="{{env_file}}.run"
+  RUN_ENV_FILE=".run{{env_file}}"
 
   # move to project root
   cd $(git rev-parse --show-toplevel)
