@@ -41,7 +41,7 @@ just run-client-against-devnet 'asterisc'
 
 ### Risc0 and Sp1 toolchain installation
 
-Hokulea takes advantage of validity proof to attest DA certificates without making rpc call to execution client. The proof generation requires 
+[Canoe](./canoe/) takes advantage of zkvm to create a validity proof that attestes the validity of DA certificates. The proof generation requires 
 compiling rust code into a ELF file runnable within zkVM. The canoe crate in Hokulea is dedicated for such purpose.
 Canoe currently supports two backends:
 1. Steel(Risc0)
