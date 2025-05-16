@@ -16,4 +16,6 @@ pub struct CertValidity {
     pub canoe_proof: Vec<u8>,
     /// block hash where view call anchored at, l1_head comes from kona_cfg    
     pub l1_head_block_hash: B256,
+    /// l1 chain id specifying the evm rule used to evaluate the cert validity
+    pub l1_chain_id: u64,
 }

@@ -4,7 +4,11 @@ use std::time::Instant;
 
 use canoe_bindings::IEigenDACertMockVerifier;
 
-use risc0_steel::{ethereum::EthEvmEnv, host::BlockNumberOrTag, Contract};
+use risc0_steel::{
+    ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC},
+    host::BlockNumberOrTag,
+    Contract,
+};
 use tokio::task;
 
 use alloy_provider::ProviderBuilder;
@@ -52,8 +56,13 @@ impl CanoeProvider for CanoeSteelProvider {
             .block_number_or_tag(BlockNumberOrTag::Number(canoe_input.l1_head_block_number));
 
         let mut env = builder.build().await?;
-        //  The `with_chain_spec` method is used to specify the chain configuration.
-        //env = env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC);
+
+        env = match canoe_input.l1_chain_id {
+            1 => env.with_chain_spec(&ETH_MAINNET_CHAIN_SPEC),
+            11155111 => env.with_chain_spec(&ETH_SEPOLIA_CHAIN_SPEC),
+            17000 => env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC),
+            _ => env,
+        };
 
         // Prepare the function call
         let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
@@ -97,6 +106,7 @@ impl CanoeProvider for CanoeSteelProvider {
                 .write(&non_signer_abi)?
                 .write(&blob_inclusion_abi)?
                 .write(&signed_quorum_numbers_abi)?
+                .write(&canoe_input.l1_chain_id)?
                 .build()
                 .unwrap();
 

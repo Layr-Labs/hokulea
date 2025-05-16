@@ -2347,6 +2347,7 @@ dependencies = [
  "alloy-sol-types",
  "bincode",
  "canoe-bindings",
+ "reth-chainspec",
  "sp1-cc-client-executor",
  "sp1-zkvm",
 ]
@@ -8853,12 +8854,13 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=4752cebf7784f5ac78117a0e004275c6f53f0af4#4752cebf7784f5ac78117a0e004275c6f53f0af4"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=0a6b6ccc8364b180cb46ffa06c729a7b3939dfab#0a6b6ccc8364b180cb46ffa06c729a7b3939dfab"
 dependencies = [
  "alloy-consensus 0.14.0",
  "alloy-evm 0.4.0",
  "alloy-sol-types",
  "eyre",
+ "reth-chainspec",
  "reth-evm",
  "reth-evm-ethereum",
  "reth-primitives",
@@ -8875,7 +8877,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=4752cebf7784f5ac78117a0e004275c6f53f0af4#4752cebf7784f5ac78117a0e004275c6f53f0af4"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=0a6b6ccc8364b180cb46ffa06c729a7b3939dfab#0a6b6ccc8364b180cb46ffa06c729a7b3939dfab"
 dependencies = [
  "alloy-consensus 0.14.0",
  "alloy-evm 0.4.0",

@@ -48,6 +48,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                     Ok(p) => p,
                     Err(e) => panic!("cannot generate a kzg proof: {}", e),
                 };
+                // ToDo(bx) claimed_validity currently set to true, but needs to connect from response from the host
                 populate_witness(cert, self.witness.clone(), &kzg_proof, true, &blob);
                 return Ok(blob);
             }
@@ -71,7 +72,7 @@ fn populate_witness(
     cert: &EigenDAV2Cert,
     witness: Arc<Mutex<EigenDABlobWitnessData>>,
     kzg_proof: &Bytes,
-    cert_validity: bool,
+    claimed_validity: bool,
     blob: &Blob,
 ) {
     let mut witness = witness.lock().unwrap();
@@ -79,9 +80,11 @@ fn populate_witness(
     let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
     witness.kzg_proofs.push(fixed_bytes);
     witness.eigenda_certs.push(cert.clone());
+    // CertValidity struct needs to be populated later by the caller
     witness.validity.push(CertValidity {
-        claimed_validity: cert_validity,
+        claimed_validity,
         canoe_proof: Vec::new(),
         l1_head_block_hash: B256::ZERO,
+        l1_chain_id: 0,
     });
 }

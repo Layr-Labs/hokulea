@@ -33,6 +33,8 @@ where
     let num_cert = witness.validity.len();
     for i in 0..num_cert {
         witness.validity[i].l1_head_block_hash = boot_info.l1_head;
+        // force canoe verifier to use l1 chain id from rollup config, required verified or to be verified immutable oracle
+        witness.validity[i].l1_chain_id = boot_info.rollup_config.l1_chain_id;
     }
 
     Ok(PreloadedEigenDABlobProvider::from_witness(
