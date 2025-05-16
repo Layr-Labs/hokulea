@@ -42,9 +42,6 @@ impl CanoeProvider for CanoeSp1CCProvider {
         let rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
         let provider = RootProvider::new_http(rpc_url);
-        //let mut host_executor = HostExecutor::new(provider.clone(), block_number)
-        //    .await
-        //    .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         let host_executor = match Genesis::try_from(canoe_input.l1_chain_id) {
             Ok(genesis) => HostExecutor::new_with_genesis(provider.clone(), block_number, genesis)
