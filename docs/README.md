@@ -23,7 +23,7 @@ With `BlockInfo`, L1Retrieval can either retrieve data from eth calldata or Ethe
 
 The Hokulea repo defines traits, implementation and supporting crates to provide secure EigenDA integration in the kona framework.
 
-At the high level, EigenDABlobProvider implements `DataAvailabilityProvider`, that takes `BlockInfo` and `batcher_address` and returns opaque
+At the high level, EigenDABlobProvider implements [DataAvailabilityProvider](https://docs.rs/kona-derive/latest/kona_derive/traits/trait.DataAvailabilityProvider.html), that takes `BlockInfo` and `batcher_address` and returns opaque
 bytes that is passed into FrameQueue to derive channel frames. 
 
 Under the hood, Hokulea implements the `DataAvailabilityProvider` by stacking `EthereumDataSource` which implementand `DataAvailabilityProvider`
