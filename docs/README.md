@@ -5,7 +5,7 @@
 The derivation pipeline in OP consists of stages that bring L1 transactions down to Payload Attributes which are L2 blocks 
 without output properties like Merkle Patricia Tree Root.
 
-The Kona derive derivaiton pipeline post-Holocene contains the following stages
+The Kona post-Holocene derivation pipeline contains the following stages
 - AttributesQueue
     - BatchProvider
         - Batch Stream
