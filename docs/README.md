@@ -18,7 +18,7 @@ The Kona derive derivaiton pipeline post-Holocene contains the following stages
 The driver of the derivation pipelines calls from the top, and one stage owns the immediate stage below. The L1Traversal stage iterates
 over the l1 BlockInfo, then returns it to L1Retieval stage. `BlockInfo` mostly contains metadata like `block_hash`, `block_number`, 
 `parent_block_hash` and `timestamp` with respect to the L1 information.
-With `BlockInfo`, L1Retieval can either retrieves data from eth calldata or Ethereum blob.
+With `BlockInfo`, L1Retrieval can either retrieve data from eth calldata or Ethereum blob.
 
 
 The Hokulea repo defines traits, implementation and supporting crates to provide secure EigenDA integration in the kona framework.
