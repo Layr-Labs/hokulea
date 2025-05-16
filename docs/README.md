@@ -42,7 +42,7 @@ Then DA certificate is passed to `EigenDABlobProvider` into bytes representing `
 
 Here is the high level diagram that illustrates the data transformation from calldata downloaded from Ethereum to bytes of decoded OP channel frames.
 
-There are four end state for a byte array corresponding to a DA cert
+There are four end states for a bytes array corresponding to a DA cert
 - dropped
 - stall
 - panic
