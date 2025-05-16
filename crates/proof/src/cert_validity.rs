@@ -16,4 +16,9 @@ pub struct CertValidity {
     pub canoe_proof: Vec<u8>,
     /// block hash where view call anchored at, l1_head comes from kona_cfg    
     pub l1_head_block_hash: B256,
+    /// l1 chain id specifies the chain which implicitly along with l1_head_block_number
+    /// indicates the current EVM version due to hardfork. Although the block number
+    /// is not available in this struct, we take assumptions that no two block number
+    /// will contain the same block hash
+    pub l1_chain_id: u64,
 }

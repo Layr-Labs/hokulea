@@ -7,6 +7,7 @@ use canoe_bindings::{
     BatchHeaderV2, BlobInclusionInfo, IEigenDACertMockVerifier, Journal,
     NonSignerStakesAndSignature,
 };
+use reth_chainspec::ChainSpec;
 use sp1_cc_client_executor::{io::EVMStateSketch, ClientExecutor, ContractInput};
 
 pub fn main() {
@@ -57,11 +58,17 @@ pub fn main() {
     buffer.extend(non_signer_stakes_and_signature_abi);
     buffer.extend(signed_quorum_numbers_abi);
 
+    let chain_sepc: ChainSpec = executor
+        .genesis
+        .try_into()
+        .expect("convert sp1 genesis into chain spec");
+
     let journal = Journal {
         contractAddress: verifier_address,
         input: buffer.into(),
         blockhash: public_vals.blockHash,
         output: returns,
+        l1ChainId: chain_sepc.chain.id(),
     };
 
     // Commit the abi-encoded output.

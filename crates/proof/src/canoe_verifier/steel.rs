@@ -48,6 +48,9 @@ impl CanoeVerifier for CanoeSteelVerifier {
         // ensure output is constrained
         assert!(journal.output == cert_validity.claimed_validity);
 
+        // ensure evm rule is constrained
+        assert!(journal.l1ChainId == cert_validity.l1_chain_id);
+
         // ensure inputs are constrained
         let mut buffer = Vec::new();
         buffer.extend(batch_header);

@@ -13,6 +13,7 @@ pub async fn populate_cert_validity_to_witness(
     l1_head: B256,
     l1_head_number: BlockNumber,
     canoe_provider: impl CanoeProvider,
+    l1_chain_id: u64,
 ) {
     let num_cert = witness.validity.len();
     for i in 0..num_cert {
@@ -23,6 +24,7 @@ pub async fn populate_cert_validity_to_witness(
             claimed_validity: witness.validity[i].claimed_validity,
             l1_head_block_hash: l1_head,
             l1_head_block_number: l1_head_number,
+            l1_chain_id,
         };
 
         let canoe_proof = canoe_provider

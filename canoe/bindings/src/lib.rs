@@ -8,6 +8,7 @@ sol! {
         address contractAddress;
         bytes input;
         bool output;
+        uint64 l1ChainId;
     }
 }
 

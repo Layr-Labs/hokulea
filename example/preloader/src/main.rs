@@ -143,12 +143,14 @@ where
         .await
         .expect("get l1 header based on l1 head");
     let l1_head_header = Header::decode(&mut header_rlp.as_slice()).expect("rlp decode l1 header");
+    let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
     populate_cert_validity_to_witness(
         &mut wit,
         boot_info.l1_head,
         l1_head_header.number,
         canoe_provider,
+        l1_chain_id,
     )
     .await;
     Ok(wit)
