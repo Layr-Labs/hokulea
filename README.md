@@ -39,6 +39,13 @@ Then you can run
 just run-client-against-devnet 'asterisc'
 ```
 
+### Risc0 and Sp1 toolchain installation
+
+Hokulea takes advantage of validity proof to attest DA certificates without making rpc call to execution client. The proof generation requires 
+compiling rust code into a ELF file runnable within zkVM. The canoe crate in Hokulea is dedicated for such purpose.
+Canoe currently supports two backends: Steel(Risc0) and Sp1-contract-call(Succinct).
+Steel requires installing Risc0 toolchain, see [rzup](https://dev.risczero.com/api/zkvm/install). Sp1-contract-call(sp1-cc) requires installing Sp1 toolchain, see [sp1up](https://docs.succinct.xyz/docs/sp1/getting-started/install).
+
 ### Running the example preloaded client with Steel or Sp1-contract-call
 ```bash
 cd example/preloader
