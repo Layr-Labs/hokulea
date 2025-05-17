@@ -1,18 +1,16 @@
 # EigenDA blob derivation for OP stack
 
-> Hokulea is a Polynesian double-hulled voyaging canoe. Hōkūle‘a (“Star of Gladness”), a zenith star of Hawai‘i, which appeared to him growing ever brighter in a dream. [Cite](https://worldwidevoyage.hokulea.com/vessels/hokulea/)
-
 The derivation pipeline in OP consists of stages that bring L1 transactions down to Payload Attributes which are L2 blocks 
 without output properties like Merkle Patricia Tree Root.
 
 The Kona post-Holocene derivation pipeline contains the following stages
 - AttributesQueue
     - BatchProvider
-        - Batch Stream
-            - Channel Reader
-                - ChannlerProvider
+        - BatchStream
+            - ChannelReader
+                - ChannelProvider
                     - FrameQueue                                                
-                        - L1Retrieval (Hokulea makes EigenDABlobProvider as one of data availability provider)
+                        - L1Retrieval (Hokulea enables EigenDABlobProvider to become one of data availability provider)
                             - L1Traversal
 
 The driver of the derivation pipelines calls from the top, and one stage owns the immediate stage below. The L1Traversal stage iterates
@@ -24,10 +22,10 @@ With `BlockInfo`, L1Retrieval can either retrieve data from eth calldata or Ethe
 The Hokulea repo defines traits, implementation and supporting crates to provide secure EigenDA integration in the kona framework.
 
 At the high level, EigenDABlobProvider implements [DataAvailabilityProvider](https://docs.rs/kona-derive/latest/kona_derive/traits/trait.DataAvailabilityProvider.html), that takes `BlockInfo` and `batcher_address` and returns opaque
-bytes that is passed into FrameQueue to derive channel frames. 
+bytes that are passed into the FrameQueue to derive channel frames.
 
-Under the hood, Hokulea implements the `DataAvailabilityProvider` by stacking `EthereumDataSource` which implementand `DataAvailabilityProvider`
-on top of `EigenDABlobSource` which implements the `EigenDABlobProvider`, capable of retrieving blobs from EigenDA.
+Under the hood, Hokulea implements the `DataAvailabilityProvider` by composing `EthereumDataSource` from kona and a new Hokulea type `EigenDABlobSource`. The two sources
+are glued together in a pipeline fashion, where `EthereumDataSource` passes down L1 calldata retrieved from batcher inbox to `EigenDABlobSource`, which process the calldata to retrieve blobs from EigenDA.
 
 - L1Retrieval
     - EthereumDataSource
