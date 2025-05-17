@@ -36,28 +36,46 @@ On the op-node side where the hokulea derivation pipeline is ran, the `block_inf
 DA certificate.
 Then DA certificate is passed to `EigenDABlobProvider` into bytes representing `channel frames`.
 
+Here is a high level diagram that illustrates what hokulea looks like from inside, and where hokulea derivation pipeline lives inside the kona-deriviation.
+![](../assets/hokulea-in-kona-derivation-pipeline.png)
+
+Begin with `Calldata` passed down from `EthereumDataSource`, there are multiple stages inside hokulea each representing a result of a valid transformation.
+
+- `DA cert` is a parsed data structure from the callldata
+- `Recent DA cert` is a DA cert that passes the recency checks defined in the protocol [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#1-rbn-recency-validation)
+- `Valid Recent DA cert` is `Recent DA cert` that is also valid with respect to the quorum attestation constraint more in [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation)
+- `Field Elements` are part of an EigenDA blob consisted of 32 bytes data unit
+- `Valid Field Elements` are `Field Elements` whose every 32 bytes is also a valid number within the bn254 field modulo
+- `FramesBytes` are the decoding result based on all `Valid Field Elements`
+
 ## Deriving OP channel frames from DA cert
 
-Here is the high level diagram that illustrates the data transformation from calldata downloaded from Ethereum to bytes of decoded OP channel frames.
+Here is a closer look at the state transition diagram that illustrates the transformation from calldata downloaded from `Calldata` to `FramesBytes`.
+![](../assets/hokulea-derivation.png)
 
 There are four end states for a bytes array corresponding to a DA cert
 - dropped
-- stall
+- stalled
 - panic
-- desired output bytes
+- FramesBytes (desired output bytes)
 
-If a condition (arrow) is suffixed with `failed`, it indicates that the sender of the data (from op-batcher) failed to hold criteria protected by the Hokulea derivation
-pipeline when bytes of DA cert arrived on L1, and therefore the corresponding cert is safe to drop.
+We will go through the state transition one by one. If a condition (arrow) is marked as `failed`, the source of data failed to hold criteria protected by the hokulea derivation, and therefore the corresponding DA certificate must be discarded. There are two possible actor that leads to `failed DA certificate`: op-batcher and a hosting
+process that provides preimage to the hokulea derivation pipeline. Additional check are required to ensure data source are valid. Such as KZG commitment verification
+and DA certificate verification like [Canoe](../canoe/). We now go over the failure case one by one
 
-If a condition is suffixed with stall, it means the data is unavailable by the host process connected by the hokulea client which runs the derivation pipeline
+- `parse failed` : op-batcher failed to submit a valid DA certificate to rollup inbox
+- `recency check failed` : op-batcher failed to submit a DA certificate to rollup inbox **on time**
+- `check cert valiidty failed` : op-batcher failed to submit a valid DA certificate that satisfies the [quorum attestaion constraint](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation) **OR** the host is misbehaving if the DA certifiate is indeed valid
+- `decode blob failed` : it means the host (the eigenda blob preimage provider) has failed to provide an eigenda blob (made of field elements) that satisfies the decoding algorithm see [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/3-datastructs.md#data-structs), it can happen for two possible reasons.
+  - the sender (op-batcher) intentionally constructed a malformed eigenda blob by corrupting the encoding algorithm
+  - the hosting part that provides the preimage (eigenda blob) transmitted incorrect data
+
+If a condition is marked with stall, it means the data is unavailable in the hosting process that retrieve data on behalf of derivation pipeline.
 
 If a condition is marked as panic, it means the host that supplies the field element violates the clear EigenDA protocol property, i.e. every 32 bytes is a proper
-bn254 field element.
+bn254 field element, and by cryptographic property, there isn't a valid kzg commitment.
 
-If nothing went wrong, the hokulea derivation pipeline returns the desired output.
+Finally, if nothing went wrong, the hokulea derivation pipeline returns the desired output.
 
-
-
-![](../assets/hokulea-derivation.png)
 
 
