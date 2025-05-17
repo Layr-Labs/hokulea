@@ -34,7 +34,7 @@ on top of `EigenDABlobSource` which implements the `EigenDABlobProvider`, capabl
         - EigenDABlobProvider
 
 On the batcher side, channel frames are converted into EigenDA blob, whose DA certificate is sent over to L1.
-On the op-node side where the houklea derivation pipeline is installed, the `block_info` is first passed to `EthereumDataSource` to retrieve the
+On the op-node side where the hokulea derivation pipeline is ran, the `block_info` is first passed to `EthereumDataSource` to retrieve the
 DA certificate.
 Then DA certificate is passed to `EigenDABlobProvider` into bytes representing `channel frames`.
 
