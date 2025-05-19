@@ -477,7 +477,7 @@ dependencies = [
  "alloy-rpc-types-any 0.15.10",
  "alloy-rpc-types-eth 0.15.10",
  "alloy-serde 0.15.10",
- "alloy-signer 0.15.10",
+ "alloy-signer 0.15.11",
  "alloy-sol-types",
  "async-trait",
  "auto_impl",
@@ -652,7 +652,7 @@ dependencies = [
  "alloy-pubsub 0.15.10",
  "alloy-rpc-client 0.15.10",
  "alloy-rpc-types-eth 0.15.10",
- "alloy-signer 0.15.10",
+ "alloy-signer 0.15.11",
  "alloy-sol-types",
  "alloy-transport 0.15.10",
  "alloy-transport-http 0.15.10",
@@ -1036,9 +1036,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer"
-version = "0.15.10"
+version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fdf929ce72d18aa40974ecaa2cd77c5062a0baa105fdb95e6aa5609642d7210"
+checksum = "67fdabad99ad3c71384867374c60bcd311fc1bb90ea87f5f9c779fd8c7ec36aa"
 dependencies = [
  "alloy-primitives 1.1.0",
  "async-trait",
@@ -3409,7 +3409,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "976dd42dc7e85965fe702eb8164f21f450704bdde31faefd6471dba214cb594e"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5120,7 +5120,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -5842,7 +5842,7 @@ dependencies = [
  "alloy-network 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rpc-types-eth 0.15.10",
- "alloy-signer 0.15.10",
+ "alloy-signer 0.15.11",
  "op-alloy-consensus 0.15.4",
  "op-alloy-rpc-types",
 ]
@@ -6742,7 +6742,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -8237,7 +8237,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9636,7 +9636,7 @@ dependencies = [
  "getrandom 0.3.2",
  "once_cell",
  "rustix",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
