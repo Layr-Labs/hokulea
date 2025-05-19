@@ -71,7 +71,7 @@ fn main() {
 
     // Commit the block hash and number used when deriving `view_call_env` to the journal.
     let journal = Journal {
-        contractAddress: contract,
+        certVerifierAddress: contract,
         input: buffer.into(),
         blockhash: env.header().seal(),
         output: returns,

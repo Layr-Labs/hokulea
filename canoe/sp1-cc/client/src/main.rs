@@ -64,7 +64,7 @@ pub fn main() {
         .expect("convert sp1 genesis into chain spec");
 
     let journal = Journal {
-        contractAddress: verifier_address,
+        certVerifierAddress: verifier_address,
         input: buffer.into(),
         blockhash: public_vals.blockHash,
         output: returns,
