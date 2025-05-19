@@ -869,7 +869,7 @@ checksum = "cf8482ed5dd68274f2f02f362c0bfc2f6bb658302eecec2b420a79d58e26934b"
 dependencies = [
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "serde",
  "serde_with",
  "thiserror 2.0.12",
@@ -915,9 +915,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-engine"
-version = "0.15.10"
+version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b79e3df17a03b9e1ee61a40ef38deb5cd9b4fcd916642a23f29b78783c5fd335"
+checksum = "246c225f878dbcb8ad405949a30c403b3bb43bdf974f7f0331b276f835790a5e"
 dependencies = [
  "alloy-consensus 0.15.10",
  "alloy-eips 0.15.10",
@@ -1206,7 +1206,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70a9372fba202370973748d76c2891344cbacfb012d44a8ed62135ba53d4408e"
 dependencies = [
  "alloy-json-rpc 0.15.10",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "alloy-transport 0.15.10",
  "http-body-util",
  "hyper",
@@ -4665,7 +4665,7 @@ dependencies = [
  "alloy-op-evm",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "async-trait",
  "cfg-if",
  "kona-derive",
@@ -4702,7 +4702,7 @@ dependencies = [
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "async-trait",
  "kona-genesis",
  "kona-hardforks",
@@ -4928,7 +4928,7 @@ dependencies = [
  "alloy-op-evm",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "async-trait",
  "kona-executor",
  "kona-genesis",
@@ -4959,7 +4959,7 @@ dependencies = [
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "alloy-rpc-types-eth 0.15.10",
  "alloy-serde 0.15.10",
  "async-trait",
@@ -4989,7 +4989,7 @@ dependencies = [
  "alloy-provider 0.15.10",
  "alloy-rpc-client 0.15.10",
  "alloy-rpc-types-beacon",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "alloy-serde 0.15.10",
  "alloy-transport 0.15.10",
  "alloy-transport-http 0.15.10",
@@ -5120,7 +5120,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -5875,7 +5875,7 @@ dependencies = [
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
- "alloy-rpc-types-engine 0.15.10",
+ "alloy-rpc-types-engine 0.15.11",
  "alloy-serde 0.15.10",
  "derive_more 2.0.1",
  "op-alloy-consensus 0.15.4",
