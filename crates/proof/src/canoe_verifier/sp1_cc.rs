@@ -73,7 +73,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         buffer.extend(signed_quorum_numbers_abi);
 
         let journal = Journal {
-            contractAddress: VERIFIER_ADDRESS,
+            certVerifierAddress: VERIFIER_ADDRESS,
             input: buffer.into(),
             blockhash: cert_validity.l1_head_block_hash,
             output: cert_validity.claimed_validity,

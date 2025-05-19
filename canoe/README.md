@@ -72,20 +72,27 @@ For `N` DA certs, protocols can aggregate them together into a single aggregated
 In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. After this EFL binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
 While executing, the client validates each canoe certificate by:
 
-Accepting a proof P for every EigenDA certificate encountered.
+Expecting a proof P for every EigenDA certificate encountered.
 
-Re‑creating (f, s, C, O, I) locally, where s commits to state S.
+Verifying and aborting if P fails; otherwise, continuing the derivation process.
 
-Aborting if P fails; otherwise, continuing the derivation process.
+Re‑creating (f, s, C, O, I) locally, where s commits to state S. And Check whether it is the same journal commited by the zkVM.
 
-These steps ensure that any invalid certificates are discarded.
+These steps ensure that any invalid certificates are discarded, and a malicious host cannot fool client to accept invalid cert.
 
 ![](../assets/usecase3.png)
 
 ## 5 · Securely Verify Canoe Proof
 
-Canoe defines a standard output interface called `Journal` that encapsulates the five parameters for the model above. See solidity type under [binding](../canoe/bindings/src/lib.rs). The guest implementation for a zkVM must commit those five variable as the public output. During verification, a verifier must independently construct the journal using the trusted data source and compare it against the journal committed by the zkVM, on top of verifying the validity proof produced by Canoe provider.
+Canoe defines a standard output interface called `Journal` that encapsulates the five parameters for the model above. See solidity type under [binding](../canoe/bindings/src/lib.rs). 
+The guest implementation within a zkVM must commit those five variable as the public output. 
+This creates a mapping from (f, S, C, I) to O, and the value of the zkVM proof is to attest that such mapping is indeed correct.
+It is crucial that given (f, S, C, I), there is only one answer. This is achieved by having a determinstic relation from (f, S, C, I) to O.  
+To prevent a host from fabicating a proof attesting some random logic, 
+the verifiation logic must independently construct the (f, S, C, I) part of the journal using the trusted data source and compare it against the journal committed by the zkVM, on top of verifying the validity proof produced by Canoe provider. certVerifierAddress is either built into binary or committed onchain L1,
+input is the DA certificate, l1ChainId can be found from the bootInfo, the state is anchored by the l1_head used during the challenge process
 In Hokulea, such verification takes place in [canoe_verifier](../crates/proof/src/canoe_verifier/).
+
 
 ## 6 · Remark
 

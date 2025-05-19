@@ -47,6 +47,8 @@ impl CanoeProvider for CanoeSp1CCProvider {
             Ok(genesis) => HostExecutor::new_with_genesis(provider.clone(), block_number, genesis)
                 .await
                 .map_err(|e| anyhow::anyhow!(e.to_string()))?,
+            // if genesis is not available in the sp1-cc library, the code uses the default Genesis, which currently in
+            // sp1-cc is the mainnet. Ideally, Sp1-cc should make it easier to use the custom id genesis.
             Err(_) => HostExecutor::new(provider.clone(), block_number)
                 .await
                 .map_err(|e| anyhow::anyhow!(e.to_string()))?,

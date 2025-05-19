@@ -43,7 +43,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
         assert!(journal.blockhash == cert_validity.l1_head_block_hash);
 
         // ensure function being used is constrained
-        assert!(journal.contractAddress == VERIFIER_ADDRESS);
+        assert!(journal.certVerifierAddress == VERIFIER_ADDRESS);
 
         // ensure output is constrained
         assert!(journal.output == cert_validity.claimed_validity);
