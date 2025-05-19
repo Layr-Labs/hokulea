@@ -12,7 +12,7 @@ contract DeployEigenDACertMockVerifier is Script {
 
         EigenDACertMockVerifier contractInstance = new EigenDACertMockVerifier();
 
-        console.log("AlwaysTrue contract deployed at:", address(contractInstance));
+        console.log("EigenDACertMockVerifier contract deployed at:", address(contractInstance));
 
         vm.stopBroadcast();
     }

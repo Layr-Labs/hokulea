@@ -21,10 +21,12 @@ pub const ELF: &[u8] = include_bytes!("../../../../canoe/sp1-cc/elf/canoe-sp1-cc
 pub struct CanoeSp1CCVerifier {}
 
 impl CanoeVerifier for CanoeSp1CCVerifier {
-    fn validate_cert_receipt(&self, mut cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
+    fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSp1CCVerifier");
         // if not in dev mode, the receipt must be non empty
         let receipt_bytes = cert_validity.canoe_proof.as_ref();
+
+        let mut cert_validity = cert_validity.clone();
 
         // Because we have the sp1-cc dependancy issue, we cannot deserialize the bytes into SContractPublicValues
         // So instead we define custom struct Journal and compare opaque bytes array to ensure inputs are identical

@@ -49,8 +49,7 @@ pub fn main() {
     let public_vals = executor.execute(call).unwrap();
 
     // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
-    let returns = Bool::abi_decode(&public_vals.contractOutput)
-        .expect("deserialize NonSignerStakesAndSignature");
+    let returns = Bool::abi_decode(&public_vals.contractOutput).expect("deserialize returns");
 
     let mut buffer = Vec::new();
     buffer.extend(batch_header_abi);

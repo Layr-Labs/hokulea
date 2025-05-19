@@ -22,7 +22,9 @@ Steel Preloader, generate zk proof with steel backend against a smart contract c
 just deploy-mock-contract
 ```
 
-Then copy the deployed contract address <MOCK_ADDRESS> to a rust constant called <VERIFIER_ADDRESS> under the filepath crates/proof/src/canoe_verifier/mod.rs. Then let' run against steel
+Then copy the deployed contract address <MOCK_ADDRESS> to a rust constant called <VERIFIER_ADDRESS> under the filepath crates/proof/src/canoe_verifier/mod.rs. Then let' run against steel. Note houklea and kona uses a lagged `l1_head` to trigger the derivation. It is possible that immediately after deploying the mock contract, the
+`l1_head` still hasn't reached to the block when the mock contract is deployed. When it happens, wait a few minutes for `l1_head` to catch up, or 
+manuall changed the justfile to use the latest L1 block head as l1_head, see [justfile](../../justfile).
 
 ```bash
 just run-preloader .devnet.env steel

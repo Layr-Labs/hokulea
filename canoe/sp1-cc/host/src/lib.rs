@@ -81,8 +81,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
-        let returns =
-            Bool::abi_decode(&returns_bytes).expect("deserialize NonSignerStakesAndSignature");
+        let returns = Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes");
 
         if returns != canoe_input.claimed_validity {
             panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something consistent in the view of eigenda-proxy and zkVM");

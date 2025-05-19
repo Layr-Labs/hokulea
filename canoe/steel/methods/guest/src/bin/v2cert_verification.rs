@@ -67,7 +67,7 @@ fn main() {
     buffer.extend(non_signer_stakes_and_signature_abi);    
     buffer.extend(signed_quorum_numbers_abi);    
 
-    let returns = Contract::new(contract, &env).call_builder(&call).call();    
+    let returns = Contract::new(contract, &env).call_builder(&call).call();
 
     // Commit the block hash and number used when deriving `view_call_env` to the journal.
     let journal = Journal {
