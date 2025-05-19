@@ -60,7 +60,7 @@ alloy-contract = { version = "0.15.8", default-features = false }
 alloy-network = { version = "0.15.8", default-features = false }
 alloy-rlp = { version = "0.3.11", default-features = false }
 alloy-trie = { version = "0.8.0", default-features = false }
-alloy-eips = { version = "0.15.8", default-features = false }
+alloy-eips = { version = "0.15.11", default-features = false }
 alloy-serde = { version = "0.15.8", default-features = false }
 alloy-consensus = { version = "0.15.8", default-features = false }
 alloy-rpc-types = { version = "0.15.8", default-features = false }
