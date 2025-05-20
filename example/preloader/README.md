@@ -38,13 +38,20 @@ just run-preloader .devnet.env sp1-cc
 Compiling rust code to zkVM bytecode requires installing Sp1 toolchain, see [sp1up](https://docs.succinct.xyz/docs/sp1/getting-started/install).
 
 
-To turn off the mock mode for creating a Steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
+You can turn off the mock mode when creating a Steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
 
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file.
 just run-preloader .devnet.env steel false
 ```
+
+### Integrating hokulea with SP1 zkVM
+
+Note that in order to run hokulea in SP1 zkVM with the sp1-cc proof verified within the zkVM, the program input to zkVM (via SP1Stdin) must manually
+contain sp1-cc compressed proof using a method called `write_proof()`. This is needed for SP1 [verify_sp1_proof](https://docs.succinct.xyz/docs/sp1/writing-programs/proof-aggregation)
+to pick up the compressed proof when verifying the stark proof. For verification code, see [sp1_cc.rs](../../crates/proof/src/canoe_verifier/sp1_cc.rs).
+
 # Workflow and Data Structures
 
 At the high level, a zkVM secure integration uses hokulea+kona derivation twice. At the first run, it creates a data structure called `EigenDABlobWitnessData` and `oracle` for kona. In the second run, it feeds `EigenDABlobWitnessData` and `oracle` as a data inputs to the hokulea+kona derivation pipeline; but this time the execution of the derivation on the data is executed in the context of zkVM.
