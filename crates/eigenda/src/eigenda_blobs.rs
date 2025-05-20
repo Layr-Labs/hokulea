@@ -3,14 +3,9 @@
 use crate::traits::EigenDABlobProvider;
 use crate::{eigenda_data::EigenDABlobData, AltDACommitment};
 
+use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
 use alloc::vec::Vec;
 use alloy_primitives::Bytes;
-use kona_derive::errors::PipelineErrorKind;
-use kona_derive::{
-    errors::{BlobProviderError, PipelineError},
-    types::PipelineResult,
-};
-use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
 
 /// A data iterator that reads from a blob.
 #[derive(Debug, Clone)]
@@ -19,7 +14,7 @@ where
     B: EigenDABlobProvider + Send,
 {
     /// Fetches blobs.
-    pub eigenda_fetcher: B,    
+    pub eigenda_fetcher: B,
 }
 
 impl<B> EigenDABlobSource<B>
@@ -28,13 +23,15 @@ where
 {
     /// Creates a new blob source.
     pub const fn new(eigenda_fetcher: B) -> Self {
-        Self {
-            eigenda_fetcher,
-        }
+        Self { eigenda_fetcher }
     }
-    
+
     /// Fetches the next blob from the source.
-    pub async fn next(&mut self, calldata: &Bytes, _l1_inclusion_bn: u64) -> Result<EigenDABlobData, HokuleaErrorKind> {
+    pub async fn next(
+        &mut self,
+        calldata: &Bytes,
+        _l1_inclusion_bn: u64,
+    ) -> Result<EigenDABlobData, HokuleaErrorKind> {
         let eigenda_commitment = self.parse(calldata)?;
 
         // for recency check, there are two approaches, depending how many interface we want
@@ -53,8 +50,9 @@ where
         // verifier entry that also checks the recency, and therefore entirely making it unnecessary
         // to check it in the offchain hokulea code.
         match self.eigenda_fetcher.get_blob(&eigenda_commitment).await {
-            Ok(data) => {                                
+            Ok(data) => {
                 let new_blob: Vec<u8> = data.into();
+
                 let eigenda_blob = EigenDABlobData {
                     blob: new_blob.into(),
                 };
@@ -68,15 +66,12 @@ where
         }
     }
 
-    fn parse(
-        &mut self,
-        data: &Bytes,
-    ) -> Result<AltDACommitment, HokuleaStatelessError> {
+    fn parse(&mut self, data: &Bytes) -> Result<AltDACommitment, HokuleaStatelessError> {
         if data.len() <= 2 {
             // recurse if data is mailformed
             warn!(target: "blob_source", "Failed to decode blob data, skipping");
             //self.next(block_ref, batcher_address).await
-            return Err(HokuleaStatelessError::InsufficientEigenDACertLength)                
+            return Err(HokuleaStatelessError::InsufficientEigenDACertLength);
         }
         let altda_commitment: AltDACommitment = match data[1..].try_into() {
             Ok(a) => a,
@@ -85,7 +80,7 @@ where
                 // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L130
                 // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L165
                 error!("failed to parse altda commitment {}", e);
-                return Err(HokuleaStatelessError::ParseError(e))
+                return Err(HokuleaStatelessError::ParseError(e));
             }
         };
         Ok(altda_commitment)

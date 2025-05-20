@@ -6,11 +6,10 @@ use hokulea_eigenda::{
     AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert, BYTES_PER_FIELD_ELEMENT,
 };
 use kona_preimage::{errors::PreimageOracleError, CommsClient, PreimageKey, PreimageKeyType};
-use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 
-use crate::hint::ExtendedHintType;
 use crate::errors::HokuleaOracleProviderError;
+use crate::hint::ExtendedHintType;
 use tracing::info;
 
 use alloc::vec;
@@ -45,10 +44,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         info!(target: "eigenda-blobsource", "altda_commitment {:?}", altda_commitment);
 
         let blob_length_fe: u64 = match &altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V1(c) => {
-                info!(target: "eigenda-blobsource", "blob version: V1");
-                c.blob_header.data_length as u64
-            }
+            EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
             EigenDAVersionedCert::V2(c) => {
                 info!(target: "eigenda-blobsource", "blob version: V2");
                 c.blob_inclusion_info
@@ -104,9 +100,11 @@ async fn fetch_blob<T: CommsClient>(
         // if field element is 0, it means the host has identified that the data
         // has breached eigenda invariant, i.e cert is invalid
         if field_element.is_empty() {
-            return Err(HokuleaOracleProviderError::Preimage(PreimageOracleError::Other(
-                "field elememnt is empty, breached eigenda invariant".into(),
-            )));
+            return Err(HokuleaOracleProviderError::Preimage(
+                PreimageOracleError::Other(
+                    "field elememnt is empty, breached eigenda invariant".into(),
+                ),
+            ));
         }
 
         // an eigenda field element contains 32 bytes

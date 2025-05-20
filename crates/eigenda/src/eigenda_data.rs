@@ -1,4 +1,8 @@
-use crate::{errors::HokuleaStatelessError, BYTES_PER_FIELD_ELEMENT};
+use crate::PAYLOAD_ENCODING_VERSION_0;
+use crate::{
+    errors::{BlobDecodingError, HokuleaStatelessError},
+    BYTES_PER_FIELD_ELEMENT,
+};
 use alloc::vec;
 use alloy_primitives::Bytes;
 use bytes::buf::Buf;
@@ -18,10 +22,22 @@ impl EigenDABlobData {
     pub fn decode(&self) -> Result<Bytes, HokuleaStatelessError> {
         let blob = &self.blob;
         if blob.len() < 32 {
-            return Err(HokuleaStatelessError::BlobDecodeError);
+            return Err(BlobDecodingError::InvalidBlobSizeInBytes(blob.len() as u64).into());
         }
 
-        debug!(target: "eigenda-datasource", "padded_eigenda_blob {:?}", blob);
+        // blob must have multiple of 32 bytes
+        if blob.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+            return Err(BlobDecodingError::InvalidBlobSizeInBytes(blob.len() as u64).into());
+        }
+
+        // for every user payload, there is a encoding version, currently only one version is
+        // supported, i.e. padding 0 for every 31 bytes
+        let blob_encoding_version = blob[1];
+        if blob_encoding_version != PAYLOAD_ENCODING_VERSION_0 {
+            return Err(
+                BlobDecodingError::InvalidBlobEncodingVersion(blob_encoding_version).into(),
+            );
+        }
 
         // see https://github.com/Layr-Labs/eigenda/blob/f8b0d31d65b29e60172507074922668f4ca89420/api/clients/codecs/default_blob_codec.go#L44
         let content_size = blob.slice(2..6).get_u32();
@@ -30,13 +46,22 @@ impl EigenDABlobData {
         // the first 32 Bytes are reserved as the header field element
         let codec_data = blob.slice(32..);
 
+        // verify there is an empty byte for every 31 bytes
+        // this is a harder constraint than field element range check.
+        for chunk in codec_data.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
+            // field elements are interpreted as big endian
+            if chunk[0] != 0x0 {
+                return Err(BlobDecodingError::InvalidBlobEncoding.into());
+            }
+        }
+
         // rust kzg bn254 impl already
         let blob_content =
             helpers::remove_empty_byte_from_padded_bytes_unchecked(codec_data.as_ref());
         let blob_content: Bytes = blob_content.into();
 
         if blob_content.len() < content_size as usize {
-            return Err(HokuleaStatelessError::BlobDecodeError);
+            return Err(BlobDecodingError::InvalidContentSize.into());
         }
         Ok(blob_content.slice(..content_size as usize))
     }
@@ -84,9 +109,8 @@ impl EigenDABlobData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::PAYLOAD_ENCODING_VERSION_0;
     use alloc::vec;
-    use alloy_primitives::Bytes;    
+    use alloy_primitives::Bytes;
 
     #[test]
     fn test_encode_and_decode_success() {
@@ -120,6 +144,9 @@ mod tests {
         eigenda_blob.blob.truncate(33);
         let result = eigenda_blob.decode();
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), HokuleaStatelessError::BlobDecodeError);
+        assert_eq!(
+            result.unwrap_err(),
+            BlobDecodingError::InvalidBlobEncodingVersion(1).into()
+        );
     }
 }

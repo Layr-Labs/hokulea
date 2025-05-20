@@ -1,24 +1,22 @@
 //! Contains the [EigenDADataSource], which is a concrete implementation of the
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
-use crate::altda_commitment;
-use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
+//!
 use crate::traits::EigenDABlobProvider;
-use crate::{altda_commitment::AltDACommitmentParseError, AltDACommitment};
+use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
 use kona_derive::errors::PipelineErrorKind;
 
-use alloc::string::ToString;
+use crate::eigenda_data::EigenDABlobData;
+use alloc::vec::Vec;
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{Address, Bytes};
 use async_trait::async_trait;
 use kona_derive::{
-    errors::{PipelineError, BlobProviderError},
+    errors::PipelineError,
     sources::EthereumDataSource,
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
 };
 use kona_protocol::{BlockInfo, DERIVATION_VERSION_0};
-use alloc::vec::Vec;
-use crate::eigenda_data::EigenDABlobData;
 use tracing::warn;
 
 #[derive(Debug, Clone)]
@@ -82,8 +80,8 @@ where
         debug!("Data Available Source next {} {}", block_ref, batcher_addr);
         // if loading failed for provider reason, the entire blobs are reloaded next time,
         // no data is consumed at this point
-        self.load_blobs(block_ref, batcher_addr).await?;        
-                        
+        self.load_blobs(block_ref, batcher_addr).await?;
+
         match self.next_data()? {
             EigenDAOrCalldata::Calldata(c) => return Ok(c),
             EigenDAOrCalldata::EigenDA(blob) => {
@@ -113,14 +111,14 @@ where
     // load calldata, currenly there is only one cert per calldata
     // this is still required, in case the provider returns error
     // the open variable ensures we don't have to load the ethereum source again
-    // If this function preempt, no state is corrupted    
-    async fn load_blobs (   
+    // If this function preempt, no state is corrupted
+    async fn load_blobs(
         &mut self,
         block_ref: &BlockInfo,
         batcher_addr: Address,
     ) -> PipelineResult<()> {
         if self.open {
-            return Ok(())
+            return Ok(());
         }
 
         let mut calldata_list: Vec<Bytes> = Vec::new();
@@ -128,33 +126,37 @@ where
         loop {
             match self.ethereum_source.next(block_ref, batcher_addr).await {
                 Ok(d) => calldata_list.push(d),
-                Err(e) => {                    
+                Err(e) => {
                     // break out the loop after having all batcher calldata for that block number
                     if let PipelineErrorKind::Temporary(PipelineError::Eof) = e {
-                        break
+                        break;
                     }
-                    return Err(e)
+                    return Err(e);
                 }
-            };            
+            };
         }
-        
+
         // all data returnable to l1 retriver, including both eigenda blob and Derivatin version 0
         // data in a form that no longer requires preimage oracle access
         let mut stateless_data: Vec<EigenDAOrCalldata> = Vec::new();
 
-        for i in 0..calldata_list.len() {
-            let data = calldata_list[i].clone();
+        for data in &calldata_list {
             // if data is op channel framce
             if data[0] == DERIVATION_VERSION_0 {
-                stateless_data.push(EigenDAOrCalldata::Calldata(data));
+                stateless_data.push(EigenDAOrCalldata::Calldata(data.clone()));
             } else {
                 // retrieve all data from eigenda
-                match self.eigenda_source.next(&data, block_ref.number).await {
-                    Err(e) => {
-                        match e {
-                            HokuleaErrorKind::Discard => continue,
-                            HokuleaErrorKind::Temporary => return Err(PipelineError::Provider("provider error".to_string()).temp()),
-                            HokuleaErrorKind::Critical(_) => return Err(PipelineError::Provider("provider critical error".to_string()).crit()),
+                match self.eigenda_source.next(data, block_ref.number).await {
+                    Err(e) => match e {
+                        HokuleaErrorKind::Discard(e) => {
+                            warn!("Hokulea derivation discard {}", e);
+                            continue;
+                        }
+                        HokuleaErrorKind::Temporary(e) => {
+                            return Err(PipelineError::Provider(e).temp())
+                        }
+                        HokuleaErrorKind::Critical(e) => {
+                            return Err(PipelineError::Provider(e).crit())
                         }
                     },
                     Ok(eigenda_blob) => {
@@ -171,10 +173,10 @@ where
     }
 
     #[allow(clippy::result_large_err)]
-    fn next_data(&mut self) -> Result<EigenDAOrCalldata, PipelineErrorKind> {    
-        // if all eigenda blob are processed, send signal to driver to advance    
+    fn next_data(&mut self) -> Result<EigenDAOrCalldata, PipelineErrorKind> {
+        // if all eigenda blob are processed, send signal to driver to advance
         if self.data.is_empty() {
-            return Err(PipelineError::Eof.temp())
+            return Err(PipelineError::Eof.temp());
         }
         Ok(self.data.remove(0))
     }

@@ -37,7 +37,7 @@ mod altda_commitment;
 pub use altda_commitment::{AltDACommitment, EigenDAVersionedCert};
 
 mod errors;
-pub use errors::HokuleaErrorKind;
+pub use errors::{BlobDecodingError, HokuleaErrorKind, HokuleaStatelessError};
 
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;

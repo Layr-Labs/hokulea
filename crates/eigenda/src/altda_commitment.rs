@@ -39,6 +39,8 @@ pub enum AltDACommitmentParseError {
     /// Only V1 and V2 are supported
     #[error("Unable to decode rlp cert: {0}")]
     InvalidRlpCert(Error),
+    #[error("Disallowed V1 DA cert type")]
+    DisallowedV1DACert,
 }
 
 /// AltDACommitment is used as the query key to retrieve eigenda blob from the eigenda proxy
@@ -76,9 +78,8 @@ impl TryFrom<&[u8]> for AltDACommitment {
 
         let versioned_cert = match value[2].try_into()? {
             CertVersion::Version1 => {
-                let blob_info =
-                    BlobInfo::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
-                EigenDAVersionedCert::V1(blob_info)
+                // filter out all v1 cert
+                return Err(AltDACommitmentParseError::DisallowedV1DACert);
             }
             CertVersion::Version2 => {
                 let v2_cert =
@@ -119,6 +120,14 @@ impl AltDACommitment {
         field_element_key
     }
 
+    /// get number of field element for a cert
+    pub fn get_num_field_element(&self) -> usize {
+        match &self.versioned_cert {
+            EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
+            EigenDAVersionedCert::V2(c) => c.blob_inclusion_info.blob_certificate.blob_header.commitment.length as usize,
+        }
+    }
+
     /// Convert AltdaCommitment into bytes in the same form downloaded from
     /// Ethereum block. The bytes form is used as the key to send http query
     /// to the eigenda proxy
@@ -127,14 +136,8 @@ impl AltDACommitment {
         bytes.push(self.commitment_type.to_be());
         bytes.push(self.da_layer_byte.to_be());
         match &self.versioned_cert {
-            EigenDAVersionedCert::V1(c) => {
-                // V1 cert has byte 0
-                bytes.push(0);
-                // rlp encode of cert
-                let mut cert_rlp_bytes = Vec::<u8>::new();
-                c.encode(&mut cert_rlp_bytes);
-                bytes.extend_from_slice(&cert_rlp_bytes);
-                bytes
+            EigenDAVersionedCert::V1(_) => {
+                panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug")
             }
             EigenDAVersionedCert::V2(c) => {
                 // V2 cert has byte 1

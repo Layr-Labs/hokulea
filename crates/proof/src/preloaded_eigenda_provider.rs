@@ -7,7 +7,6 @@ use async_trait::async_trait;
 use eigenda_v2_struct::EigenDAV2Cert;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use kona_preimage::errors::PreimageOracleError;
-use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 use tracing::debug;
@@ -102,9 +101,9 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
         if is_match {
             Ok(eigenda_blob)
         } else {
-            Err(HokuleaOracleProviderError::Preimage(PreimageOracleError::Other(
-                "does not contain header".into(),
-            )))
+            Err(HokuleaOracleProviderError::Preimage(
+                PreimageOracleError::Other("does not contain header".into()),
+            ))
         }
     }
 }
