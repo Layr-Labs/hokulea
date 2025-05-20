@@ -60,7 +60,7 @@ where
                 Ok(eigenda_blob)
             }
             Err(e) => {
-                error!("EigenDA blob source fetching error {}", e);
+                warn!("EigenDA blob source cannot fetch {}", e);
                 Err(e.into())
             }
         }

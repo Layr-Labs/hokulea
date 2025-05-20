@@ -6,10 +6,9 @@ use ark_ff::PrimeField;
 use async_trait::async_trait;
 use eigenda_v2_struct::EigenDAV2Cert;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
-use kona_preimage::errors::PreimageOracleError;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
-use tracing::debug;
+use tracing::error;
 
 use alloc::boxed::Box;
 use alloc::vec;
@@ -72,7 +71,7 @@ impl PreloadedEigenDABlobProvider {
         // for ease of when using
         entries.reverse();
 
-        // check (P1) if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
+        // check if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));
 
         PreloadedEigenDABlobProvider { entries }
@@ -88,22 +87,18 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
     /// Return an error if cert does not match the immeditate next item
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
         let (eigenda_cert, eigenda_blob) = self.entries.pop().unwrap();
-        let is_match = match &altda_commitment.versioned_cert {
+        match &altda_commitment.versioned_cert {
             // secure integration is not implemented for v1, but feel free to contribute
-            EigenDAVersionedCert::V1(_c) => unimplemented!(),
+            EigenDAVersionedCert::V1(_c) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
             EigenDAVersionedCert::V2(c) => {
-                debug!("request cert is {:?}", c.digest());
-                debug!("stored  cert is {:?}", eigenda_cert.digest());
-                c == &eigenda_cert
+                if c == &eigenda_cert {
+                    Ok(eigenda_blob)
+                } else {
+                    // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
+                    error!("requested cert is {:?}, stored cert is {:?}", c.digest(), eigenda_cert.digest());
+                    panic!("preloaded eigenda blob provider does not match cert requested from derivation pipeline. EigenDABlobWitnessData is misconfigured. This is a bug")
+                }
             }
-        };
-
-        if is_match {
-            Ok(eigenda_blob)
-        } else {
-            Err(HokuleaOracleProviderError::Preimage(
-                PreimageOracleError::Other("does not contain header".into()),
-            ))
         }
     }
 }
