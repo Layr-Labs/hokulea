@@ -12,3 +12,5 @@ pub mod eigenda_blob_witness;
 pub mod cert_validity;
 
 pub mod canoe_verifier;
+
+pub mod errors;

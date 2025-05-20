@@ -36,6 +36,9 @@ pub use version::CertVersion;
 mod altda_commitment;
 pub use altda_commitment::{AltDACommitment, EigenDAVersionedCert};
 
+mod errors;
+pub use errors::HokuleaErrorKind;
+
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;
 pub use constant::PAYLOAD_ENCODING_VERSION_0;

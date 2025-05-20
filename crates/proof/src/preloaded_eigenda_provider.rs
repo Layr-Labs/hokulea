@@ -1,4 +1,5 @@
 use crate::eigenda_blob_witness::EigenDABlobWitnessData;
+use crate::errors::HokuleaOracleProviderError;
 use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
@@ -82,7 +83,7 @@ impl PreloadedEigenDABlobProvider {
 #[async_trait]
 impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
     // TODO investigate if create a speical error type EigenDABlobProviderError
-    type Error = OracleProviderError;
+    type Error = HokuleaOracleProviderError;
 
     /// Fetches a blob for V2 using preloaded data
     /// Return an error if cert does not match the immeditate next item
@@ -101,7 +102,7 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
         if is_match {
             Ok(eigenda_blob)
         } else {
-            Err(OracleProviderError::Preimage(PreimageOracleError::Other(
+            Err(HokuleaOracleProviderError::Preimage(PreimageOracleError::Other(
                 "does not contain header".into(),
             )))
         }

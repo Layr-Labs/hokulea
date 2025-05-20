@@ -27,6 +27,7 @@ serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
 cfg-if.workspace = true
+thiserror.workspace = true
 
 canoe-bindings = { workspace = true, optional = true }
 

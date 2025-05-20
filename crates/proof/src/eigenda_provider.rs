@@ -10,6 +10,7 @@ use kona_proof::errors::OracleProviderError;
 use rust_kzg_bn254_primitives::blob::Blob;
 
 use crate::hint::ExtendedHintType;
+use crate::errors::HokuleaOracleProviderError;
 use tracing::info;
 
 use alloc::vec;
@@ -31,7 +32,7 @@ impl<T: CommsClient> OracleEigenDAProvider<T> {
 
 #[async_trait]
 impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider<T> {
-    type Error = OracleProviderError;
+    type Error = HokuleaOracleProviderError;
 
     /// Get V1 blobs. TODO remove in the future if not needed for testing
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
@@ -39,7 +40,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         self.oracle
             .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))
             .await
-            .map_err(OracleProviderError::Preimage)?;
+            .map_err(HokuleaOracleProviderError::Preimage)?;
 
         info!(target: "eigenda-blobsource", "altda_commitment {:?}", altda_commitment);
 
@@ -81,7 +82,7 @@ async fn fetch_blob<T: CommsClient>(
     blob_length: u64,
     oracle: Arc<T>,
     blob: &mut [u8],
-) -> Result<(), OracleProviderError> {
+) -> Result<(), HokuleaOracleProviderError> {
     for idx_fe in 0..blob_length {
         // last 8 bytes for index
         let index_byte: [u8; 8] = idx_fe.to_be_bytes();
@@ -98,12 +99,12 @@ async fn fetch_blob<T: CommsClient>(
                 PreimageKeyType::GlobalGeneric,
             ))
             .await
-            .map_err(OracleProviderError::Preimage)?;
+            .map_err(HokuleaOracleProviderError::Preimage)?;
 
         // if field element is 0, it means the host has identified that the data
         // has breached eigenda invariant, i.e cert is invalid
         if field_element.is_empty() {
-            return Err(OracleProviderError::Preimage(PreimageOracleError::Other(
+            return Err(HokuleaOracleProviderError::Preimage(PreimageOracleError::Other(
                 "field elememnt is empty, breached eigenda invariant".into(),
             )));
         }

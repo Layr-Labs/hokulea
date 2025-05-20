@@ -1,8 +1,7 @@
-use crate::BYTES_PER_FIELD_ELEMENT;
+use crate::{errors::HokuleaStatelessError, BYTES_PER_FIELD_ELEMENT};
 use alloc::vec;
 use alloy_primitives::Bytes;
 use bytes::buf::Buf;
-use kona_derive::errors::BlobDecodingError;
 use rust_kzg_bn254_primitives::helpers;
 
 #[derive(Default, Clone, Debug)]
@@ -16,10 +15,10 @@ pub struct EigenDABlobData {
 impl EigenDABlobData {
     /// Decodes the blob into raw byte data. Reverse of the encode function below
     /// Returns a [BlobDecodingError] if the blob is invalid.
-    pub fn decode(&self) -> Result<Bytes, BlobDecodingError> {
+    pub fn decode(&self) -> Result<Bytes, HokuleaStatelessError> {
         let blob = &self.blob;
         if blob.len() < 32 {
-            return Err(BlobDecodingError::InvalidLength);
+            return Err(HokuleaStatelessError::BlobDecodeError);
         }
 
         debug!(target: "eigenda-datasource", "padded_eigenda_blob {:?}", blob);
@@ -37,7 +36,7 @@ impl EigenDABlobData {
         let blob_content: Bytes = blob_content.into();
 
         if blob_content.len() < content_size as usize {
-            return Err(BlobDecodingError::InvalidLength);
+            return Err(HokuleaStatelessError::BlobDecodeError);
         }
         Ok(blob_content.slice(..content_size as usize))
     }
@@ -87,8 +86,7 @@ mod tests {
     use super::*;
     use crate::PAYLOAD_ENCODING_VERSION_0;
     use alloc::vec;
-    use alloy_primitives::Bytes;
-    use kona_derive::errors::BlobDecodingError;
+    use alloy_primitives::Bytes;    
 
     #[test]
     fn test_encode_and_decode_success() {
@@ -122,6 +120,6 @@ mod tests {
         eigenda_blob.blob.truncate(33);
         let result = eigenda_blob.decode();
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), BlobDecodingError::InvalidLength);
+        assert_eq!(result.unwrap_err(), HokuleaStatelessError::BlobDecodeError);
     }
 }

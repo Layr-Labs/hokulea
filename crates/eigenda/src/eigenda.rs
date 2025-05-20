@@ -1,19 +1,31 @@
 //! Contains the [EigenDADataSource], which is a concrete implementation of the
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
-use crate::eigenda_blobs::EigenDABlobSource;
+use crate::altda_commitment;
+use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
 use crate::traits::EigenDABlobProvider;
-use crate::AltDACommitment;
+use crate::{altda_commitment::AltDACommitmentParseError, AltDACommitment};
+use kona_derive::errors::PipelineErrorKind;
 
+use alloc::string::ToString;
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{Address, Bytes};
 use async_trait::async_trait;
 use kona_derive::{
-    errors::PipelineError,
+    errors::{PipelineError, BlobProviderError},
     sources::EthereumDataSource,
     traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
     types::PipelineResult,
 };
 use kona_protocol::{BlockInfo, DERIVATION_VERSION_0};
+use alloc::vec::Vec;
+use crate::eigenda_data::EigenDABlobData;
+use tracing::warn;
+
+#[derive(Debug, Clone)]
+pub enum EigenDAOrCalldata {
+    EigenDA(EigenDABlobData),
+    Calldata(Bytes),
+}
 
 /// A factory for creating an Ethereum data source provider.
 #[derive(Debug, Clone)]
@@ -27,6 +39,10 @@ where
     pub ethereum_source: EthereumDataSource<C, B>,
     /// The eigenda source.
     pub eigenda_source: EigenDABlobSource<A>,
+    /// Whether the source is open.
+    pub open: bool,
+    /// eigenda blob
+    pub data: Vec<EigenDAOrCalldata>,
 }
 
 impl<C, B, A> EigenDADataSource<C, B, A>
@@ -43,6 +59,8 @@ where
         Self {
             ethereum_source,
             eigenda_source,
+            open: false,
+            data: Vec::new(),
         }
     }
 }
@@ -61,43 +79,103 @@ where
         block_ref: &BlockInfo,
         batcher_addr: Address,
     ) -> PipelineResult<Self::Item> {
-        debug!("EigenDADataSource next {} {}", block_ref, batcher_addr);
-
-        // data is either an op channel frame or an eigenda cert
-        let data = self.ethereum_source.next(block_ref, batcher_addr).await?;
-
-        // if data is op channel framce
-        if data[0] == DERIVATION_VERSION_0 {
-            // see https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/protocol/src/frame.rs#L140
-            return Ok(data);
-        }
-        if data.len() <= 2 {
-            return Err(PipelineError::NotEnoughData.temp());
-        }
-
-        let altda_commitment: AltDACommitment = match data[1..].try_into() {
-            Ok(a) => a,
-            Err(e) => {
-                // same handling procudure as in kona
-                // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L130
-                // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L165
-                error!("failed to parse altda commitment {}", e);
-                return Err(PipelineError::NotEnoughData.temp());
+        debug!("Data Available Source next {} {}", block_ref, batcher_addr);
+        // if loading failed for provider reason, the entire blobs are reloaded next time,
+        // no data is consumed at this point
+        self.load_blobs(block_ref, batcher_addr).await?;        
+                        
+        match self.next_data()? {
+            EigenDAOrCalldata::Calldata(c) => return Ok(c),
+            EigenDAOrCalldata::EigenDA(blob) => {
+                match blob.decode() {
+                    Ok(c) => return Ok(c),
+                    // if blob cannot be decoded, try next data, since load_blobs has openned the
+                    // stage already, it won't load the l1 block again
+                    Err(_) => self.next(block_ref, batcher_addr).await,
+                }
             }
-        };
-
-        // see https://github.com/ethereum-optimism/optimism/blob/0bb2ff57c8133f1e3983820c0bf238001eca119b/op-alt-da/damgr.go#L211
-        // TODO check rbn + STALE_GAP < l1_block_number {
-        //info!(
-        //    "altda_commitment 0x{}",
-        //    hex::encode(altda_commitment.digest_template())
-        //);
-        let eigenda_blob = self.eigenda_source.next(&altda_commitment).await?;
-        Ok(eigenda_blob)
+        }
     }
 
     fn clear(&mut self) {
-        self.eigenda_source.clear();
+        self.data.clear();
         self.ethereum_source.clear();
+        self.open = false;
+    }
+}
+
+impl<C, B, A> EigenDADataSource<C, B, A>
+where
+    C: ChainProvider + Send + Sync + Clone + Debug,
+    B: BlobProvider + Send + Sync + Clone + Debug,
+    A: EigenDABlobProvider + Send + Sync + Clone + Debug,
+{
+    // load calldata, currenly there is only one cert per calldata
+    // this is still required, in case the provider returns error
+    // the open variable ensures we don't have to load the ethereum source again
+    // If this function preempt, no state is corrupted    
+    async fn load_blobs (   
+        &mut self,
+        block_ref: &BlockInfo,
+        batcher_addr: Address,
+    ) -> PipelineResult<()> {
+        if self.open {
+            return Ok(())
+        }
+
+        let mut calldata_list: Vec<Bytes> = Vec::new();
+        // drain all the ethereum calldata from the l1 block
+        loop {
+            match self.ethereum_source.next(block_ref, batcher_addr).await {
+                Ok(d) => calldata_list.push(d),
+                Err(e) => {                    
+                    // break out the loop after having all batcher calldata for that block number
+                    if let PipelineErrorKind::Temporary(PipelineError::Eof) = e {
+                        break
+                    }
+                    return Err(e)
+                }
+            };            
+        }
+        
+        // all data returnable to l1 retriver, including both eigenda blob and Derivatin version 0
+        // data in a form that no longer requires preimage oracle access
+        let mut stateless_data: Vec<EigenDAOrCalldata> = Vec::new();
+
+        for i in 0..calldata_list.len() {
+            let data = calldata_list[i].clone();
+            // if data is op channel framce
+            if data[0] == DERIVATION_VERSION_0 {
+                stateless_data.push(EigenDAOrCalldata::Calldata(data));
+            } else {
+                // retrieve all data from eigenda
+                match self.eigenda_source.next(&data, block_ref.number).await {
+                    Err(e) => {
+                        match e {
+                            HokuleaErrorKind::Discard => continue,
+                            HokuleaErrorKind::Temporary => return Err(PipelineError::Provider("provider error".to_string()).temp()),
+                            HokuleaErrorKind::Critical(_) => return Err(PipelineError::Provider("provider critical error".to_string()).crit()),
+                        }
+                    },
+                    Ok(eigenda_blob) => {
+                        stateless_data.push(EigenDAOrCalldata::EigenDA(eigenda_blob));
+                    }
+                }
+            }
+        }
+
+        // data is either an op channel frame or an eigenda cert
+        self.data = stateless_data;
+        self.open = true;
+        Ok(())
+    }
+
+    #[allow(clippy::result_large_err)]
+    fn next_data(&mut self) -> Result<EigenDAOrCalldata, PipelineErrorKind> {    
+        // if all eigenda blob are processed, send signal to driver to advance    
+        if self.data.is_empty() {
+            return Err(PipelineError::Eof.temp())
+        }
+        Ok(self.data.remove(0))
     }
 }

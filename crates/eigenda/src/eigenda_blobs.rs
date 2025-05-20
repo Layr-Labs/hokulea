@@ -5,10 +5,12 @@ use crate::{eigenda_data::EigenDABlobData, AltDACommitment};
 
 use alloc::vec::Vec;
 use alloy_primitives::Bytes;
+use kona_derive::errors::PipelineErrorKind;
 use kona_derive::{
     errors::{BlobProviderError, PipelineError},
     types::PipelineResult,
 };
+use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
 
 /// A data iterator that reads from a blob.
 #[derive(Debug, Clone)]
@@ -17,11 +19,7 @@ where
     B: EigenDABlobProvider + Send,
 {
     /// Fetches blobs.
-    pub eigenda_fetcher: B,
-    /// EigenDA blobs.
-    pub data: Vec<EigenDABlobData>,
-    /// Whether the source is open.
-    pub open: bool,
+    pub eigenda_fetcher: B,    
 }
 
 impl<B> EigenDABlobSource<B>
@@ -32,71 +30,64 @@ where
     pub const fn new(eigenda_fetcher: B) -> Self {
         Self {
             eigenda_fetcher,
-            data: Vec::new(),
-            open: false,
         }
     }
-
+    
     /// Fetches the next blob from the source.
-    pub async fn next(&mut self, eigenda_commitment: &AltDACommitment) -> PipelineResult<Bytes> {
-        self.load_blobs(eigenda_commitment).await?;
-        let next_data = match self.next_data() {
-            Ok(d) => d,
-            Err(e) => return e,
-        };
-        // Decode the blob data to raw bytes.
-        // Otherwise, ignore blob and recurse next.
-        match next_data.decode() {
-            Ok(d) => Ok(d),
-            Err(e) => {
-                warn!(target: "blob-source", "Failed to decode blob data, skipping {}", e);
-                panic!()
-            }
-        }
-    }
+    pub async fn next(&mut self, calldata: &Bytes, _l1_inclusion_bn: u64) -> Result<EigenDABlobData, HokuleaErrorKind> {
+        let eigenda_commitment = self.parse(calldata)?;
 
-    /// Clears the source.
-    pub fn clear(&mut self) {
-        self.data.clear();
-        self.open = false;
-    }
+        // for recency check, there are two approaches, depending how many interface we want
+        // 1. define a new interface in EigenDABlobProvider trait to get_recency_window. Then discard the old cert.
+        //    This requires add new impl in OracleEigenDAProvider proof/src/eigenda_provider.rs
+        //    and OracleEigenDAWitnessProvider from witgen/src/witness_provider. We will also add new field in EigenDABlobWitnessData
+        //    which is populated in the get_recency_window path
+        // 2. let get_blob returns 2 struct (Blob, recency), the provider can set Blob to empty if recency
+        //    failed, but it requires changing the get_blob interface of EigenDABlobProvider, to additionally accept
+        //    l1_inclusion_bn. Inside get_blob, the get_recency_window is fetched first.
+        // RECENCY IS unhandled at the moment
 
-    /// Loads blob data into the source if it is not open.
-    async fn load_blobs(
-        &mut self,
-        eigenda_commitment: &AltDACommitment,
-    ) -> Result<(), BlobProviderError> {
-        if self.open {
-            return Ok(());
-        }
-
-        match self.eigenda_fetcher.get_blob(eigenda_commitment).await {
-            Ok(data) => {
-                self.open = true;
+        // overload the preimage oracle returns recency checks, it is also out of consideration of
+        // code reuse, alternative is to add a function into EigenDABlobProvider for recency window.
+        // But that creates some boilerplate code, also in the future, we will have a single onchain
+        // verifier entry that also checks the recency, and therefore entirely making it unnecessary
+        // to check it in the offchain hokulea code.
+        match self.eigenda_fetcher.get_blob(&eigenda_commitment).await {
+            Ok(data) => {                                
                 let new_blob: Vec<u8> = data.into();
                 let eigenda_blob = EigenDABlobData {
                     blob: new_blob.into(),
                 };
-                self.data.push(eigenda_blob);
 
-                debug!(target: "eigenda-blobsource", "load_blobs {:?}", self.data);
-
-                Ok(())
+                Ok(eigenda_blob)
             }
             Err(e) => {
                 error!("EigenDA blob source fetching error {}", e);
-                self.open = true;
-                Ok(())
+                Err(e.into())
             }
         }
     }
 
-    // TODO refactor later to avoid large object movement
-    #[allow(clippy::result_large_err)]
-    fn next_data(&mut self) -> Result<EigenDABlobData, PipelineResult<Bytes>> {
-        if self.data.is_empty() {
-            return Err(Err(PipelineError::Eof.temp()));
+    fn parse(
+        &mut self,
+        data: &Bytes,
+    ) -> Result<AltDACommitment, HokuleaStatelessError> {
+        if data.len() <= 2 {
+            // recurse if data is mailformed
+            warn!(target: "blob_source", "Failed to decode blob data, skipping");
+            //self.next(block_ref, batcher_address).await
+            return Err(HokuleaStatelessError::InsufficientEigenDACertLength)                
         }
-        Ok(self.data.remove(0))
+        let altda_commitment: AltDACommitment = match data[1..].try_into() {
+            Ok(a) => a,
+            Err(e) => {
+                // same handling procudure as in kona
+                // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L130
+                // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L165
+                error!("failed to parse altda commitment {}", e);
+                return Err(HokuleaStatelessError::ParseError(e))
+            }
+        };
+        Ok(altda_commitment)
     }
 }
