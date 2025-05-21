@@ -70,7 +70,6 @@ where
         if data.len() <= 2 {
             // recurse if data is mailformed
             warn!(target: "blob_source", "Failed to decode blob data, skipping");
-            //self.next(block_ref, batcher_address).await
             return Err(HokuleaStatelessError::InsufficientEigenDACertLength);
         }
         let altda_commitment: AltDACommitment = match data[1..].try_into() {
