@@ -1,6 +1,5 @@
 //! Contains the [EigenDADataSource], which is a concrete implementation of the
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
-//!
 use crate::traits::EigenDABlobProvider;
 use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
 use kona_derive::errors::PipelineErrorKind;
