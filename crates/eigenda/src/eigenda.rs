@@ -135,7 +135,7 @@ where
             };
         }
 
-        // all data returnable to l1 retriver, including both eigenda blob and Derivatin version 0
+        // all data returnable to l1 retriever, including both eigenda blob and Derivation version 0
         // data in a form that no longer requires preimage oracle access
         let mut self_contained_data: Vec<EigenDAOrCalldata> = Vec::new();
 
