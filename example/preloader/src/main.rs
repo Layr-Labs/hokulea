@@ -55,6 +55,13 @@ async fn main() -> anyhow::Result<()> {
             };
             let canoe_verifier = CanoeSteelVerifier{};
         } else if #[cfg(feature = "sp1-cc")] {
+            // Note that in order to run hokulea in zkVM with the sp1-cc proof verified within
+            // the zkVM, the program input to zkVM (i.e SP1Stdin) must also contain sp1-cc compressed
+            // proof using a method called write_proof(..). By doing so, the canoe verification logic
+            // can pick up the compressed stark proof automatically. See more information at https://docs.succinct.xyz/docs/sp1/writing-programs/proof-aggregation
+            // This is not included as a part of example, because the example does use SP1 zkVM to verify proof.
+            // Particularly, op-succinct integration needs to use write_proof() to supply compressed proof
+            // into SP1 zkvm when using hokulea as an ELF.
             use canoe_sp1_cc_host::CanoeSp1CCProvider;
             use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
             let canoe_provider = CanoeSp1CCProvider{
@@ -62,10 +69,6 @@ async fn main() -> anyhow::Result<()> {
             };
             let canoe_verifier = CanoeSp1CCVerifier{};
         } else {
-            // Note that in order to run hokulea in zkVM with the sp1-cc proof verified within
-            // the zkVM, the program input to zkVM (i.e SP1Stdin) must also contain sp1-cc compressed
-            // proof using a method called write_proof(..). By doing so, the canoe verification logic
-            // can pick up the compressed stark proof automatically. See more information at https://docs.succinct.xyz/docs/sp1/writing-programs/proof-aggregation
             use canoe_provider::CanoeNoOpProvider;
             use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;
             let canoe_provider = CanoeNoOpProvider{};
