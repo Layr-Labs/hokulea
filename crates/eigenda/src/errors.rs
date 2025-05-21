@@ -22,7 +22,7 @@ pub enum HokuleaErrorKind {
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum HokuleaStatelessError {
     /// Data is too short for parsing the altda commitment
-    #[error("calldata length is not sufficinet")]
+    #[error("calldata length is not sufficient")]
     InsufficientEigenDACertLength,
     /// Parse from bytes into Altda commitment containing a DA certificate
     /// use source because eventualy hokulea error will be overwritten into pipeline error
