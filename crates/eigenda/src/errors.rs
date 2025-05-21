@@ -7,19 +7,20 @@ use alloc::string::{String, ToString};
 #[derive(Debug, thiserror::Error)]
 pub enum HokuleaErrorKind {
     /// for cert that has violated the rules in hokulea derivation
-    #[error("Discard")]
+    #[error("Discard {0}")]
     Discard(String),
     /// for provider violating eigenda properties, invalid field element
     #[error("Critical {0}")]
     Critical(String),
     /// for temporary issue like provider unable to provide data
-    #[error("Temporary")]
+    #[error("Temporary {0}")]
     Temporary(String),
 }
 
-/// A list of error unrelated to the preimage, i.e all of which can be deduced
-/// based on available data
+/// A list of Hokulea error purely out of data processing, and is decoupled from
+/// the error from error out of the preimage error
 #[derive(Debug, thiserror::Error, PartialEq)]
+#[error(transparent)]
 pub enum HokuleaStatelessError {
     /// Data is too short for parsing the altda commitment
     #[error("calldata length is not sufficient")]

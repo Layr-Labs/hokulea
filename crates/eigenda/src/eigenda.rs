@@ -24,7 +24,10 @@ pub enum EigenDAOrCalldata {
     Calldata(Bytes),
 }
 
-/// A factory for creating an Ethereum data source provider.
+/// A factory for creating an EigenDADataSource iterator. The internal behavior is that
+/// data is fetched from eigenda or stays as it is if Eth calldata is desired. Those data
+/// are cached. When next() is called it just returns the next blob cached. Otherwise,
+/// EOF is sent if iterator is empty
 #[derive(Debug, Clone)]
 pub struct EigenDADataSource<C, B, A>
 where
@@ -38,7 +41,7 @@ where
     pub eigenda_source: EigenDABlobSource<A>,
     /// Whether the source is open.
     pub open: bool,
-    /// eigenda blob
+    /// eigenda blob or ethereum calldata that does not use eigenda in fallback mode
     pub data: Vec<EigenDAOrCalldata>,
 }
 
@@ -110,7 +113,7 @@ where
     // load calldata, currenly there is only one cert per calldata
     // this is still required, in case the provider returns error
     // the open variable ensures we don't have to load the ethereum source again
-    // If this function preempt, no state is corrupted
+    // If this function returns early with error, no state is corrupted
     async fn load_blobs(
         &mut self,
         block_ref: &BlockInfo,
