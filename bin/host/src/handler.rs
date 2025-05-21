@@ -64,11 +64,20 @@ pub async fn fetch_eigenda_hint(
     trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
     // Fetch the blob sidecar from the blob provider.
-    let rollup_data = providers
+    let response = providers
         .eigenda_blob_provider
         .fetch_eigenda_blob(&altda_commitment_bytes)
         .await
         .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
+
+    // For now, failed at any non success
+    if !response.status().is_success() {
+        return Err(anyhow!(
+            "Failed to fetch eigenda blob, status {:?}",
+            response.error_for_status()
+        ));
+    }
+    let rollup_data = response.bytes().await.unwrap();
 
     // TODO define an error message from proxy that if the view call is wrong
     // https://github.com/Layr-Labs/eigenda/blob/master/contracts/src/core/EigenDACertVerifier.sol#L165
@@ -86,7 +95,7 @@ pub async fn fetch_eigenda_hint(
     let mut field_element_key = altda_commitment.digest_template();
 
     let blob_length_fe = match &altda_commitment.versioned_cert {
-        EigenDAVersionedCert::V1(c) => c.blob_header.data_length as usize,
+        EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1"),
         EigenDAVersionedCert::V2(c) => {
             c.blob_inclusion_info
                 .blob_certificate
@@ -127,25 +136,5 @@ pub async fn fetch_eigenda_hint(
             )?;
         }
     }
-
-    /*
-    // Compute kzg proof for the entire blob on a deterministic random point
-    let kzg_proof = match compute_kzg_proof(&eigenda_blob.blob) {
-        Ok(p) => p,
-        Err(e) => return Err(anyhow!("cannot compute kzg proof {}", e)),
-    };
-
-    // Write the KZG Proof as the last element, needed for ZK
-    field_element_key[72..].copy_from_slice((blob_length_fe as u64).to_be_bytes().as_ref());
-    let blob_key_hash = keccak256(field_element_key.as_ref());
-    kv_write_lock.set(
-        PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-        field_element_key.into(),
-    )?;
-    kv_write_lock.set(
-        PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-        kzg_proof.to_vec(),
-    )?;
-    */
     Ok(())
 }

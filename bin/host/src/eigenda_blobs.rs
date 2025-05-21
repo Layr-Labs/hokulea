@@ -26,11 +26,9 @@ impl OnlineEigenDABlobProvider {
     pub async fn fetch_eigenda_blob(
         &self,
         cert: &Bytes,
-    ) -> Result<alloy_rlp::Bytes, reqwest::Error> {
+    ) -> Result<reqwest::Response, reqwest::Error> {
         let url = format!("{}/{}/{}", self.base, GET_METHOD, cert);
 
-        let raw_response = self.inner.get(url).send().await?;
-
-        raw_response.bytes().await
+        self.inner.get(url).send().await
     }
 }
