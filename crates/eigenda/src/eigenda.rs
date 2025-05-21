@@ -140,7 +140,7 @@ where
         let mut self_contained_data: Vec<EigenDAOrCalldata> = Vec::new();
 
         for data in &calldata_list {
-            // if data is op channel framce
+            // if data is op channel frame
             if data[0] == DERIVATION_VERSION_0 {
                 self_contained_data.push(EigenDAOrCalldata::Calldata(data.clone()));
             } else {
