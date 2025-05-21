@@ -77,5 +77,47 @@ bn254 field element, and by cryptographic property, there isn't a valid kzg comm
 
 Finally, if nothing went wrong, the hokulea derivation pipeline returns the desired output.
 
+# Preimage Oracle Address Space
 
+Preimage oracle is the interface which kona (or more generally OP FPVM) uses to retrieve data for progressing the derivation pipeline. At the high level,
+a preimage oracle is a key-value store whose key is made of [32Bytes](https://specs.optimism.io/fault-proof/index.html#pre-image-oracle) address. 
+The OP spec categorizes the address space, and reserves 0x03 as the generic type which can be used for usage like AltDA.
 
+## Address space for a EigenDA blob
+A EigenDA blob preimage request shares a great similarity with a 4844 blob, we follows a general pattern as 4844 blob but with a few difference
+
+- We uses generic key 0x03, and the key is constructed as 0x03 ++ keccak256(...)[:31].
+- The content of the keccak hash is made of 80 bytes
+  - [0:32] is a keccak digest of entire altda commitment (i.e DA certificate)
+  - [32:72] are zero bytes
+  - [72:80] represents an index of the field element in a blob
+
+For every field element in an eigenda blob represented by a DA cert, there is unique address in the preimage oracle.
+Furthermore, every DA cert has its own address space for field elements capable of representing 2**64 field elements.
+
+The client communicates with a host to fetch field element one at a time, and each field element consists of 32 bytes.
+
+Note this address scheme does not include the sender address, though mentioned in [OP generic key type](https://specs.optimism.io/fault-proof/index.html#type-3-global-generic-key).
+
+## Reserved Addresses for DA certificates
+
+Eigenda secure integration requires additional primitives exposed by the preimage oracle, including
+- `certificate validity` that accepts a DA certificate and return a boolean indicating if the certificate is valid subject to onchain smart contract [logic](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation)
+- `recency window request` that takes no input and returns an u64 integer for recency window, more see [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#1-rbn-recency-validation)
+
+Those addresses must not collide with address for fetching field element. We choose the following
+- `certificate validity`: field element index = `2**28 + 1`
+- `recency window request`: field element index = `2**28 + 2`
+
+The design space is unconstrained for now. `2**28` is chosen because there are at most `2**28` possible subgroup field elements able to represent 
+a 32 bytes data on the bn254 curve. No EigenDA blob can ever fetch field elements at those indices. 
+We reserve the 40 zero bytes and field element range from `2**28+2` to `2**64` for future use.
+
+## Adaptable to both zkVM and interactive fault proof VM
+
+While it is possible for a host to return a data struct that derializes bytes into (blob, validity, recency window) in one communication round, 
+but using the address scheme above, Hokulea keeps the possibility to support the original OP interactive Fault proof. For an interactive game,
+players interactively narrow down to a challenge which can be an eigenda field element. 
+Because the above scheme retrieve field element one by one, the player can open a kzg proof onchain to populate the onchain preimage oracle
+when it happens to be the last decision point, and therefore resolves the game.
+Similarly onchain preimage can be populated to support `certificate validity` and `recency window request`.
