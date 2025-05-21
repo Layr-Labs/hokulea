@@ -159,7 +159,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            BlobDecodingError::InvalidBlobEncodingVersion(1).into()
+            BlobDecodingError::InvalidBlobSizeInBytes(33).into()
         );
     }
 }
