@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "0a6b6ccc8364b180cb46ffa06c729a7b3939dfab" }
-reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.3.10", default-features = false }
+reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.4.3", default-features = false }
 
 # alloy
 alloy-primitives = { workspace = true, features = ["serde"] }
