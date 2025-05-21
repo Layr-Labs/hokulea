@@ -165,7 +165,6 @@ where
             }
         }
 
-        // data is either an op channel frame or an eigenda cert
         self.data = self_contained_data;
         self.open = true;
         Ok(())
