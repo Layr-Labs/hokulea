@@ -655,7 +655,7 @@ dependencies = [
  "alloy-signer 0.15.10",
  "alloy-sol-types",
  "alloy-transport 0.15.10",
- "alloy-transport-http 0.15.10",
+ "alloy-transport-http 0.15.11",
  "alloy-transport-ipc 0.15.10",
  "alloy-transport-ws 0.15.10",
  "async-stream",
@@ -780,7 +780,7 @@ dependencies = [
  "alloy-primitives 1.1.0",
  "alloy-pubsub 0.15.10",
  "alloy-transport 0.15.10",
- "alloy-transport-http 0.15.10",
+ "alloy-transport-http 0.15.11",
  "alloy-transport-ipc 0.15.10",
  "alloy-transport-ws 0.15.10",
  "async-stream",
@@ -1201,9 +1201,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-http"
-version = "0.15.10"
+version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70a9372fba202370973748d76c2891344cbacfb012d44a8ed62135ba53d4408e"
+checksum = "ef7c5ea7bda4497abe4ea92dcb8c76e9f052c178f3c82aa6976bcb264675f73c"
 dependencies = [
  "alloy-json-rpc 0.15.10",
  "alloy-rpc-types-engine 0.15.10",
@@ -4805,7 +4805,7 @@ dependencies = [
  "alloy-rpc-types-beacon",
  "alloy-serde 0.15.10",
  "alloy-transport 0.15.10",
- "alloy-transport-http 0.15.10",
+ "alloy-transport-http 0.15.11",
  "anyhow",
  "ark-ff 0.5.0",
  "async-trait",
@@ -4993,7 +4993,7 @@ dependencies = [
  "alloy-rpc-types-engine 0.15.10",
  "alloy-serde 0.15.10",
  "alloy-transport 0.15.10",
- "alloy-transport-http 0.15.10",
+ "alloy-transport-http 0.15.11",
  "async-trait",
  "http-body-util",
  "kona-derive",
@@ -5121,7 +5121,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
