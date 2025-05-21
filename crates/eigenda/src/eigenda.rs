@@ -138,12 +138,12 @@ where
 
         // all data returnable to l1 retriver, including both eigenda blob and Derivatin version 0
         // data in a form that no longer requires preimage oracle access
-        let mut stateless_data: Vec<EigenDAOrCalldata> = Vec::new();
+        let mut self_contained_data: Vec<EigenDAOrCalldata> = Vec::new();
 
         for data in &calldata_list {
             // if data is op channel framce
             if data[0] == DERIVATION_VERSION_0 {
-                stateless_data.push(EigenDAOrCalldata::Calldata(data.clone()));
+                self_contained_data.push(EigenDAOrCalldata::Calldata(data.clone()));
             } else {
                 // retrieve all data from eigenda
                 match self.eigenda_source.next(data, block_ref.number).await {
@@ -160,14 +160,14 @@ where
                         }
                     },
                     Ok(eigenda_blob) => {
-                        stateless_data.push(EigenDAOrCalldata::EigenDA(eigenda_blob));
+                        self_contained_data.push(EigenDAOrCalldata::EigenDA(eigenda_blob));
                     }
                 }
             }
         }
 
         // data is either an op channel frame or an eigenda cert
-        self.data = stateless_data;
+        self.data = self_contained_data;
         self.open = true;
         Ok(())
     }

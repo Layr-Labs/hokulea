@@ -17,4 +17,4 @@ pub trait CanoeVerifier: Clone + Send + 'static {
 }
 
 // changed in each contarct deployment
-pub const VERIFIER_ADDRESS: Address = address!("0x17435ccE3d1B4fA2e5f8A08eD921D57C6762A180");
+pub const VERIFIER_ADDRESS: Address = address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051");
