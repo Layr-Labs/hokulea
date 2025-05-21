@@ -79,7 +79,7 @@ impl TryFrom<&[u8]> for AltDACommitment {
         let versioned_cert = match value[2].try_into()? {
             CertVersion::Version1 => {
                 // filter out all v1 cert, the rest of derivation pipeline assumes there is no V1
-                // cert left, and panic otherwise
+                // cert left, and panic elsewhere
                 return Err(AltDACommitmentParseError::DisallowedV1DACert);
             }
             CertVersion::Version2 => {

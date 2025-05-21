@@ -39,9 +39,10 @@ where
     pub ethereum_source: EthereumDataSource<C, B>,
     /// The eigenda source.
     pub eigenda_source: EigenDABlobSource<A>,
-    /// Whether the source is open.
+    /// Whether the source is open. When it is open, the next() call will consume data
+    /// at this current stage, as opposed to pull it from the next stage
     pub open: bool,
-    /// eigenda blob or ethereum calldata that does not use eigenda in fallback mode
+    /// eigenda blob or ethereum calldata that does not use eigenda in failover mode
     pub data: Vec<EigenDAOrCalldata>,
 }
 
