@@ -84,7 +84,7 @@ a preimage oracle is a key-value store whose key is made of [32Bytes](https://sp
 The OP spec categorizes the address space, and reserves 0x03 as the generic type which can be used for usage like AltDA.
 
 ## Address space for a EigenDA blob
-A EigenDA blob preimage request shares a great similarity with a 4844 blob, we follows a general pattern as 4844 blob but with a few difference
+EigenDA blob preimage requests share a great similarity with a 4844 blobs, so we follow the same general scheme as used for 4844 blobs, albeit with a few difference
 
 - We uses generic key 0x03, and the key is constructed as 0x03 ++ keccak256(...)[:31].
 - The content of the keccak hash is made of 80 bytes
