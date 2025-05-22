@@ -95,7 +95,7 @@ EigenDA blob preimage requests share a great similarity with a 4844 blobs, so we
 For every field element in an eigenda blob represented by a DA cert, there is unique address in the preimage oracle.
 Furthermore, every DA cert has its own address space for field elements capable of representing 2**64 field elements.
 
-The client communicates with a host to fetch field element one at a time, and each field element consists of 32 bytes.
+The client communicates with a host to fetch field elements one at a time, and each field element consists of 32 bytes.
 
 Note this address scheme does not include the sender address, though mentioned in [OP generic key type](https://specs.optimism.io/fault-proof/index.html#type-3-global-generic-key).
 
