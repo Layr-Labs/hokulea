@@ -115,7 +115,7 @@ We reserve the 40 zero bytes and field element range from `2**28+2` to `2**64` f
 
 ## Adaptable to both zkVM and interactive fault proof VM
 
-While it is possible for a host to return a data struct that derializes bytes into (blob, validity, recency window) in one communication round, 
+While it is possible for a host to return a data struct that deserialize bytes into (blob, validity, recency window) in one communication round, 
 but using the address scheme above, Hokulea keeps the possibility to support the original OP interactive Fault proof. For an interactive game,
 players interactively narrow down to a challenge which can be an eigenda field element. 
 Because the above scheme retrieve field element one by one, the player can open a kzg proof onchain to populate the onchain preimage oracle
