@@ -88,7 +88,7 @@ EigenDA blob preimage requests share a great similarity with a 4844 blobs, so we
 
 - We uses generic key 0x03, and the key is constructed as 0x03 ++ keccak256(...)[:31].
 - The content of the keccak hash is made of 80 bytes
-  - [0:32] is a keccak digest of entire altda commitment (i.e DA certificate)
+  - [0:32] is a keccak digest of entire altda commitment (header bytes + DA certificate)
   - [32:72] are zero bytes
   - [72:80] represents an index of the field element in a blob
 
@@ -97,7 +97,7 @@ Furthermore, every DA cert has its own address space for field elements capable 
 
 The client communicates with a host to fetch field elements one at a time, and each field element consists of 32 bytes.
 
-Note this address scheme does not include the sender address, though mentioned in [OP generic key type](https://specs.optimism.io/fault-proof/index.html#type-3-global-generic-key).
+Note we deviate from OP spec, which requires sender address to be included in the hash preimage, which we think is unnecessary. See [OP generic key type](https://specs.optimism.io/fault-proof/index.html#type-3-global-generic-key).
 
 ## Reserved Addresses for DA certificates
 
@@ -105,19 +105,23 @@ Eigenda secure integration requires additional primitives exposed by the preimag
 - `certificate validity` that accepts a DA certificate and return a boolean indicating if the certificate is valid subject to onchain smart contract [logic](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation)
 - `recency window request` that takes no input and returns an u64 integer for recency window, more see [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#1-rbn-recency-validation)
 
-Those addresses must not collide with address for fetching field element. We choose the following
-- `certificate validity`: field element index = `2**28 + 1`
-- `recency window request`: field element index = `2**28 + 2`
 
-The design space is unconstrained for now. `2**28` is chosen because there are at most `2**28` possible subgroup field elements able to represent 
-a 32 bytes data on the bn254 curve. No EigenDA blob can ever fetch field elements at those indices. 
-We reserve the 40 zero bytes and field element range from `2**28+2` to `2**64` for future use.
+To avoid collision with field element mentioned above, we use the immediate byte following 32 Bytes hash digest for interfaces. See table below
+| 32 bytes AltCommitment Digest  | 1 Interface Byte | 39 Reserved Bytes |  8 bytes Field Element space | Notes | 
+| ------------------------------ | ---------------- | ----------------- | ---------------------------- | ------------------------- | 
+|       ..                       | 0x00             |       0x0..0      |       ..                     |  Field element addresses | 
+|       ..                       | 0x01             |       0x0..0      |       0x0000000000000000     | certificate validity interface address |
+|       ..                       | 0x02             |       0x0..0      |       0x0000000000000000     | recency window request interface address |
+
+Every AltCommitment (which corresponds to a DA cert) has its unique interface to call certificate validity and to request recency window.
 
 ## Adaptable to both zkVM and interactive fault proof VM
 
 While it is possible for a host to return a data struct that deserialize bytes into (blob, validity, recency window) in one communication round, 
 but using the address scheme above, Hokulea keeps the possibility to support the original OP interactive Fault proof. For an interactive game,
-players interactively narrow down to a challenge which can be an eigenda field element. 
+players interactively narrow down to a challenge which can be an eigenda field element.
+EigenDA currently supports 16MiB blob, and potentially higher in the future. For future compatibility, it is more feasible to challenge one
+point as opposed to the entire blob.
 Because the above scheme retrieve field element one by one, the player can open a kzg proof onchain to populate the onchain preimage oracle
 when it happens to be the last decision point, and therefore resolves the game.
 Similarly onchain preimage can be populated to support `certificate validity` and `recency window request`.
