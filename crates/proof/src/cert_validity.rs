@@ -12,8 +12,10 @@ use serde::{Deserialize, Serialize};
 pub struct CertValidity {
     /// the claim about if the cert is valid
     pub claimed_validity: bool,
-    /// a zkvm proof attesting the above result    
-    pub canoe_proof: Vec<u8>,
+    /// a zkvm proof attesting the above result
+    /// if proof verified within zkVM, the proof should have been provided from 
+    /// the STDIN of zkvm. So the option has to be none
+    pub canoe_proof: Option<Vec<u8>>,
     /// block hash where view call anchored at, l1_head comes from kona_cfg    
     pub l1_head_block_hash: B256,
     /// l1 chain id specifies the chain which implicitly along with l1_head_block_number

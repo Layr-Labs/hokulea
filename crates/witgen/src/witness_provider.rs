@@ -83,7 +83,7 @@ fn populate_witness(
     // CertValidity struct needs to be populated later by the caller
     witness.validity.push(CertValidity {
         claimed_validity,
-        canoe_proof: Vec::new(),
+        canoe_proof: None,
         l1_head_block_hash: B256::ZERO,
         l1_chain_id: 0,
     });

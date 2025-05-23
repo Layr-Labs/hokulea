@@ -36,11 +36,10 @@ canoe-steel-methods = { workspace = true, optional = true }
 risc0-zkvm = { workspace = true, optional = true }
 
 # Sp1-CC
-sp1-sdk = { workspace = true, optional = true }
 sp1-lib = { workspace = true, features = ["verify"], optional = true}
 sha2 = { workspace = true, optional = true }
 
 
 [features]
 steel = ["canoe-steel-methods", "risc0-zkvm", "canoe-bindings"]
-sp1-cc = ["sp1-sdk", "canoe-bindings", "sha2", "sp1-lib"]
+sp1-cc = ["canoe-bindings", "sha2", "sp1-lib"]

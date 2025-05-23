@@ -32,7 +32,8 @@ pub async fn populate_cert_validity_to_witness(
             .await
             .expect("must be able generate a canoe zk proof attesting eth state");
 
+        
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        witness.validity[i].canoe_proof = canoe_proof_bytes;
+        witness.validity[i].canoe_proof = Some(canoe_proof_bytes);
     }
 }

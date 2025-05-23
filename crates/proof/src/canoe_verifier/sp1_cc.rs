@@ -38,18 +38,17 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
 
+                if cert_validity.canoe_proof.is_some() {
+                    // Sp1 doc https://github.com/succinctlabs/sp1/blob/a1d873f10c32f5065de120d555cfb53de4003da3/examples/aggregation/script/src/main.rs#L75
+                    warn!("sp1-cc verification within zkvm requires proof being provided via zkVM stdin");
+                }
                 // used within zkVM
                 let public_values_digest = Sha256::digest(canoe_receipt.public_values.clone());
                 let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");
                 let v_key = b256_to_u32_array(v_key_b256);
                 verify_sp1_proof(&v_key, &public_values_digest.into());
             } else {
-                // in host mode
-                use sp1_sdk::ProverClient;
-                let client = ProverClient::from_env();
-                let (_, vk) = client.setup(ELF);
-                client.verify(&canoe_receipt, &vk).expect("verification failed");
-
+                warn!("Sp1CC proof IS NOT verified in the non zkVM environment");
                 // sp1-cc currently has limitation on supporting custom chain_id without supplying genesis json
                 // overwriting cert_validity chain_id to be 1, which is the default mainnet chain_id used by
                 // sp1-cc host when chain spec is not specified
