@@ -1,88 +1,46 @@
-use crate::canoe_verifier::{CanoeVerifier, VERIFIER_ADDRESS};
+use crate::canoe_verifier::CanoeVerifier;
 use crate::cert_validity::CertValidity;
-
-use eigenda_v2_struct::EigenDAV2Cert;
-use sp1_sdk::SP1ProofWithPublicValues;
-
-use alloc::vec::Vec;
 use alloy_primitives::B256;
-use alloy_sol_types::SolValue;
-use canoe_bindings::Journal;
+use eigenda_v2_struct::EigenDAV2Cert;
 
-use tracing::info;
+use tracing::{info, warn};
 
 // ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
 // To get vKey of ELF
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
-pub const VKEYHEXSTRING: &str = "0039b09c4f5cfc58ca7cbabd5eb5997de2cfdfa336a5ced1b640084c165718fa";
-pub const ELF: &[u8] = include_bytes!("../../../../canoe/sp1-cc/elf/canoe-sp1-cc-client");
+pub const VKEYHEXSTRING: &str = "001a1106242f4bf2a44b02aeb0123dec8a842654b3cf941ad19c24d36906ce8e";
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
 
 impl CanoeVerifier for CanoeSp1CCVerifier {
+    #[allow(unused_variables)]
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSp1CCVerifier");
-        // if not in dev mode, the receipt must be non empty
-        let receipt_bytes = cert_validity.canoe_proof.as_ref();
-
-        let mut cert_validity = cert_validity.clone();
-
-        // Because we have the sp1-cc dependancy issue, we cannot deserialize the bytes into SContractPublicValues
-        // So instead we define custom struct Journal and compare opaque bytes array to ensure inputs are identical
-        let canoe_receipt: SP1ProofWithPublicValues =
-            serde_json::from_slice(receipt_bytes).expect("serde error");
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
+                use core::str::FromStr;
+                use crate::canoe_verifier::to_journal_bytes;
 
+                let journal_bytes = to_journal_bytes(&cert_validity, &eigenda_cert);
+
+                // if not in dev mode, the receipt should be empty
+                if cert_validity.canoe_proof.is_some() {
+                    // Sp1 doc https://github.com/succinctlabs/sp1/blob/a1d873f10c32f5065de120d555cfb53de4003da3/examples/aggregation/script/src/main.rs#L75
+                    warn!("sp1-cc verification within zkvm requires proof being provided via zkVM stdin");
+                }
                 // used within zkVM
-                let public_values_digest = Sha256::digest(canoe_receipt.public_values.clone());
+                let public_values_digest = Sha256::digest(journal_bytes);
                 let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");
                 let v_key = b256_to_u32_array(v_key_b256);
                 verify_sp1_proof(&v_key, &public_values_digest.into());
             } else {
-                // in host mode
-                use sp1_sdk::ProverClient;
-                let client = ProverClient::from_env();
-                let (_, vk) = client.setup(ELF);
-                client.verify(&canoe_receipt, &vk).expect("verification failed");
-
-                // sp1-cc currently has limitation on supporting custom chain_id without supplying genesis json
-                // overwriting cert_validity chain_id to be 1, which is the default mainnet chain_id used by
-                // sp1-cc host when chain spec is not specified
-                cert_validity.l1_chain_id = 1;
+                warn!("Sp1CC proof IS NOT verified in the non zkVM environment");
             }
         }
-
-        let public_values_vec = canoe_receipt.public_values.to_vec();
-
-        let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
-        let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();
-        let non_signer_stakes_and_signature = eigenda_cert
-            .nonsigner_stake_and_signature
-            .to_sol()
-            .abi_encode();
-        let signed_quorum_numbers_abi = eigenda_cert.signed_quorum_numbers.abi_encode();
-
-        // ensure inputs are constrained
-        let mut buffer = Vec::new();
-        buffer.extend(batch_header);
-        buffer.extend(blob_inclusion_info);
-        buffer.extend(non_signer_stakes_and_signature);
-        buffer.extend(signed_quorum_numbers_abi);
-
-        let journal = Journal {
-            certVerifierAddress: VERIFIER_ADDRESS,
-            input: buffer.into(),
-            blockhash: cert_validity.l1_head_block_hash,
-            output: cert_validity.claimed_validity,
-            l1ChainId: cert_validity.l1_chain_id,
-        };
-        let journal_bytes = journal.abi_encode();
-        assert!(journal_bytes == public_values_vec);
     }
 }
 

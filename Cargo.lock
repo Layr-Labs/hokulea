@@ -2357,7 +2357,6 @@ name = "canoe-sp1-cc-host"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.1.0",
- "alloy-provider 0.14.0",
  "alloy-rpc-types 0.14.0",
  "alloy-sol-types",
  "anyhow",
@@ -2369,6 +2368,8 @@ dependencies = [
  "sp1-build",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",
+ "sp1-core-executor",
+ "sp1-prover",
  "sp1-sdk",
  "tracing",
  "url",
@@ -3438,6 +3439,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethereum-consensus"
+version = "0.1.1"
+source = "git+https://github.com/ralexstokes/ethereum-consensus?rev=ba43147eb71b07e21e156e2904549405f87bc9a6#ba43147eb71b07e21e156e2904549405f87bc9a6"
+dependencies = [
+ "blst",
+ "bs58",
+ "c-kzg",
+ "enr",
+ "hex",
+ "integer-sqrt",
+ "multiaddr",
+ "multihash",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2 0.10.9",
+ "ssz_rs",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
 name = "event-listener"
 version = "5.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4042,6 +4067,7 @@ dependencies = [
  "kona-proof",
  "op-alloy-consensus 0.15.4",
  "op-revm",
+ "serde_json",
  "tokio",
  "tracing",
 ]
@@ -4093,7 +4119,6 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "sp1-lib",
- "sp1-sdk",
  "thiserror 2.0.12",
  "tracing",
 ]
@@ -4104,13 +4129,11 @@ version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.1.0",
  "async-trait",
- "canoe-provider",
  "eigenda-v2-struct",
  "hokulea-compute-proof",
  "hokulea-eigenda",
  "hokulea-proof",
  "rust-kzg-bn254-primitives",
- "serde_json",
 ]
 
 [[package]]
@@ -7865,7 +7888,7 @@ dependencies = [
  "alloy-trie",
  "anyhow",
  "bincode",
- "ethereum-consensus",
+ "ethereum-consensus 0.1.1 (git+https://github.com/ralexstokes/ethereum-consensus.git?rev=ade5ce6c4a19107c1059e5338d8f18855bd2d931)",
  "log",
  "reqwest",
  "revm",
@@ -8854,11 +8877,17 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=0a6b6ccc8364b180cb46ffa06c729a7b3939dfab#0a6b6ccc8364b180cb46ffa06c729a7b3939dfab"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=b49f97b7c5702fbe574547e523afaec0bee9014d#b49f97b7c5702fbe574547e523afaec0bee9014d"
 dependencies = [
  "alloy-consensus 0.14.0",
+ "alloy-eips 0.14.0",
  "alloy-evm 0.4.0",
+ "alloy-primitives 1.1.0",
+ "alloy-rpc-types 0.14.0",
+ "alloy-rpc-types-eth 0.14.0",
+ "alloy-serde 0.14.0",
  "alloy-sol-types",
+ "alloy-trie",
  "eyre",
  "reth-chainspec",
  "reth-evm",
@@ -8872,14 +8901,17 @@ dependencies = [
  "rsp-witness-db",
  "serde",
  "serde_with",
+ "sha2 0.10.9",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=0a6b6ccc8364b180cb46ffa06c729a7b3939dfab#0a6b6ccc8364b180cb46ffa06c729a7b3939dfab"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=b49f97b7c5702fbe574547e523afaec0bee9014d#b49f97b7c5702fbe574547e523afaec0bee9014d"
 dependencies = [
  "alloy-consensus 0.14.0",
+ "alloy-eips 0.14.0",
  "alloy-evm 0.4.0",
  "alloy-primitives 1.1.0",
  "alloy-provider 0.14.0",
@@ -8887,13 +8919,18 @@ dependencies = [
  "alloy-sol-macro",
  "alloy-sol-types",
  "alloy-transport 0.14.0",
+ "async-trait",
+ "ethereum-consensus 0.1.1 (git+https://github.com/ralexstokes/ethereum-consensus?rev=ba43147eb71b07e21e156e2904549405f87bc9a6)",
  "eyre",
+ "reqwest",
  "revm",
  "revm-primitives",
  "rsp-mpt",
  "rsp-primitives",
  "rsp-rpc-db",
+ "serde",
  "sp1-cc-client-executor",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
  "url",

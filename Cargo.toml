@@ -164,6 +164,8 @@ sp1-sdk = "4.2.0"
 sp1-build = "4.2.0"
 sp1-zkvm = { version = "4.2.0" }
 sp1-lib = "4.2.0"
+sp1-core-executor = "4.2.0"
+sp1-prover = "4.2.0"
 
 # ZKVM deps (ToDo cleanup)
 log = { version = "0.4" }
