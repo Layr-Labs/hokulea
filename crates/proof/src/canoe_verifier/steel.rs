@@ -22,7 +22,7 @@ pub struct CanoeSteelVerifier {}
 impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSteelVerifier");
-    
+
         let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
         let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();
         let non_signer_stakes_and_signature = eigenda_cert
@@ -60,16 +60,14 @@ impl CanoeVerifier for CanoeSteelVerifier {
                     panic!("steel verification in non-zkvm mode requires proof being supplied into CertValidity");
                 }
 
-                let receipt_bytes = cert_validity.canoe_proof.unwrap().as_ref();
+                let canoe_proof = cert_validity.canoe_proof.expect("canoe proof does not exist in mock mode");
 
-                let canoe_receipt: Receipt = serde_json::from_slice(receipt_bytes).expect("serde error");
+                let canoe_receipt: Receipt = serde_json::from_slice(canoe_proof.as_ref()).expect("serde error");
                 canoe_receipt
                     .verify(V2CERT_VERIFICATION_ID)
                     .expect("receipt verify correctly");
 
-                let receipt_journal = Journal::abi_decode(&canoe_receipt.journal.bytes).expect("valid journal");
-
-                assert!(receipt_journal == journal_bytes);
+                assert!(canoe_receipt.journal.bytes == journal_bytes);
             }
         }
     }

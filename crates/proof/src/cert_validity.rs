@@ -13,7 +13,7 @@ pub struct CertValidity {
     /// the claim about if the cert is valid
     pub claimed_validity: bool,
     /// a zkvm proof attesting the above result
-    /// if proof verified within zkVM, the proof should have been provided from 
+    /// if proof verified within zkVM, the proof should have been provided from
     /// the STDIN of zkvm. So the option has to be none
     pub canoe_proof: Option<Vec<u8>>,
     /// block hash where view call anchored at, l1_head comes from kona_cfg    

@@ -2,14 +2,13 @@ use crate::canoe_verifier::{CanoeVerifier, VERIFIER_ADDRESS};
 use crate::cert_validity::CertValidity;
 
 use eigenda_v2_struct::EigenDAV2Cert;
-use sp1_sdk::SP1ProofWithPublicValues;
 
 use alloc::vec::Vec;
 use alloy_primitives::B256;
 use alloy_sol_types::SolValue;
 use canoe_bindings::Journal;
 
-use tracing::info;
+use tracing::{info, warn};
 
 // ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
 // To get vKey of ELF
@@ -24,39 +23,6 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSp1CCVerifier");
         // if not in dev mode, the receipt must be non empty
-        let receipt_bytes = cert_validity.canoe_proof.as_ref();
-
-        let mut cert_validity = cert_validity.clone();
-
-        // Because we have the sp1-cc dependancy issue, we cannot deserialize the bytes into SContractPublicValues
-        // So instead we define custom struct Journal and compare opaque bytes array to ensure inputs are identical
-        let canoe_receipt: SP1ProofWithPublicValues =
-            serde_json::from_slice(receipt_bytes).expect("serde error");
-
-        cfg_if::cfg_if! {
-            if #[cfg(target_os = "zkvm")] {
-                use sha2::{Digest, Sha256};
-                use sp1_lib::verify::verify_sp1_proof;
-
-                if cert_validity.canoe_proof.is_some() {
-                    // Sp1 doc https://github.com/succinctlabs/sp1/blob/a1d873f10c32f5065de120d555cfb53de4003da3/examples/aggregation/script/src/main.rs#L75
-                    warn!("sp1-cc verification within zkvm requires proof being provided via zkVM stdin");
-                }
-                // used within zkVM
-                let public_values_digest = Sha256::digest(canoe_receipt.public_values.clone());
-                let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");
-                let v_key = b256_to_u32_array(v_key_b256);
-                verify_sp1_proof(&v_key, &public_values_digest.into());
-            } else {
-                warn!("Sp1CC proof IS NOT verified in the non zkVM environment");
-                // sp1-cc currently has limitation on supporting custom chain_id without supplying genesis json
-                // overwriting cert_validity chain_id to be 1, which is the default mainnet chain_id used by
-                // sp1-cc host when chain spec is not specified
-                cert_validity.l1_chain_id = 1;
-            }
-        }
-
-        let public_values_vec = canoe_receipt.public_values.to_vec();
 
         let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
         let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();
@@ -81,7 +47,26 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             l1ChainId: cert_validity.l1_chain_id,
         };
         let journal_bytes = journal.abi_encode();
-        assert!(journal_bytes == public_values_vec);
+
+        cfg_if::cfg_if! {
+            if #[cfg(target_os = "zkvm")] {
+                use sha2::{Digest, Sha256};
+                use sp1_lib::verify::verify_sp1_proof;
+
+                if cert_validity.canoe_proof.is_some() {
+                    // Sp1 doc https://github.com/succinctlabs/sp1/blob/a1d873f10c32f5065de120d555cfb53de4003da3/examples/aggregation/script/src/main.rs#L75
+                    warn!("sp1-cc verification within zkvm requires proof being provided via zkVM stdin");
+                }
+                // used within zkVM
+                let public_values_digest = Sha256::digest(journal_bytes);
+                let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");
+                let v_key = b256_to_u32_array(v_key_b256);
+                verify_sp1_proof(&v_key, &public_values_digest.into());
+            } else {
+                warn!("Sp1CC proof IS NOT verified in the non zkVM environment");
+                _ = journal_bytes;
+            }
+        }
     }
 }
 

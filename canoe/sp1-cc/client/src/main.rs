@@ -8,13 +8,13 @@ use canoe_bindings::{
     NonSignerStakesAndSignature,
 };
 use reth_chainspec::ChainSpec;
-use sp1_cc_client_executor::{io::EVMStateSketch, ClientExecutor, ContractInput};
+use sp1_cc_client_executor::{io::EvmSketchInput, ClientExecutor, ContractInput};
 
 pub fn main() {
     // Read the state sketch from stdin. Use this during the execution in order to
     // access Ethereum state.
     let state_sketch_bytes = sp1_zkvm::io::read::<Vec<u8>>();
-    let state_sketch = bincode::deserialize::<EVMStateSketch>(&state_sketch_bytes).unwrap();
+    let state_sketch = bincode::deserialize::<EvmSketchInput>(&state_sketch_bytes).unwrap();
 
     let verifier_address = sp1_zkvm::io::read::<Address>();
     let batch_header_abi = sp1_zkvm::io::read::<Vec<u8>>();
@@ -65,7 +65,7 @@ pub fn main() {
     let journal = Journal {
         certVerifierAddress: verifier_address,
         input: buffer.into(),
-        blockhash: public_vals.blockHash,
+        blockhash: public_vals.anchorHash,
         output: returns,
         l1ChainId: chain_sepc.chain.id(),
     };
