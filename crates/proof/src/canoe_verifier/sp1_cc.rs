@@ -13,8 +13,7 @@ use tracing::{info, warn};
 // ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
 // To get vKey of ELF
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
-pub const VKEYHEXSTRING: &str = "0039b09c4f5cfc58ca7cbabd5eb5997de2cfdfa336a5ced1b640084c165718fa";
-pub const ELF: &[u8] = include_bytes!("../../../../canoe/sp1-cc/elf/canoe-sp1-cc-client");
+pub const VKEYHEXSTRING: &str = "001a1106242f4bf2a44b02aeb0123dec8a842654b3cf941ad19c24d36906ce8e";
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -52,6 +51,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
+                use core::str::FromStr;
 
                 if cert_validity.canoe_proof.is_some() {
                     // Sp1 doc https://github.com/succinctlabs/sp1/blob/a1d873f10c32f5065de120d555cfb53de4003da3/examples/aggregation/script/src/main.rs#L75
