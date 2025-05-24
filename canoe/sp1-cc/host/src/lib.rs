@@ -17,7 +17,8 @@ use url::Url;
 /// The ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
-/// A canoe provider implementation with steel
+/// A canoe provider implementation with Sp1 contract call
+/// The receipt contains all SP1ProofWithPublicValues
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
     /// rpc to l1 geth node
@@ -37,7 +38,9 @@ impl CanoeProvider for CanoeSp1CCProvider {
     }
 }
 
-/// A canoe provider implementation with steel
+/// A canoe provider implementation with Sp1 contract call
+/// The receipt only contains the proof part from CanoeSp1CCReducedProofProvider
+/// which can be verified within zkVM
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCReducedProofProvider {
     /// rpc to l1 geth node
