@@ -10,8 +10,11 @@ alloy-primitives.workspace = true
 hokulea-proof.workspace = true
 hokulea-compute-proof.workspace = true
 hokulea-eigenda.workspace = true
-eigenda-v2-struct.workspace = true
 
 rust-kzg-bn254-primitives.workspace = true
 
 async-trait.workspace = true
+canoe-provider  = { workspace = true }
+
+serde_json.workspace = true
+tracing.workspace = true

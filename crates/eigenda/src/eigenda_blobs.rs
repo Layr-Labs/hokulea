@@ -1,6 +1,7 @@
 //! Blob Data Source
 
 use crate::traits::EigenDABlobProvider;
+use crate::HokuleaPreimageError;
 use crate::{eigenda_data::EigenDABlobData, AltDACommitment};
 
 use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
@@ -49,6 +50,15 @@ where
         // But that creates some boilerplate code, also in the future, we will have a single onchain
         // verifier entry that also checks the recency, and therefore entirely making it unnecessary
         // to check it in the offchain hokulea code.
+
+        // get cert validty via preimage oracle
+        match self.eigenda_fetcher.get_validity(&eigenda_commitment).await {
+            Ok(true) => (),
+            Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
+            Err(e) => return Err(e.into()),
+        }
+
+        // get blob via preimage oracle
         match self.eigenda_fetcher.get_blob(&eigenda_commitment).await {
             Ok(data) => {
                 let new_blob: Vec<u8> = data.into();

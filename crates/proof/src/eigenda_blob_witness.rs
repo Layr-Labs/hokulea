@@ -19,6 +19,5 @@ pub struct EigenDABlobWitnessData {
     pub kzg_proofs: Vec<FixedBytes<64>>,
     /// indicates the validity of a cert is either true or false
     /// validity contains a zk proof attesting claimed
-    /// validity
     pub validity: Vec<CertValidity>,
 }

@@ -5,6 +5,9 @@ use kona_preimage::errors::PreimageOracleError;
 /// Custom hokulea preimage error
 #[derive(Debug, thiserror::Error)]
 pub enum HokuleaOracleProviderError {
+    /// Invalid Cert validity response
+    #[error("Invalid Cert query response")]
+    InvalidCertQueryResponse,
     /// Preimage informs the client that DA cert is wrong
     #[error("Invalid DA certificate")]
     InvalidCert,
@@ -17,6 +20,9 @@ pub enum HokuleaOracleProviderError {
 impl From<HokuleaOracleProviderError> for HokuleaErrorKind {
     fn from(val: HokuleaOracleProviderError) -> Self {
         match val {
+            HokuleaOracleProviderError::InvalidCertQueryResponse => {
+                HokuleaErrorKind::Critical("Invalid certificate response".to_string())
+            }
             HokuleaOracleProviderError::InvalidCert => {
                 HokuleaErrorKind::Discard("Invalid certificate".to_string())
             }

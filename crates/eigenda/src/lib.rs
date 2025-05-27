@@ -16,7 +16,10 @@ extern crate alloc;
 extern crate tracing;
 
 mod traits;
-pub use traits::EigenDABlobProvider;
+pub use traits::{
+    EigenDABlobProvider, RESERVED_INTERFACE_BYTE_FOR_RECENCY, RESERVED_INTERFACE_BYTE_FOR_VALIDITY,
+    RESERVED_INTERFACE_BYTE_INDEX,
+};
 
 mod eigenda;
 pub use eigenda::EigenDADataSource;
@@ -37,7 +40,9 @@ mod altda_commitment;
 pub use altda_commitment::{AltDACommitment, EigenDAVersionedCert};
 
 mod errors;
-pub use errors::{BlobDecodingError, HokuleaErrorKind, HokuleaStatelessError};
+pub use errors::{
+    BlobDecodingError, HokuleaErrorKind, HokuleaPreimageError, HokuleaStatelessError,
+};
 
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;

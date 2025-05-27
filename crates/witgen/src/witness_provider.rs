@@ -1,12 +1,12 @@
-use alloy_primitives::{Bytes, FixedBytes, B256};
+use alloy_primitives::{FixedBytes, B256};
 use async_trait::async_trait;
-use eigenda_v2_struct::EigenDAV2Cert;
 use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;
 use std::sync::{Arc, Mutex};
+use tracing::debug;
 
 /// This is a wrapper around OracleEigenDAProvider, with
 /// additional functionalities to generate eigenda witness
@@ -22,9 +22,42 @@ pub struct OracleEigenDAWitnessProvider<T: EigenDABlobProvider> {
     pub witness: Arc<Mutex<EigenDABlobWitnessData>>,
 }
 
+/// Implement EigenDABlobProvider for OracleEigenDAWitnessProvider
+/// whose goal is to prepare preimage sucht that the guest code of zkvm can consume data that is
+/// easily verifiable.
+/// Note because EigenDA uses filtering approach, in the EigenDABlobWitnessData
+/// the number of certs does not have to equal to
+/// the number of blobs, since some certs might have been invalid due to incorrect or stale certs
+///
+/// The first call to that uses the preimage must register the cert, currently it is get_validity
 #[async_trait]
 impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitnessProvider<T> {
     type Error = T::Error;
+
+    async fn get_validity(
+        &mut self,
+        altda_commitment: &AltDACommitment,
+    ) -> Result<bool, Self::Error> {
+        // register cert
+        self.init_cert(altda_commitment);
+
+        // get cert validity
+        match self.provider.get_validity(altda_commitment).await {
+            Ok(validity) => {
+                let mut witness = self.witness.lock().unwrap();
+
+                // ToDo (bx) could have got l1_head_hash, l1_chain_id from oracle, like what we did in preloader example
+                witness.validity.push(CertValidity {
+                    claimed_validity: validity,
+                    canoe_proof: Vec::new(),
+                    l1_head_block_hash: B256::ZERO,
+                    l1_chain_id: 0,
+                });
+                Ok(validity)
+            }
+            Err(e) => Err(e),
+        }
+    }
 
     /// This function populates
     /// 1. eigenda cert
@@ -34,12 +67,6 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
     /// The receipt is intended to assert the eigenda cert passing the view call on chain
     /// The receipt generation is not included, it is expected that it takes significantly more time
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
-        // V1 is not supported for secure integration, feel free to contribute
-        let cert = match &altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V1(_) => panic!("secure v1 integration is not supported"),
-            EigenDAVersionedCert::V2(c) => c,
-        };
-
         // only a single blob is returned from a cert
         match self.provider.get_blob(altda_commitment).await {
             Ok(blob) => {
@@ -49,42 +76,35 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                     Err(e) => panic!("cannot generate a kzg proof: {}", e),
                 };
                 // ToDo(bx) claimed_validity currently set to true, but needs to connect from response from the host
-                populate_witness(cert, self.witness.clone(), &kzg_proof, true, &blob);
+                let mut witness = self.witness.lock().unwrap();
+                let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
+                witness.kzg_proofs.push(fixed_bytes);
+                witness.eigenda_blobs.push(blob.clone().into());
+
                 return Ok(blob);
             }
             Err(e) => {
-                // If it returns an error, the cert must be invalid
-                let empty = vec![];
-                populate_witness(
-                    cert,
-                    self.witness.clone(),
-                    &Bytes::new(),
-                    false,
-                    &Blob::new(&empty),
-                );
                 return Err(e);
             }
         };
     }
 }
 
-fn populate_witness(
-    cert: &EigenDAV2Cert,
-    witness: Arc<Mutex<EigenDABlobWitnessData>>,
-    kzg_proof: &Bytes,
-    claimed_validity: bool,
-    blob: &Blob,
-) {
-    let mut witness = witness.lock().unwrap();
-    witness.eigenda_blobs.push(blob.clone().into());
-    let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
-    witness.kzg_proofs.push(fixed_bytes);
-    witness.eigenda_certs.push(cert.clone());
-    // CertValidity struct needs to be populated later by the caller
-    witness.validity.push(CertValidity {
-        claimed_validity,
-        canoe_proof: None,
-        l1_head_block_hash: B256::ZERO,
-        l1_chain_id: 0,
-    });
+impl<T: EigenDABlobProvider + Send> OracleEigenDAWitnessProvider<T> {
+    /// Always called by the first preimage contact to record a list of certs
+    pub fn init_cert(&mut self, altda_commitment: &AltDACommitment) {
+        // The first preimage communication always have to record the cert
+        let mut witness = self.witness.lock().unwrap();
+        // V1 is not supported for secure integration, feel free to contribute
+        let cert = match &altda_commitment.versioned_cert {
+            EigenDAVersionedCert::V1(_) => panic!("secure v1 integration is not supported"),
+            EigenDAVersionedCert::V2(c) => c,
+        };
+        witness.eigenda_certs.push(cert.clone());
+        debug!(
+            target = "OracleEigenDAWitnessProvider",
+            "pusehd a cert {}",
+            cert.digest()
+        );
+    }
 }
