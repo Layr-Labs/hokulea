@@ -129,6 +129,14 @@ impl AltDACommitment {
         }
     }
 
+    /// get reference block number
+    pub fn get_rbn(&self) -> u64 {
+        match &self.versioned_cert {
+            EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
+            EigenDAVersionedCert::V2(c) => c.batch_header_v2.reference_block_number as u64,
+        }
+    }
+
     /// Convert AltdaCommitment into bytes in the same form downloaded from
     /// Ethereum block. The bytes form is used as the key to send http query
     /// to the eigenda proxy

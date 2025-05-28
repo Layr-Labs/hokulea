@@ -3,8 +3,8 @@ use alloy_primitives::keccak256;
 use crate::cfg::SingleChainHostWithEigenDA;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use hokulea_eigenda::EigenDABlobData;
-use hokulea_eigenda::{AltDACommitment, EigenDAVersionedCert};
+use hokulea_eigenda::AltDACommitment;
+use hokulea_eigenda::{EigenDABlobData, RESERVED_INTERFACE_BYTE_FOR_RECENCY};
 use hokulea_eigenda::{
     BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0, RESERVED_INTERFACE_BYTE_FOR_VALIDITY,
     RESERVED_INTERFACE_BYTE_INDEX,
@@ -58,7 +58,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 pub async fn fetch_eigenda_hint(
     hint: Hint<<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::HintType>,
     // for eigenda specific config data, currently unused
-    _cfg: &SingleChainHostWithEigenDA,
+    cfg: &SingleChainHostWithEigenDA,
     providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
     kv: SharedKeyValueStore,
 ) -> Result<()> {
@@ -91,7 +91,25 @@ pub async fn fetch_eigenda_hint(
         }
     };
 
+    // Acquire a lock on the key-value store and set the preimages.
     let mut kv_write_lock = kv.write().await;
+
+    // pre-populate recency window size. Currently, it is set to sequencing window size
+    let rollup_config = cfg
+        .kona_cfg
+        .read_rollup_config()
+        .expect("should have been able to read rollup config");
+    // ToDo (bx) fix the hack at eigenda-proxy. For now + 100_000_000 to avoid recency failure
+    // currently, proxy only returns a rbn < 32
+    let recency = rollup_config.seq_window_size + 100_000_000;
+    let recency_be_bytes = recency.to_be_bytes();
+    let mut recency_address = altda_commitment.digest_template();
+    recency_address[RESERVED_INTERFACE_BYTE_INDEX] = RESERVED_INTERFACE_BYTE_FOR_RECENCY;
+
+    kv_write_lock.set(
+        PreimageKey::new(*keccak256(recency_address), PreimageKeyType::GlobalGeneric).into(),
+        recency_be_bytes.to_vec(),
+    )?;
 
     // pre-populate validity address. Currently, assume everything is correct
     // (ToDo bx), after proxy returns error code indicating cert is wrong, route
@@ -106,19 +124,10 @@ pub async fn fetch_eigenda_hint(
         vec![claimed_validity as u8],
     )?;
 
-    let blob_length_fe = match &altda_commitment.versioned_cert {
-        EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1"),
-        EigenDAVersionedCert::V2(c) => {
-            c.blob_inclusion_info
-                .blob_certificate
-                .blob_header
-                .commitment
-                .length as usize
-        }
-    };
+    // pre-populate eigenda blob field element by field element
+    let blob_length_fe = altda_commitment.get_num_field_element();
 
     let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
-    // Acquire a lock on the key-value store and set the preimages.
 
     // implementation requires eigenda_blob to be multiple of 32
     assert!(eigenda_blob.blob.len() % 32 == 0);

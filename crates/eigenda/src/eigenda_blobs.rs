@@ -31,27 +31,32 @@ where
     pub async fn next(
         &mut self,
         calldata: &Bytes,
-        _l1_inclusion_bn: u64,
+        l1_inclusion_bn: u64,
     ) -> Result<EigenDABlobData, HokuleaErrorKind> {
         let eigenda_commitment = self.parse(calldata)?;
 
-        // for recency check, there are two approaches, depending how many interface we want
-        // 1. define a new interface in EigenDABlobProvider trait to get_recency_window. Then discard the old cert.
-        //    This requires add new impl in OracleEigenDAProvider proof/src/eigenda_provider.rs
-        //    and OracleEigenDAWitnessProvider from witgen/src/witness_provider. We will also add new field in EigenDABlobWitnessData
-        //    which is populated in the get_recency_window path
-        // 2. let get_blob returns 2 struct (Blob, recency), the provider can set Blob to empty if recency
-        //    failed, but it requires changing the get_blob interface of EigenDABlobProvider, to additionally accept
-        //    l1_inclusion_bn. Inside get_blob, the get_recency_window is fetched first.
-        // RECENCY IS unhandled at the moment
+        // get recency window size, discard the old cert if necessary
+        match self
+            .eigenda_fetcher
+            .get_recency_window(&eigenda_commitment)
+            .await
+        {
+            Ok(recency) => {
+                // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
+                if l1_inclusion_bn > eigenda_commitment.get_rbn() + recency {
+                    warn!(
+                        "da cert is not recent enough l1_inclusion_bn:{} rbn:{} recency:{}",
+                        l1_inclusion_bn,
+                        eigenda_commitment.get_rbn(),
+                        recency
+                    );
+                    return Err(HokuleaPreimageError::NotRecentCert.into());
+                }
+            }
+            Err(e) => return Err(e.into()),
+        };
 
-        // overload the preimage oracle returns recency checks, it is also out of consideration of
-        // code reuse, alternative is to add a function into EigenDABlobProvider for recency window.
-        // But that creates some boilerplate code, also in the future, we will have a single onchain
-        // verifier entry that also checks the recency, and therefore entirely making it unnecessary
-        // to check it in the offchain hokulea code.
-
-        // get cert validty via preimage oracle
+        // get cert validty via preimage oracle, discard cert if invalid
         match self.eigenda_fetcher.get_validity(&eigenda_commitment).await {
             Ok(true) => (),
             Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
@@ -69,10 +74,7 @@ where
 
                 Ok(eigenda_blob)
             }
-            Err(e) => {
-                warn!("EigenDA blob source cannot fetch {}", e);
-                Err(e.into())
-            }
+            Err(e) => Err(e.into()),
         }
     }
 
@@ -85,9 +87,6 @@ where
         let altda_commitment: AltDACommitment = match data[1..].try_into() {
             Ok(a) => a,
             Err(e) => {
-                // same handling procudure as in kona
-                // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L130
-                // https://github.com/op-rs/kona/blob/ace7c8918be672c1761eba3bd7480cdc1f4fa115/crates/protocol/derive/src/stages/frame_queue.rs#L165
                 error!("failed to parse altda commitment {}", e);
                 return Err(HokuleaStatelessError::ParseError(e));
             }

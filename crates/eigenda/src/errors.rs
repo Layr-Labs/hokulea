@@ -78,8 +78,11 @@ pub enum BlobDecodingError {
 #[error(transparent)]
 pub enum HokuleaPreimageError {
     /// EigenDA cert is invalid
-    #[error("DA cert is invalid")]
+    #[error("da cert is invalid")]
     InvalidCert,
+    /// EigenDA cert is not recent
+    #[error("da cert is not recent enough")]
+    NotRecentCert,
 }
 
 /// define conversion error
@@ -87,7 +90,10 @@ impl From<HokuleaPreimageError> for HokuleaErrorKind {
     fn from(e: HokuleaPreimageError) -> Self {
         match e {
             HokuleaPreimageError::InvalidCert => {
-                HokuleaErrorKind::Discard("Insufficient EigenDA Cert Length".to_string())
+                HokuleaErrorKind::Discard("da cert is invalid".to_string())
+            }
+            HokuleaPreimageError::NotRecentCert => {
+                HokuleaErrorKind::Discard("da cert is not recent enough".to_string())
             }
         }
     }

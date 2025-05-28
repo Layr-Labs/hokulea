@@ -63,7 +63,7 @@ optimism_package:
           - --eigenda.v2.max-blob-length=1MiB
           - --memstore.enabled
           - --memstore.expiration=180m
-        image: ghcr.io/layr-labs/eigenda-proxy:v1.7.0
+        image: ghcr.io/layr-labs/eigenda-proxy:dev
       network_params:
         fjord_time_offset: 0
         granite_time_offset: 0

@@ -12,13 +12,20 @@ pub trait EigenDABlobProvider {
     /// The error type for the [EigenDABlobProvider].
     type Error: Display + ToString + Into<HokuleaErrorKind>;
 
-    /// Query preimage about the validity of a DA cert. Return error when cert is invalid, or generic preimage error
+    /// Fetch primage about the recency window
+    async fn get_recency_window(
+        &mut self,
+        altda_commitment: &AltDACommitment,
+    ) -> Result<u64, Self::Error>;
+
+    /// Fetch preimage about the validity of a DA cert. Return error generic preimage error. Return false when
+    /// DA cert is invalid. True if it is valid.
     async fn get_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error>;
 
-    /// Fetches eigenda blob. The returned blob must contain a number of field elements that is power of 2
+    /// Fetch eigenda blob. The returned blob must contain a number of field elements that is power of 2
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error>;
 }
 

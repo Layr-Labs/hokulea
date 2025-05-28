@@ -4,7 +4,8 @@ use alloy_primitives::keccak256;
 use async_trait::async_trait;
 use hokulea_eigenda::{
     AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert, BYTES_PER_FIELD_ELEMENT,
-    RESERVED_INTERFACE_BYTE_FOR_VALIDITY, RESERVED_INTERFACE_BYTE_INDEX,
+    RESERVED_INTERFACE_BYTE_FOR_RECENCY, RESERVED_INTERFACE_BYTE_FOR_VALIDITY,
+    RESERVED_INTERFACE_BYTE_INDEX,
 };
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 use rust_kzg_bn254_primitives::blob::Blob;
@@ -33,6 +34,44 @@ impl<T: CommsClient> OracleEigenDAProvider<T> {
 #[async_trait]
 impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider<T> {
     type Error = HokuleaOracleProviderError;
+
+    /// Fetch primage about the recency window
+    async fn get_recency_window(
+        &mut self,
+        altda_commitment: &AltDACommitment,
+    ) -> Result<u64, Self::Error> {
+        let altda_commitment_bytes = altda_commitment.to_bytes();
+        // hint the host if it is the first time
+        self.oracle
+            .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))
+            .await
+            .map_err(HokuleaOracleProviderError::Preimage)?;
+
+        let mut address_template = altda_commitment.digest_template();
+
+        // make the call about validity of a altda commitment
+        address_template[RESERVED_INTERFACE_BYTE_INDEX] = RESERVED_INTERFACE_BYTE_FOR_RECENCY;
+
+        let recency_bytes = self
+            .oracle
+            .get(PreimageKey::new(
+                *keccak256(address_template),
+                PreimageKeyType::GlobalGeneric,
+            ))
+            .await
+            .map_err(HokuleaOracleProviderError::Preimage)?;
+
+        // recency is 8 bytes
+        if recency_bytes.is_empty() || recency_bytes.len() != 8 {
+            return Err(HokuleaOracleProviderError::InvalidCertQueryResponse);
+        }
+
+        let mut buf: [u8; 8] = [0; 8];
+        buf.copy_from_slice(&recency_bytes);
+
+        // use BigEndian
+        Ok(u64::from_be_bytes(buf))
+    }
 
     /// Query preimage about the validity of a DA cert
     async fn get_validity(
@@ -80,24 +119,12 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .await
             .map_err(HokuleaOracleProviderError::Preimage)?;
 
-        //info!(target: "eigenda-blobsource", "altda_commitment {:?}", altda_commitment);
-
-        let blob_length_fe: u64 = match &altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
-            EigenDAVersionedCert::V2(c) => {
-                info!(target: "eigenda-blobsource", "blob version: V2");
-                c.blob_inclusion_info
-                    .blob_certificate
-                    .blob_header
-                    .commitment
-                    .length as u64
-            }
-        };
+        let blob_length_fe = altda_commitment.get_num_field_element();
 
         // data_length measurs in field element, multiply to get num bytes
         let mut blob: Vec<u8> = vec![0; blob_length_fe as usize * BYTES_PER_FIELD_ELEMENT];
         let field_element_key = altda_commitment.digest_template();
-        self.fetch_blob(field_element_key, blob_length_fe, &mut blob)
+        self.fetch_blob(field_element_key, blob_length_fe as u64, &mut blob)
             .await?;
 
         Ok(blob.into())

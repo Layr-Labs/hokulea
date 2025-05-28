@@ -30,13 +30,18 @@ where
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
 
     // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM
-    let num_cert = witness.validity.len();
-    for i in 0..num_cert {
-        witness.validity[i].l1_head_block_hash = boot_info.l1_head;
-        // force canoe verifier to use l1 chain id from rollup config.
-        // it assumes the l1_chain_id from boot_info is trusted or verifiable at early or later stage
-        witness.validity[i].l1_chain_id = boot_info.rollup_config.l1_chain_id;
-    }
+    // force canoe verifier to use l1 chain id from rollup config.
+    // it assumes the l1_chain_id from boot_info is trusted or verifiable at early or later stage
+    witness.validity.iter_mut().for_each(|(_, cert_validity)| {
+        cert_validity.l1_head_block_hash = boot_info.l1_head;
+        cert_validity.l1_chain_id = boot_info.rollup_config.l1_chain_id;
+    });
+
+    witness.recency.iter_mut().for_each(|(_, recency)| {
+        // ToDo (bx) fix the hack at eigenda-proxy. For now + 100_000_000 to avoid recency failure
+        // currently, proxy only returns a rbn < 32
+        *recency = boot_info.rollup_config.seq_window_size + 100_000_000;
+    });
 
     Ok(PreloadedEigenDABlobProvider::from_witness(
         witness,
