@@ -12,7 +12,8 @@ pub trait EigenDABlobProvider {
     /// The error type for the [EigenDABlobProvider].
     type Error: Display + ToString + Into<HokuleaErrorKind>;
 
-    /// Fetch primage about the recency window
+    /// Fetch primage about the recency window. To be future compatible when recency window can be a function
+    /// of reference block number stored inside AltDACommitment.
     async fn get_recency_window(
         &mut self,
         altda_commitment: &AltDACommitment,
