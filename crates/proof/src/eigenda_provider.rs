@@ -3,7 +3,7 @@ use alloc::sync::Arc;
 use alloy_primitives::keccak256;
 use async_trait::async_trait;
 use hokulea_eigenda::{
-    AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert, BYTES_PER_FIELD_ELEMENT,
+    AltDACommitment, EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT,
     RESERVED_INTERFACE_BYTE_FOR_RECENCY, RESERVED_INTERFACE_BYTE_FOR_VALIDITY,
     RESERVED_INTERFACE_BYTE_INDEX,
 };
@@ -12,7 +12,6 @@ use rust_kzg_bn254_primitives::blob::Blob;
 
 use crate::errors::HokuleaOracleProviderError;
 use crate::hint::ExtendedHintType;
-use tracing::info;
 
 use alloc::vec;
 use alloc::vec::Vec;
@@ -122,7 +121,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let blob_length_fe = altda_commitment.get_num_field_element();
 
         // data_length measurs in field element, multiply to get num bytes
-        let mut blob: Vec<u8> = vec![0; blob_length_fe as usize * BYTES_PER_FIELD_ELEMENT];
+        let mut blob: Vec<u8> = vec![0; blob_length_fe * BYTES_PER_FIELD_ELEMENT];
         let field_element_key = altda_commitment.digest_template();
         self.fetch_blob(field_element_key, blob_length_fe as u64, &mut blob)
             .await?;
