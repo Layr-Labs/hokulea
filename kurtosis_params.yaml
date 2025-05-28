@@ -35,9 +35,7 @@ optimism_package:
   challengers:
     # no challengers for now
   chains:
-    - additional_services:
-        - da_server
-      participants:
+    - participants:
         - cl_type: op-node
           el_type: op-geth
           count: 1
@@ -54,7 +52,8 @@ optimism_package:
       proposer_params:
         game_type: 1
         proposal_interval: 10m
-      da_server_params:
+      da_params:
+        enabled: true
         cmd:
           - --addr=0.0.0.0
           - --port=3100
