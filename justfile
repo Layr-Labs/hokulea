@@ -126,7 +126,6 @@ run-client-against-sepolia native_or_asterisc='native' verbosity='' env_file='.s
 
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
-  # kurtosis currently broken upstream on the latest branch, temporarily fix to the last working commmit
   kurtosis run --enclave {{ENCLAVE_NAME}} github.com/ethpandaops/optimism-package --args-file {{ARGS_FILE}} --image-download always
 
 # If you have run run-kurtosis-devnet recently, which always downloads all images,
