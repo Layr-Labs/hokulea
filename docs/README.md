@@ -102,18 +102,26 @@ Note we deviate from OP spec, which requires sender address to be included in th
 ## Reserved Addresses for DA certificates
 
 Eigenda secure integration requires additional primitives exposed by the preimage oracle, including
-- `certificate validity` that accepts a DA certificate and return a boolean indicating if the certificate is valid subject to onchain smart contract [logic](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation)
-- `recency window request` that takes no input and returns an u64 integer for recency window, more see [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#1-rbn-recency-validation)
+- `certificate validity` that accepts an AltDACommitment and return a boolean indicating if the certificate is valid subject to onchain smart contract [logic](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation)
+- `recency window request` that takes an AltDACommitment and returns an u64 integer for recency window, more see [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#1-rbn-recency-validation)
 
 
 To avoid collision with field element mentioned above, we use the immediate byte following 32 Bytes hash digest for interfaces. See table below
-| 32 bytes AltCommitment Digest  | 1 Interface Byte | 39 Reserved Bytes |  8 bytes Field Element space | Notes | 
-| ------------------------------ | ---------------- | ----------------- | ---------------------------- | ------------------------- | 
-|       ..                       | 0x00             |       0x0..0      |       ..                     |  Field element addresses | 
-|       ..                       | 0x01             |       0x0..0      |       0x0000000000000000     | certificate validity interface address |
-|       ..                       | 0x02             |       0x0..0      |       0x0000000000000000     | recency window request interface address |
+| 32 bytes AltCommitment Digest  | 1 EigenDA Interface Byte | 39 Reserved Bytes |  8 bytes Field Element space | Notes | 
+| ------------------------------ | ------------------------ | ----------------- | ---------------------------- | ------------------------- | 
+|       ..                       | 0x00                     |       0x0..0      |       ..                     |  Field element addresses | 
+|       ..                       | 0x01                     |       0x0..0      |       0x0000000000000000     | certificate validity interface address |
+|       ..                       | 0x02                     |       0x0..0      |       0x0000000000000000     | recency window request interface address |
 
 Every AltCommitment (which corresponds to a DA cert) has its unique interface to call certificate validity and to request recency window.
+
+### Hint system with respect to Preimage communication
+
+Before querying about some preimage about an AltDACommitment, the client sends to host a hint which is a serialized AltDACommitment. The host prepares
+all the necessary information including recency, validity and eigenda blob, then populate them into its local cache. Next time when the client
+actually query about the preimage, the host can directly respond from its local map. Hokulea takes existing hint implementation from Kona, and
+include its own hint type called EigenDACert. The sending part of the hint deviates from OP Spec, that it does not include length, and the
+receiving side follows the OP spec. Hint system does not affect the secure integration, since all hints are [noop](https://specs.optimism.io/fault-proof/index.html#hinting) on L1 VM.
 
 ## Adaptable to both zkVM and interactive fault proof VM
 

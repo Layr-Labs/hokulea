@@ -16,15 +16,23 @@ use serde::{Deserialize, Serialize};
 ///
 /// Two actors populates EigenDABlobWitnessData. One is the
 /// OracleEigenDAWitnessProvider which takes preimage data from the
-/// EigenDABlobProvider trait. The other is the zkVM host program, which
-/// populates the zk validity proof for the validity
+/// EigenDABlobProvider during the first run of the
+/// derivation pipeline. OracleEigenDAWitnessProvider wraps around an
+/// implementaion of EigenDABlobProvider trait to populate blob and recency.
+///
+/// The remaining validity part is populated by a separator actor, usually in the
+/// zkVM host, which requests zk prover for generating zk validity proof.
+/// Although it is possible to move this logics into OracleEigenDAWitnessProvider,
+/// we can lose the benefit of proving aggregation. Moreover, it is up to
+/// the zkVM host to choose its the proving backend. Baking validity generation
+/// into the OracleEigenDAWitnessProvider is less ideal.
 ///
 /// After witness is populated, PreloadedEigenDABlobProvider takes witness
 /// and verify their correctness
 ///
 /// It is important to note that the length of recency, validity and blob
 /// might differ when there is stale cert, or a certificate is invalid
-/// recency.len() >= validty.len() >= blob.len(), as there are layers of
+/// recency.len() >= validity.len() >= blob.len(), as there are layers of
 /// filtering.
 /// The vec data struct does not maintain the information about which cert
 /// is filtered at which layer. As it does not matter, since the data will
@@ -32,7 +40,7 @@ use serde::{Deserialize, Serialize};
 /// pipeline calls for a preimage for a DA cert, the two DA certs must
 /// match, and otherwise there is failures. See PreloadedEigenDABlobProvider
 /// for more information
-/// ToDo, replace EigenDAV2Cert to AltDACommitment, it saves the effort to
+/// TODO, replace EigenDAV2Cert to AltDACommitment, it saves the effort to
 /// convert from AltDACommitment to EigenDAV2Cert in all get methods.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDABlobWitnessData {

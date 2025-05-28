@@ -18,7 +18,7 @@ pub trait EigenDABlobProvider {
         altda_commitment: &AltDACommitment,
     ) -> Result<u64, Self::Error>;
 
-    /// Fetch preimage about the validity of a DA cert. Return error generic preimage error. Return false when
+    /// Fetch preimage about the validity of a DA cert. Return generic preimage error. Return false when
     /// DA cert is invalid. True if it is valid.
     async fn get_validity(
         &mut self,
@@ -31,12 +31,12 @@ pub trait EigenDABlobProvider {
 
 /// The index where INTERFACE_BYTE is located
 /// More see <https://github.com/Layr-Labs/hokulea/tree/master/docs#reserved-addresses-for-da-certificates>
-pub const RESERVED_INTERFACE_BYTE_INDEX: usize = 0x20;
+pub const RESERVED_EIGENDA_INTERFACE_BYTE_INDEX: usize = 0x20;
 
 /// In the address space of preimage oracle, which interface type a validity query is addressed at
 /// More see <https://github.com/Layr-Labs/hokulea/tree/master/docs#reserved-addresses-for-da-certificates>
-pub const RESERVED_INTERFACE_BYTE_FOR_VALIDITY: u8 = 0x01;
+pub const RESERVED_EIGENDA_INTERFACE_BYTE_FOR_VALIDITY: u8 = 0x01;
 
 /// In the address space of preimage oracle, which interface type a recency query is addressed at
 /// More see <https://github.com/Layr-Labs/hokulea/tree/master/docs#reserved-addresses-for-da-certificates>
-pub const RESERVED_INTERFACE_BYTE_FOR_RECENCY: u8 = 0x02;
+pub const RESERVED_EIGENDA_INTERFACE_BYTE_FOR_RECENCY: u8 = 0x02;

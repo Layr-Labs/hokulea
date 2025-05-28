@@ -4,8 +4,8 @@ use alloy_primitives::keccak256;
 use async_trait::async_trait;
 use hokulea_eigenda::{
     AltDACommitment, EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT,
-    RESERVED_INTERFACE_BYTE_FOR_RECENCY, RESERVED_INTERFACE_BYTE_FOR_VALIDITY,
-    RESERVED_INTERFACE_BYTE_INDEX,
+    RESERVED_EIGENDA_INTERFACE_BYTE_FOR_RECENCY, RESERVED_EIGENDA_INTERFACE_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_INTERFACE_BYTE_INDEX,
 };
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 use rust_kzg_bn254_primitives::blob::Blob;
@@ -34,13 +34,14 @@ impl<T: CommsClient> OracleEigenDAProvider<T> {
 impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider<T> {
     type Error = HokuleaOracleProviderError;
 
-    /// Fetch primage about the recency window
+    /// Fetch preimage about the recency window
     async fn get_recency_window(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<u64, Self::Error> {
         let altda_commitment_bytes = altda_commitment.to_bytes();
-        // hint the host if it is the first time
+        // hint the host about a new altda commitment. If it is the first time the host receiving it, the
+        // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
         self.oracle
             .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))
             .await
@@ -48,8 +49,9 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
         let mut address_template = altda_commitment.digest_template();
 
-        // make the call about validity of a altda commitment
-        address_template[RESERVED_INTERFACE_BYTE_INDEX] = RESERVED_INTERFACE_BYTE_FOR_RECENCY;
+        // make the call about recency of a altda commitment
+        address_template[RESERVED_EIGENDA_INTERFACE_BYTE_INDEX] =
+            RESERVED_EIGENDA_INTERFACE_BYTE_FOR_RECENCY;
 
         let recency_bytes = self
             .oracle
@@ -78,7 +80,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
         let altda_commitment_bytes = altda_commitment.to_bytes();
-        // hint the host if it is the first time
+        // hint the host about a new altda commitment. If it is the first time the host receiving it, the
+        // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
         self.oracle
             .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))
             .await
@@ -87,7 +90,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let mut address_template = altda_commitment.digest_template();
 
         // make the call about validity of a altda commitment
-        address_template[RESERVED_INTERFACE_BYTE_INDEX] = RESERVED_INTERFACE_BYTE_FOR_VALIDITY;
+        address_template[RESERVED_EIGENDA_INTERFACE_BYTE_INDEX] =
+            RESERVED_EIGENDA_INTERFACE_BYTE_FOR_VALIDITY;
 
         let validity = self
             .oracle
@@ -98,7 +102,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
             .await
             .map_err(HokuleaOracleProviderError::Preimage)?;
 
-        // cert expects returns a boolean
+        // validity is expected as a boolean
         if validity.is_empty() || validity.len() != 1 {
             return Err(HokuleaOracleProviderError::InvalidCertQueryResponse);
         }
@@ -113,6 +117,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
     /// Get V1 blobs. TODO remove in the future if not needed for testing
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
         let altda_commitment_bytes = altda_commitment.to_bytes();
+        // hint the host about a new altda commitment. If it is the first time the host receiving it, the
+        // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
         self.oracle
             .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))
             .await
