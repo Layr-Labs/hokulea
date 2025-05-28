@@ -18,6 +18,11 @@ use url::Url;
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 /// A canoe provider implementation with Sp1 contract call
+/// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
+/// SP1ProofWithPublicValues contains a Stark proof which can be verified in
+/// native program using sp1-sdk. However, if you requires Stark verification
+/// within zkVM, please use [CanoeSp1CCReducedProofProvider]
+
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
     /// rpc to l1 geth node
@@ -38,8 +43,10 @@ impl CanoeProvider for CanoeSp1CCProvider {
 }
 
 /// A canoe provider implementation with Sp1 contract call
-/// The receipt only contains the proof part from CanoeSp1CCReducedProofProvider
-/// which can be verified within zkVM
+/// The receipt only contains the stark proof from the SP1ProofWithPublicValues, which is produced
+/// by the implementation CanoeSp1CCProvider.
+/// CanoeSp1CCReducedProofProvider is needs when the proof verification takes place within
+/// zkVM. If you don't require verification within zkVM, please consider using [CanoeSp1CCProvider].
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCReducedProofProvider {
     /// rpc to l1 geth node
@@ -97,8 +104,6 @@ async fn get_sp1_cc_proof(
                 .await?
         }
     };
-    // Keep track of the block hash. Later, validate the client's execution against this.
-    // let block_hash = host_executor.header.hash_slow();
 
     // Make the call
     let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
@@ -124,14 +129,15 @@ async fn get_sp1_cc_proof(
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-    // Empirically if the function reverts, the output is empty. OTOH, the guest code aborts when an evm revert takes place.
+    // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
+    // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
+    // Talked to sp1-cc developer already, and it is agreed.
     let returns = Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes");
 
     if returns != canoe_input.claimed_validity {
         panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
     }
 
-    // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
     let evm_state_sketch = sketch
         .finalize()
         .await
@@ -170,13 +176,16 @@ async fn get_sp1_cc_proof(
     let journal = <Journal as SolType>::abi_decode(proof.public_values.as_slice())
         .expect("deserialize journal");
 
-    info!(
-        "sp1-cc commited: blockHash {:?} contractOutput {:?}, chainID {:?}",
-        journal.blockhash, journal.output, journal.l1ChainId,
-    );
-
     let elapsed = start.elapsed();
-    info!(action = "sp1_cc_proof_generation", status = "completed", elapsed_time = ?elapsed);
+    info!(
+        action = "sp1_cc_proof_generation",
+        status = "completed",
+        "sp1-cc commited: blockHash {:?} contractOutput {:?}, chainID {:?} elapsed_time {:?}",
+        journal.blockhash,
+        journal.output,
+        journal.l1ChainId,
+        elapsed,
+    );
 
     Ok(proof)
 }

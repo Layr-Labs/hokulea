@@ -14,6 +14,8 @@ pub const VKEYHEXSTRING: &str = "001a1106242f4bf2a44b02aeb0123dec8a842654b3cf941
 pub struct CanoeSp1CCVerifier {}
 
 impl CanoeVerifier for CanoeSp1CCVerifier {
+    // some variable is unused, because when sp1-cc verifier is not configured in zkVM mode, all tests
+    // are skipped because sp1 cannot take sp1-sdk as dependency
     #[allow(unused_variables)]
     fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
         info!("using CanoeSp1CCVerifier");

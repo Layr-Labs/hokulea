@@ -29,7 +29,6 @@ use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
 use tracing::info;
 
 /// A canoe provider implementation with steel
-/// The receipt can be used for both mock proof and verification within zkVM
 #[derive(Debug, Clone)]
 pub struct CanoeSteelProvider {
     /// rpc to l1 geth node
@@ -38,6 +37,7 @@ pub struct CanoeSteelProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSteelProvider {
+    /// The receipt can be used for both mock proof and verification within zkVM
     type Receipt = risc0_zkvm::Receipt;
 
     async fn create_cert_validity_proof(&self, canoe_input: CanoeInput) -> Result<Self::Receipt> {
