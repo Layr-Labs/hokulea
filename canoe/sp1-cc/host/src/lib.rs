@@ -18,7 +18,6 @@ use url::Url;
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 /// A canoe provider implementation with Sp1 contract call
-/// The receipt contains all SP1ProofWithPublicValues
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
     /// rpc to l1 geth node
@@ -74,7 +73,7 @@ async fn get_sp1_cc_proof(
     );
     let start = Instant::now();
 
-    // Which block transactions are executed on.
+    // Which block VerifyDACert eth-calls are executed against.
     let block_number = BlockNumberOrTag::Number(canoe_input.l1_head_block_number);
 
     let rpc_url = Url::from_str(eth_rpc_url).unwrap();
@@ -89,7 +88,7 @@ async fn get_sp1_cc_proof(
                 .await?
         }
         // if genesis is not available in the sp1-cc library, the code uses the default Genesis, which currently in
-        // sp1-cc is the mainnet. Ideally, Sp1-cc should make it easier to use the custom id genesis.
+        // sp1-cc is the mainnet. Ideally, Sp1-cc should make it easier to use a custom genesis config.
         Err(_) => {
             EvmSketch::builder()
                 .at_block(block_number)
@@ -125,11 +124,11 @@ async fn get_sp1_cc_proof(
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-    // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
+    // Empirically if the function reverts, the output is empty. OTOH, the guest code aborts when an evm revert takes place.
     let returns = Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes");
 
     if returns != canoe_input.claimed_validity {
-        panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something consistent in the view of eigenda-proxy and zkVM");
+        panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
     }
 
     // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
