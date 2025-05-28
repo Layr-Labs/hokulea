@@ -33,14 +33,13 @@ use serde::{Deserialize, Serialize};
 /// match, and otherwise there is failures. See PreloadedEigenDABlobProvider
 /// for more information
 /// ToDo, replace EigenDAV2Cert to AltDACommitment, it saves the effort to
-/// convert from AltDACommitment to EigenDAV2Cert in all get methods
+/// convert from AltDACommitment to EigenDAV2Cert in all get methods.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDABlobWitnessData {
     /// recency window
     pub recency: Vec<(EigenDAV2Cert, u64)>,
-    /// indicates the validity of a cert is either true or false
-    /// validity contains a zk proof attesting claimed
+    /// validity of a da cert
     pub validity: Vec<(EigenDAV2Cert, CertValidity)>,
-    /// tuple consists of (DA cert, blob, kzg proof)
+    /// blobs corresponds to a da cert and its kzg proof
     pub blob: Vec<(EigenDAV2Cert, Vec<u8>, FixedBytes<64>)>,
 }

@@ -140,10 +140,6 @@ pub async fn fetch_eigenda_hint(
 
         let blob_key_hash = keccak256(field_element_key.as_ref());
 
-        //kv_write_lock.set(
-        //    PreimageKey::new(*blob_key_hash, PreimageKeyType::Keccak256).into(),
-        //    field_element_key.into(),
-        //)?;
         if i < fetch_num_element {
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),

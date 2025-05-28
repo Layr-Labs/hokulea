@@ -29,8 +29,6 @@ pub struct OracleEigenDAWitnessProvider<T: EigenDABlobProvider> {
 /// Note because EigenDA uses filtering approach, in the EigenDABlobWitnessData
 /// the number of certs does not have to equal to
 /// the number of blobs, since some certs might have been invalid due to incorrect or stale certs
-///
-/// The first call to that uses the preimage must register the cert, currently it is get_validity
 #[async_trait]
 impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitnessProvider<T> {
     type Error = T::Error;
@@ -104,6 +102,8 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
     }
 }
 
+/// helper function, to be removed after changed EigenDABlobWitnessData to take AltDACommitment
+/// in its fields
 impl<T: EigenDABlobProvider + Send> OracleEigenDAWitnessProvider<T> {
     pub fn get_cert(&self, altda_commitment: &AltDACommitment) -> EigenDAV2Cert {
         // V1 is not supported for secure integration, feel free to contribute
