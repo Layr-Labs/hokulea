@@ -133,9 +133,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus"
-version = "0.15.10"
+version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a4fbb5e716faa10fc4e7a122307afcf55bae7272fc69286ee3eee881f757c66"
+checksum = "32c3f3bc4f2a6b725970cd354e78e9738ea1e8961a91898f57bf6317970b1915"
 dependencies = [
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
@@ -175,7 +175,7 @@ version = "0.15.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42c04d03d9ee6b6768cad687df5a360fc58714f39a37c971b907a8965717636d"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -357,7 +357,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb232f8e0e6bac6e28da4e4813331be06b7519949c043ba6c58b9228bab89983"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-hardforks",
  "alloy-primitives 1.1.0",
@@ -468,7 +468,7 @@ version = "0.15.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddd432f53775e6ef85cfc8a3c90f174786bdc15d5cac379dcea01bd0e6f93edc"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-consensus-any 0.15.10",
  "alloy-eips 0.15.10",
  "alloy-json-rpc 0.15.10",
@@ -507,7 +507,7 @@ version = "0.15.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b2dea138d01f0e9739dee905a9e40a0f2347dd217360d813b6b7967ee8c0a8e"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-serde 0.15.10",
@@ -520,7 +520,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4b65600baa6f3638a8ca71460ef008a8dae45d941e93ec17ce9c33b469ab38fc"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-evm 0.6.0",
  "alloy-op-hardforks",
@@ -643,7 +643,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c1e1dc8a0a368a62455b526a037557b1e57c7fda652748e5e2c66db517906ed"
 dependencies = [
  "alloy-chains",
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-json-rpc 0.15.10",
  "alloy-network 0.15.10",
@@ -919,7 +919,7 @@ version = "0.15.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b79e3df17a03b9e1ee61a40ef38deb5cd9b4fcd916642a23f29b78783c5fd335"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -957,7 +957,7 @@ version = "0.15.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da690eafe37fe096037f8820b6bf2382f3ea68120d06a4253e4ac725a7e652dd"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-consensus-any 0.15.10",
  "alloy-eips 0.15.10",
  "alloy-network-primitives 0.15.10",
@@ -3986,7 +3986,7 @@ dependencies = [
 name = "hokulea-client"
 version = "0.1.0"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-evm 0.6.0",
  "hokulea-eigenda",
  "kona-client",
@@ -4048,7 +4048,7 @@ dependencies = [
 name = "hokulea-example-preloader"
 version = "0.1.0"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-evm 0.6.0",
  "alloy-rlp",
  "anyhow",
@@ -4683,7 +4683,7 @@ name = "kona-client"
 version = "1.0.1"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-evm 0.6.0",
  "alloy-op-evm",
@@ -4722,7 +4722,7 @@ name = "kona-derive"
 version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -4742,7 +4742,7 @@ name = "kona-driver"
 version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-evm 0.6.0",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -4763,7 +4763,7 @@ name = "kona-executor"
 version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-evm 0.6.0",
  "alloy-op-evm",
@@ -4787,7 +4787,7 @@ name = "kona-genesis"
 version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-hardforks",
  "alloy-op-hardforks",
@@ -4817,7 +4817,7 @@ name = "kona-host"
 version = "1.0.1"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-op-evm",
  "alloy-primitives 1.1.0",
@@ -4865,7 +4865,7 @@ name = "kona-interop"
 version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -4910,7 +4910,7 @@ name = "kona-proof"
 version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-evm 0.6.0",
  "alloy-op-evm",
@@ -4946,7 +4946,7 @@ name = "kona-proof-interop"
 version = "0.2.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-evm 0.6.0",
  "alloy-op-evm",
@@ -4979,7 +4979,7 @@ version = "0.3.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
  "alloc-no-stdlib",
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -5007,7 +5007,7 @@ name = "kona-providers-alloy"
 version = "0.2.0"
 source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.0.1#9d1ace6bd9a8bfac650f3323a3f1b3c91db46135"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-provider 0.15.10",
@@ -5846,7 +5846,7 @@ version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "375b501fad264f16781b608252b1b14c627359cc90cc09e80f6cbdac03fd8f07"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
@@ -5862,7 +5862,7 @@ version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e65a776c7783650a4ffdf15bdf0526f4b8bdbe00b26df5aeeb1aa2939c6554f"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-network 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rpc-types-eth 0.15.10",
@@ -5877,7 +5877,7 @@ version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1436a5d45b7620bbba236201236ef644abd943258b6349dc5e5a147d65a1fac4"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-network-primitives 0.15.10",
  "alloy-primitives 1.1.0",
@@ -5895,7 +5895,7 @@ version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b9767e25626d237857803577081a27082b2fd367934953e1144af433b1f4e07"
 dependencies = [
- "alloy-consensus 0.15.10",
+ "alloy-consensus 0.15.11",
  "alloy-eips 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-rlp",
