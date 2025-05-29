@@ -66,7 +66,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                 let cert_validity = CertValidity {
                     claimed_validity: validity,
                     // canoe proof generated outside to for potential optimization
-                    canoe_proof: Vec::new(),
+                    canoe_proof: None,
                     // the rest of the field needs to be supplied within zkVM
                     l1_head_block_hash: B256::ZERO,
                     l1_chain_id: 0,

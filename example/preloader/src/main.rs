@@ -152,13 +152,14 @@ where
     let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
     // generate canoe proof
-    let num_cert = wit.validity.len();
-    for i in 0..num_cert {
-        wit.validity[i].l1_head_block_hash = boot_info.l1_head;
+    wit.validity.iter_mut().for_each(|(_, cert_validity)| {
+        cert_validity.l1_head_block_hash = boot_info.l1_head;
+    });
 
+    for (cert, cert_validity) in &mut wit.validity {
         let canoe_input = CanoeInput {
-            eigenda_cert: wit.eigenda_certs[i].clone(),
-            claimed_validity: wit.validity[i].claimed_validity,
+            eigenda_cert: cert.clone(),
+            claimed_validity: cert_validity.claimed_validity,
             l1_head_block_hash: boot_info.l1_head,
             l1_head_block_number: l1_head_header.number,
             l1_chain_id,
@@ -174,7 +175,7 @@ where
         // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
         // For Steel, use CanoeSteelProvider to generate such proof
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        wit.validity[i].canoe_proof = Some(canoe_proof_bytes);
+        cert_validity.canoe_proof = Some(canoe_proof_bytes);
     }
 
     Ok(wit)
