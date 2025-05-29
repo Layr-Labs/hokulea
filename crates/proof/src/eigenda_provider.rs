@@ -4,8 +4,8 @@ use alloy_primitives::keccak256;
 use async_trait::async_trait;
 use hokulea_eigenda::{
     AltDACommitment, EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT,
-    RESERVED_EIGENDA_INTERFACE_BYTE_FOR_RECENCY, RESERVED_EIGENDA_INTERFACE_BYTE_FOR_VALIDITY,
-    RESERVED_EIGENDA_INTERFACE_BYTE_INDEX,
+    RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 use rust_kzg_bn254_primitives::blob::Blob;
@@ -50,8 +50,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let mut address_template = altda_commitment.digest_template();
 
         // make the call about recency of a altda commitment
-        address_template[RESERVED_EIGENDA_INTERFACE_BYTE_INDEX] =
-            RESERVED_EIGENDA_INTERFACE_BYTE_FOR_RECENCY;
+        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] =
+            RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
 
         let recency_bytes = self
             .oracle
@@ -90,8 +90,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let mut address_template = altda_commitment.digest_template();
 
         // make the call about validity of a altda commitment
-        address_template[RESERVED_EIGENDA_INTERFACE_BYTE_INDEX] =
-            RESERVED_EIGENDA_INTERFACE_BYTE_FOR_VALIDITY;
+        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] =
+            RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY;
 
         let validity = self
             .oracle

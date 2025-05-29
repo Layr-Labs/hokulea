@@ -44,7 +44,7 @@ use serde::{Deserialize, Serialize};
 /// convert from AltDACommitment to EigenDAV2Cert in all get methods.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDABlobWitnessData {
-    /// recency window
+    /// u64 containing the recency_window
     pub recency: Vec<(EigenDAV2Cert, u64)>,
     /// validity of a da cert
     pub validity: Vec<(EigenDAV2Cert, CertValidity)>,
