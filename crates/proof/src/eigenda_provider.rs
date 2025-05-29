@@ -50,8 +50,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let mut address_template = altda_commitment.digest_template();
 
         // make the call about recency of a altda commitment
-        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] =
-            RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
+        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
 
         let recency_bytes = self
             .oracle
@@ -90,8 +89,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         let mut address_template = altda_commitment.digest_template();
 
         // make the call about validity of a altda commitment
-        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] =
-            RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY;
+        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY;
 
         let validity = self
             .oracle

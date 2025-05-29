@@ -6,8 +6,8 @@ use async_trait::async_trait;
 use hokulea_eigenda::AltDACommitment;
 use hokulea_eigenda::{EigenDABlobData, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY};
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0,
-    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
+    BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
@@ -104,8 +104,7 @@ pub async fn fetch_eigenda_hint(
     let recency = rollup_config.seq_window_size + 100_000_000;
     let recency_be_bytes = recency.to_be_bytes();
     let mut recency_address = altda_commitment.digest_template();
-    recency_address[RESERVED_EIGENDA_API_BYTE_INDEX] =
-        RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
+    recency_address[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
 
     kv_write_lock.set(
         PreimageKey::new(*keccak256(recency_address), PreimageKeyType::GlobalGeneric).into(),
@@ -118,8 +117,7 @@ pub async fn fetch_eigenda_hint(
     let claimed_validity = true;
     let mut validity_address = altda_commitment.digest_template();
 
-    validity_address[RESERVED_EIGENDA_API_BYTE_INDEX] =
-        RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY;
+    validity_address[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY;
 
     kv_write_lock.set(
         PreimageKey::new(*keccak256(validity_address), PreimageKeyType::GlobalGeneric).into(),
