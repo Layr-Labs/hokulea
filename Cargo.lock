@@ -654,7 +654,7 @@ dependencies = [
  "alloy-rpc-types-eth 0.15.10",
  "alloy-signer 0.15.10",
  "alloy-sol-types",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "alloy-transport-http 0.15.10",
  "alloy-transport-ipc 0.15.10",
  "alloy-transport-ws 0.15.10",
@@ -707,7 +707,7 @@ checksum = "b322e679094ec8876d05e69f75f0c16b056514422ed79187bac1ee42ac432c75"
 dependencies = [
  "alloy-json-rpc 0.15.10",
  "alloy-primitives 1.1.0",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "bimap",
  "futures",
  "parking_lot",
@@ -779,7 +779,7 @@ dependencies = [
  "alloy-json-rpc 0.15.10",
  "alloy-primitives 1.1.0",
  "alloy-pubsub 0.15.10",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "alloy-transport-http 0.15.10",
  "alloy-transport-ipc 0.15.10",
  "alloy-transport-ws 0.15.10",
@@ -1163,9 +1163,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport"
-version = "0.15.10"
+version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b4f3654d5195c0c3f502bfd6ed299ea9eb5cb275d7a88d04ce0d189bca416b2"
+checksum = "6964d85cd986cfc015b96887b89beed9e06d0d015b75ee2b7bfbd64341aab874"
 dependencies = [
  "alloy-json-rpc 0.15.10",
  "alloy-primitives 1.1.0",
@@ -1207,7 +1207,7 @@ checksum = "70a9372fba202370973748d76c2891344cbacfb012d44a8ed62135ba53d4408e"
 dependencies = [
  "alloy-json-rpc 0.15.10",
  "alloy-rpc-types-engine 0.15.10",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "http-body-util",
  "hyper",
  "hyper-tls",
@@ -1248,7 +1248,7 @@ checksum = "fcc96665d4e52d55b48998f955bb7253e2b41b1d96200c47ca5b187f0239e602"
 dependencies = [
  "alloy-json-rpc 0.15.10",
  "alloy-pubsub 0.15.10",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "bytes",
  "futures",
  "interprocess",
@@ -1285,7 +1285,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "334b1e456e62cf561d80feda0604e1f80e898d29a1fab426ca25020e7628fa59"
 dependencies = [
  "alloy-pubsub 0.15.10",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "futures",
  "http",
  "rustls",
@@ -4827,7 +4827,7 @@ dependencies = [
  "alloy-rpc-types 0.15.10",
  "alloy-rpc-types-beacon",
  "alloy-serde 0.15.10",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "alloy-transport-http 0.15.10",
  "anyhow",
  "ark-ff 0.5.0",
@@ -5015,7 +5015,7 @@ dependencies = [
  "alloy-rpc-types-beacon",
  "alloy-rpc-types-engine 0.15.10",
  "alloy-serde 0.15.10",
- "alloy-transport 0.15.10",
+ "alloy-transport 0.15.11",
  "alloy-transport-http 0.15.10",
  "async-trait",
  "http-body-util",
@@ -5144,7 +5144,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
