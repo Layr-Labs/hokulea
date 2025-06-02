@@ -126,7 +126,7 @@ run-client-against-sepolia native_or_asterisc='native' verbosity='' env_file='.s
 
 [group('local-env')]
 run-kurtosis-devnet ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
-  kurtosis run --enclave {{ENCLAVE_NAME}} github.com/ethpandaops/optimism-package --args-file {{ARGS_FILE}} --image-download always
+  kurtosis run --enclave {{ENCLAVE_NAME}} github.com/ethpandaops/optimism-package@stable --args-file {{ARGS_FILE}} --image-download always
 
 # If you have run run-kurtosis-devnet recently, which always downloads all images,
 # then it is safe to run this command, which skill use cached images instead, and is thus faster.
@@ -242,7 +242,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
   L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
   ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
-  EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} op-da-da-server-{{chain_id}}-op-kurtosis http)"
+  EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"    
 
   echo "L1_RPC=$L1_RPC" > {{env_file}}

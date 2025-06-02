@@ -18,7 +18,7 @@ ethereum_package:
       # See https://github.com/ethpandaops/optimism-package/blob/c993cd0b9716fb063c1e514e19374e27e1b10b3c/kurtosis.yml#L6
       # Once this gets updated, we can revert back to using latest teku.
       # See https://github.com/ethpandaops/ethereum-package/issues/974 for more details.
-      cl_image: consensys/teku:25.4.0
+      cl_image: consensys/teku:25.5.0
       el_type: geth
 optimism_package:
   observability:
@@ -35,7 +35,9 @@ optimism_package:
   challengers:
     # no challengers for now
   chains:
-    - participants:
+    - additional_services:
+        - da_server
+      participants:
         - cl_type: op-node
           el_type: op-geth
           count: 1
@@ -52,8 +54,7 @@ optimism_package:
       proposer_params:
         game_type: 1
         proposal_interval: 10m
-      da_params:
-        enabled: true
+      da_server_params:
         cmd:
           - --addr=0.0.0.0
           - --port=3100
