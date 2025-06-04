@@ -17,7 +17,11 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
     // some variable is unused, because when sp1-cc verifier is not configured in zkVM mode, all tests
     // are skipped because sp1 cannot take sp1-sdk as dependency
     #[allow(unused_variables)]
-    fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
+    fn validate_cert_receipt(
+        &self,
+        cert_validity: CertValidity,
+        eigenda_cert: EigenDAV2Cert,
+    ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSp1CCVerifier");
 
         cfg_if::cfg_if! {
@@ -38,11 +42,14 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 let public_values_digest = Sha256::digest(journal_bytes);
                 let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");
                 let v_key = b256_to_u32_array(v_key_b256);
+                // the function will panic if the proof is incorrect
+                // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&v_key, &public_values_digest.into());
             } else {
                 warn!("Sp1CC proof IS NOT verified in the non zkVM environment");
             }
         }
+        Ok(())
     }
 }
 

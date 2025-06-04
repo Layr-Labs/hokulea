@@ -4045,6 +4045,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "hokulea-example-canoe-on-sepolia"
+version = "0.1.0"
+dependencies = [
+ "alloy-consensus 0.15.10",
+ "alloy-eips 0.15.10",
+ "alloy-network 0.15.10",
+ "alloy-primitives 1.1.0",
+ "alloy-provider 0.15.10",
+ "anyhow",
+ "canoe-provider",
+ "canoe-steel-apps",
+ "clap",
+ "eigenda-v2-struct",
+ "hokulea-proof",
+ "risc0-zkvm",
+ "serde_json",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "hokulea-example-preloader"
 version = "0.1.0"
 dependencies = [

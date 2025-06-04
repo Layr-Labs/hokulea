@@ -3,9 +3,9 @@ use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 use anyhow::Result;
 use async_trait::async_trait;
-use canoe_bindings::{IEigenDACertMockVerifier, Journal};
+use canoe_bindings::{IEigenDACertVerifier, Journal};
 use canoe_provider::{CanoeInput, CanoeProvider};
-use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
+use hokulea_proof::canoe_verifier::get_cert_verifier_address;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{ProverClient, SP1Proof, SP1Stdin};
@@ -106,7 +106,7 @@ async fn get_sp1_cc_proof(
     };
 
     // Make the call
-    let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
+    let call = IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
         batchHeader: canoe_input.eigenda_cert.batch_header_v2.to_sol(),
         blobInclusionInfo: canoe_input
             .eigenda_cert
@@ -120,9 +120,11 @@ async fn get_sp1_cc_proof(
         signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
     };
 
+    let verifier_address = get_cert_verifier_address(canoe_input.l1_chain_id);
+
     let returns_bytes = sketch
         .call(ContractInput::new_call(
-            VERIFIER_ADDRESS,
+            verifier_address.clone(),
             Address::default(),
             call.clone(),
         ))
@@ -153,7 +155,7 @@ async fn get_sp1_cc_proof(
     let input_bytes = bincode::serialize(&evm_state_sketch)?;
     let mut stdin = SP1Stdin::new();
     stdin.write(&input_bytes);
-    stdin.write(&VERIFIER_ADDRESS);
+    stdin.write(&verifier_address);
     stdin.write(&batch_header_abi);
     stdin.write(&non_signer_abi);
     stdin.write(&blob_inclusion_abi);

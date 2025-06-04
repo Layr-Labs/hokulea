@@ -4,8 +4,7 @@ sp1_zkvm::entrypoint!(main);
 use alloy_primitives::{Address, Bytes};
 use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 use canoe_bindings::{
-    BatchHeaderV2, BlobInclusionInfo, IEigenDACertMockVerifier, Journal,
-    NonSignerStakesAndSignature,
+    BatchHeaderV2, BlobInclusionInfo, IEigenDACertVerifier, Journal, NonSignerStakesAndSignature,
 };
 use reth_chainspec::ChainSpec;
 use sp1_cc_client_executor::{io::EvmSketchInput, ClientExecutor, ContractInput};
@@ -38,7 +37,7 @@ pub fn main() {
     let signed_quorum_numbers = Bytes::abi_decode(&signed_quorum_numbers_abi)
         .expect("deserialize signed_quorum_numbers_abi");
 
-    let mock_call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
+    let mock_call = IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
         batchHeader: batch_header,
         blobInclusionInfo: blob_inclusion_info.clone(),
         nonSignerStakesAndSignature: non_signer_stakes_and_signature,

@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "bin/*",
     "crates/*",
-    "example/preloader",    
+    "example/*",    
     "canoe/bindings",
     "canoe/provider",
     "canoe/steel/apps",

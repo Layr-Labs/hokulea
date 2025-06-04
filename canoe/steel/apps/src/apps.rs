@@ -2,7 +2,7 @@
 use std::str::FromStr;
 use std::time::Instant;
 
-use canoe_bindings::IEigenDACertMockVerifier;
+use canoe_bindings::IEigenDACertVerifier;
 
 use risc0_steel::{
     ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC},
@@ -25,7 +25,7 @@ use url::Url;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use risc0_zkvm;
 
-use hokulea_proof::canoe_verifier::VERIFIER_ADDRESS;
+use hokulea_proof::canoe_verifier::get_cert_verifier_address;
 use tracing::info;
 
 /// A canoe provider implementation with steel
@@ -66,7 +66,7 @@ impl CanoeProvider for CanoeSteelProvider {
         };
 
         // Prepare the function call
-        let call = IEigenDACertMockVerifier::verifyDACertV2ForZKProofCall {
+        let call = IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
             batchHeader: canoe_input.eigenda_cert.batch_header_v2.to_sol(),
             blobInclusionInfo: canoe_input
                 .eigenda_cert
@@ -85,9 +85,11 @@ impl CanoeProvider for CanoeSteelProvider {
         let blob_inclusion_abi = call.blobInclusionInfo.abi_encode();
         let signed_quorum_numbers_abi = call.signedQuorumNumbers.abi_encode();
 
+        let verifier_address = get_cert_verifier_address(canoe_input.l1_chain_id);
+
         // Preflight the call to prepare the input that is required to execute the function in
         // the guest without RPC access. It also returns the result of the call.
-        let mut contract = Contract::preflight(VERIFIER_ADDRESS, &mut env);
+        let mut contract = Contract::preflight(verifier_address.clone(), &mut env);
 
         let returns = contract.call_builder(&call).call().await?;
         if canoe_input.claimed_validity != returns {
@@ -102,7 +104,7 @@ impl CanoeProvider for CanoeSteelProvider {
         let prove_info = task::spawn_blocking(move || {
             let env = ExecutorEnv::builder()
                 .write(&evm_input)?
-                .write(&VERIFIER_ADDRESS)?
+                .write(&verifier_address)?
                 .write(&batch_header_abi)?
                 .write(&non_signer_abi)?
                 .write(&blob_inclusion_abi)?

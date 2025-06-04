@@ -65,7 +65,9 @@ impl PreloadedEigenDABlobProvider {
         let mut validity_entries = vec![];
         for (cert, cert_validity) in &value.validity {
             // check cert validity
-            canoe_verifier.validate_cert_receipt(cert_validity.clone(), cert.clone());
+            canoe_verifier
+                .validate_cert_receipt(cert_validity.clone(), cert.clone())
+                .expect("verification should have been passing");
 
             // populate only the mapping <DAcert, boolean> for preimage trait
             validity_entries.push((cert.clone(), cert_validity.claimed_validity));

@@ -1,5 +1,7 @@
+use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::{to_journal_bytes, CanoeVerifier};
 use crate::cert_validity::CertValidity;
+use alloc::string::ToString;
 use eigenda_v2_struct::EigenDAV2Cert;
 
 use risc0_zkvm::Receipt;
@@ -17,7 +19,11 @@ pub struct CanoeSteelVerifier {}
 ///     VERIFIER_ADDRESS is currently burned inside the client
 ///     eigenda_cert contains all the inputs
 impl CanoeVerifier for CanoeSteelVerifier {
-    fn validate_cert_receipt(&self, cert_validity: CertValidity, eigenda_cert: EigenDAV2Cert) {
+    fn validate_cert_receipt(
+        &self,
+        cert_validity: CertValidity,
+        eigenda_cert: EigenDAV2Cert,
+    ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSteelVerifier");
 
         let journal_bytes = to_journal_bytes(&cert_validity, &eigenda_cert);
@@ -30,21 +36,23 @@ impl CanoeVerifier for CanoeSteelVerifier {
                     warn!("steel verification within zkvm requires proof being provided via zkVM stdin");
                 }
 
-                env::verify(V2CERT_VERIFICATION_ID, &journal_bytes).expect("steel proof cannot be verified within zkVM");
+                env::verify(V2CERT_VERIFICATION_ID, &journal_bytes).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
             } else {
                 if cert_validity.canoe_proof.is_none() {
-                    panic!("steel verification in non-zkvm mode requires proof being supplied into CertValidity");
+                    return Err(HokuleaCanoeVerificationError::NonZKVMMissingProof);
                 }
 
                 let canoe_proof = cert_validity.canoe_proof.expect("canoe proof does not exist in mock mode");
 
-                let canoe_receipt: Receipt = serde_json::from_slice(canoe_proof.as_ref()).expect("serde error");
-                canoe_receipt
-                    .verify(V2CERT_VERIFICATION_ID)
-                    .expect("receipt verify correctly");
+                let canoe_receipt: Receipt = serde_json::from_slice(canoe_proof.as_ref()).map_err(|e| HokuleaCanoeVerificationError::UnableToDeserializeReceipt(e.to_string()))?;
 
-                assert!(canoe_receipt.journal.bytes == journal_bytes);
+                canoe_receipt.verify(V2CERT_VERIFICATION_ID).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
+
+                if canoe_receipt.journal.bytes != journal_bytes {
+                    return Err(HokuleaCanoeVerificationError::NonZKVMInconsistentPublicJournal)
+                }
             }
         }
+        Ok(())
     }
 }
