@@ -89,7 +89,7 @@ impl CanoeProvider for CanoeSteelProvider {
 
         // Preflight the call to prepare the input that is required to execute the function in
         // the guest without RPC access. It also returns the result of the call.
-        let mut contract = Contract::preflight(verifier_address.clone(), &mut env);
+        let mut contract = Contract::preflight(verifier_address, &mut env);
 
         let returns = contract.call_builder(&call).call().await?;
         if canoe_input.claimed_validity != returns {

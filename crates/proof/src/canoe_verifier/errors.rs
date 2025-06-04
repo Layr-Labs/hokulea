@@ -15,4 +15,7 @@ pub enum HokuleaCanoeVerificationError {
     /// unable to deserialize receipt
     #[error("Unable to deserialize receipt: {0}")]
     UnableToDeserializeReceipt(String),
+    /// an invalid verification key for sp1
+    #[error("Invalid verification key for Sp1")]
+    InvalidVerificationKeyForSp1,
 }

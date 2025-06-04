@@ -2,7 +2,6 @@
 //! Note eigenda proxy has not yet supported V3 cert, but it would come soon
 
 use alloy_provider::{Provider, ProviderBuilder};
-use anyhow;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_steel_apps::apps::CanoeSteelProvider;
 use clap::Parser;
@@ -35,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
 
     // value to be used for zk verification
     let v2_cert = canoe_input.eigenda_cert.clone();
-    let l1_head_block_hash = canoe_input.l1_head_block_hash.clone();
+    let l1_head_block_hash = canoe_input.l1_head_block_hash;
     let claimed_validity = validity;
 
     // create canoe proof
@@ -49,9 +48,9 @@ async fn main() -> anyhow::Result<()> {
 
     // prepare value to verify canoe proof
     let cert_validity = CertValidity {
-        claimed_validity: claimed_validity,
+        claimed_validity,
         canoe_proof: Some(canoe_proof_bytes),
-        l1_head_block_hash: l1_head_block_hash,
+        l1_head_block_hash,
         l1_chain_id: 11155111,
     };
     verify_canoe_proof(cert_validity.clone(), v2_cert.clone())

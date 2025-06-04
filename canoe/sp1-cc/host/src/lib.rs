@@ -124,7 +124,7 @@ async fn get_sp1_cc_proof(
 
     let returns_bytes = sketch
         .call(ContractInput::new_call(
-            verifier_address.clone(),
+            verifier_address,
             Address::default(),
             call.clone(),
         ))

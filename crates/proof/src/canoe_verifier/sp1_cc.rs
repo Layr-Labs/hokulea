@@ -1,3 +1,4 @@
+use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::CanoeVerifier;
 use crate::cert_validity::CertValidity;
 use alloy_primitives::B256;
@@ -8,7 +9,7 @@ use tracing::{info, warn};
 // ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
 // To get vKey of ELF
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
-pub const VKEYHEXSTRING: &str = "001a1106242f4bf2a44b02aeb0123dec8a842654b3cf941ad19c24d36906ce8e";
+pub const VKEYHEXSTRING: &str = "00ee790f70346a39c163fb18f488de404b44ad60592b92c080aee6582a998ce3";
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -40,7 +41,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 }
                 // used within zkVM
                 let public_values_digest = Sha256::digest(journal_bytes);
-                let v_key_b256 = B256::from_str(VKEYHEXSTRING).expect("Invalid hex string");
+                let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
                 let v_key = b256_to_u32_array(v_key_b256);
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
