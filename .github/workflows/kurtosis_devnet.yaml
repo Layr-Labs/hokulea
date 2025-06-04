@@ -28,5 +28,5 @@ jobs:
       # We run this explicitly here even though its run implicitly as a dependency of `run-client-native-against-devnet`
       # just so that we can see the breakdown timing requirements for each step.
       - run: just _kurtosis_wait_for_first_l2_finalized_block
-      - run: just run-client-against-devnet 'native' 
+      - run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just run-client-against-devnet 'native' 
       # TODO: we should also run the asterisc/cannon client once it works
