@@ -1,6 +1,9 @@
 use alloc::string::String;
 
-/// Custom hokulea preimage error
+/// List of errors for verification of canoe proof using hokulea framework
+/// Curerntly, all errors are specific to steel implementation except those marked with Sp1.
+/// It is because Sp1 library panic as opposed to return an error, and also because
+/// sp1 cannot take sp1-sdk as dependency which is needed for verification in non zkvm mode
 #[derive(Debug, thiserror::Error)]
 pub enum HokuleaCanoeVerificationError {
     /// Invalid Cert validity response

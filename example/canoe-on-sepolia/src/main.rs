@@ -20,6 +20,7 @@ struct Args {
     eth_rpc_url: String,
 }
 
+/// a rlp encoded V2 DA cert generated on June 2nd 2025 on Sepolia testnet
 pub const V2_CERT_RLP_BYTES: &[u8] = include_bytes!("../data/v2_cert_rlp.bin");
 
 #[tokio::main(flavor = "multi_thread")]
@@ -57,13 +58,14 @@ async fn main() -> anyhow::Result<()> {
         .expect("correct proof should have passed");
     println!("cert verification pass");
 
-    tamper_public_journal(cert_validity.clone(), v2_cert.clone());
+    tamper_validity_in_public_journal(cert_validity.clone(), v2_cert.clone());
+    println!("correctly identified tampering validity in public journal");
 
     Ok(())
 }
 
 // tamper public journal by changing validity boolean
-pub fn tamper_public_journal(cert_validity: CertValidity, v2_cert: EigenDAV2Cert) {
+pub fn tamper_validity_in_public_journal(cert_validity: CertValidity, v2_cert: EigenDAV2Cert) {
     // tamper validity but with existing correct proof
     let mut tampered_cert_validity = cert_validity;
     tampered_cert_validity.claimed_validity = false;
