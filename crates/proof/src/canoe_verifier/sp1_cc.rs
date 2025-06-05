@@ -47,7 +47,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&v_key, &public_values_digest.into());
             } else {
-                warn!("Sp1CC proof IS NOT verified in the non zkVM environment");
+                warn!("Skipping sp1CC proof verification in native mode outside of zkVM, because sp1 cannot take sp1-sdk as dependency which is needed for verification in the native mode");
             }
         }
         Ok(())

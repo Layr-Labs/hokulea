@@ -33,13 +33,15 @@ impl CanoeVerifier for CanoeSteelVerifier {
                 risc0_zkvm::guest::env;
                 if cert_validity.canoe_proof.is_some() {
                     // Risc0 doc https://github.com/risc0/risc0/tree/main/examples/composition
-                    warn!("steel verification within zkvm requires proof being provided via zkVM stdin");
+                    warn!("steel verification within zkvm requires proof provided via zkVM STDIN by the 'add_assumption'
+                        method see <https://github.com/risc0/risc0/tree/main/examples/composition>, but currently proof 
+                        is provided from other ways which is not verified within zkVM");
                 }
 
                 env::verify(V2CERT_VERIFICATION_ID, &journal_bytes).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
             } else {
                 if cert_validity.canoe_proof.is_none() {
-                    return Err(HokuleaCanoeVerificationError::NonZKVMMissingProof);
+                    return Err(HokuleaCanoeVerificationError::MissingProof);
                 }
 
                 let canoe_proof = cert_validity.canoe_proof.expect("canoe proof does not exist in mock mode");
@@ -49,7 +51,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
                 canoe_receipt.verify(V2CERT_VERIFICATION_ID).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
 
                 if canoe_receipt.journal.bytes != journal_bytes {
-                    return Err(HokuleaCanoeVerificationError::NonZKVMInconsistentPublicJournal)
+                    return Err(HokuleaCanoeVerificationError::InconsistentPublicJournal)
                 }
             }
         }

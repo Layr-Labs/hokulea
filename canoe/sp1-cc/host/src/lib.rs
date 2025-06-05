@@ -5,7 +5,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{IEigenDACertVerifier, Journal};
 use canoe_provider::{CanoeInput, CanoeProvider};
-use hokulea_proof::canoe_verifier::get_cert_verifier_address;
+use hokulea_proof::canoe_verifier::cert_verifier_v2_address;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{ProverClient, SP1Proof, SP1Stdin};
@@ -120,7 +120,7 @@ async fn get_sp1_cc_proof(
         signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
     };
 
-    let verifier_address = get_cert_verifier_address(canoe_input.l1_chain_id);
+    let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
 
     let returns_bytes = sketch
         .call(ContractInput::new_call(

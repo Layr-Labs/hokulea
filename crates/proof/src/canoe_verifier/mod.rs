@@ -41,7 +41,7 @@ pub fn to_journal_bytes(cert_validity: &CertValidity, eigenda_cert: &EigenDAV2Ce
     buffer.extend(signed_quorum_numbers_abi);
 
     let journal = Journal {
-        certVerifierAddress: get_cert_verifier_address(cert_validity.l1_chain_id),
+        certVerifierAddress: cert_verifier_v2_address(cert_validity.l1_chain_id),
         input: buffer.into(),
         blockhash: cert_validity.l1_head_block_hash,
         output: cert_validity.claimed_validity,
@@ -51,7 +51,7 @@ pub fn to_journal_bytes(cert_validity: &CertValidity, eigenda_cert: &EigenDAV2Ce
 }
 
 // V3 cert not supported yet, only v2 cert right now
-pub fn get_cert_verifier_address(chain_id: u64) -> Address {
+pub fn cert_verifier_v2_address(chain_id: u64) -> Address {
     // this is kurtosis devnet
     match chain_id {
         // Sepolia V2 cert verifier address

@@ -72,7 +72,7 @@ pub fn tamper_validity_in_public_journal(cert_validity: CertValidity, v2_cert: E
 
     match verify_canoe_proof(tampered_cert_validity, v2_cert) {
         Ok(()) => panic!("should error out"),
-        Err(HokuleaCanoeVerificationError::NonZKVMInconsistentPublicJournal) => {
+        Err(HokuleaCanoeVerificationError::InconsistentPublicJournal) => {
             println!("correctly detect inconsistency")
         }
         Err(_) => panic!("detect other errors"),
@@ -91,7 +91,7 @@ pub fn verify_canoe_proof(
 
 /// It is a helper function that prepares canoe input which can be used to generate a
 /// zk validity or invalidity proof.
-/// This function provides takes the lateset block tip for l1_block_hash and block_number
+/// This function provides takes the latest block tip for l1_block_hash and block_number
 pub async fn get_canoe_input(
     v2_cert_rlp_vec: &Vec<u8>,
     validity: bool,

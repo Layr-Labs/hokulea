@@ -204,8 +204,9 @@ impl EigenDAV2Cert {
         keccak256(&cert_rlp_bytes)
     }
 
-    pub fn from_bytes(data: &Vec<u8>) -> Self {
-        EigenDAV2Cert::decode(&mut data.as_slice())
-            .expect("should be able to rust blob inclusion struct")
+    pub fn from_bytes(data: &[u8]) -> Self {
+        let mut slice = data;
+        EigenDAV2Cert::decode(&mut slice)
+            .expect("should be able to convert to EigenDAV2Cert struct")
     }
 }

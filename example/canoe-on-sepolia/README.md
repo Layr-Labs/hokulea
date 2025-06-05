@@ -1,10 +1,10 @@
 # Canoe on Sepolia
 
 Canoe-on-Sepolia is an example that generates and verifies a zk validity proof on sepolia. It serves to provide an easy entry for
-the proof generation for DA certificate and verification of it on native host (not in zkvm).
+the proof generation and verification of DA certificate validity when running on native host (not in zkvm).
 
 ## Certificate Characteristics
-The sample project already includes an EigenDA v2 certificate in the data folder. This file is a valid v2 certificate attested by 
+This example already includes an EigenDA v2 certificate in the data folder. This file is a valid v2 certificate attested by 
 EigenDA Sepolia operators for the Sepolia contract 0x73818fed0743085c4557a736a7630447fb57c662, generated on June 2 at 16:33 PST.
 
 After a certificate is issued, you can generate a valid Canoe proof for it at any later date (whether days or months afterward)
