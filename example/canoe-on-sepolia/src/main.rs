@@ -93,7 +93,7 @@ pub fn verify_canoe_proof(
 /// zk validity or invalidity proof.
 /// This function provides takes the latest block tip for l1_block_hash and block_number
 pub async fn get_canoe_input(
-    v2_cert_rlp_vec: &Vec<u8>,
+    v2_cert_rlp_vec: &[u8],
     validity: bool,
     eth_rpc_url: String,
 ) -> anyhow::Result<CanoeInput> {
