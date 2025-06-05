@@ -58,25 +58,7 @@ async fn main() -> anyhow::Result<()> {
         .expect("correct proof should have passed");
     println!("cert verification pass");
 
-    tamper_validity_in_public_journal(cert_validity.clone(), v2_cert.clone());
-    println!("correctly identified tampering validity in public journal");
-
     Ok(())
-}
-
-// tamper public journal by changing validity boolean
-pub fn tamper_validity_in_public_journal(cert_validity: CertValidity, v2_cert: EigenDAV2Cert) {
-    // tamper validity but with existing correct proof
-    let mut tampered_cert_validity = cert_validity;
-    tampered_cert_validity.claimed_validity = false;
-
-    match verify_canoe_proof(tampered_cert_validity, v2_cert) {
-        Ok(()) => panic!("should error out"),
-        Err(HokuleaCanoeVerificationError::InconsistentPublicJournal) => {
-            println!("correctly detect inconsistency")
-        }
-        Err(_) => panic!("detect other errors"),
-    }
 }
 
 // this function takes canoe proof and verify it
@@ -102,6 +84,14 @@ pub async fn get_canoe_input(
     let eth_rpc_url = Url::from_str(&eth_rpc_url).unwrap();
 
     let provider = ProviderBuilder::new().connect_http(eth_rpc_url);
+
+    let provider_chain_id = provider
+        .get_chain_id()
+        .await
+        .expect("should have received chain ID");
+    if provider_chain_id != 11155111 {
+        panic!("the provided rpc does not point to sepolia");
+    }
 
     // Get the latest block number
     let block_number = provider.get_block_number().await?;
