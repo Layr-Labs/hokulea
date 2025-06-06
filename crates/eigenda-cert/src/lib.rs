@@ -111,7 +111,7 @@ impl BlobCertificate {
     }
 }
 
-// BlobInclusionInfo contains inclusion proof information for a blob
+/// BlobInclusionInfo contains inclusion proof information for a blob
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct BlobInclusionInfo {
     pub blob_certificate: BlobCertificate,
@@ -119,15 +119,17 @@ pub struct BlobInclusionInfo {
     pub inclusion_proof: Bytes,
 }
 
-// BatchHeaderV2 is the version 2 of batch header which is defined by the EigenDA protocol
-// This version is separate from the cert Version. For example, Cert V3 can use BatchHeaderV2
-// since V2 is a tag for EigenDA protocol
+/// BatchHeaderV2 is the version 2 of batch header which is defined by the EigenDA protocol
+/// This version is separate from the cert Version. For example, Cert V3 can use BatchHeaderV2
+/// since V2 is a tag for EigenDA protocol. The V2 is added to the suffix of the name for
+/// matching the same variable name for its solidity part.
+/// <https://github.com/Layr-Labs/eigenda/blob/510291b9be38cacbed8bc62125f6f9a14bd604e4/contracts/src/core/libraries/v2/EigenDATypesV2.sol#L47>
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct BatchHeaderV2 {
     pub batch_root: [u8; 32],
     pub reference_block_number: u32,
 }
-// NonSignerStakesAndSignature contains information about non-signers and their stakes
+/// NonSignerStakesAndSignature contains information about non-signers and their stakes
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct NonSignerStakesAndSignature {
     pub non_signer_quorum_bitmap_indices: Vec<u32>,
@@ -140,6 +142,9 @@ pub struct NonSignerStakesAndSignature {
     pub non_signer_stake_indices: Vec<Vec<u32>>,
 }
 
+/// The V2 is added to the suffix of the name for matching the same variable name
+/// for its solidity part.
+/// <https://github.com/Layr-Labs/eigenda/blob/510291b9be38cacbed8bc62125f6f9a14bd604e4/contracts/src/core/libraries/v2/EigenDATypesV2.sol#L28>
 impl BatchHeaderV2 {
     pub fn to_sol(&self) -> sol_struct::BatchHeaderV2 {
         sol_struct::BatchHeaderV2 {
