@@ -8,7 +8,7 @@ use crate::{BatchHeaderV2, BlobInclusionInfo, NonSignerStakesAndSignature};
 extern crate alloc;
 use alloc::vec::Vec;
 
-/// EigenDAV2 CertV3
+/// EigenDA CertV3
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct EigenDACertV3 {
     pub batch_header_v2: BatchHeaderV2,
@@ -18,7 +18,7 @@ pub struct EigenDACertV3 {
 }
 
 impl EigenDACertV3 {
-    pub fn digest(&self) -> B256 {
+    pub fn to_digest(&self) -> B256 {
         let mut cert_rlp_bytes = Vec::<u8>::new();
         // rlp encode of cert
         self.encode(&mut cert_rlp_bytes);

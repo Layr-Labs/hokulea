@@ -109,12 +109,12 @@ impl<T: EigenDABlobProvider + Send> OracleEigenDAWitnessProvider<T> {
         // V1 is not supported for secure integration, feel free to contribute
         let cert = match &altda_commitment.versioned_cert {
             EigenDAVersionedCert::V2(c) => c,
-            _ => panic!("v1 v3 certs are not supported"),
+            _ => panic!("only v2 is supported"),
         };
         debug!(
             target = "OracleEigenDAWitnessProvider",
             "pusehd a cert {}",
-            cert.digest()
+            cert.to_digest()
         );
         cert.clone()
     }

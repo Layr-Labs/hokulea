@@ -8,7 +8,7 @@ use crate::{BatchHeaderV2, BlobInclusionInfo, NonSignerStakesAndSignature};
 extern crate alloc;
 use alloc::vec::Vec;
 
-/// EigenDACertV2 to be updatd in the solidity
+/// EigenDA CertV2
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct EigenDACertV2 {
     pub blob_inclusion_info: BlobInclusionInfo,
@@ -18,7 +18,7 @@ pub struct EigenDACertV2 {
 }
 
 impl EigenDACertV2 {
-    pub fn digest(&self) -> B256 {
+    pub fn to_digest(&self) -> B256 {
         let mut cert_rlp_bytes = Vec::<u8>::new();
         // rlp encode of cert
         self.encode(&mut cert_rlp_bytes);

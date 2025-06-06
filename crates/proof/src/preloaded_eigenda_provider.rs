@@ -130,11 +130,11 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
                     Ok(recency)
                 } else {
                     // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-                    error!("requested cert is {:?}, stored cert is {:?}", c.digest(), eigenda_cert.digest());
+                    error!("requested cert is {:?}, stored cert is {:?}", c.to_digest(), eigenda_cert.to_digest());
                     panic!("preloaded eigenda blob provider does not match cert requested from derivation pipeline. EigenDABlobWitnessData is misconfigured. This is a bug")
                 }
             }
-            _ => panic!("hokulea does not support eigenda cert v1 or v3. This should have been filtered out at the start of derivation, please report bug"),
+            _ => panic!("hokulea currently only supports v2 cert. This should have been filtered out at the start of derivation, please report bug"),
         }
     }
 
@@ -150,11 +150,11 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
                     Ok(validity)
                 } else {
                     // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-                    error!("requested cert is {:?}, stored cert is {:?}", c.digest(), eigenda_cert.digest());
+                    error!("requested cert is {:?}, stored cert is {:?}", c.to_digest(), eigenda_cert.to_digest());
                     panic!("preloaded eigenda blob provider does not match cert requested from derivation pipeline. EigenDABlobWitnessData is misconfigured. This is a bug")
                 }
             }
-            _ => panic!("hokulea does not support eigenda cert v1 or v3. This should have been filtered out at the start of derivation, please report bug"),
+            _ => panic!("hokulea currently only supports v2 cert. This should have been filtered out at the start of derivation, please report bug"),
         }
     }
 
@@ -168,11 +168,11 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
                     Ok(eigenda_blob)
                 } else {
                     // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-                    error!("requested cert is {:?}, stored cert is {:?}", c.digest(), eigenda_cert.digest());
+                    error!("requested cert is {:?}, stored cert is {:?}", c.to_digest(), eigenda_cert.to_digest());
                     panic!("preloaded eigenda blob provider does not match cert requested from derivation pipeline. EigenDABlobWitnessData is misconfigured. This is a bug")
                 }
             }
-            _ => panic!("hokulea does not support eigenda cert v1 or v3. This should have been filtered out at the start of derivation, please report bug"),
+            _ => panic!("hokulea currently only supports v2 cert. This should have been filtered out at the start of derivation, please report bug"),
         }
     }
 }

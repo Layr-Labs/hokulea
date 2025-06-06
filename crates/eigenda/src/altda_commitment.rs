@@ -37,8 +37,6 @@ pub enum AltDACommitmentParseError {
     /// Only V1 and V2 are supported
     #[error("Unable to decode rlp cert: {0}")]
     InvalidRlpCert(Error),
-    #[error("Disallowed V1 DA cert type")]
-    DisallowedV1DACert,
 }
 
 /// AltDACommitment is used as the query key to retrieve eigenda blob from the eigenda proxy
@@ -75,12 +73,6 @@ impl TryFrom<&[u8]> for AltDACommitment {
         }
 
         let versioned_cert = match value[2] {
-            // V1 cert
-            0 => {
-                // filter out all v1 cert, the rest of derivation pipeline assumes there is no V1
-                // cert left, and panic elsewhere
-                return Err(AltDACommitmentParseError::DisallowedV1DACert);
-            }
             // V2 cert
             1 => {
                 let v2_cert =
@@ -88,7 +80,7 @@ impl TryFrom<&[u8]> for AltDACommitment {
                 EigenDAVersionedCert::V2(v2_cert)
             }
             _ => {
-                // also filter out v3 cert since no logics have been implemented
+                // also filter out non v2 cert since no logics have been implemented
                 return Err(AltDACommitmentParseError::UnsupportedCertVersionType(
                     value[2],
                 ));
