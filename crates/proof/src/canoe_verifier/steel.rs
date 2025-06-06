@@ -2,7 +2,7 @@ use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::{to_journal_bytes, CanoeVerifier};
 use crate::cert_validity::CertValidity;
 use alloc::string::ToString;
-use eigenda_v2_struct::EigenDACertV2;
+use eigenda_cert::EigenDACertV2;
 
 use risc0_zkvm::Receipt;
 

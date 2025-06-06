@@ -1,5 +1,5 @@
 [package]
-name = "eigenda-v2-struct"
+name = "eigenda-cert"
 version = "0.1.0"
 edition = "2021"
 

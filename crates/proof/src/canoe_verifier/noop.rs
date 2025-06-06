@@ -1,6 +1,6 @@
 use crate::canoe_verifier::{errors::HokuleaCanoeVerificationError, CanoeVerifier};
 use crate::cert_validity::CertValidity;
-use eigenda_v2_struct::EigenDACertV2;
+use eigenda_cert::EigenDACertV2;
 use tracing::info;
 
 #[derive(Clone)]

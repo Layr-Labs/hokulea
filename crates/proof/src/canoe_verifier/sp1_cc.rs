@@ -2,7 +2,7 @@ use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::CanoeVerifier;
 use crate::cert_validity::CertValidity;
 use alloy_primitives::B256;
-use eigenda_v2_struct::EigenDACertV2;
+use eigenda_cert::EigenDACertV2;
 
 use tracing::{info, warn};
 

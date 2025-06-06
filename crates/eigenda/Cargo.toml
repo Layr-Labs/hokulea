@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 kona-derive.workspace = true
-eigenda-v2-struct.workspace = true
+eigenda-cert.workspace = true
 
 # Op Alloy
 alloy-primitives.workspace = true

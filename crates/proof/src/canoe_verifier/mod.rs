@@ -11,7 +11,7 @@ use alloc::vec::Vec;
 use alloy_primitives::{address, Address};
 use alloy_sol_types::SolValue;
 use canoe_bindings::Journal;
-use eigenda_v2_struct::EigenDACertV2;
+use eigenda_cert::EigenDACertV2;
 
 pub trait CanoeVerifier: Clone + Send + 'static {
     fn validate_cert_receipt(

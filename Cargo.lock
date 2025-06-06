@@ -2335,7 +2335,7 @@ dependencies = [
  "alloy-primitives 1.1.0",
  "anyhow",
  "async-trait",
- "eigenda-v2-struct",
+ "eigenda-cert",
  "serde",
 ]
 
@@ -3234,7 +3234,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "eigenda-v2-struct"
+name = "eigenda-cert"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.1.0",
@@ -4036,7 +4036,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bytes",
- "eigenda-v2-struct",
+ "eigenda-cert",
  "kona-derive",
  "kona-protocol",
  "rust-kzg-bn254-primitives",
@@ -4053,7 +4053,7 @@ dependencies = [
  "canoe-provider",
  "canoe-steel-apps",
  "clap",
- "eigenda-v2-struct",
+ "eigenda-cert",
  "hokulea-proof",
  "serde_json",
  "tokio",
@@ -4124,7 +4124,7 @@ dependencies = [
  "canoe-bindings",
  "canoe-steel-methods",
  "cfg-if",
- "eigenda-v2-struct",
+ "eigenda-cert",
  "hokulea-eigenda",
  "kona-preimage",
  "kona-proof",
@@ -4145,7 +4145,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.1.0",
  "async-trait",
- "eigenda-v2-struct",
+ "eigenda-cert",
  "hokulea-compute-proof",
  "hokulea-eigenda",
  "hokulea-proof",

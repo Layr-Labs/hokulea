@@ -4,7 +4,7 @@ use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
 use anyhow::Result;
-use eigenda_v2_struct::{EigenDACertV2, EigenDACertV3};
+use eigenda_cert::{EigenDACertV2, EigenDACertV3};
 
 /// EigenDACert can be either v1 or v2
 /// TODO consider boxing them, since the variant has large size
@@ -75,25 +75,23 @@ impl TryFrom<&[u8]> for AltDACommitment {
         }
 
         let versioned_cert = match value[2] {
+            // V1 cert
             0 => {
                 // filter out all v1 cert, the rest of derivation pipeline assumes there is no V1
                 // cert left, and panic elsewhere
                 return Err(AltDACommitmentParseError::DisallowedV1DACert);
             }
+            // V2 cert
             1 => {
                 let v2_cert =
                     EigenDACertV2::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V2(v2_cert)
             }
-            2 => {
-                let v3_cert =
-                    EigenDACertV3::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
-                EigenDAVersionedCert::V3(v3_cert)
-            }
             _ => {
+                // also filter out v3 cert since no logics have been implemented
                 return Err(AltDACommitmentParseError::UnsupportedCertVersionType(
                     value[2],
-                ))
+                ));
             }
         };
         Ok(AltDACommitment {

@@ -5,7 +5,7 @@ use alloy_provider::{Provider, ProviderBuilder};
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_steel_apps::apps::CanoeSteelProvider;
 use clap::Parser;
-use eigenda_v2_struct::EigenDACertV2;
+use eigenda_cert::EigenDACertV2;
 use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
