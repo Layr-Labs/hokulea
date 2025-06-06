@@ -19,23 +19,23 @@ codegen-units = 1
 lto = "fat"
 
 [workspace.dependencies]
-kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-derive = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-driver = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-executor = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-mpt = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-providers-alloy = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-derive = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-driver = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-executor = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-mpt = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-providers-alloy = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
 # Maili
-kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-protocol = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-registry = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
-kona-cli = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.1", default-features = false }
+kona-genesis = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-protocol = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-registry = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-rpc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
+kona-cli = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.0.2", default-features = false }
 
 # Workspace
 hokulea-host-bin = { path = "bin/host", version = "0.1.0", default-features = false }
@@ -52,61 +52,60 @@ hokulea-zkvm-verification = { path = "crates/zkvm-verification", version = "0.1.
 eigenda-cert = { path = "crates/eigenda-cert" }
 
 # Alloy (Network)
-alloy-signer-local = { version = "0.15.8", default-features = false }
-alloy-provider = { version = "0.15.8", default-features = false }
-alloy-transport = { version = "0.15.8", default-features = false }
-alloy-transport-http = { version = "0.15.8", default-features = false }
-alloy-contract = { version = "0.15.8", default-features = false }
-alloy-network = { version = "0.15.8", default-features = false }
-alloy-rlp = { version = "0.3.11", default-features = false }
-alloy-trie = { version = "0.8.0", default-features = false }
-alloy-eips = { version = "0.15.8", default-features = false }
-alloy-serde = { version = "0.15.8", default-features = false }
-alloy-consensus = { version = "0.15.8", default-features = false }
-alloy-rpc-types = { version = "0.15.8", default-features = false }
-alloy-rpc-client = { version = "0.15.8", default-features = false }
-alloy-node-bindings = { version = "0.15.8", default-features = false }
-alloy-rpc-types-engine = { version = "0.15.8", default-features = false }
-alloy-rpc-types-beacon = { version = "0.15.8", default-features = false }
-alloy-rpc-types-eth = { version = "0.15.8", default-features = false }
-alloy-signer = { version = "0.15.8", default-features = false }
+alloy-signer-local = { version = "1.0.9", default-features = false }
+alloy-provider = { version = "1.0.9", default-features = false }
+alloy-transport = { version = "1.0.9", default-features = false }
+alloy-transport-http = { version = "1.0.9", default-features = false }
+alloy-contract = { version = "1.0.9", default-features = false }
+alloy-network = { version = "1.0.9", default-features = false }
+alloy-rlp = { version = "0.3.12", default-features = false }
+alloy-trie = { version = "0.8.1", default-features = false }
+alloy-eips = { version = "1.0.9", default-features = false }
+alloy-serde = { version = "1.0.9", default-features = false }
+alloy-consensus = { version = "1.0.9", default-features = false }
+alloy-rpc-types = { version = "1.0.9", default-features = false }
+alloy-rpc-client = { version = "1.0.9", default-features = false }
+alloy-node-bindings = { version = "1.0.9", default-features = false }
+alloy-rpc-types-engine = { version = "1.0.9", default-features = false }
+alloy-rpc-types-beacon = { version = "1.0.9", default-features = false }
+alloy-rpc-types-eth = { version = "1.0.9", default-features = false }
+alloy-signer = { version = "1.0.9", default-features = false }
 # Keccak with the SHA3 patch is more efficient than the default Keccak.
-alloy-primitives = { version = "1.1.0", default-features = false }
-alloy-sol-types = { version = "1.1.0", default-features = false }
+alloy-primitives = { version = "1.1.2", default-features = false }
+alloy-sol-types = { version = "1.1.2", default-features = false }
 alloy-sol-macro = { version = "1.0.0", default-features = false }
 
 # Execution
-alloy-evm = { version = "0.6.0", default-features = false, features = ["op"] }
-op-revm = { version = "3.0.1", default-features = false }
+alloy-evm = { version = "0.10.0", default-features = false, features = ["op"] }
+op-revm = { version = "5.0.1", default-features = false }
 
 # OP Alloy
-op-alloy-consensus = { version = "0.15.2", default-features = false }
-op-alloy-rpc-types = { version = "0.15.2", default-features = false }
+op-alloy-consensus = { version = "0.17.2", default-features = false }
+op-alloy-rpc-types = { version = "0.17.2", default-features = false }
 op-alloy-rpc-types-engine = { version = "0.15.2", default-features = false }
-op-alloy-network = { version = "0.15.2", default-features = false }
+op-alloy-network = { version = "0.17.2", default-features = false }
 
 # General
 lru = "0.14.0"
 spin = "0.10.0"
-clap = "4.5.37"
-tokio = "1.44.2"
+clap = "4.5.39"
+tokio = "1.45.1"
 cfg-if = "1.0.0"
 rstest = "0.25.0"
 futures = "0.3.31"
-reqwest = "0.12.15"
-tempfile = "3.19.1"
+reqwest = "0.12.19"
+tempfile = "3.20.0"
 arbitrary = "1.4.1"
 async-trait = "0.1.88"
 async-channel = "2.3.1"
-linked_list_allocator = "0.10.5"
 num = "0.4"
 serde_cbor = { version = "0.11.2", default_features = false }
 
 # General
-bytes = { version = "1.7.2", default-features = false }
+bytes = { version = "1.10.1", default-features = false }
 rand = { version = "0.9.1", default-features = false }
-sha2 = { version = "0.10.8", default-features = false }
-c-kzg = { version = "2.0.0", default-features = false }
+sha2 = { version = "0.10.9", default-features = false }
+c-kzg = { version = "2.1.1", default-features = false }
 thiserror = { version = "2.0.12", default-features = false }
 anyhow = { version = "1.0.98", default-features = false }
 lazy_static = { version = "1.5.0", default-features = false }
@@ -125,7 +124,7 @@ tracing-subscriber = { version = "0.3.19", default-features = false }
 tracing = { version = "0.1.41", default-features = false }
 
 # Testing
-pprof = "0.14.0"
+pprof = "0.15.0"
 arbtest = "0.3.2"
 criterion = "0.5.1"
 
@@ -136,7 +135,7 @@ serde_json = { version = "1.0.140", default-features = false }
 
 # Ethereum
 unsigned-varint = "0.8.0"
-revm = { version = "22.0.1", default-features = false }
+revm = { version = "24.0.1", default-features = false }
 
 # K/V database
 rocksdb = { version = "0.23.0", default-features = false }
@@ -170,4 +169,4 @@ sp1-prover = "4.2.0"
 # ZKVM deps (ToDo cleanup)
 log = { version = "0.4" }
 hex = "0.4"
-url = { version = "2.5" }
+url = { version = "2.5.4" }
