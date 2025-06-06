@@ -4,7 +4,7 @@ use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
 use anyhow::Result;
-use eigenda_v2_struct::{EigenDAV2CertV2, EigenDAV2CertV3};
+use eigenda_v2_struct::{EigenDACertV2, EigenDACertV3};
 
 /// EigenDACert can be either v1 or v2
 /// TODO consider boxing them, since the variant has large size
@@ -12,9 +12,9 @@ use eigenda_v2_struct::{EigenDAV2CertV2, EigenDAV2CertV3};
 #[derive(Debug, PartialEq, Clone)]
 pub enum EigenDAVersionedCert {
     /// V2
-    V2(EigenDAV2CertV2),
+    V2(EigenDACertV2),
     /// V3
-    V3(EigenDAV2CertV3),
+    V3(EigenDACertV3),
 }
 
 #[derive(Debug, thiserror::Error, Clone, Copy, PartialEq, Eq)]
@@ -81,13 +81,13 @@ impl TryFrom<&[u8]> for AltDACommitment {
                 return Err(AltDACommitmentParseError::DisallowedV1DACert);
             }
             1 => {
-                let v2_cert = EigenDAV2CertV2::decode(&mut &value[3..])
-                    .map_err(Self::Error::InvalidRlpCert)?;
+                let v2_cert =
+                    EigenDACertV2::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V2(v2_cert)
             }
             2 => {
-                let v3_cert = EigenDAV2CertV3::decode(&mut &value[3..])
-                    .map_err(Self::Error::InvalidRlpCert)?;
+                let v3_cert =
+                    EigenDACertV3::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V3(v3_cert)
             }
             _ => {

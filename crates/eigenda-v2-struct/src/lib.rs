@@ -10,8 +10,8 @@ use alloc::vec::Vec;
 
 pub mod v2_cert;
 pub mod v3_cert;
-pub use v2_cert::EigenDAV2CertV2;
-pub use v3_cert::EigenDAV2CertV3;
+pub use v2_cert::EigenDACertV2;
+pub use v3_cert::EigenDACertV3;
 
 // G1Point represents a point on the BN254 G1 curve
 #[derive(Debug, Clone, Copy, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
@@ -72,6 +72,8 @@ impl BlobCommitment {
 }
 
 // BlobHeaderV2 is the version 2 of blob header
+// This version is separate from the cert Version. For example, Cert V3 can use BlobHeaderV2
+// since V2 is a tag for EigenDA protocol
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct BlobHeaderV2 {
     pub version: u16,
@@ -117,7 +119,9 @@ pub struct BlobInclusionInfo {
     pub inclusion_proof: Bytes,
 }
 
-// BatchHeaderV2 is the version 2 of batch header
+// BatchHeaderV2 is the version 2 of batch header which is defined by the EigenDA protocol
+// This version is separate from the cert Version. For example, Cert V3 can use BatchHeaderV2
+// since V2 is a tag for EigenDA protocol
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct BatchHeaderV2 {
     pub batch_root: [u8; 32],

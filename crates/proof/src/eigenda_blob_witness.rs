@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloy_primitives::FixedBytes;
 
-use eigenda_v2_struct::EigenDAV2CertV2;
+use eigenda_v2_struct::EigenDACertV2;
 
 use crate::cert_validity::CertValidity;
 use serde::{Deserialize, Serialize};
@@ -40,14 +40,14 @@ use serde::{Deserialize, Serialize};
 /// pipeline calls for a preimage for a DA cert, the two DA certs must
 /// match, and otherwise there is failures. See PreloadedEigenDABlobProvider
 /// for more information
-/// TODO, replace EigenDAV2CertV2 to AltDACommitment, it saves the effort to
-/// convert from AltDACommitment to EigenDAV2CertV2 in all get methods.
+/// TODO, replace EigenDACertV2 to AltDACommitment, it saves the effort to
+/// convert from AltDACommitment to EigenDACertV2 in all get methods.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDABlobWitnessData {
     /// u64 containing the recency_window
-    pub recency: Vec<(EigenDAV2CertV2, u64)>,
+    pub recency: Vec<(EigenDACertV2, u64)>,
     /// validity of a da cert
-    pub validity: Vec<(EigenDAV2CertV2, CertValidity)>,
+    pub validity: Vec<(EigenDACertV2, CertValidity)>,
     /// blobs corresponds to a da cert and its kzg proof
-    pub blob: Vec<(EigenDAV2CertV2, Vec<u8>, FixedBytes<64>)>,
+    pub blob: Vec<(EigenDACertV2, Vec<u8>, FixedBytes<64>)>,
 }

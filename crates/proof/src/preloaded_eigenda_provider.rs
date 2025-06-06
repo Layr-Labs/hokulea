@@ -4,7 +4,7 @@ use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
-use eigenda_v2_struct::EigenDAV2CertV2;
+use eigenda_v2_struct::EigenDACertV2;
 use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
@@ -35,13 +35,13 @@ use crate::canoe_verifier::CanoeVerifier;
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains a mapping from DAcert to recency window size
-    /// Although currently, rececny window does not change across EigenDAV2CertV2
-    /// But to be future compatible, we anchor recency window size by rbn from EigenDAV2CertV2
-    pub recency_entries: Vec<(EigenDAV2CertV2, u64)>,
+    /// Although currently, recency window does not change across EigenDACertV2
+    /// But to be future compatible, we anchor recency window size by rbn from EigenDACertV2
+    pub recency_entries: Vec<(EigenDACertV2, u64)>,
     /// The tuple contains a mapping from DAcert to cert validity
-    pub validity_entries: Vec<(EigenDAV2CertV2, bool)>,
+    pub validity_entries: Vec<(EigenDACertV2, bool)>,
     /// The tuple contains a mapping from DAcert to Eigenda blob
-    pub blob_entries: Vec<(EigenDAV2CertV2, Blob)>,
+    pub blob_entries: Vec<(EigenDACertV2, Blob)>,
 }
 
 impl PreloadedEigenDABlobProvider {

@@ -2,7 +2,7 @@ use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::CanoeVerifier;
 use crate::cert_validity::CertValidity;
 use alloy_primitives::B256;
-use eigenda_v2_struct::EigenDAV2CertV2;
+use eigenda_v2_struct::EigenDACertV2;
 
 use tracing::{info, warn};
 
@@ -21,7 +21,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
     fn validate_cert_receipt(
         &self,
         cert_validity: CertValidity,
-        eigenda_cert: EigenDAV2CertV2,
+        eigenda_cert: EigenDACertV2,
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSp1CCVerifier");
 

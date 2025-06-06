@@ -5,7 +5,7 @@ use alloy_provider::{Provider, ProviderBuilder};
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_steel_apps::apps::CanoeSteelProvider;
 use clap::Parser;
-use eigenda_v2_struct::EigenDAV2CertV2;
+use eigenda_v2_struct::EigenDACertV2;
 use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
@@ -64,7 +64,7 @@ async fn main() -> anyhow::Result<()> {
 // this function takes canoe proof and verify it
 pub fn verify_canoe_proof(
     cert_validity: CertValidity,
-    v2_cert: EigenDAV2CertV2,
+    v2_cert: EigenDACertV2,
 ) -> Result<(), HokuleaCanoeVerificationError> {
     // verify canoe proof
     let canoe_verifier = CanoeSteelVerifier {};
@@ -79,7 +79,7 @@ pub async fn get_canoe_input(
     validity: bool,
     eth_rpc_url: String,
 ) -> anyhow::Result<CanoeInput> {
-    let v2_cert = EigenDAV2CertV2::from_bytes(v2_cert_rlp_vec);
+    let v2_cert = EigenDACertV2::from_bytes(v2_cert_rlp_vec);
 
     let eth_rpc_url = Url::from_str(&eth_rpc_url).unwrap();
 
