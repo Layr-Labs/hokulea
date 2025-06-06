@@ -1,22 +1,20 @@
-use crate::BlobInfo;
-use crate::CertVersion;
 use alloc::vec::Vec;
 use alloy_primitives::keccak256;
 use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
 use anyhow::Result;
-use eigenda_v2_struct::EigenDAV2Cert;
+use eigenda_v2_struct::{EigenDAV2CertV2, EigenDAV2CertV3};
 
 /// EigenDACert can be either v1 or v2
 /// TODO consider boxing them, since the variant has large size
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum EigenDAVersionedCert {
-    /// V1
-    V1(BlobInfo),
     /// V2
-    V2(EigenDAV2Cert),
+    V2(EigenDAV2CertV2),
+    /// V3
+    V3(EigenDAV2CertV3),
 }
 
 #[derive(Debug, thiserror::Error, Clone, Copy, PartialEq, Eq)]
@@ -34,8 +32,8 @@ pub enum AltDACommitmentParseError {
     #[error("Unsupported commitment type")]
     UnsupportedCommitmentType,
     /// Only V1 and V2 are supported
-    #[error("Unsupported cert version type")]
-    UnsupportedCertVersionType,
+    #[error("Unsupported cert version type {0}")]
+    UnsupportedCertVersionType(u8),
     /// Only V1 and V2 are supported
     #[error("Unable to decode rlp cert: {0}")]
     InvalidRlpCert(Error),
@@ -76,16 +74,26 @@ impl TryFrom<&[u8]> for AltDACommitment {
             return Err(AltDACommitmentParseError::UnsupportedDaLayerType);
         }
 
-        let versioned_cert = match value[2].try_into()? {
-            CertVersion::Version1 => {
+        let versioned_cert = match value[2] {
+            0 => {
                 // filter out all v1 cert, the rest of derivation pipeline assumes there is no V1
                 // cert left, and panic elsewhere
                 return Err(AltDACommitmentParseError::DisallowedV1DACert);
             }
-            CertVersion::Version2 => {
-                let v2_cert =
-                    EigenDAV2Cert::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
+            1 => {
+                let v2_cert = EigenDAV2CertV2::decode(&mut &value[3..])
+                    .map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V2(v2_cert)
+            }
+            2 => {
+                let v3_cert = EigenDAV2CertV3::decode(&mut &value[3..])
+                    .map_err(Self::Error::InvalidRlpCert)?;
+                EigenDAVersionedCert::V3(v3_cert)
+            }
+            _ => {
+                return Err(AltDACommitmentParseError::UnsupportedCertVersionType(
+                    value[2],
+                ))
             }
         };
         Ok(AltDACommitment {
@@ -124,16 +132,28 @@ impl AltDACommitment {
     /// get number of field element for a cert
     pub fn get_num_field_element(&self) -> usize {
         match &self.versioned_cert {
-            EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
-            EigenDAVersionedCert::V2(c) => c.blob_inclusion_info.blob_certificate.blob_header.commitment.length as usize,
+            EigenDAVersionedCert::V2(c) => {
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .length as usize
+            }
+            EigenDAVersionedCert::V3(c) => {
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .length as usize
+            }
         }
     }
 
     /// get reference block number
     pub fn get_rbn(&self) -> u64 {
         match &self.versioned_cert {
-            EigenDAVersionedCert::V1(_) => panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug"),
             EigenDAVersionedCert::V2(c) => c.batch_header_v2.reference_block_number as u64,
+            EigenDAVersionedCert::V3(c) => c.batch_header_v2.reference_block_number as u64,
         }
     }
 
@@ -144,19 +164,20 @@ impl AltDACommitment {
         let mut bytes = Vec::new();
         bytes.push(self.commitment_type.to_be());
         bytes.push(self.da_layer_byte.to_be());
+        let mut cert_rlp_bytes = Vec::<u8>::new();
         match &self.versioned_cert {
-            EigenDAVersionedCert::V1(_) => {
-                panic!("hokulea does not support eigenda v1. This should have been filtered out at the start of derivation, please report bug")
-            }
             EigenDAVersionedCert::V2(c) => {
-                // V2 cert has byte 1
+                // V2 cert has version byte 1
                 bytes.push(1);
-                // rlp encode of cert
-                let mut cert_rlp_bytes = Vec::<u8>::new();
                 c.encode(&mut cert_rlp_bytes);
-                bytes.extend_from_slice(&cert_rlp_bytes);
-                bytes
+            }
+            EigenDAVersionedCert::V3(c) => {
+                // V3 cert has version byte 2
+                bytes.push(2);
+                c.encode(&mut cert_rlp_bytes);
             }
         }
+        bytes.extend_from_slice(&cert_rlp_bytes);
+        bytes
     }
 }

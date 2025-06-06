@@ -102,4 +102,8 @@ sol! {
         ) external view returns (bool);
     }
 
+    interface IEigenDACertVerifierRouter {
+        function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status);
+    }
+
 }

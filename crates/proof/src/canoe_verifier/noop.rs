@@ -1,6 +1,6 @@
 use crate::canoe_verifier::{errors::HokuleaCanoeVerificationError, CanoeVerifier};
 use crate::cert_validity::CertValidity;
-use eigenda_v2_struct::EigenDAV2Cert;
+use eigenda_v2_struct::EigenDAV2CertV2;
 use tracing::info;
 
 #[derive(Clone)]
@@ -10,7 +10,7 @@ impl CanoeVerifier for CanoeNoOpVerifier {
     fn validate_cert_receipt(
         &self,
         _cert_validity: CertValidity,
-        _eigenda_cert: EigenDAV2Cert,
+        _eigenda_cert: EigenDAV2CertV2,
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeNoOpVerifier");
         Ok(())

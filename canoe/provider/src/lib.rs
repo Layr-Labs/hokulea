@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 pub struct CanoeInput {
     /// eigenda cert
-    pub eigenda_cert: eigenda_v2_struct::EigenDAV2Cert,
+    pub eigenda_cert: eigenda_v2_struct::EigenDAV2CertV2,
     /// the claim about if the cert is valid, received from the signature from OracleEigenDAProvider from the derivation pipeline
     /// Added here only for a preventive measure, such that if in the state loading part, zkvm got a different answer than claimed
     /// zkVM can stop early without proving anything.

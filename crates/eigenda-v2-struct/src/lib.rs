@@ -1,12 +1,17 @@
 #![no_std]
 use alloy_primitives::Bytes;
-use alloy_primitives::{keccak256, FixedBytes, B256, U256};
-use alloy_rlp::{Decodable, Encodable, RlpDecodable, RlpEncodable};
+use alloy_primitives::{FixedBytes, U256};
+use alloy_rlp::{Decodable, RlpDecodable, RlpEncodable};
 use canoe_bindings as sol_struct;
 use serde::{Deserialize, Serialize};
 
 extern crate alloc;
 use alloc::vec::Vec;
+
+pub mod v2_cert;
+pub mod v3_cert;
+pub use v2_cert::EigenDAV2CertV2;
+pub use v3_cert::EigenDAV2CertV3;
 
 // G1Point represents a point on the BN254 G1 curve
 #[derive(Debug, Clone, Copy, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
@@ -185,28 +190,4 @@ pub fn parse_blob_inclusion(data: &Vec<u8>) -> sol_struct::BlobInclusionInfo {
     BlobInclusionInfo::decode(&mut data.as_slice())
         .expect("decode to rust blob inclusion struct")
         .to_sol()
-}
-
-/// EigenDAV2Cert to be updatd in the solidity
-#[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
-pub struct EigenDAV2Cert {
-    pub blob_inclusion_info: BlobInclusionInfo,
-    pub batch_header_v2: BatchHeaderV2,
-    pub nonsigner_stake_and_signature: NonSignerStakesAndSignature,
-    pub signed_quorum_numbers: Bytes,
-}
-
-impl EigenDAV2Cert {
-    pub fn digest(&self) -> B256 {
-        let mut cert_rlp_bytes = Vec::<u8>::new();
-        // rlp encode of cert
-        self.encode(&mut cert_rlp_bytes);
-        keccak256(&cert_rlp_bytes)
-    }
-
-    pub fn from_bytes(data: &[u8]) -> Self {
-        let mut slice = data;
-        EigenDAV2Cert::decode(&mut slice)
-            .expect("should be able to convert to EigenDAV2Cert struct")
-    }
 }

@@ -2,7 +2,7 @@ use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::{to_journal_bytes, CanoeVerifier};
 use crate::cert_validity::CertValidity;
 use alloc::string::ToString;
-use eigenda_v2_struct::EigenDAV2Cert;
+use eigenda_v2_struct::EigenDAV2CertV2;
 
 use risc0_zkvm::Receipt;
 
@@ -22,7 +22,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(
         &self,
         cert_validity: CertValidity,
-        eigenda_cert: EigenDAV2Cert,
+        eigenda_cert: EigenDAV2CertV2,
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSteelVerifier");
 
