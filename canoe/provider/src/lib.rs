@@ -2,10 +2,14 @@ use alloy_primitives::B256;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use hokulea_eigenda::{AltDACommitment, EigenDAVersionedCert};
+use alloy_sol_types::SolCall;
+use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierRouter};
+use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 
 pub struct CanoeInput {
-    /// eigenda cert
-    pub eigenda_cert: eigenda_cert::EigenDACertV2,
+    /// altda commitment
+    pub altda_commitment: AltDACommitment,
     /// the claim about if the cert is valid, received from the signature from OracleEigenDAProvider from the derivation pipeline
     /// Added here only for a preventive measure, such that if in the state loading part, zkvm got a different answer than claimed
     /// zkVM can stop early without proving anything.
@@ -41,5 +45,36 @@ impl CanoeProvider for CanoeNoOpProvider {
 
     fn get_eth_rpc_url(&self) -> String {
         "".to_string()
+    }
+}
+
+pub fn build_v2_call(canoe_input: CanoeInput) -> IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
+    match canoe_input.altda_commitment.versioned_cert {
+        EigenDAVersionedCert::V2(cert) => {
+            IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
+                batchHeader: cert.batch_header_v2.to_sol(),
+                blobInclusionInfo: cert
+                    .blob_inclusion_info
+                    .clone()
+                    .to_sol(),
+                nonSignerStakesAndSignature: cert
+                    .nonsigner_stake_and_signature
+                    .to_sol(),
+                signedQuorumNumbers: cert.signed_quorum_numbers,
+            }
+        }
+        _ => panic!("encounter a cert version that is not v2, cannot convert"),
+    }
+}
+
+pub fn build_v3_call(canoe_input: CanoeInput) -> IEigenDACertVerifierRouter::checkDACertCall {
+    match canoe_input.altda_commitment.versioned_cert {
+        EigenDAVersionedCert::V3(cert) => {
+            let v3_soltype_cert = cert.to_sol();
+            IEigenDACertVerifierRouter::checkDACertCall {
+                abiEncodedCert: v3_soltype_cert.abi_encode().into(),
+            }
+        }
+        _ => panic!("encounter a cert version that is not v3, cannot convert"),
     }
 }

@@ -5,11 +5,14 @@ use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
 use anyhow::Result;
+use eigenda_cert::{EigenDACertV2, EigenDACertV3};
+use serde::{Deserialize, Serialize};
+use alloy_primitives::{U256, B256};
 
 /// EigenDACert can be either v1 or v2
 /// TODO consider boxing them, since the variant has large size
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum EigenDAVersionedCert {
     /// V2
     V2(EigenDACertV2),
@@ -40,7 +43,7 @@ pub enum AltDACommitmentParseError {
 }
 
 /// AltDACommitment is used as the query key to retrieve eigenda blob from the eigenda proxy
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct AltDACommitment {
     /// <https://specs.optimism.io/experimental/alt-da.html#input-commitment-submission>
     /// 0 for keccak, 1 for da-service
@@ -114,8 +117,8 @@ impl AltDACommitment {
     /// By hashing the entire cert, such problem is avoided entirely
     pub fn digest_template(&self) -> [u8; 80] {
         let mut field_element_key = [0u8; 80];
-        let bytes = self.to_bytes();
-        field_element_key[..32].copy_from_slice(keccak256(&bytes).as_slice());
+        let digest = self.to_digest();
+        field_element_key[..32].copy_from_slice(digest.as_slice());
         field_element_key
     }
 
@@ -147,10 +150,36 @@ impl AltDACommitment {
         }
     }
 
+    /// get cert version byte
+    pub fn get_cert_version_byte(&self) -> u8 {
+        match &self.versioned_cert {
+            EigenDAVersionedCert::V2(_) => 1,
+            EigenDAVersionedCert::V3(_) => 2,
+        }
+    }
+
+    /// get kzg commitment g1 point, first U256 is x coordinate, second is y
+    pub fn get_kzg_commitment(&self) -> (U256, U256) {
+        match &self.versioned_cert {
+            EigenDAVersionedCert::V2(c) => {
+                (
+                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.x,
+                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.y,
+                )
+            }
+            EigenDAVersionedCert::V3(c) => {
+                (
+                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.x,
+                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.y,
+                )
+            }
+        }
+    }
+
     /// Convert AltdaCommitment into bytes in the same form downloaded from
     /// Ethereum block. The bytes form is used as the key to send http query
     /// to the eigenda proxy
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_rlp_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         bytes.push(self.commitment_type.to_be());
         bytes.push(self.da_layer_byte.to_be());
@@ -170,4 +199,11 @@ impl AltDACommitment {
         bytes.extend_from_slice(&cert_rlp_bytes);
         bytes
     }
+
+    /// Convert AltDACommitment into hash digest
+    pub fn to_digest(&self) -> B256 {
+        let rlp_bytes = self.to_rlp_bytes();
+        keccak256(&rlp_bytes)
+    }
+
 }

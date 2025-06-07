@@ -2,7 +2,7 @@ use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::{to_journal_bytes, CanoeVerifier};
 use crate::cert_validity::CertValidity;
 use alloc::string::ToString;
-use eigenda_cert::EigenDACertV2;
+use hokulea_eigenda::AltDACommitment;
 
 use risc0_zkvm::Receipt;
 
@@ -22,11 +22,11 @@ impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(
         &self,
         cert_validity: CertValidity,
-        eigenda_cert: EigenDACertV2,
+        altda_commitment: AltDACommitment,
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSteelVerifier");
 
-        let journal_bytes = to_journal_bytes(&cert_validity, &eigenda_cert);
+        let journal_bytes = to_journal_bytes(&cert_validity, &altda_commitment);
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {

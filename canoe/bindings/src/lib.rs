@@ -92,6 +92,13 @@ sol! {
         uint32[][] nonSignerStakeIndices;
     }
 
+    struct EigenDACertV3 {
+        BatchHeaderV2 batchHeaderV2;
+        BlobInclusionInfo blobInclusionInfo;
+        NonSignerStakesAndSignature nonSignerStakesAndSignature;
+        bytes signedQuorumNumbers;
+    }
+
     interface IEigenDACertVerifier {
         #[sol(rpc)]
         function verifyDACertV2ForZKProof(
@@ -103,6 +110,7 @@ sol! {
     }
 
     interface IEigenDACertVerifierRouter {
+        #[sol(rpc)]
         function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status);
     }
 

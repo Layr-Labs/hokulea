@@ -39,7 +39,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<u64, Self::Error> {
-        let altda_commitment_bytes = altda_commitment.to_bytes();
+        let altda_commitment_bytes = altda_commitment.to_rlp_bytes();
         // hint the host about a new altda commitment. If it is the first time the host receiving it, the
         // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
         self.oracle
@@ -78,7 +78,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
-        let altda_commitment_bytes = altda_commitment.to_bytes();
+        let altda_commitment_bytes = altda_commitment.to_rlp_bytes();
         // hint the host about a new altda commitment. If it is the first time the host receiving it, the
         // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
         self.oracle
@@ -114,7 +114,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
 
     /// Get V1 blobs. TODO remove in the future if not needed for testing
     async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
-        let altda_commitment_bytes = altda_commitment.to_bytes();
+        let altda_commitment_bytes = altda_commitment.to_rlp_bytes();
         // hint the host about a new altda commitment. If it is the first time the host receiving it, the
         // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
         self.oracle
