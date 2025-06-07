@@ -1,13 +1,12 @@
 use crate::{EigenDACertV2, EigenDACertV3};
 use alloc::vec::Vec;
 use alloy_primitives::keccak256;
+use alloy_primitives::{B256, U256};
 use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
 use anyhow::Result;
-use eigenda_cert::{EigenDACertV2, EigenDACertV3};
 use serde::{Deserialize, Serialize};
-use alloy_primitives::{U256, B256};
 
 /// EigenDACert can be either v1 or v2
 /// TODO consider boxing them, since the variant has large size
@@ -84,9 +83,10 @@ impl TryFrom<&[u8]> for AltDACommitment {
             }
             // V3 cert
             2 => {
-                let v3_cert = EigenDACertV3::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
+                let v3_cert =
+                    EigenDACertV3::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V3(v3_cert)
-            }            
+            }
             _ => {
                 // also filter out non v2 cert since no logics have been implemented
                 return Err(AltDACommitmentParseError::UnsupportedCertVersionType(
@@ -166,18 +166,34 @@ impl AltDACommitment {
     /// get kzg commitment g1 point, first U256 is x coordinate, second is y
     pub fn get_kzg_commitment(&self) -> (U256, U256) {
         match &self.versioned_cert {
-            EigenDAVersionedCert::V2(c) => {
-                (
-                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.x,
-                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.y,
-                )
-            }
-            EigenDAVersionedCert::V3(c) => {
-                (
-                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.x,
-                    c.blob_inclusion_info.blob_certificate.blob_header.commitment.commitment.y,
-                )
-            }
+            EigenDAVersionedCert::V2(c) => (
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment
+                    .x,
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment
+                    .y,
+            ),
+            EigenDAVersionedCert::V3(c) => (
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment
+                    .x,
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment
+                    .y,
+            ),
         }
     }
 
@@ -210,5 +226,4 @@ impl AltDACommitment {
         let rlp_bytes = self.to_rlp_bytes();
         keccak256(&rlp_bytes)
     }
-
 }

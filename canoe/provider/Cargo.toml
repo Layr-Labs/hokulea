@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 eigenda-cert = { workspace = true }
-hokulea-eigenda = { workspace = true }
 anyhow.workspace = true
 serde.workspace = true
 async-trait.workspace = true

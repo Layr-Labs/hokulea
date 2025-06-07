@@ -1,8 +1,8 @@
 use alloy_primitives::{FixedBytes, B256};
 use async_trait::async_trait;
-use eigenda_cert::{AltDACommitment, EigenDACertV2, EigenDAVersionedCert};
+use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
-use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider};
+use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;
@@ -67,7 +67,9 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                     l1_chain_id: 0,
                 };
 
-                witness.validity.push((altda_commitment.clone(), cert_validity));
+                witness
+                    .validity
+                    .push((altda_commitment.clone(), cert_validity));
                 Ok(validity)
             }
             Err(e) => Err(e),
@@ -87,7 +89,9 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
 
                 // ToDo(bx) claimed_validity currently set to true, but needs to connect from response from the host
                 let mut witness = self.witness.lock().unwrap();
-                witness.blob.push((altda_commitment.clone(), blob.clone().into(), fixed_bytes));
+                witness
+                    .blob
+                    .push((altda_commitment.clone(), blob.clone().into(), fixed_bytes));
                 Ok(blob)
             }
             Err(e) => Err(e),

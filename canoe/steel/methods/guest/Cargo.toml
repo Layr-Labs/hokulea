@@ -1,11 +1,11 @@
 [package]
-name = "v2cert-verification-guests"
+name = "cert-verification-guests"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "v2cert_verification"
-path = "src/bin/v2cert_verification.rs"
+name = "cert_verification"
+path = "src/bin/cert_verification.rs"
 
 [workspace]
 
@@ -15,6 +15,7 @@ alloy-sol-types = { version = "1.0.0", default-features = false }
 risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", rev = "fd7e39bc3427abfa7e8b1837c55ecbd5e49351db", default-features = false}
 risc0-zkvm = { version = "1.2.0", default-features = false, features = ["std"] }
 canoe-bindings = { path = "../../../bindings" }
+canoe-provider = { path = "../../../provider" } 
 
 [patch.crates-io]
 # use optimized risc0 circuit

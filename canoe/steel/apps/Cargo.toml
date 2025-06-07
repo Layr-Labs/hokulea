@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 alloy-provider = { version = "0.14" }
-alloy-sol-types = { workspace = true }
 url = {workspace = true }
 
 anyhow = { workspace = true }

@@ -4,11 +4,10 @@ use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
-use eigenda_cert::{AltDACommitment, EigenDACertV2, EigenDAVersionedCert};
+use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::EigenDABlobProvider;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
-use tracing::error;
 
 use alloc::boxed::Box;
 use alloc::vec;

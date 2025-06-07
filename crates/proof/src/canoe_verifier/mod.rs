@@ -12,7 +12,7 @@ use alloy_primitives::{address, Address};
 use alloy_sol_types::SolValue;
 use canoe_bindings::Journal;
 
-use hokulea_eigenda::AltDACommitment;
+use eigenda_cert::AltDACommitment;
 
 pub trait CanoeVerifier: Clone + Send + 'static {
     fn validate_cert_receipt(
@@ -25,8 +25,10 @@ pub trait CanoeVerifier: Clone + Send + 'static {
 /// a helper function to convert validity and eigenda_cert into a journal, which can be
 /// used to verify canoe proof. The returned type is abi encoded Journal, which is
 /// immediately consumable by zkVM
-pub fn to_journal_bytes(cert_validity: &CertValidity, altda_commitment: &AltDACommitment) -> Vec<u8> {
-
+pub fn to_journal_bytes(
+    cert_validity: &CertValidity,
+    altda_commitment: &AltDACommitment,
+) -> Vec<u8> {
     /*
     let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
     let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();

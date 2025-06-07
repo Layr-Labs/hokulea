@@ -1,8 +1,8 @@
 use alloy_primitives::Bytes;
 use alloy_primitives::{keccak256, B256};
 use alloy_rlp::{Decodable, Encodable, RlpDecodable, RlpEncodable};
-use serde::{Deserialize, Serialize};
 use canoe_bindings as sol_struct;
+use serde::{Deserialize, Serialize};
 
 use crate::{BatchHeaderV2, BlobInclusionInfo, NonSignerStakesAndSignature};
 

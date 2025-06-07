@@ -39,7 +39,7 @@ fn main() {
 
     // Generate Rust source files for the methods crate.
     let guests = embed_methods_with_options(HashMap::from([(
-        "v2cert-verification-guests",
+        "cert-verification-guests",
         guest_options,
     )]));
 

@@ -1,10 +1,10 @@
 use alloy_primitives::B256;
+use alloy_sol_types::SolValue;
 use anyhow::Result;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
-use hokulea_eigenda::{AltDACommitment, EigenDAVersionedCert};
 use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierRouter};
-use alloy_sol_types::SolValue;
+use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CanoeInput {
@@ -48,33 +48,31 @@ impl CanoeProvider for CanoeNoOpProvider {
     }
 }
 
-pub fn build_v2_call(canoe_input: &CanoeInput) -> IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
-    match &canoe_input.altda_commitment.versioned_cert {
-        EigenDAVersionedCert::V2(cert) => {
-            IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
-                batchHeader: cert.batch_header_v2.to_sol(),
-                blobInclusionInfo: cert
-                    .blob_inclusion_info
-                    .clone()
-                    .to_sol(),
-                nonSignerStakesAndSignature: cert
-                    .nonsigner_stake_and_signature
-                    .to_sol(),
-                signedQuorumNumbers: cert.signed_quorum_numbers.clone(),
-            }
-        }
-        _ => panic!("encounter a cert version that is not v2, cannot convert"),
-    }
+/// Call respecting solidity interface
+/// V2 is deprecated once router is released
+pub enum CertVerifierCall {
+    /// V2 calldata
+    V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall),
+    /// V3 calldata
+    Router(IEigenDACertVerifierRouter::checkDACertCall),
 }
 
-pub fn build_v3_call(canoe_input: &CanoeInput) -> IEigenDACertVerifierRouter::checkDACertCall {
-    match &canoe_input.altda_commitment.versioned_cert {
+/// convert rust eigenda cert type into solidity type that repsects cert verifier
+pub fn build_call(altda_commitment: &AltDACommitment) -> CertVerifierCall {
+    match &altda_commitment.versioned_cert {
+        EigenDAVersionedCert::V2(cert) => {
+            CertVerifierCall::V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
+                batchHeader: cert.batch_header_v2.to_sol(),
+                blobInclusionInfo: cert.blob_inclusion_info.clone().to_sol(),
+                nonSignerStakesAndSignature: cert.nonsigner_stake_and_signature.to_sol(),
+                signedQuorumNumbers: cert.signed_quorum_numbers.clone(),
+            })
+        }
         EigenDAVersionedCert::V3(cert) => {
             let v3_soltype_cert = cert.to_sol();
-            IEigenDACertVerifierRouter::checkDACertCall {
+            CertVerifierCall::Router(IEigenDACertVerifierRouter::checkDACertCall {
                 abiEncodedCert: v3_soltype_cert.abi_encode().into(),
-            }
+            })
         }
-        _ => panic!("encounter a cert version that is not v3, cannot convert"),
     }
 }

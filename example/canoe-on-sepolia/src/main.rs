@@ -5,8 +5,7 @@ use alloy_provider::{Provider, ProviderBuilder};
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_steel_apps::apps::CanoeSteelProvider;
 use clap::Parser;
-use eigenda_cert::EigenDACertV2;
-use hokulea_eigenda::AltDACommitment;
+use eigenda_cert::AltDACommitment;
 use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
@@ -80,7 +79,8 @@ pub async fn get_canoe_input(
     validity: bool,
     eth_rpc_url: String,
 ) -> anyhow::Result<CanoeInput> {
-    let altda_commitment = AltDACommitment::try_from(v2_cert_rlp_vec).expect("should be able to convert bytes to altda commitment");
+    let altda_commitment = AltDACommitment::try_from(v2_cert_rlp_vec)
+        .expect("should be able to convert bytes to altda commitment");
 
     let eth_rpc_url = Url::from_str(&eth_rpc_url).unwrap();
 
@@ -106,7 +106,6 @@ pub async fn get_canoe_input(
 
     // get header
     let l1_block_hash = header.hash_slow();
-
 
     Ok(CanoeInput {
         altda_commitment: altda_commitment.clone(),
