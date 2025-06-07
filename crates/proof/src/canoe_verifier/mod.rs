@@ -29,27 +29,7 @@ pub fn to_journal_bytes(
     cert_validity: &CertValidity,
     altda_commitment: &AltDACommitment,
 ) -> Vec<u8> {
-    /*
-    let batch_header = eigenda_cert.batch_header_v2.to_sol().abi_encode();
-    let blob_inclusion_info = eigenda_cert.blob_inclusion_info.to_sol().abi_encode();
-    let non_signer_stakes_and_signature = eigenda_cert
-        .nonsigner_stake_and_signature
-        .to_sol()
-        .abi_encode();
-    let signed_quorum_numbers_abi = eigenda_
-    cert.signed_quorum_numbers.abi_encode();
-     */
-
     let rlp_bytes = altda_commitment.to_rlp_bytes();
-
-    // ensure inputs are constrained
-    /*
-        let mut buffer = Vec::new();
-        buffer.extend(batch_header);
-        buffer.extend(blob_inclusion_info);
-        buffer.extend(non_signer_stakes_and_signature);
-        buffer.extend(signed_quorum_numbers_abi);
-    */
 
     let journal = Journal {
         certVerifierAddress: cert_verifier_v2_address(cert_validity.l1_chain_id),
