@@ -11,6 +11,10 @@ reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.3.10",
 alloy-primitives = { workspace = true, features = ["serde"] }
 alloy-sol-types.workspace = true
 canoe-bindings = { workspace = true }
+canoe-provider = { workspace = true }
+
+# hokulea
+hokulea-eigenda = { workspace = true }
 
 # sp1
 sp1-zkvm = { workspace = true, features = ["default"] }

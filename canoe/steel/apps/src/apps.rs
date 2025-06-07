@@ -2,7 +2,7 @@
 use std::str::FromStr;
 use std::time::Instant;
 
-use canoe_bindings::IEigenDACertVerifier;
+use canoe_bindings::StatusCode;
 
 use risc0_steel::{
     ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC},
@@ -15,8 +15,6 @@ use alloy_provider::ProviderBuilder;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 
 use canoe_steel_methods::V2CERT_VERIFICATION_ELF;
-
-use alloy_sol_types::SolValue;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -65,16 +63,24 @@ impl CanoeProvider for CanoeSteelProvider {
             _ => env,
         };
 
+        let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
+
         // Preflight the call to prepare the input that is required to execute the function in
         // the guest without RPC access. It also returns the result of the call.
         let mut contract = Contract::preflight(verifier_address, &mut env);
 
-        let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
-
         // Prepare the function call
-        let call = match canoe_input.altda_commitment.get_cert_version_byte() {
-            1 => build_v2_call(canoe_input),
-            2 => build_v3_call(canoe_input),
+        let returns = match &canoe_input.altda_commitment.get_cert_version_byte() {
+            1 => {
+                let call = build_v2_call(&canoe_input);
+                contract.call_builder(&call).call().await?
+            }
+            2 => {
+                let call = build_v3_call(&canoe_input);
+                let status = contract.call_builder(&call).call().await?;
+                status == StatusCode::SUCCESS as u8
+            }
+            _ => panic!("unknown version"),
         };
 
         /*
@@ -102,7 +108,7 @@ impl CanoeProvider for CanoeSteelProvider {
         
 
         
-        let returns = contract.call_builder(&call).call().await?;
+        //let returns = contract.call_builder(&call).call().await?;
         if canoe_input.claimed_validity != returns {
             panic!("in the preflight part, zkvm arrives to a different answer than claime. Something consistent in the view of eigenda-proxy and zkVM");
         }
@@ -116,10 +122,7 @@ impl CanoeProvider for CanoeSteelProvider {
             let env = ExecutorEnv::builder()
                 .write(&evm_input)?
                 .write(&verifier_address)?
-                .write(&batch_header_abi)?
-                .write(&non_signer_abi)?
-                .write(&blob_inclusion_abi)?
-                .write(&signed_quorum_numbers_abi)?
+                .write(&canoe_input.altda_commitment)?
                 .write(&canoe_input.l1_chain_id)?
                 .build()
                 .unwrap();

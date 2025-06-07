@@ -2,7 +2,6 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloy_primitives::FixedBytes;
 
-use eigenda_cert::EigenDACertV2;
 use hokulea_eigenda::AltDACommitment;
 
 use crate::cert_validity::CertValidity;

@@ -82,6 +82,11 @@ impl TryFrom<&[u8]> for AltDACommitment {
                     EigenDACertV2::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V2(v2_cert)
             }
+            // V3 cert
+            2 => {
+                let v3_cert = EigenDACertV3::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
+                EigenDAVersionedCert::V3(v3_cert)
+            }            
             _ => {
                 // also filter out non v2 cert since no logics have been implemented
                 return Err(AltDACommitmentParseError::UnsupportedCertVersionType(

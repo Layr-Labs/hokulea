@@ -3,10 +3,10 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use hokulea_eigenda::{AltDACommitment, EigenDAVersionedCert};
-use alloy_sol_types::SolCall;
 use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierRouter};
-use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
+use alloy_sol_types::SolValue;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CanoeInput {
     /// altda commitment
     pub altda_commitment: AltDACommitment,
@@ -48,8 +48,8 @@ impl CanoeProvider for CanoeNoOpProvider {
     }
 }
 
-pub fn build_v2_call(canoe_input: CanoeInput) -> IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
-    match canoe_input.altda_commitment.versioned_cert {
+pub fn build_v2_call(canoe_input: &CanoeInput) -> IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
+    match &canoe_input.altda_commitment.versioned_cert {
         EigenDAVersionedCert::V2(cert) => {
             IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
                 batchHeader: cert.batch_header_v2.to_sol(),
@@ -60,15 +60,15 @@ pub fn build_v2_call(canoe_input: CanoeInput) -> IEigenDACertVerifier::verifyDAC
                 nonSignerStakesAndSignature: cert
                     .nonsigner_stake_and_signature
                     .to_sol(),
-                signedQuorumNumbers: cert.signed_quorum_numbers,
+                signedQuorumNumbers: cert.signed_quorum_numbers.clone(),
             }
         }
         _ => panic!("encounter a cert version that is not v2, cannot convert"),
     }
 }
 
-pub fn build_v3_call(canoe_input: CanoeInput) -> IEigenDACertVerifierRouter::checkDACertCall {
-    match canoe_input.altda_commitment.versioned_cert {
+pub fn build_v3_call(canoe_input: &CanoeInput) -> IEigenDACertVerifierRouter::checkDACertCall {
+    match &canoe_input.altda_commitment.versioned_cert {
         EigenDAVersionedCert::V3(cert) => {
             let v3_soltype_cert = cert.to_sol();
             IEigenDACertVerifierRouter::checkDACertCall {

@@ -8,6 +8,8 @@ use canoe_bindings::{
 };
 use reth_chainspec::ChainSpec;
 use sp1_cc_client_executor::{io::EvmSketchInput, ClientExecutor, ContractInput};
+use hokulea_eigenda::AltDACommitment;
+use canoe_provider::{build_v2_call, CanoeInput};
 
 pub fn main() {
     // Read the state sketch from stdin. Use this during the execution in order to
@@ -16,16 +18,19 @@ pub fn main() {
     let state_sketch = bincode::deserialize::<EvmSketchInput>(&state_sketch_bytes).unwrap();
 
     let verifier_address = sp1_zkvm::io::read::<Address>();
-    let batch_header_abi = sp1_zkvm::io::read::<Vec<u8>>();
-    let non_signer_stakes_and_signature_abi = sp1_zkvm::io::read::<Vec<u8>>();
-    let blob_inclusion_info_abi = sp1_zkvm::io::read::<Vec<u8>>();
-    let signed_quorum_numbers_abi = sp1_zkvm::io::read::<Vec<u8>>();
+    //let batch_header_abi = sp1_zkvm::io::read::<Vec<u8>>();
+    //let non_signer_stakes_and_signature_abi = sp1_zkvm::io::read::<Vec<u8>>();
+    //let blob_inclusion_info_abi = sp1_zkvm::io::read::<Vec<u8>>();
+    //let signed_quorum_numbers_abi = sp1_zkvm::io::read::<Vec<u8>>();
+
+    let canoe_input = sp1_zkvm::io::read::<CanoeInput>();
 
     // Initialize the client executor with the state sketch.
     // This step also validates all of the storage against state root provided by the host
     let executor = ClientExecutor::new(&state_sketch).unwrap();
 
     // Execute the slot0 call using the client executor.
+    /*
     let batch_header = <BatchHeaderV2 as SolType>::abi_decode(&batch_header_abi)
         .expect("deserialize BatchHeaderV2");
     let blob_inclusion_info = <BlobInclusionInfo as SolType>::abi_decode(&blob_inclusion_info_abi)
@@ -43,18 +48,24 @@ pub fn main() {
         nonSignerStakesAndSignature: non_signer_stakes_and_signature,
         signedQuorumNumbers: signed_quorum_numbers,
     };
+    */
 
-    let call = ContractInput::new_call(verifier_address, Address::default(), mock_call);
+    let v2_call = build_v2_call(&canoe_input);
+
+    let call = ContractInput::new_call(verifier_address, Address::default(), v2_call);
     let public_vals = executor.execute(call).unwrap();
 
     // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
     let returns = Bool::abi_decode(&public_vals.contractOutput).expect("deserialize returns");
 
+    /*
     let mut buffer = Vec::new();
     buffer.extend(batch_header_abi);
     buffer.extend(blob_inclusion_info_abi);
     buffer.extend(non_signer_stakes_and_signature_abi);
     buffer.extend(signed_quorum_numbers_abi);
+    */
+    let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
     let chain_sepc: ChainSpec = executor
         .genesis
@@ -63,7 +74,7 @@ pub fn main() {
 
     let journal = Journal {
         certVerifierAddress: verifier_address,
-        input: buffer.into(),
+        input: rlp_bytes.into(),
         blockhash: public_vals.anchorHash,
         output: returns,
         l1ChainId: chain_sepc.chain.id(),
