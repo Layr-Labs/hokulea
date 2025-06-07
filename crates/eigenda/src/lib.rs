@@ -30,9 +30,6 @@ pub use eigenda_blobs::EigenDABlobSource;
 mod eigenda_data;
 pub use eigenda_data::EigenDABlobData;
 
-mod altda_commitment;
-pub use altda_commitment::{AltDACommitment, EigenDAVersionedCert};
-
 mod errors;
 pub use errors::{
     BlobDecodingError, HokuleaErrorKind, HokuleaPreimageError, HokuleaStatelessError,

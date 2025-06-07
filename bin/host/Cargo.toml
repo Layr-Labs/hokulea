@@ -8,6 +8,7 @@ edition = "2021"
 hokulea-proof.workspace = true
 hokulea-client-bin.workspace = true
 hokulea-eigenda.workspace = true
+eigenda-cert.workspace = true
 
 # Kona
 kona-preimage = { workspace = true, features = ["std"] }

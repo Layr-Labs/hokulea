@@ -1,12 +1,13 @@
 //! Blob Data Source
 
+use crate::eigenda_data::EigenDABlobData;
 use crate::traits::EigenDABlobProvider;
 use crate::HokuleaPreimageError;
-use crate::{eigenda_data::EigenDABlobData, AltDACommitment};
 
 use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
 use alloc::vec::Vec;
 use alloy_primitives::Bytes;
+use eigenda_cert::AltDACommitment;
 
 /// A data iterator that reads from a blob.
 #[derive(Debug, Clone)]

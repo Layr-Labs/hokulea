@@ -1,8 +1,8 @@
 use crate::errors::HokuleaErrorKind;
-use crate::AltDACommitment;
 use alloc::{boxed::Box, string::ToString};
 use async_trait::async_trait;
 use core::fmt::Display;
+use eigenda_cert::AltDACommitment;
 use rust_kzg_bn254_primitives::blob::Blob;
 
 /// A trait for providing EigenDA blobs.

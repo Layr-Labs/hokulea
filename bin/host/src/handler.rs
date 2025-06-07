@@ -3,7 +3,7 @@ use alloy_primitives::keccak256;
 use crate::cfg::SingleChainHostWithEigenDA;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use hokulea_eigenda::AltDACommitment;
+use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{EigenDABlobData, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY};
 use hokulea_eigenda::{
     BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,

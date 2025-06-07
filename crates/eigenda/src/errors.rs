@@ -1,7 +1,7 @@
 //! High level Error type defined by hokulea
 
-use crate::altda_commitment::AltDACommitmentParseError;
 use alloc::string::{String, ToString};
+use eigenda_cert::AltDACommitmentParseError;
 
 /// Actionable hokulea error
 #[derive(Debug, thiserror::Error)]

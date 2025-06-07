@@ -1,10 +1,10 @@
+use crate::{EigenDACertV2, EigenDACertV3};
 use alloc::vec::Vec;
 use alloy_primitives::keccak256;
 use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
 use anyhow::Result;
-use eigenda_cert::{EigenDACertV2, EigenDACertV3};
 
 /// EigenDACert can be either v1 or v2
 /// TODO consider boxing them, since the variant has large size

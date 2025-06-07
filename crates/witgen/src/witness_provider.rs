@@ -1,8 +1,8 @@
 use alloy_primitives::{FixedBytes, B256};
 use async_trait::async_trait;
-use eigenda_cert::EigenDACertV2;
+use eigenda_cert::{AltDACommitment, EigenDACertV2, EigenDAVersionedCert};
 use hokulea_compute_proof::compute_kzg_proof;
-use hokulea_eigenda::{AltDACommitment, EigenDABlobProvider, EigenDAVersionedCert};
+use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;

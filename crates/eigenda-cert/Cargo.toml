@@ -8,4 +8,6 @@ alloy-primitives = { workspace = true, features = ["rlp", "serde"] }
 alloy-rlp = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
 canoe-bindings = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
 

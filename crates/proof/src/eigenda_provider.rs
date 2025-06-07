@@ -2,10 +2,10 @@ use alloc::boxed::Box;
 use alloc::sync::Arc;
 use alloy_primitives::keccak256;
 use async_trait::async_trait;
+use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
-    AltDACommitment, EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT,
-    RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
-    RESERVED_EIGENDA_API_BYTE_INDEX,
+    EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
+    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 use rust_kzg_bn254_primitives::blob::Blob;

@@ -8,8 +8,10 @@ use serde::{Deserialize, Serialize};
 extern crate alloc;
 use alloc::vec::Vec;
 
+pub mod altda_commitment;
 pub mod v2_cert;
 pub mod v3_cert;
+pub use altda_commitment::{AltDACommitment, AltDACommitmentParseError, EigenDAVersionedCert};
 pub use v2_cert::EigenDACertV2;
 pub use v3_cert::EigenDACertV3;
 
