@@ -156,9 +156,9 @@ where
         cert_validity.l1_head_block_hash = boot_info.l1_head;
     });
 
-    for (cert, cert_validity) in &mut wit.validity {
+    for (altda_commitment, cert_validity) in &mut wit.validity {
         let canoe_input = CanoeInput {
-            eigenda_cert: cert.clone(),
+            altda_commitment: altda_commitment.clone(),
             claimed_validity: cert_validity.claimed_validity,
             l1_head_block_hash: boot_info.l1_head,
             l1_head_block_number: l1_head_header.number,

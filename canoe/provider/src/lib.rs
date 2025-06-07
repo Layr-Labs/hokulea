@@ -1,11 +1,15 @@
 use alloy_primitives::B256;
+use alloy_sol_types::SolValue;
 use anyhow::Result;
 use async_trait::async_trait;
+use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierRouter};
+use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CanoeInput {
-    /// eigenda cert
-    pub eigenda_cert: eigenda_cert::EigenDACertV2,
+    /// altda commitment
+    pub altda_commitment: AltDACommitment,
     /// the claim about if the cert is valid, received from the signature from OracleEigenDAProvider from the derivation pipeline
     /// Added here only for a preventive measure, such that if in the state loading part, zkvm got a different answer than claimed
     /// zkVM can stop early without proving anything.
@@ -41,5 +45,34 @@ impl CanoeProvider for CanoeNoOpProvider {
 
     fn get_eth_rpc_url(&self) -> String {
         "".to_string()
+    }
+}
+
+/// Call respecting solidity interface
+/// V2 is deprecated once router is released
+pub enum CertVerifierCall {
+    /// V2 calldata
+    V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall),
+    /// V3 calldata
+    Router(IEigenDACertVerifierRouter::checkDACertCall),
+}
+
+/// convert rust eigenda cert type into solidity type that repsects cert verifier
+pub fn build_call(altda_commitment: &AltDACommitment) -> CertVerifierCall {
+    match &altda_commitment.versioned_cert {
+        EigenDAVersionedCert::V2(cert) => {
+            CertVerifierCall::V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
+                batchHeader: cert.batch_header_v2.to_sol(),
+                blobInclusionInfo: cert.blob_inclusion_info.clone().to_sol(),
+                nonSignerStakesAndSignature: cert.nonsigner_stake_and_signature.to_sol(),
+                signedQuorumNumbers: cert.signed_quorum_numbers.clone(),
+            })
+        }
+        EigenDAVersionedCert::V3(cert) => {
+            let v3_soltype_cert = cert.to_sol();
+            CertVerifierCall::Router(IEigenDACertVerifierRouter::checkDACertCall {
+                abiEncodedCert: v3_soltype_cert.abi_encode().into(),
+            })
+        }
     }
 }

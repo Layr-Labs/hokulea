@@ -2,7 +2,7 @@
 use std::str::FromStr;
 use std::time::Instant;
 
-use canoe_bindings::IEigenDACertVerifier;
+use canoe_bindings::StatusCode;
 
 use risc0_steel::{
     ethereum::{EthEvmEnv, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC},
@@ -14,15 +14,13 @@ use tokio::task;
 use alloy_provider::ProviderBuilder;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 
-use canoe_steel_methods::V2CERT_VERIFICATION_ELF;
-
-use alloy_sol_types::SolValue;
+use canoe_steel_methods::CERT_VERIFICATION_ELF;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use url::Url;
 
-use canoe_provider::{CanoeInput, CanoeProvider};
+use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use risc0_zkvm;
 
 use hokulea_proof::canoe_verifier::cert_verifier_v2_address;
@@ -65,33 +63,22 @@ impl CanoeProvider for CanoeSteelProvider {
             _ => env,
         };
 
-        // Prepare the function call
-        let call = IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
-            batchHeader: canoe_input.eigenda_cert.batch_header_v2.to_sol(),
-            blobInclusionInfo: canoe_input
-                .eigenda_cert
-                .blob_inclusion_info
-                .clone()
-                .to_sol(),
-            nonSignerStakesAndSignature: canoe_input
-                .eigenda_cert
-                .nonsigner_stake_and_signature
-                .to_sol(),
-            signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
-        };
-
-        let batch_header_abi = call.batchHeader.abi_encode();
-        let non_signer_abi = call.nonSignerStakesAndSignature.abi_encode();
-        let blob_inclusion_abi = call.blobInclusionInfo.abi_encode();
-        let signed_quorum_numbers_abi = call.signedQuorumNumbers.abi_encode();
-
         let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
 
         // Preflight the call to prepare the input that is required to execute the function in
         // the guest without RPC access. It also returns the result of the call.
         let mut contract = Contract::preflight(verifier_address, &mut env);
 
-        let returns = contract.call_builder(&call).call().await?;
+        // Prepare the function call
+        let returns = match canoe_provider::build_call(&canoe_input.altda_commitment) {
+            CertVerifierCall::V2(call) => contract.call_builder(&call).call().await?,
+            CertVerifierCall::Router(call) => {
+                let status = contract.call_builder(&call).call().await?;
+                status == StatusCode::SUCCESS as u8
+            }
+        };
+
+        //let returns = contract.call_builder(&call).call().await?;
         if canoe_input.claimed_validity != returns {
             panic!("in the preflight part, zkvm arrives to a different answer than claime. Something consistent in the view of eigenda-proxy and zkVM");
         }
@@ -105,19 +92,16 @@ impl CanoeProvider for CanoeSteelProvider {
             let env = ExecutorEnv::builder()
                 .write(&evm_input)?
                 .write(&verifier_address)?
-                .write(&batch_header_abi)?
-                .write(&non_signer_abi)?
-                .write(&blob_inclusion_abi)?
-                .write(&signed_quorum_numbers_abi)?
-                .write(&canoe_input.l1_chain_id)?
+                .write(&canoe_input)?
+                //.write(&canoe_input.l1_chain_id)?
                 .build()
                 .unwrap();
 
             default_prover().prove_with_ctx(
                 env,
                 &VerifierContext::default(),
-                V2CERT_VERIFICATION_ELF,
-                &ProverOpts::groth16(),
+                CERT_VERIFICATION_ELF,
+                &ProverOpts::composite(),
             )
         })
         .await?

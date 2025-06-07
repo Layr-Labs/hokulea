@@ -2,11 +2,11 @@ use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
 use crate::canoe_verifier::{to_journal_bytes, CanoeVerifier};
 use crate::cert_validity::CertValidity;
 use alloc::string::ToString;
-use eigenda_cert::EigenDACertV2;
+use eigenda_cert::AltDACommitment;
 
 use risc0_zkvm::Receipt;
 
-use canoe_steel_methods::V2CERT_VERIFICATION_ID;
+use canoe_steel_methods::CERT_VERIFICATION_ID;
 use tracing::info;
 
 #[derive(Clone)]
@@ -22,11 +22,11 @@ impl CanoeVerifier for CanoeSteelVerifier {
     fn validate_cert_receipt(
         &self,
         cert_validity: CertValidity,
-        eigenda_cert: EigenDACertV2,
+        altda_commitment: AltDACommitment,
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSteelVerifier");
 
-        let journal_bytes = to_journal_bytes(&cert_validity, &eigenda_cert);
+        let journal_bytes = to_journal_bytes(&cert_validity, &altda_commitment);
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
@@ -38,7 +38,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
                         is provided from other ways which is not verified within zkVM");
                 }
 
-                env::verify(V2CERT_VERIFICATION_ID, &journal_bytes).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
+                env::verify(CERT_VERIFICATION_ID, &journal_bytes).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
             } else {
                 if cert_validity.canoe_proof.is_none() {
                     return Err(HokuleaCanoeVerificationError::MissingProof);
@@ -48,7 +48,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
 
                 let canoe_receipt: Receipt = serde_json::from_slice(canoe_proof.as_ref()).map_err(|e| HokuleaCanoeVerificationError::UnableToDeserializeReceipt(e.to_string()))?;
 
-                canoe_receipt.verify(V2CERT_VERIFICATION_ID).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
+                canoe_receipt.verify(CERT_VERIFICATION_ID).map_err(|e| HokuleaCanoeVerificationError::InvalidProofAndJournal(e.to_string()))?;
 
                 if canoe_receipt.journal.bytes != journal_bytes {
                     return Err(HokuleaCanoeVerificationError::InconsistentPublicJournal)

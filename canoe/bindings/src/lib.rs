@@ -92,6 +92,23 @@ sol! {
         uint32[][] nonSignerStakeIndices;
     }
 
+    struct EigenDACertV3 {
+        BatchHeaderV2 batchHeaderV2;
+        BlobInclusionInfo blobInclusionInfo;
+        NonSignerStakesAndSignature nonSignerStakesAndSignature;
+        bytes signedQuorumNumbers;
+    }
+
+    #[derive(PartialEq)]
+    enum StatusCode {
+        NULL_ERROR, // Unused error code. If this is returned, there is a bug in the code.
+        SUCCESS, // Verification succeeded
+        INVALID_INCLUSION_PROOF, // Merkle inclusion proof is invalid
+        SECURITY_ASSUMPTIONS_NOT_MET, // Security assumptions not met
+        BLOB_QUORUMS_NOT_SUBSET, // Blob quorums not a subset of confirmed quorums
+        REQUIRED_QUORUMS_NOT_SUBSET // Required quorums not a subset of blob quorums
+    }
+
     interface IEigenDACertVerifier {
         #[sol(rpc)]
         function verifyDACertV2ForZKProof(
@@ -103,6 +120,7 @@ sol! {
     }
 
     interface IEigenDACertVerifierRouter {
+        #[sol(rpc)]
         function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status);
     }
 

@@ -1,13 +1,12 @@
 use alloy_primitives::{FixedBytes, B256};
 use async_trait::async_trait;
-use eigenda_cert::{AltDACommitment, EigenDACertV2, EigenDAVersionedCert};
+use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::EigenDABlobProvider;
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;
 use std::sync::{Arc, Mutex};
-use tracing::debug;
 
 /// This is a wrapper around OracleEigenDAProvider, with
 /// additional functionalities to generate eigenda witness
@@ -42,9 +41,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
             Ok(recency) => {
                 let mut witness = self.witness.lock().unwrap();
 
-                let cert = self.get_cert(altda_commitment);
-
-                witness.recency.push((cert, recency));
+                witness.recency.push((altda_commitment.clone(), recency));
                 Ok(recency)
             }
             Err(e) => Err(e),
@@ -55,8 +52,6 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
-        let cert = self.get_cert(altda_commitment);
-
         // get cert validity
         match self.provider.get_validity(altda_commitment).await {
             Ok(validity) => {
@@ -72,7 +67,9 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                     l1_chain_id: 0,
                 };
 
-                witness.validity.push((cert, cert_validity));
+                witness
+                    .validity
+                    .push((altda_commitment.clone(), cert_validity));
                 Ok(validity)
             }
             Err(e) => Err(e),
@@ -83,8 +80,6 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         // only a single blob is returned from a cert
         match self.provider.get_blob(altda_commitment).await {
             Ok(blob) => {
-                let cert = self.get_cert(altda_commitment);
-
                 // Compute kzg proof for the entire blob on a deterministic random point
                 let kzg_proof = match compute_kzg_proof(blob.data()) {
                     Ok(p) => p,
@@ -94,28 +89,12 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
 
                 // ToDo(bx) claimed_validity currently set to true, but needs to connect from response from the host
                 let mut witness = self.witness.lock().unwrap();
-                witness.blob.push((cert, blob.clone().into(), fixed_bytes));
+                witness
+                    .blob
+                    .push((altda_commitment.clone(), blob.clone().into(), fixed_bytes));
                 Ok(blob)
             }
             Err(e) => Err(e),
         }
-    }
-}
-
-/// helper function, to be removed after changed EigenDABlobWitnessData to take AltDACommitment
-/// in its fields
-impl<T: EigenDABlobProvider + Send> OracleEigenDAWitnessProvider<T> {
-    pub fn get_cert(&self, altda_commitment: &AltDACommitment) -> EigenDACertV2 {
-        // V1 is not supported for secure integration, feel free to contribute
-        let cert = match &altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V2(c) => c,
-            _ => panic!("only v2 is supported"),
-        };
-        debug!(
-            target = "OracleEigenDAWitnessProvider",
-            "pusehd a cert {}",
-            cert.to_digest()
-        );
-        cert.clone()
     }
 }

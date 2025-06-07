@@ -5,7 +5,7 @@ use alloy_provider::{Provider, ProviderBuilder};
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_steel_apps::apps::CanoeSteelProvider;
 use clap::Parser;
-use eigenda_cert::EigenDACertV2;
+use eigenda_cert::AltDACommitment;
 use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
     let canoe_input = get_canoe_input(&v2_cert_rlp_vec, validity, args.eth_rpc_url.clone()).await?;
 
     // value to be used for zk verification
-    let v2_cert = canoe_input.eigenda_cert.clone();
+    let altda_commitment = canoe_input.altda_commitment.clone();
     let l1_head_block_hash = canoe_input.l1_head_block_hash;
     let claimed_validity = validity;
 
@@ -54,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
         l1_head_block_hash,
         l1_chain_id: 11155111,
     };
-    verify_canoe_proof(cert_validity.clone(), v2_cert.clone())
+    verify_canoe_proof(cert_validity.clone(), altda_commitment.clone())
         .expect("correct proof should have passed");
     println!("cert verification pass");
 
@@ -64,11 +64,11 @@ async fn main() -> anyhow::Result<()> {
 // this function takes canoe proof and verify it
 pub fn verify_canoe_proof(
     cert_validity: CertValidity,
-    v2_cert: EigenDACertV2,
+    altda_commitment: AltDACommitment,
 ) -> Result<(), HokuleaCanoeVerificationError> {
     // verify canoe proof
     let canoe_verifier = CanoeSteelVerifier {};
-    canoe_verifier.validate_cert_receipt(cert_validity, v2_cert)
+    canoe_verifier.validate_cert_receipt(cert_validity, altda_commitment)
 }
 
 /// It is a helper function that prepares canoe input which can be used to generate a
@@ -79,7 +79,8 @@ pub async fn get_canoe_input(
     validity: bool,
     eth_rpc_url: String,
 ) -> anyhow::Result<CanoeInput> {
-    let v2_cert = EigenDACertV2::from_bytes(v2_cert_rlp_vec);
+    let altda_commitment = AltDACommitment::try_from(v2_cert_rlp_vec)
+        .expect("should be able to convert bytes to altda commitment");
 
     let eth_rpc_url = Url::from_str(&eth_rpc_url).unwrap();
 
@@ -107,7 +108,7 @@ pub async fn get_canoe_input(
     let l1_block_hash = header.hash_slow();
 
     Ok(CanoeInput {
-        eigenda_cert: v2_cert.clone(),
+        altda_commitment: altda_commitment.clone(),
         claimed_validity: validity,
         l1_head_block_hash: l1_block_hash,
         l1_head_block_number: block_number,

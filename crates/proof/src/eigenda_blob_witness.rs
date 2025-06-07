@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloy_primitives::FixedBytes;
 
-use eigenda_cert::EigenDACertV2;
+use eigenda_cert::AltDACommitment;
 
 use crate::cert_validity::CertValidity;
 use serde::{Deserialize, Serialize};
@@ -45,9 +45,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDABlobWitnessData {
     /// u64 containing the recency_window
-    pub recency: Vec<(EigenDACertV2, u64)>,
+    pub recency: Vec<(AltDACommitment, u64)>,
     /// validity of a da cert
-    pub validity: Vec<(EigenDACertV2, CertValidity)>,
+    pub validity: Vec<(AltDACommitment, CertValidity)>,
     /// blobs corresponds to a da cert and its kzg proof
-    pub blob: Vec<(EigenDACertV2, Vec<u8>, FixedBytes<64>)>,
+    pub blob: Vec<(AltDACommitment, Vec<u8>, FixedBytes<64>)>,
 }

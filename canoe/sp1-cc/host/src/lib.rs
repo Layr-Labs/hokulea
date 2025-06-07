@@ -1,10 +1,10 @@
 use alloy_primitives::Address;
 use alloy_rpc_types::BlockNumberOrTag;
-use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
+use alloy_sol_types::{sol_data::Bool, SolType};
 use anyhow::Result;
 use async_trait::async_trait;
-use canoe_bindings::{IEigenDACertVerifier, Journal};
-use canoe_provider::{CanoeInput, CanoeProvider};
+use canoe_bindings::{Journal, StatusCode};
+use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use hokulea_proof::canoe_verifier::cert_verifier_v2_address;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
@@ -105,36 +105,41 @@ async fn get_sp1_cc_proof(
         }
     };
 
-    // Make the call
-    let call = IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
-        batchHeader: canoe_input.eigenda_cert.batch_header_v2.to_sol(),
-        blobInclusionInfo: canoe_input
-            .eigenda_cert
-            .blob_inclusion_info
-            .clone()
-            .to_sol(),
-        nonSignerStakesAndSignature: canoe_input
-            .eigenda_cert
-            .nonsigner_stake_and_signature
-            .to_sol(),
-        signedQuorumNumbers: canoe_input.eigenda_cert.signed_quorum_numbers,
-    };
-
     let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
 
+    let contract_input = match canoe_provider::build_call(&canoe_input.altda_commitment) {
+        CertVerifierCall::V2(call) => {
+            ContractInput::new_call(verifier_address, Address::default(), call)
+        }
+        CertVerifierCall::Router(call) => {
+            ContractInput::new_call(verifier_address, Address::default(), call)
+        }
+    };
+
     let returns_bytes = sketch
-        .call(ContractInput::new_call(
-            verifier_address,
-            Address::default(),
-            call.clone(),
-        ))
+        .call(contract_input)
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-    // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
-    // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
-    // Talked to sp1-cc developer already, and it is agreed.
-    let returns = Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes");
+    let returns = match &canoe_input.altda_commitment.get_cert_version_byte() {
+        // V2 cert
+        1 => {
+            // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
+            // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
+            // Talked to sp1-cc developer already, and it is agreed.
+            Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes")
+        }
+        // V3 cert and this is the router path
+        2 => {
+            // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
+            // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
+            // Talked to sp1-cc developer already, and it is agreed.
+            let returns = <StatusCode as SolType>::abi_decode(&returns_bytes)
+                .expect("deserialize returns_bytes");
+            returns == StatusCode::SUCCESS
+        }
+        _ => panic!("unknown version"),
+    };
 
     if returns != canoe_input.claimed_validity {
         panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
@@ -146,20 +151,12 @@ async fn get_sp1_cc_proof(
         .map_err(|e| anyhow::anyhow!(e.to_string()))
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-    let batch_header_abi = call.batchHeader.abi_encode();
-    let non_signer_abi = call.nonSignerStakesAndSignature.abi_encode();
-    let blob_inclusion_abi = call.blobInclusionInfo.abi_encode();
-    let signed_quorum_numbers = call.signedQuorumNumbers.abi_encode();
-
     // Feed the sketch into the client.
     let input_bytes = bincode::serialize(&evm_state_sketch)?;
     let mut stdin = SP1Stdin::new();
     stdin.write(&input_bytes);
     stdin.write(&verifier_address);
-    stdin.write(&batch_header_abi);
-    stdin.write(&non_signer_abi);
-    stdin.write(&blob_inclusion_abi);
-    stdin.write(&signed_quorum_numbers);
+    stdin.write(&canoe_input);
 
     // Create a `ProverClient`.
     let client = ProverClient::from_env();

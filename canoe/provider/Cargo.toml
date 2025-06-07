@@ -9,3 +9,5 @@ anyhow.workspace = true
 serde.workspace = true
 async-trait.workspace = true
 alloy-primitives.workspace = true
+alloy-sol-types = { workspace = true }
+canoe-bindings = { workspace = true }
