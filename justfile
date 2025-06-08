@@ -19,7 +19,7 @@ build-native-all *args='':
 # Build for the native target
 [group('build')]
 build-native *args='':
-  cargo build hokulea-host-bin
+  cargo build --bin hokulea-host-bin
 
 # Build `hokulea-client` for the `asterisc` target.
 [group('build')]
