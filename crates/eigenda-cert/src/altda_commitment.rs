@@ -155,14 +155,6 @@ impl AltDACommitment {
         }
     }
 
-    /// get cert version byte
-    pub fn get_cert_version_byte(&self) -> u8 {
-        match &self.versioned_cert {
-            EigenDAVersionedCert::V2(_) => 1,
-            EigenDAVersionedCert::V3(_) => 2,
-        }
-    }
-
     /// get kzg commitment g1 point, first U256 is x coordinate, second is y
     pub fn get_kzg_commitment(&self) -> (U256, U256) {
         match &self.versioned_cert {

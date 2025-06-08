@@ -5,7 +5,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
-use hokulea_proof::canoe_verifier::cert_verifier_v2_address;
+use eigenda_cert::EigenDAVersionedCert;
+use hokulea_proof::canoe_verifier::cert_verifier_address;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{ProverClient, SP1Proof, SP1Stdin};
@@ -22,7 +23,6 @@ pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 /// SP1ProofWithPublicValues contains a Stark proof which can be verified in
 /// native program using sp1-sdk. However, if you requires Stark verification
 /// within zkVM, please use [CanoeSp1CCReducedProofProvider]
-
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
     /// rpc to l1 geth node
@@ -105,7 +105,8 @@ async fn get_sp1_cc_proof(
         }
     };
 
-    let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
+    let verifier_address =
+        cert_verifier_address(canoe_input.l1_chain_id, &canoe_input.altda_commitment);
 
     let contract_input = match canoe_provider::build_call(&canoe_input.altda_commitment) {
         CertVerifierCall::V2(call) => {
@@ -121,16 +122,14 @@ async fn get_sp1_cc_proof(
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-    let returns = match &canoe_input.altda_commitment.get_cert_version_byte() {
-        // V2 cert
-        1 => {
+    let returns = match &canoe_input.altda_commitment.versioned_cert {
+        EigenDAVersionedCert::V2(_) => {
             // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
             // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
             // Talked to sp1-cc developer already, and it is agreed.
             Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes")
         }
-        // V3 cert and this is the router path
-        2 => {
+        EigenDAVersionedCert::V3(_) => {
             // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
             // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
             // Talked to sp1-cc developer already, and it is agreed.
@@ -138,7 +137,6 @@ async fn get_sp1_cc_proof(
                 .expect("deserialize returns_bytes");
             returns == StatusCode::SUCCESS
         }
-        _ => panic!("unknown version"),
     };
 
     if returns != canoe_input.claimed_validity {

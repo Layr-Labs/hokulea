@@ -2365,6 +2365,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
+ "eigenda-cert",
  "hokulea-proof",
  "sp1-build",
  "sp1-cc-client-executor",

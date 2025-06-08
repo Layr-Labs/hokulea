@@ -23,7 +23,7 @@ use url::Url;
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use risc0_zkvm;
 
-use hokulea_proof::canoe_verifier::cert_verifier_v2_address;
+use hokulea_proof::canoe_verifier::cert_verifier_address;
 use tracing::info;
 
 /// A canoe provider implementation with steel
@@ -63,7 +63,8 @@ impl CanoeProvider for CanoeSteelProvider {
             _ => env,
         };
 
-        let verifier_address = cert_verifier_v2_address(canoe_input.l1_chain_id);
+        let verifier_address =
+            cert_verifier_address(canoe_input.l1_chain_id, &canoe_input.altda_commitment);
 
         // Preflight the call to prepare the input that is required to execute the function in
         // the guest without RPC access. It also returns the result of the call.
