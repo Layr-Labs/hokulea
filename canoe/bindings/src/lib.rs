@@ -110,7 +110,6 @@ sol! {
     }
 
     interface IEigenDACertVerifier {
-        #[sol(rpc)]
         function verifyDACertV2ForZKProof(
             BatchHeaderV2 calldata batchHeader,
             BlobInclusionInfo calldata blobInclusionInfo,
@@ -120,7 +119,6 @@ sol! {
     }
 
     interface IEigenDACertVerifierRouter {
-        #[sol(rpc)]
         function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status);
     }
 

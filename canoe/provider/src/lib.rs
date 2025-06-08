@@ -53,11 +53,11 @@ impl CanoeProvider for CanoeNoOpProvider {
 pub enum CertVerifierCall {
     /// V2 calldata
     V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall),
-    /// V3 calldata
+    /// Router calldata for V3 and beyond
     Router(IEigenDACertVerifierRouter::checkDACertCall),
 }
 
-/// convert rust eigenda cert type into solidity type that repsects cert verifier
+/// convert eigenda cert type into its solidity type that works with solidity cert verifier interface
 pub fn build_call(altda_commitment: &AltDACommitment) -> CertVerifierCall {
     match &altda_commitment.versioned_cert {
         EigenDAVersionedCert::V2(cert) => {

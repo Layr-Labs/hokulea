@@ -24,7 +24,7 @@ pub fn main() {
     // TODO, are there no better way to reduce this replicated code.
     // known constraint, new_call takes SolCall trait, which is Sized so not dyn trait
     // also impl SolCall seems too much
-    // V2 is deprecated once router is released, for now it is good
+    // V2 will be deprecated once router is released, will remove V2 call then
     let call = match canoe_provider::build_call(&canoe_input.altda_commitment) {
         CertVerifierCall::V2(call) => {
             ContractInput::new_call(verifier_address, Address::default(), call)

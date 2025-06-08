@@ -122,17 +122,14 @@ async fn get_sp1_cc_proof(
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
+    // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
+    // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
+    // Talked to sp1-cc developer already, and it is agreed.
     let returns = match &canoe_input.altda_commitment.versioned_cert {
         EigenDAVersionedCert::V2(_) => {
-            // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
-            // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
-            // Talked to sp1-cc developer already, and it is agreed.
             Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes")
         }
         EigenDAVersionedCert::V3(_) => {
-            // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
-            // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
-            // Talked to sp1-cc developer already, and it is agreed.
             let returns = <StatusCode as SolType>::abi_decode(&returns_bytes)
                 .expect("deserialize returns_bytes");
             returns == StatusCode::SUCCESS

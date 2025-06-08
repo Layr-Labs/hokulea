@@ -46,7 +46,7 @@ fn main() {
         _ => input.into_env(),
     }; 
 
-    // Prepare the function call
+    // Prepare the function call and call the function
     let returns = match canoe_provider::build_call(&canoe_input.altda_commitment) {
         CertVerifierCall::V2(call) => Contract::new(verifier_address, &env).call_builder(&call).call(),
         CertVerifierCall::Router(call) => {
