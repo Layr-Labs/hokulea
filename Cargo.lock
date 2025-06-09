@@ -821,6 +821,7 @@ checksum = "c000cab4ec26a4b3e29d144e999e1c539c2fa0abed871bf90311eb3466187ca8"
 dependencies = [
  "alloy-primitives 1.2.0",
  "alloy-rpc-types-debug 1.0.9",
+ "alloy-rpc-types-engine 1.0.9",
  "alloy-rpc-types-eth 1.0.9",
  "alloy-serde 1.0.9",
  "serde",
@@ -944,7 +945,7 @@ dependencies = [
  "alloy-rlp",
  "alloy-serde 0.14.0",
  "alloy-sol-types",
- "itertools 0.14.0",
+ "itertools 0.13.0",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
@@ -964,7 +965,7 @@ dependencies = [
  "alloy-rlp",
  "alloy-serde 1.0.9",
  "alloy-sol-types",
- "itertools 0.14.0",
+ "itertools 0.13.0",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
@@ -2358,7 +2359,7 @@ name = "canoe-sp1-cc-host"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.2.0",
- "alloy-rpc-types 0.14.0",
+ "alloy-rpc-types 1.0.9",
  "alloy-sol-types",
  "anyhow",
  "async-trait",
@@ -5798,7 +5799,7 @@ version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af1844ef2428cc3e1cb900be36181049ef3d3193c63e43026cfe202983b27a56"
 dependencies = [
- "proc-macro-crate 3.3.0",
+ "proc-macro-crate 1.1.3",
  "proc-macro2",
  "quote",
  "syn 2.0.101",
@@ -6750,7 +6751,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.14.0",
+ "itertools 0.12.1",
  "proc-macro2",
  "quote",
  "syn 2.0.101",
