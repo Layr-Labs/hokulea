@@ -8,3 +8,5 @@ meta.json
 state.bin.gz
 .*.env
 .run.*.env
+canoe/steel/methods/contracts/
+canoe/sp1-cc/elf/

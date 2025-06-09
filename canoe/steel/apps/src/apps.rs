@@ -71,7 +71,7 @@ impl CanoeProvider for CanoeSteelProvider {
         let mut contract = Contract::preflight(verifier_address, &mut env);
 
         // Prepare the function call
-        let returns = match CertVerifierCall::build_call(&canoe_input.altda_commitment) {
+        let returns = match CertVerifierCall::build(&canoe_input.altda_commitment) {
             CertVerifierCall::V2(call) => contract.call_builder(&call).call().await?,
             CertVerifierCall::Router(call) => {
                 let status = contract.call_builder(&call).call().await?;

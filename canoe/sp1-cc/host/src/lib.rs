@@ -108,7 +108,7 @@ async fn get_sp1_cc_proof(
     let verifier_address =
         cert_verifier_address(canoe_input.l1_chain_id, &canoe_input.altda_commitment);
 
-    let contract_input = match CertVerifierCall::build_call(&canoe_input.altda_commitment) {
+    let contract_input = match CertVerifierCall::build(&canoe_input.altda_commitment) {
         CertVerifierCall::V2(call) => {
             ContractInput::new_call(verifier_address, Address::default(), call)
         }

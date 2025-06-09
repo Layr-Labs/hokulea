@@ -2,7 +2,7 @@ use alloy_primitives::B256;
 use alloy_sol_types::SolValue;
 use anyhow::Result;
 use async_trait::async_trait;
-use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierRouter};
+use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierBase};
 use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
 use serde::{Deserialize, Serialize};
 
@@ -53,13 +53,13 @@ impl CanoeProvider for CanoeNoOpProvider {
 pub enum CertVerifierCall {
     /// V2 calldata
     V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall),
-    /// Router calldata for V3 and beyond
-    Router(IEigenDACertVerifierRouter::checkDACertCall),
+    /// Base is compatible with Router and calling V3 directly
+    Router(IEigenDACertVerifierBase::checkDACertCall),
 }
 
 impl CertVerifierCall {
     /// convert eigenda cert type into its solidity type that works with solidity cert verifier interface
-    pub fn build_call(altda_commitment: &AltDACommitment) -> Self {
+    pub fn build(altda_commitment: &AltDACommitment) -> Self {
         match &altda_commitment.versioned_cert {
             EigenDAVersionedCert::V2(cert) => {
                 CertVerifierCall::V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
@@ -71,7 +71,7 @@ impl CertVerifierCall {
             }
             EigenDAVersionedCert::V3(cert) => {
                 let v3_soltype_cert = cert.to_sol();
-                CertVerifierCall::Router(IEigenDACertVerifierRouter::checkDACertCall {
+                CertVerifierCall::Router(IEigenDACertVerifierBase::checkDACertCall {
                     abiEncodedCert: v3_soltype_cert.abi_encode().into(),
                 })
             }

@@ -96,6 +96,7 @@ sol! {
         BatchHeaderV2 batchHeaderV2;
         BlobInclusionInfo blobInclusionInfo;
         NonSignerStakesAndSignature nonSignerStakesAndSignature;
+        // signed quorum numbers contains all the quorum signed in a batch by the eigenda network
         bytes signedQuorumNumbers;
     }
 
@@ -118,7 +119,7 @@ sol! {
         ) external view returns (bool);
     }
 
-    interface IEigenDACertVerifierRouter {
+    interface IEigenDACertVerifierBase {
         function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status);
     }
 

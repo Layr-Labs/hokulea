@@ -9,12 +9,17 @@ default:
 # Build the workspace for all available targets
 alias b := build-all
 [group('build')]
-build-all: build-native build-client-for-asterisc
+build-all: build-native-all build-client-for-asterisc
+
+# Build for the all native target
+[group('build')]
+build-native-all *args='':
+  cargo build --workspace $@
 
 # Build for the native target
 [group('build')]
-build-native *args='':
-  cargo build --workspace $@
+build-native-host *args='':
+  cargo build --bin hokulea-host-bin
 
 # Build `hokulea-client` for the `asterisc` target.
 [group('build')]
