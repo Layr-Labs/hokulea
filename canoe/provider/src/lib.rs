@@ -57,8 +57,9 @@ pub enum CertVerifierCall {
     Router(IEigenDACertVerifierRouter::checkDACertCall),
 }
 
-/// convert eigenda cert type into its solidity type that works with solidity cert verifier interface
-pub fn build_call(altda_commitment: &AltDACommitment) -> CertVerifierCall {
+impl CertVerifierCall {
+    /// convert eigenda cert type into its solidity type that works with solidity cert verifier interface
+pub fn build_call(altda_commitment: &AltDACommitment) -> Self {
     match &altda_commitment.versioned_cert {
         EigenDAVersionedCert::V2(cert) => {
             CertVerifierCall::V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall {
@@ -75,4 +76,5 @@ pub fn build_call(altda_commitment: &AltDACommitment) -> CertVerifierCall {
             })
         }
     }
+}
 }

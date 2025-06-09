@@ -55,9 +55,9 @@ pub fn cert_verifier_router_address(chain_id: u64) -> Address {
     match chain_id {
         // mainnet
         1 => address!("0x61692e93b6B045c444e942A91EcD1527F23A3FB7"),
-        // Sepolia V2 cert verifier address
+        // Sepolia router cert verifier address
         11155111 => address!("0x58D2B844a894f00b7E6F9F492b9F43aD54Cd4429"),
-        // holesky V2 cert verifier address
+        // holesky router cert verifier address
         17000 => address!("0xDD735AFFe77A5ED5b21ED47219f95ED841f8Ffbd"),
         // kurtosis l1 chain id => mock contract address
         // This is the cert verifier that canoe provider and verifier are run against.
