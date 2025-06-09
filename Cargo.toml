@@ -162,7 +162,7 @@ canoe-sp1-cc-client  = { path = "./canoe/sp1-cc/client", default-features = fals
 sp1-sdk = "4.2.0"
 sp1-build = "4.2.0"
 sp1-zkvm = { version = "4.2.0" }
-sp1-lib = "4.2.0"
+sp1-lib = "4.2.1"
 sp1-core-executor = "4.2.0"
 sp1-prover = "4.2.0"
 
