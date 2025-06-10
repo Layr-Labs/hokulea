@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-provider = { version = "0.14" }
+alloy-provider = { version = "1.0" }
 url = {workspace = true }
 
 anyhow = { workspace = true }
