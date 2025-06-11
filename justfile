@@ -366,4 +366,47 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
     exit 1
   fi
 
+############################## E2E TEST #################################
+action-tests-single:
+  #!/bin/bash
+  echo "Setting up monorepo"
+  just monorepo
 
+  echo "Building contract artifacts for the monorepo"
+  (cd optimism/packages/contracts-bedrock && forge build)
+
+  docker run \
+    --name e2e-test-eigenda-proxy --rm -p 3100:3100 -d ghcr.io/layr-labs/eigenda-proxy:v1.8.1\
+    --port=3100 --memstore.enabled=true --storage.dispersal-backend=V2 --storage.backends-to-enable=V2\
+    --eigenda.v2.network=holesky_testnet --eigenda.v2.max-blob-length=16kiB
+
+  echo "Building host program for the native target"
+  just build-native-host --bin hokulea-host-bin
+  export HOKULEA_HOST_PATH="{{justfile_directory()}}/target/debug/hokulea-host-bin"
+
+  # GitHub actions patch - do not print logs.
+  # https://github.com/gotestyourself/gotestsum/blob/b4b13345fee56744d80016a20b760d3599c13504/testjson/format.go#L442-L444
+  echo "Running action tests for the client program on the native target"
+  cd optimism/op-e2e/actions/proofs && \
+    GITHUB_ACTIONS=false go test -run Test_ProgramAction_SimpleEmptyChainWithEigenDA
+  # stop and rm proxy
+  docker rm -f e2e-test-eigenda-proxy
+
+# Updates the pinned version of the monorepo
+update-monorepo:
+  #!/bin/bash
+  [ ! -d optimism ] && git clone https://github.com/Layr-Labs/optimism.git
+  cd optimism && \
+    git fetch origin && \
+    git checkout feat--take-2-make-ope2e-op-program-work-with-proxy && \
+    git rev-parse HEAD > ../.config/optimism
+
+# Clones the Optimism monorepo and checks out the pinned commit
+monorepo:
+  #!/bin/bash
+  ([ ! -d optimism ] && git clone https://github.com/Layr-Labs/optimism.git)
+  (cd optimism && git checkout feat--take-2-make-ope2e-op-program-work-with-proxy)
+
+# Remove the monorepo directory
+clean-monorepo:
+  rm -rf optimism/
