@@ -2,9 +2,8 @@
 
 extern crate alloc;
 use core::fmt::Debug;
-use kona_client::single::FaultProofProgramError;
 use kona_preimage::CommsClient;
-use kona_proof::{BootInfo, FlushableCache};
+use kona_proof::{errors::OracleProviderError, BootInfo, FlushableCache};
 
 use hokulea_proof::{
     canoe_verifier::CanoeVerifier, eigenda_blob_witness::EigenDABlobWitnessData,
@@ -23,7 +22,7 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
     mut witness: EigenDABlobWitnessData,
-) -> Result<PreloadedEigenDABlobProvider, FaultProofProgramError>
+) -> Result<PreloadedEigenDABlobProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
 {

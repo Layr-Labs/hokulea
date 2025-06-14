@@ -23,9 +23,6 @@ kona-client.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
 
-alloy-consensus.workspace = true
-alloy-rlp.workspace = true
-
 # Execution
 alloy-evm.workspace = true
 op-revm.workspace = true
