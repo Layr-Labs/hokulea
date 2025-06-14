@@ -4065,9 +4065,7 @@ dependencies = [
 name = "hokulea-example-preloader"
 version = "0.1.0"
 dependencies = [
- "alloy-consensus 1.0.9",
  "alloy-evm 0.10.0",
- "alloy-rlp",
  "anyhow",
  "canoe-provider",
  "canoe-sp1-cc-host",
@@ -4145,12 +4143,18 @@ dependencies = [
 name = "hokulea-witgen"
 version = "0.1.0"
 dependencies = [
+ "alloy-consensus 1.0.9",
  "alloy-primitives 1.2.0",
+ "alloy-rlp",
+ "anyhow",
  "async-trait",
+ "canoe-provider",
  "eigenda-cert",
  "hokulea-compute-proof",
  "hokulea-eigenda",
  "hokulea-proof",
+ "kona-preimage",
+ "kona-proof",
  "rust-kzg-bn254-primitives",
 ]
 
@@ -4159,7 +4163,6 @@ name = "hokulea-zkvm-verification"
 version = "0.1.0"
 dependencies = [
  "hokulea-proof",
- "kona-client",
  "kona-preimage",
  "kona-proof",
 ]

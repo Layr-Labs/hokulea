@@ -6,7 +6,7 @@ use hokulea_zkvm_verification::eigenda_witness_to_preloaded_provider;
 use kona_client::fpvm_evm::FpvmOpEvmFactory;
 use kona_client::single::FaultProofProgramError;
 use kona_preimage::{
-    BidirectionalChannel, CommsClient, HintWriter, HintWriterClient, OracleReader, PreimageKey,
+    BidirectionalChannel, CommsClient, HintWriter, HintWriterClient, OracleReader,
     PreimageOracleClient,
 };
 use kona_proof::CachingOracle;
@@ -20,9 +20,7 @@ use op_revm::OpSpecId;
 
 use kona_proof::{l1::OracleBlobProvider, BootInfo, FlushableCache};
 
-use alloy_consensus::Header;
-use alloy_rlp::Decodable;
-use canoe_provider::{CanoeInput, CanoeProvider};
+use canoe_provider::CanoeProvider;
 use hokulea_client::fp_client;
 use hokulea_proof::{
     canoe_verifier::CanoeVerifier, eigenda_blob_witness::EigenDABlobWitnessData,
@@ -106,7 +104,7 @@ pub async fn run_witgen_and_zk_verification<P, H, Evm>(
     evm_factory: Evm,
     canoe_provider: impl CanoeProvider,
     canoe_verifier: impl CanoeVerifier,
-) -> Result<(), FaultProofProgramError>
+) -> anyhow::Result<()>
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
@@ -132,7 +130,7 @@ pub async fn prepare_witness<O, Evm>(
     oracle: Arc<O>,
     evm_factory: Evm,
     canoe_provider: impl CanoeProvider,
-) -> Result<EigenDABlobWitnessData, FaultProofProgramError>
+) -> anyhow::Result<EigenDABlobWitnessData>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
@@ -144,36 +142,24 @@ where
 
     // get l1 header, does not have to come from oracle directly, it is for convenience
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
-    let header_rlp = oracle
-        .get(PreimageKey::new_keccak256(*boot_info.l1_head))
-        .await
-        .expect("get l1 header based on l1 head");
-    let l1_head_header = Header::decode(&mut header_rlp.as_slice()).expect("rlp decode l1 header");
-    let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
-    // generate canoe proof
-    wit.validity.iter_mut().for_each(|(_, cert_validity)| {
-        cert_validity.l1_head_block_hash = boot_info.l1_head;
-    });
+    let canoe_proofs = hokulea_witgen::from_boot_info_to_canoe_proof(
+        &boot_info,
+        &wit,
+        oracle.clone(),
+        canoe_provider,
+    )
+    .await?;
 
-    for (altda_commitment, cert_validity) in &mut wit.validity {
-        let canoe_input = CanoeInput {
-            altda_commitment: altda_commitment.clone(),
-            claimed_validity: cert_validity.claimed_validity,
-            l1_head_block_hash: boot_info.l1_head,
-            l1_head_block_number: l1_head_header.number,
-            l1_chain_id,
-        };
-
-        let canoe_proof = canoe_provider
-            .create_cert_validity_proof(canoe_input)
-            .await
-            .expect("must be able generate a canoe zk proof attesting eth state");
-
-        // canoe_proof is only useful to populate in the non zkvm execution mode
-        // for verification within zkVM, canoe_proof should be passed in to zkVM via its stdin
-        // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
-        // For Steel, use CanoeSteelProvider to generate such proof
+    // populate canoe proof for this example, in general canoe_proofs are used differently depending on
+    // where it is verified
+    // for verification within zkVM, canoe_proof should be passed in to zkVM via its stdin by a special
+    // function depending on zkVM framework. More see CanoeVerifier
+    // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
+    // For Steel, use CanoeSteelProvider to generate such proof
+    // For verification in non zkVM context, canoe_proofs can be passed as part of serialized bytes
+    // along with other
+    for ((_, cert_validity), canoe_proof) in wit.validity.iter_mut().zip(canoe_proofs.iter()) {
         let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
         cert_validity.canoe_proof = Some(canoe_proof_bytes);
     }
@@ -230,7 +216,7 @@ pub async fn run_within_zkvm<O, Evm>(
     evm_factory: Evm,
     canoe_verifier: impl CanoeVerifier,
     witness: EigenDABlobWitnessData,
-) -> Result<(), FaultProofProgramError>
+) -> anyhow::Result<()>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
