@@ -1,4 +1,5 @@
 use alloy_primitives::keccak256;
+use serde::{Deserialize, Serialize};
 
 use crate::cfg::SingleChainHostWithEigenDA;
 use anyhow::{anyhow, Result};
@@ -14,11 +15,19 @@ use kona_host::SharedKeyValueStore;
 use kona_host::{single::SingleChainHintHandler, HintHandler, OnlineHostBackendCfg};
 use kona_preimage::{PreimageKey, PreimageKeyType};
 use kona_proof::Hint;
-use tracing::trace;
+use tracing::{trace, info};
 
 /// The [HintHandler] for the [SingleChainHostWithEigenDA].
 #[derive(Debug, Clone, Copy)]
 pub struct SingleChainHintHandlerWithEigenDA;
+
+#[derive(Deserialize)]
+struct StatusCodeErr {
+    #[serde(rename = "StatusCode")]
+    pub status_code: isize,
+    #[serde(rename = "Msg")]
+    pub msg: String,
+}
 
 #[async_trait]
 impl HintHandler for SingleChainHintHandlerWithEigenDA {
@@ -74,13 +83,26 @@ pub async fn fetch_eigenda_hint(
         .map_err(|e| anyhow!("Failed to fetch eigenda blob: {e}"))?;
 
     // For now, failed at any non success
-    if !response.status().is_success() {
-        return Err(anyhow!(
-            "Failed to fetch eigenda blob, status {:?}",
-            response.error_for_status()
-        ));
-    }
-    let rollup_data = response.bytes().await.unwrap();
+    let mut is_status_code_2_error = false;
+
+    let rollup_data = match response.status().is_success(){
+        true => response.bytes().await.unwrap(),
+        false => {
+            if response.status().as_u16() != 418 as u16 {
+                return Err(anyhow!(
+                    "Failed to fetch eigenda blob, status {:?}",
+                    response.error_for_status()
+                ));
+            }
+
+            let status_code_err: StatusCodeErr = response.json().await.map_err(|e| anyhow!("Failed to deserialize 418 body: {e}"))?;
+            if status_code_err.status_code == 2 {
+                info!("hokulea host receives status_code 2 {}", status_code_err.msg);
+                is_status_code_2_error = true
+            }
+            vec![].into()
+        }
+    };
 
     // given the client sent the hint, the cert itself must have been deserialized and serialized,
     // so format of cert must be valid and the following try_into must not panic
@@ -114,7 +136,12 @@ pub async fn fetch_eigenda_hint(
     // pre-populate validity address. Currently, assume everything is correct
     // (ToDo bx), after proxy returns error code indicating cert is wrong, route
     // with appropriate response false
-    let claimed_validity = true;
+
+    let mut claimed_validity = true;
+    if is_status_code_2_error {
+        claimed_validity = false;
+    }
+    
     let mut validity_address = altda_commitment.digest_template();
 
     validity_address[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY;
@@ -123,6 +150,10 @@ pub async fn fetch_eigenda_hint(
         PreimageKey::new(*keccak256(validity_address), PreimageKeyType::GlobalGeneric).into(),
         vec![claimed_validity as u8],
     )?;
+
+    if is_status_code_2_error {
+        return Ok(())
+    }
 
     // pre-populate eigenda blob field element by field element
     let blob_length_fe = altda_commitment.get_num_field_element();
