@@ -23,7 +23,8 @@ where
     let header_rlp = oracle
         .get(PreimageKey::new_keccak256(*boot_info.l1_head))
         .await?;
-    let l1_head_header = Header::decode(&mut header_rlp.as_slice())?;
+    let l1_head_header = Header::decode(&mut header_rlp.as_slice())
+        .map_err(|_| anyhow::Error::msg("cannot rlp decode header in canoe proof generation"))?;
     let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
     let mut wit = witness.clone();

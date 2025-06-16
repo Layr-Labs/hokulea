@@ -7,7 +7,7 @@ edition = "2021"
 [dependencies]
 alloy-primitives.workspace = true
 alloy-consensus.workspace = true
-alloy-rlp = { workspace = true, features = ["std"] }
+alloy-rlp = { workspace = true }
 
 kona-proof.workspace = true
 kona-preimage.workspace = true
