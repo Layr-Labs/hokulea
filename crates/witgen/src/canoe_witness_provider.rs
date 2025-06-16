@@ -8,7 +8,7 @@ use kona_proof::{BootInfo, FlushableCache};
 use std::sync::Arc;
 
 /// A helper function to create canoe proof by the provided canoe provider.
-/// The function relies on data stored in the oracle, for l1_head, l1_head_number
+/// The function relies on data stored in the oracle, for l1_head, l1_head_header.number
 /// and chain_id.
 pub async fn from_boot_info_to_canoe_proof<P, O>(
     boot_info: &BootInfo,
@@ -22,9 +22,8 @@ where
 {
     let header_rlp = oracle
         .get(PreimageKey::new_keccak256(*boot_info.l1_head))
-        .await
-        .expect("get l1 header based on l1 head");
-    let l1_head_header = Header::decode(&mut header_rlp.as_slice()).expect("rlp decode l1 header");
+        .await?;
+    let l1_head_header = Header::decode(&mut header_rlp.as_slice())?;
     let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
     let mut wit = witness.clone();
@@ -47,8 +46,7 @@ where
 
         let canoe_proof = canoe_provider
             .create_cert_validity_proof(canoe_input)
-            .await
-            .expect("must be able generate a canoe zk proof attesting eth state");
+            .await?;
         canoe_proofs.push(canoe_proof);
     }
     Ok(canoe_proofs)
