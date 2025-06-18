@@ -146,6 +146,12 @@ where
         for data in &calldata_list {
             // if data is op channel frame
             if data[0] == DERIVATION_VERSION_0 {
+                info!(
+                    target = "eth-datasource",
+                    stage = "hokulea_load_blob",
+                    "use ethda at l1 block number {}",
+                    block_ref.number
+                );
                 self_contained_data.push(EigenDAOrCalldata::Calldata(data.clone()));
             } else {
                 // retrieve all data from eigenda

@@ -39,7 +39,7 @@ where
     witness.recency.iter_mut().for_each(|(_, recency)| {
         // ToDo (bx) fix the hack at eigenda-proxy. For now + 100_000_000 to avoid recency failure
         // currently, proxy only returns a rbn < 32
-        *recency = boot_info.rollup_config.seq_window_size + 100_000_000;
+        *recency = boot_info.rollup_config.seq_window_size + 100_000_000
     });
 
     Ok(PreloadedEigenDABlobProvider::from_witness(
