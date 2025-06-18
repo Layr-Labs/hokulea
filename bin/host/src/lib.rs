@@ -4,6 +4,8 @@ pub mod cfg;
 
 pub mod handler;
 
+pub mod status_code;
+
 use tracing_subscriber::{filter::LevelFilter, prelude::*, EnvFilter};
 pub fn init_tracing_subscriber(verbosity_level: u8) -> anyhow::Result<(), anyhow::Error> {
     // Convert verbosity_level to a LevelFilter

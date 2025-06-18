@@ -23,6 +23,7 @@ alloy-primitives = { workspace = true, features = ["serde"] }
 
 # General
 anyhow.workspace = true
+thiserror.workspace = true
 tracing.workspace = true
 reqwest.workspace = true
 async-trait.workspace = true

@@ -149,7 +149,8 @@ where
                 info!(
                     target = "eth-datasource",
                     stage = "hokulea_load_blob",
-                    "use ethda at l1 block number {}", block_ref.number
+                    "use ethda at l1 block number {}",
+                    block_ref.number
                 );
                 self_contained_data.push(EigenDAOrCalldata::Calldata(data.clone()));
             } else {
