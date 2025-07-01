@@ -69,7 +69,7 @@ For `N` DA certs, protocols can aggregate them together into a single aggregated
 
 ### 4.3 Blob Validity Inside a zkVM (verified by Hokulea)
 
-In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. After this EFL binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
+In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. After this ELF binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
 While executing, the client validates each canoe certificate by:
 
 Expecting a proof P for every EigenDA certificate encountered.
