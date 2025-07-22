@@ -58,13 +58,14 @@ optimism_package:
         cmd:
           - --addr=0.0.0.0
           - --port=3100
-          - --storage.backends-to-enable=V1,V2
+          - --storage.backends-to-enable=V2
           - --storage.dispersal-backend=v2
           - --api-enabled=admin
           - --eigenda.v2.max-blob-length=1MiB
           - --memstore.enabled
           - --memstore.expiration=180m
-        image: ghcr.io/layr-labs/eigenda-proxy:v1.7.0
+          - --eigenda.v2.network=holesky_testnet # memstore disregard the network, but it simplifies the configuration 
+        image: ghcr.io/layr-labs/eigenda-proxy:0.9.1-pre.1
       network_params:
         fjord_time_offset: 0
         granite_time_offset: 0
