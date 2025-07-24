@@ -57,6 +57,8 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 
 /// Fetch the preimages for the given hint and insert then into the key-value store.
 /// We insert the recency_window, cert_validity, and blob_data.
+/// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
+/// https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135
 pub async fn fetch_eigenda_hint(
     hint: Hint<<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::HintType>,
     cfg: &SingleChainHostWithEigenDA,
@@ -68,19 +70,17 @@ pub async fn fetch_eigenda_hint(
     trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
     // Convert commitment bytes to AltDACommitment
-    let altda_commitment: AltDACommitment = altda_commitment_bytes
-        .as_ref()
-        .try_into()
-        .expect("can't parse into AltDACommitment: hokulea client should have discarded this input");
+    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into().expect(
+        "can't parse into AltDACommitment: hokulea client should have discarded this input",
+    );
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
     // Fetch blob data and process response
-    let (is_valid, is_recent, rollup_data) =
-        process_eigenda_response(providers, &altda_commitment_bytes).await?;
+    let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
     // If cert is not recent, log and return early
-    if !is_recent {
+    if !derivation_stage.is_recent_cert {
         info!(
             target = "hokulea-host",
             "discard a cert for not being recent {}",
@@ -90,10 +90,15 @@ pub async fn fetch_eigenda_hint(
     }
 
     // Write validity status to key-value store
-    store_cert_validity(kv.clone(), &altda_commitment, is_valid).await?;
+    store_cert_validity(
+        kv.clone(),
+        &altda_commitment,
+        derivation_stage.is_valid_cert,
+    )
+    .await?;
 
     // If cert is invalid, log and return early
-    if !is_valid {
+    if !derivation_stage.is_valid_cert {
         info!(
             target = "hokulea-host",
             "discard an invalid cert {}",
@@ -103,13 +108,13 @@ pub async fn fetch_eigenda_hint(
     }
 
     // Store blob data field-by-field in key-value store
-    store_blob_data(kv.clone(), &altda_commitment, rollup_data).await?;
+    store_blob_data(kv.clone(), &altda_commitment, derivation_stage.rollup_data).await?;
 
     Ok(())
 }
 
 /// Store recency window size in key-value store
-async fn set_recency_window(
+async fn store_recency_window(
     kv: SharedKeyValueStore,
     altda_commitment: &AltDACommitment,
     cfg: &SingleChainHostWithEigenDA,
@@ -138,11 +143,24 @@ async fn set_recency_window(
     Ok(())
 }
 
+/// Currently Hokulea hosts relies on Eigenda-proxy for preimage retrieval.
+/// It relies on the [DerivationError] status code returned by the proxy to decide when to stop retrieving
+/// data and return early.  
+#[derive(Debug, Clone)]
+pub struct ProxyDerivationStage {
+    // proxy derivation determines cert is recent
+    pub is_recent_cert: bool,
+    // proxy derivation determines cert is valid
+    pub is_valid_cert: bool,
+    // ToDo should have been encoded_payload, but until the endpoitn of proxy is implemented
+    pub rollup_data: Vec<u8>,
+}
+
 /// Process response from eigenda network
-async fn process_eigenda_response(
+async fn fetch_data_from_proxy(
     providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
     altda_commitment_bytes: &Bytes,
-) -> Result<(bool, bool, Vec<u8>)> {
+) -> Result<ProxyDerivationStage> {
     // Fetch the blob from the eigenda network
     let response = providers
         .eigenda_blob_provider
@@ -150,8 +168,8 @@ async fn process_eigenda_response(
         .await
         .map_err(|e| anyhow!("failed to fetch eigenda blob: {e}"))?;
 
-    let mut is_valid = true;
-    let mut is_recent = true;
+    let mut is_valid_cert = true;
+    let mut is_recent_cert = true;
     let mut rollup_data = vec![];
 
     // Handle response based on status code
@@ -174,8 +192,8 @@ async fn process_eigenda_response(
 
         match status_code.into() {
             HostHandlerError::HokuleaPreimageError(c) => match c {
-                HokuleaPreimageError::InvalidCert => is_valid = false,
-                HokuleaPreimageError::NotRecentCert => is_recent = false,
+                HokuleaPreimageError::InvalidCert => is_valid_cert = false,
+                HokuleaPreimageError::NotRecentCert => is_recent_cert = false,
             },
             HostHandlerError::HokuleaBlobDecodingError(e)
             | HostHandlerError::IllogicalStatusCodeError(e)
@@ -192,7 +210,11 @@ async fn process_eigenda_response(
             .into();
     }
 
-    Ok((is_valid, is_recent, rollup_data))
+    Ok(ProxyDerivationStage {
+        is_recent_cert,
+        is_valid_cert,
+        rollup_data,
+    })
 }
 
 /// Store certificate validity in key-value store

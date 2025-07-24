@@ -65,7 +65,7 @@ optimism_package:
           - --memstore.enabled
           - --memstore.expiration=180m
           - --eigenda.v2.network=holesky_testnet # memstore disregard the network, but it simplifies the configuration 
-        image: ghcr.io/layr-labs/eigenda-proxy:latest # ToDo update image after a release that contains the derivation error code
+        image: ghcr.io/layr-labs/eigenda-proxy:latest
       network_params:
         fjord_time_offset: 0
         granite_time_offset: 0

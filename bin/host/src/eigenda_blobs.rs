@@ -27,7 +27,7 @@ impl OnlineEigenDABlobProvider {
         &self,
         cert: &Bytes,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        let url = format!("xx{}/{}/{}", self.base, GET_METHOD, cert);
+        let url = format!("{}/{}/{}", self.base, GET_METHOD, cert);
 
         self.inner.get(url).send().await
     }
