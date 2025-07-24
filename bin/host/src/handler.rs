@@ -55,7 +55,8 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
     }
 }
 
-/// Fetch the preimage for the given hint and insert it into the key-value store.
+/// Fetch the preimages for the given hint and insert then into the key-value store.
+/// We insert the recency_window, cert_validity, and blob_data.
 pub async fn fetch_eigenda_hint(
     hint: Hint<<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::HintType>,
     cfg: &SingleChainHostWithEigenDA,
@@ -70,7 +71,7 @@ pub async fn fetch_eigenda_hint(
     let altda_commitment: AltDACommitment = altda_commitment_bytes
         .as_ref()
         .try_into()
-        .expect("the hokulea client should have checked the AltDACommitment conversion");
+        .expect("can't parse into AltDACommitment: hokulea client should have discarded this input");
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
