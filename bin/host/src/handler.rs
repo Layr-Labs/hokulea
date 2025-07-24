@@ -58,7 +58,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 /// Fetch the preimages for the given hint and insert then into the key-value store.
 /// We insert the recency_window, cert_validity, and blob_data.
 /// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
-/// https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135
+/// <https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135>
 pub async fn fetch_eigenda_hint(
     hint: Hint<<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::HintType>,
     cfg: &SingleChainHostWithEigenDA,
