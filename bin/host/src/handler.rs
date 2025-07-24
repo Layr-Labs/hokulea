@@ -72,8 +72,7 @@ pub async fn fetch_eigenda_hint(
         .try_into()
         .expect("the hokulea client should have checked the AltDACommitment conversion");
 
-    // Store recency window size based on sequencing window size
-    set_recency_window(kv.clone(), &altda_commitment, cfg).await?;
+    store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
     // Fetch blob data and process response
     let (is_valid, is_recent, rollup_data) =
@@ -122,6 +121,9 @@ async fn set_recency_window(
         .read_rollup_config()
         .map_err(|e| anyhow!("should have been able to read rollup config {e}"))?;
 
+    // We use the sequencer_window as the recency_window.
+    // See https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation
+    // for the reasoning behind this choice.
     let recency = rollup_config.seq_window_size;
     let recency_be_bytes = recency.to_be_bytes();
     let mut recency_address = altda_commitment.digest_template();
