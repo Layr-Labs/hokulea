@@ -4,13 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-provider = { version = "0.14" }
 url = {workspace = true }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 canoe-steel-methods = { workspace = true }
-risc0-steel = { workspace = true, features = ["host"] }
+risc0-steel = { workspace = true, features = ["host", "default"] }
 risc0-zkvm = { workspace = true, features = ["client", "bonsai"] }
 tokio = { workspace = true }
 canoe-provider.workspace = true

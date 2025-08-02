@@ -20,5 +20,5 @@ pragma solidity ^0.8.20;
 
 library Elf {
     string public constant CERT_VERIFICATION_PATH =
-        "/Users/bxue/Documents/eigenda-integration/hokulea/target/riscv-guest/canoe-steel-methods/cert-verification-guests/riscv32im-risc0-zkvm-elf/release/cert_verification.bin";
+        "/Users/ramikhalil/risczero/hokulea/target/riscv-guest/canoe-steel-methods/cert-verification-guests/riscv32im-risc0-zkvm-elf/docker/cert_verification.bin";
 }

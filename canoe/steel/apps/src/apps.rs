@@ -11,7 +11,6 @@ use risc0_steel::{
 };
 use tokio::task;
 
-use alloy_provider::ProviderBuilder;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 
 use canoe_steel_methods::CERT_VERIFICATION_ELF;
@@ -21,6 +20,7 @@ use async_trait::async_trait;
 use url::Url;
 
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
+use risc0_steel::alloy::providers::ProviderBuilder;
 use risc0_zkvm;
 
 use hokulea_proof::canoe_verifier::cert_verifier_address;
@@ -48,20 +48,21 @@ impl CanoeProvider for CanoeSteelProvider {
         let eth_rpc_url = Url::from_str(&self.eth_rpc_url).unwrap();
 
         // Create an alloy provider for that private key and URL.
-        let provider = ProviderBuilder::new().on_http(eth_rpc_url); //.await?;
+        let provider = ProviderBuilder::new().connect_http(eth_rpc_url); //.await?;
 
-        let builder = EthEvmEnv::builder()
-            .provider(provider.clone())
-            .block_number_or_tag(BlockNumberOrTag::Number(canoe_input.l1_head_block_number));
-
-        let mut env = builder.build().await?;
-
-        env = match canoe_input.l1_chain_id {
-            1 => env.with_chain_spec(&ETH_MAINNET_CHAIN_SPEC),
-            11155111 => env.with_chain_spec(&ETH_SEPOLIA_CHAIN_SPEC),
-            17000 => env.with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC),
-            _ => env,
+        let chain_spec = match canoe_input.l1_chain_id {
+            1 => &ETH_MAINNET_CHAIN_SPEC,
+            11155111 => &ETH_SEPOLIA_CHAIN_SPEC,
+            17000 => &ETH_HOLESKY_CHAIN_SPEC,
+            _ => unimplemented!(),
         };
+
+        let mut env = EthEvmEnv::builder()
+            .chain_spec(chain_spec)
+            .provider(provider.clone())
+            .block_number_or_tag(BlockNumberOrTag::Number(canoe_input.l1_head_block_number))
+            .build()
+            .await?;
 
         let verifier_address =
             cert_verifier_address(canoe_input.l1_chain_id, &canoe_input.altda_commitment);
