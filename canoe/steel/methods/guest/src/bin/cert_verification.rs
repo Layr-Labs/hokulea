@@ -40,10 +40,10 @@ fn main() {
     // to specify the chain configuration. It checks that the state matches the state root in the
     // header provided in the input.
     let env = match l1_chain_id {
-        1 => input.into_env().with_chain_spec(&ETH_MAINNET_CHAIN_SPEC),
-        11155111 => input.into_env().with_chain_spec(&ETH_SEPOLIA_CHAIN_SPEC),
-        17000 => input.into_env().with_chain_spec(&ETH_HOLESKY_CHAIN_SPEC),
-        _ => input.into_env(),
+        1 => input.into_env(&ETH_MAINNET_CHAIN_SPEC),
+        11155111 => input.into_env(&ETH_SEPOLIA_CHAIN_SPEC),
+        17000 => input.into_env(&ETH_HOLESKY_CHAIN_SPEC),
+        _ => unimplemented!(),
     }; 
 
     // Prepare the function call and call the function

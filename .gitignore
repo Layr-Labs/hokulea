@@ -10,3 +10,5 @@ state.bin.gz
 .run.*.env
 canoe/steel/methods/contracts/
 canoe/sp1-cc/elf/
+.DS_store
+.idea
