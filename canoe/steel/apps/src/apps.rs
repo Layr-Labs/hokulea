@@ -21,6 +21,7 @@ use url::Url;
 
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use risc0_steel::alloy::providers::ProviderBuilder;
+use risc0_steel::ethereum::EthChainSpec;
 use risc0_zkvm;
 
 use hokulea_proof::canoe_verifier::cert_verifier_address;
@@ -51,14 +52,14 @@ impl CanoeProvider for CanoeSteelProvider {
         let provider = ProviderBuilder::new().connect_http(eth_rpc_url); //.await?;
 
         let chain_spec = match canoe_input.l1_chain_id {
-            1 => &ETH_MAINNET_CHAIN_SPEC,
-            11155111 => &ETH_SEPOLIA_CHAIN_SPEC,
-            17000 => &ETH_HOLESKY_CHAIN_SPEC,
-            _ => unimplemented!(),
+            1 => ETH_MAINNET_CHAIN_SPEC.clone(),
+            11155111 => ETH_SEPOLIA_CHAIN_SPEC.clone(),
+            17000 => ETH_HOLESKY_CHAIN_SPEC.clone(),
+            _ => EthChainSpec::new_single(canoe_input.l1_chain_id, Default::default()),
         };
 
         let mut env = EthEvmEnv::builder()
-            .chain_spec(chain_spec)
+            .chain_spec(&chain_spec)
             .provider(provider.clone())
             .block_number_or_tag(BlockNumberOrTag::Number(canoe_input.l1_head_block_number))
             .build()
