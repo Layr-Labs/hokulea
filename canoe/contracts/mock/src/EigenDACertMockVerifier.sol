@@ -63,4 +63,10 @@ contract EigenDACertMockVerifier {
     ) external view returns (bool) {
         return true;
     }
+
+    function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status) {
+        // status code 1 translate to success
+        // https://github.com/Layr-Labs/eigenda/blob/97ca723329e5baccee60120a7c1b671e7a522b63/contracts/src/integrations/cert/libraries/EigenDACertVerificationLib.sol#L48
+        return 1;
+    }
 }
