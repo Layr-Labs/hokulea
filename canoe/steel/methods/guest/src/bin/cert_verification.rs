@@ -21,6 +21,7 @@ use risc0_steel::{
     ethereum::{EthEvmInput, ETH_SEPOLIA_CHAIN_SPEC, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC},    
     Contract,
 };
+use risc0_steel::ethereum::EthChainSpec;
 use risc0_zkvm::guest::env;
 use canoe_bindings::{
     Journal, StatusCode
@@ -43,7 +44,7 @@ fn main() {
         1 => input.into_env(&ETH_MAINNET_CHAIN_SPEC),
         11155111 => input.into_env(&ETH_SEPOLIA_CHAIN_SPEC),
         17000 => input.into_env(&ETH_HOLESKY_CHAIN_SPEC),
-        _ => unimplemented!(),
+        _ => input.into_env(&EthChainSpec::new_single(l1_chain_id, Default::default())),
     }; 
 
     // Prepare the function call and call the function
