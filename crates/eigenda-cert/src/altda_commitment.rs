@@ -218,4 +218,12 @@ impl AltDACommitment {
         let rlp_bytes = self.to_rlp_bytes();
         keccak256(&rlp_bytes)
     }
+
+    /// Get Cert Version string
+    pub fn cert_version_str(&self) -> &'static str {
+        match self.versioned_cert {
+            EigenDAVersionedCert::V2(_) => "V2",
+            EigenDAVersionedCert::V3(_) => "V3",
+        }
+    }
 }

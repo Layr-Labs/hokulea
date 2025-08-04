@@ -5,7 +5,6 @@ use alloy_primitives::Address;
 use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 use canoe_bindings::Journal;
 use canoe_provider::{CanoeInput, CertVerifierCall};
-use reth_chainspec::ChainSpec;
 use sp1_cc_client_executor::{io::EvmSketchInput, ClientExecutor, ContractInput};
 
 pub fn main() {
@@ -19,7 +18,7 @@ pub fn main() {
 
     // Initialize the client executor with the state sketch.
     // This step also validates all of the storage against state root provided by the host
-    let executor = ClientExecutor::new(&state_sketch).unwrap();
+    let executor = ClientExecutor::eth(&state_sketch).unwrap();
 
     // TODO, are there no better way to reduce this duplicate code.
     // known constraint, new_call takes SolCall trait, which is Sized so not dyn trait
@@ -41,17 +40,14 @@ pub fn main() {
 
     let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
-    let chain_sepc: ChainSpec = executor
-        .genesis
-        .try_into()
-        .expect("convert sp1 genesis into chain spec");
+    let chain_id = executor.chain_spec.chain().id();
 
     let journal = Journal {
         certVerifierAddress: verifier_address,
         input: rlp_bytes.into(),
         blockhash: public_vals.anchorHash,
         output: returns,
-        l1ChainId: chain_sepc.chain.id(),
+        l1ChainId: chain_id,
     };
 
     // Commit the abi-encoded output.

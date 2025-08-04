@@ -75,7 +75,8 @@ async fn get_sp1_cc_proof(
     eth_rpc_url: &str,
 ) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
     info!(
-        "begin to generate a sp1-cc proof invoked at l1 bn {}",
+        "begin to generate a sp1-cc proof altda commitment {} anchored at l1 bn {}",
+        canoe_input.altda_commitment.to_digest(),
         canoe_input.l1_head_block_number
     );
     let start = Instant::now();
@@ -118,7 +119,7 @@ async fn get_sp1_cc_proof(
     };
 
     let returns_bytes = sketch
-        .call(contract_input)
+        .call_raw(&contract_input)
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
