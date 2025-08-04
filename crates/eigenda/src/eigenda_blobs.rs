@@ -36,6 +36,8 @@ where
     ) -> Result<EigenDABlobData, HokuleaErrorKind> {
         let eigenda_commitment = self.parse(calldata)?;
 
+        info!(target: "eigenda_blob_source", "parsed an altda commitment of version {}", eigenda_commitment.cert_version_str());
+
         // get recency window size, discard the old cert if necessary
         match self
             .eigenda_fetcher
@@ -46,6 +48,7 @@ where
                 // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
                 if l1_inclusion_bn > eigenda_commitment.get_rbn() + recency {
                     warn!(
+                        target: "eigenda_blob_source",
                         "da cert is not recent enough l1_inclusion_bn:{} rbn:{} recency:{}",
                         l1_inclusion_bn,
                         eigenda_commitment.get_rbn(),
@@ -82,13 +85,13 @@ where
     fn parse(&mut self, data: &Bytes) -> Result<AltDACommitment, HokuleaStatelessError> {
         if data.len() <= 2 {
             // recurse if data is mailformed
-            warn!(target: "blob_source", "Failed to decode blob data, skipping");
+            warn!(target: "eigenda_blob_source", "Failed to decode blob data, skipping");
             return Err(HokuleaStatelessError::InsufficientEigenDACertLength);
         }
         let altda_commitment: AltDACommitment = match data[1..].try_into() {
             Ok(a) => a,
             Err(e) => {
-                error!("failed to parse altda commitment {}", e);
+                error!(target: "eigenda_blob_source", "failed to parse altda commitment {}", e);
                 return Err(HokuleaStatelessError::ParseError(e));
             }
         };

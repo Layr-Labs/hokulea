@@ -80,8 +80,9 @@ async fn get_sp1_cc_proof(
     }
 
     info!(
-        "begin to generate a sp1-cc proof invoked at l1 bn {}",
-        canoe_inputs[0].l1_head_block_number
+        "begin to generate a sp1-cc proof altda commitment {} anchored at l1 bn {}",
+        canoe_input.altda_commitment.to_digest(),
+        canoe_input.l1_head_block_number
     );
     let start = Instant::now();
 

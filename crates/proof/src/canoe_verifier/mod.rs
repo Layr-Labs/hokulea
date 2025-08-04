@@ -69,7 +69,7 @@ pub fn cert_verifier_router_address(chain_id: u64) -> Address {
         // deployed to generate the address and test functionality.
         // if user uses a different private key, or nonce for deployment are different from
         // the default, the address below would change
-        3151908 => address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051"),
+        3151908 => address!("0x422A3492e218383753D8006C7Bfa97815B44373F"),
         chain_id => panic!("chain id {} is unknown", chain_id),
     }
 }
