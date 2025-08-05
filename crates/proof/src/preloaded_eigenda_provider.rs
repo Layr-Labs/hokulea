@@ -5,7 +5,7 @@ use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::EigenDABlobProvider;
+use hokulea_eigenda::EigenDAPreimageProvider;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 
@@ -15,40 +15,40 @@ use alloc::vec::Vec;
 
 use crate::canoe_verifier::CanoeVerifier;
 
-/// PreloadedEigenDABlobProvider converts EigenDABlobWitnessData into preimage data
-/// can be used to implement the EigenDABlobProvider trait, that contains
+/// PreloadedEigenDAPreimageProvider converts EigenDABlobWitnessData into preimage data
+/// can be used to implement the EigenDAPreimageProvider trait, that contains
 ///   get_validity
-///   get_blob
+///   get_encoded_payload
 ///
-/// For each function above, internally PreloadedEigenDABlobProvider maintain a separate
+/// For each function above, internally PreloadedEigenDAPreimageProvider maintain a separate
 /// struct in the form of a tuple (DA cert, returned data by the interface).
 ///
-/// This allows a safety checks that PreloadedEigenDABlobProvider
+/// This allows a safety checks that PreloadedEigenDAPreimageProvider
 /// indeed provides the response back to the correct DA certs
 ///
 /// At the conversion side (i.e from_witness), we only have to maintain the correctness
 /// from (DA cert, returned data by the interface).
 ///
-/// Note it is possible, the lenght of validity_entries is greater than len of blob_entries
+/// Note it is possible, the lenght of validity_entries is greater than len of encoded_payload_entries
 /// due to possible invalid cert, that does not require preimage to populate a blob
 #[derive(Clone, Debug, Default)]
-pub struct PreloadedEigenDABlobProvider {
+pub struct PreloadedEigenDAPreimageProvider {
     /// The tuple contains a mapping from DAcert to recency window size
     /// Although currently, recency window does not change across EigenDACertV2
     /// But to be future compatible, we anchor recency window size by rbn from EigenDACertV2
     pub recency_entries: Vec<(AltDACommitment, u64)>,
     /// The tuple contains a mapping from DAcert to cert validity
     pub validity_entries: Vec<(AltDACommitment, bool)>,
-    /// The tuple contains a mapping from DAcert to Eigenda blob
-    pub blob_entries: Vec<(AltDACommitment, Blob)>,
+    /// The tuple contains a mapping from DAcert to encoded payload
+    pub encoded_payload_entries: Vec<(AltDACommitment, Blob)>,
 }
 
-impl PreloadedEigenDABlobProvider {
-    /// Convert EigenDABlobWitnessData into the PreloadedEigenDABlobProvider
+impl PreloadedEigenDAPreimageProvider {
+    /// Convert EigenDABlobWitnessData into the PreloadedEigenDAPreimageProvider
     pub fn from_witness(
         value: EigenDABlobWitnessData,
         canoe_verifier: impl CanoeVerifier,
-    ) -> PreloadedEigenDABlobProvider {
+    ) -> PreloadedEigenDAPreimageProvider {
         // check number of element invariants
         assert!(value.recency.len() >= value.validity.len());
         assert!(value.validity.len() >= value.blob.len());
@@ -73,7 +73,7 @@ impl PreloadedEigenDABlobProvider {
         }
 
         // check all blobs correponds to cert are correct
-        let mut blob_entries = vec![];
+        let mut encoded_payload_entries = vec![];
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
@@ -85,31 +85,31 @@ impl PreloadedEigenDABlobProvider {
             commitments.push(cert.get_kzg_commitment());
 
             // populate entries ahead of time, if something is invalid, batch_verify will abort
-            blob_entries.push((cert.clone(), Blob::new(&eigenda_blobs)));
+            encoded_payload_entries.push((cert.clone(), Blob::new(&eigenda_blobs)));
         }
         // check if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));
         // invariant check
         assert!(recency_entries.len() >= validity_entries.len());
-        assert!(validity_entries.len() >= blob_entries.len());
+        assert!(validity_entries.len() >= encoded_payload_entries.len());
 
         // The pop methods is used by the Preloaded provider when getting the next data
         // reverse there, so that what is being popped is the early data
         validity_entries.reverse();
-        blob_entries.reverse();
+        encoded_payload_entries.reverse();
         recency_entries.reverse();
 
-        PreloadedEigenDABlobProvider {
+        PreloadedEigenDAPreimageProvider {
             recency_entries,
             validity_entries,
-            blob_entries,
+            encoded_payload_entries,
         }
     }
 }
 
 #[async_trait]
-impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
-    // TODO investigate if create a speical error type EigenDABlobProviderError
+impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
+    // TODO investigate if create a speical error type EigenDAPreimageProviderError
     type Error = HokuleaOracleProviderError;
 
     async fn get_recency_window(
@@ -142,10 +142,10 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
 
     /// Fetches a blob for V2 using preloaded data
     /// Return an error if cert does not match the immeditate next item
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
-        let (stored_altda_commitment, eigenda_blob) = self.blob_entries.pop().unwrap();
+    async fn get_encoded_payload(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
+        let (stored_altda_commitment, encoded_payload) = self.encoded_payload_entries.pop().unwrap();
         if stored_altda_commitment == *altda_commitment {
-            Ok(eigenda_blob)
+            Ok(encoded_payload)
         } else {
             // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
             panic!("preloaded eigenda blob provider does not match altda commitment requested from derivation pipeline

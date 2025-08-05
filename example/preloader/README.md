@@ -64,7 +64,7 @@ At the high level, a zkVM secure integration uses hokulea+kona derivation twice.
 
 Let's look the first run in detail. We mentioned briefly about hokulea+kona derivation, it converts information from L1 and blob from EigenDA into transactions.
 In the diagram below, we represent this logic with the name fp_client (fault proof client). A nice feature about kona framework is that kona accepts all 
-types of data source implementations as long as they satisfy the data source trait, in our case, `EigenDABlobProvider`. For the witness generation, we are 
+types of data source implementations as long as they satisfy the data source trait, in our case, `EigenDAPreimageProvider`. For the witness generation, we are 
 interested in learning all `N` the DA certs derived from L1, and `N` blobs for each cert, an `N` kzg proof attesting blob is binding to kzg commitment within the cert.
 
 Hokulea provides an implementation called `OracleEigenDAWitnessProvider` that is not only used by the fp_client, it can also returns an organized data structure
@@ -87,13 +87,13 @@ In the first pass, the fault proof client is allowed to connect to a host with i
 - kzg proof : deterministically generated based on the eigenda blob above.
 - cert validity proof : contains a canoe proof and necessary information to verify the canoe proof. More see [canoe](../../canoe/).
 
-## PreloadedEigenDABlobProvider
+## PreloadedEigenDAPreimageProvider
 
-A PreloadedEigenDABlobProvider is a data structure that implements the `EigenDABlobProvider` trait. It can be used by kona as the eigenda data source for the derivation. 
-The internal of the PreloadedEigenDABlobProvider is a queue of eigenda blobs. Whenever it is called it pops out an eigenda blob. This replaces the role of the host
+A PreloadedEigenDAPreimageProvider is a data structure that implements the `EigenDAPreimageProvider` trait. It can be used by kona as the eigenda data source for the derivation. 
+The internal of the PreloadedEigenDAPreimageProvider is a queue of eigenda blobs. Whenever it is called it pops out an eigenda blob. This replaces the role of the host
 mentioned in the first pass. 
 
-It is crucial to make sure all the blob in the PreloadedEigenDABlobProvider is correct. i.e 
+It is crucial to make sure all the blob in the PreloadedEigenDAPreimageProvider is correct. i.e 
 - eigenda cert itself is valid, verified by cert validity proof
 - kzg commitment within the eigenda cert is binding to the eigenda blob
 
@@ -101,7 +101,7 @@ It is crucial to make sure all the blob in the PreloadedEigenDABlobProvider is c
     <img src="../../assets/zkVM-executing-derivation.png"/>
 </div>
 
-Hokulea defines a transformation function to convert `EigenDABlobWitnessData` into `PreloadedEigenDABlobProvider`, and the transformation contains the two all the 
+Hokulea defines a transformation function to convert `EigenDABlobWitnessData` into `PreloadedEigenDAPreimageProvider`, and the transformation contains the two all the 
 necessary checks. It is crucial that the transformation itself is executed within the zkVM, such that there is a validity proof guarantee the eigenda blob are securely
 valid and binding to the kzg commitment.
 

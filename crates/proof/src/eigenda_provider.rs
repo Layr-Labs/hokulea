@@ -4,7 +4,7 @@ use alloy_primitives::keccak256;
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
-    EigenDABlobProvider, BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
+    EigenDAPreimageProvider, BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
     RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
@@ -18,12 +18,12 @@ use alloc::vec::Vec;
 
 /// The oracle-backed EigenDA provider for the client program.
 #[derive(Debug, Clone)]
-pub struct OracleEigenDAProvider<T: CommsClient> {
+pub struct OracleEigenDAPreimageProvider<T: CommsClient> {
     /// The preimage oracle client.
     oracle: Arc<T>,
 }
 
-impl<T: CommsClient> OracleEigenDAProvider<T> {
+impl<T: CommsClient> OracleEigenDAPreimageProvider<T> {
     /// Constructs a new oracle-backed EigenDA provider.
     pub fn new(oracle: Arc<T>) -> Self {
         Self { oracle }
@@ -31,7 +31,7 @@ impl<T: CommsClient> OracleEigenDAProvider<T> {
 }
 
 #[async_trait]
-impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider<T> {
+impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPreimageProvider<T> {
     type Error = HokuleaOracleProviderError;
 
     /// Fetch preimage about the recency window
@@ -112,8 +112,8 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
         }
     }
 
-    /// Get V1 blobs. TODO remove in the future if not needed for testing
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
+    /// Get encoded payload
+    async fn get_encoded_payload(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
         let altda_commitment_bytes = altda_commitment.to_rlp_bytes();
         // hint the host about a new altda commitment. If it is the first time the host receiving it, the
         // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
@@ -134,7 +134,7 @@ impl<T: CommsClient + Sync + Send> EigenDABlobProvider for OracleEigenDAProvider
     }
 }
 
-impl<T: CommsClient + Sync + Send> OracleEigenDAProvider<T> {
+impl<T: CommsClient + Sync + Send> OracleEigenDAPreimageProvider<T> {
     /// This is a helper that constructs comm keys for every field element,
     /// The key must be consistnet to the prefetch function from the FetcherWithEigenDASupport
     /// object inside the host

@@ -8,7 +8,7 @@ use kona_preimage::{HintWriterClient, PreimageOracleClient};
 use kona_proof::{l1::OracleBlobProvider, CachingOracle};
 
 use hokulea_client::fp_client;
-use hokulea_proof::eigenda_provider::OracleEigenDAProvider;
+use hokulea_proof::eigenda_provider::OracleEigenDAPreimageProvider;
 
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
 use op_alloy_consensus::OpTxEnvelope;
@@ -37,7 +37,7 @@ where
         hint_client,
     ));
     let beacon = OracleBlobProvider::new(oracle.clone());
-    let eigenda_blob_provider = OracleEigenDAProvider::new(oracle.clone());
+    let eigenda_preimage_provider = OracleEigenDAPreimageProvider::new(oracle.clone());
 
-    fp_client::run_fp_client(oracle, beacon, eigenda_blob_provider, evm_factory).await
+    fp_client::run_fp_client(oracle, beacon, eigenda_preimage_provider, evm_factory).await
 }

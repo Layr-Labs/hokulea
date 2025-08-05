@@ -2,34 +2,34 @@ use alloy_primitives::{FixedBytes, B256};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
-use hokulea_eigenda::EigenDABlobProvider;
+use hokulea_eigenda::EigenDAPreimageProvider;
 use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use rust_kzg_bn254_primitives::blob::Blob;
 use std::sync::{Arc, Mutex};
 
-/// This is a wrapper around OracleEigenDAProvider, with
+/// This is a wrapper around OracleEigenDAPreimageProvider, with
 /// additional functionalities to generate eigenda witness
 /// which is KZG proof on the FS point out of the blob itself.
 /// OracleEigenDAWitnessProvider is only inteneded to be used outside
 /// FPVM or ZKVM. Its sole purpose is to generate KZG proof at the
 /// client side
 #[derive(Debug, Clone)]
-pub struct OracleEigenDAWitnessProvider<T: EigenDABlobProvider> {
+pub struct OracleEigenDAWitnessProvider<T: EigenDAPreimageProvider> {
     /// Eigenda provider
     pub provider: T,
     /// Store witness data
     pub witness: Arc<Mutex<EigenDABlobWitnessData>>,
 }
 
-/// Implement EigenDABlobProvider for OracleEigenDAWitnessProvider
+/// Implement EigenDAPreimageProvider for OracleEigenDAWitnessProvider
 /// whose goal is to prepare preimage sucht that the guest code of zkvm can consume data that is
 /// easily verifiable.
 /// Note because EigenDA uses filtering approach, in the EigenDABlobWitnessData
 /// the number of certs does not have to equal to
 /// the number of blobs, since some certs might have been invalid due to incorrect or stale certs
 #[async_trait]
-impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitnessProvider<T> {
+impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider for OracleEigenDAWitnessProvider<T> {
     type Error = T::Error;
 
     /// Fetch primage about the recency window
@@ -76,9 +76,9 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         }
     }
 
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
+    async fn get_encoded_payload(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
         // only a single blob is returned from a cert
-        match self.provider.get_blob(altda_commitment).await {
+        match self.provider.get_encoded_payload(altda_commitment).await {
             Ok(blob) => {
                 // Compute kzg proof for the entire blob on a deterministic random point
                 let kzg_proof = match compute_kzg_proof(blob.data()) {
