@@ -9,14 +9,13 @@ use bytes::buf::Buf;
 use rust_kzg_bn254_primitives::helpers;
 
 #[derive(Default, Clone, Debug)]
-/// Represents the data structure for EigenDA Blob
 /// intended for deriving rollup channel frame from eigenda blob
-pub struct EigenDABlobData {
+pub struct EncodedPayload {
     /// The calldata
     pub blob: Bytes,
 }
 
-impl EigenDABlobData {
+impl EncodedPayload {
     /// Decodes the blob into raw byte data. Reverse of the encode function below
     /// Returns a [BlobDecodingError] if the blob is invalid.
     pub fn decode(&self) -> Result<Bytes, HokuleaStatelessError> {
@@ -128,7 +127,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success() {
         let rollup_data = vec![1, 2, 3, 4];
-        let eigenda_blob = EigenDABlobData::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let eigenda_blob = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = eigenda_blob.blob.len();
         assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0);
 
@@ -140,7 +139,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success_empty() {
         let rollup_data = vec![];
-        let eigenda_blob = EigenDABlobData::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let eigenda_blob = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = eigenda_blob.blob.len();
         // 32 is eigenda blob header size
         assert!(data_len == 32);
@@ -153,7 +152,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_error_invalid_length() {
         let rollup_data = vec![1, 2, 3, 4];
-        let mut eigenda_blob = EigenDABlobData::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let mut eigenda_blob = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         eigenda_blob.blob.truncate(33);
         let result = eigenda_blob.decode();
         assert!(result.is_err());

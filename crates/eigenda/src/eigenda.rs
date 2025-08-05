@@ -1,10 +1,10 @@
 //! Contains the [EigenDADataSource], which is a concrete implementation of the
 //! [DataAvailabilityProvider] trait for the EigenDA protocol.
-use crate::traits::EigenDABlobProvider;
-use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
+use crate::traits::EigenDAPreimageProvider;
+use crate::{eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind};
 use kona_derive::errors::PipelineErrorKind;
 
-use crate::eigenda_data::EigenDABlobData;
+use crate::eigenda_data::EncodedPayload;
 use alloc::vec::Vec;
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{Address, Bytes};
@@ -20,7 +20,7 @@ use tracing::warn;
 
 #[derive(Debug, Clone)]
 pub enum EigenDAOrCalldata {
-    EigenDA(EigenDABlobData),
+    EigenDA(EncodedPayload),
     Calldata(Bytes),
 }
 
@@ -33,12 +33,12 @@ pub struct EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Clone,
     B: BlobProvider + Send + Clone,
-    A: EigenDABlobProvider + Send + Clone,
+    A: EigenDAPreimageProvider + Send + Clone,
 {
     /// The blob source.
     pub ethereum_source: EthereumDataSource<C, B>,
     /// The eigenda source.
-    pub eigenda_source: EigenDABlobSource<A>,
+    pub eigenda_source: EigenDAPreimageSource<A>,
     /// Whether the source is open. When it is open, the next() call will consume data
     /// at this current stage, as opposed to pull it from the next stage
     pub open: bool,
@@ -50,12 +50,12 @@ impl<C, B, A> EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Clone + Debug,
     B: BlobProvider + Send + Clone + Debug,
-    A: EigenDABlobProvider + Send + Clone + Debug,
+    A: EigenDAPreimageProvider + Send + Clone + Debug,
 {
     /// Instantiates a new [EigenDADataSource].
     pub const fn new(
         ethereum_source: EthereumDataSource<C, B>,
-        eigenda_source: EigenDABlobSource<A>,
+        eigenda_source: EigenDAPreimageSource<A>,
     ) -> Self {
         Self {
             ethereum_source,
@@ -71,7 +71,7 @@ impl<C, B, A> DataAvailabilityProvider for EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Sync + Clone + Debug,
     B: BlobProvider + Send + Sync + Clone + Debug,
-    A: EigenDABlobProvider + Send + Sync + Clone + Debug,
+    A: EigenDAPreimageProvider + Send + Sync + Clone + Debug,
 {
     type Item = Bytes;
 
@@ -109,7 +109,7 @@ impl<C, B, A> EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Sync + Clone + Debug,
     B: BlobProvider + Send + Sync + Clone + Debug,
-    A: EigenDABlobProvider + Send + Sync + Clone + Debug,
+    A: EigenDAPreimageProvider + Send + Sync + Clone + Debug,
 {
     // load calldata, currenly there is only one cert per calldata
     // this is still required, in case the provider returns error

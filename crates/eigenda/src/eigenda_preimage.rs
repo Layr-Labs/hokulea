@@ -1,7 +1,7 @@
 //! Blob Data Source
 
-use crate::eigenda_data::EigenDABlobData;
-use crate::traits::EigenDABlobProvider;
+use crate::eigenda_data::EncodedPayload;
+use crate::traits::EigenDAPreimageProvider;
 use crate::HokuleaPreimageError;
 
 use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
@@ -11,17 +11,17 @@ use eigenda_cert::AltDACommitment;
 
 /// A data iterator that reads from a blob.
 #[derive(Debug, Clone)]
-pub struct EigenDABlobSource<B>
+pub struct EigenDAPreimageSource<B>
 where
-    B: EigenDABlobProvider + Send,
+    B: EigenDAPreimageProvider + Send,
 {
     /// Fetches blobs.
     pub eigenda_fetcher: B,
 }
 
-impl<B> EigenDABlobSource<B>
+impl<B> EigenDAPreimageSource<B>
 where
-    B: EigenDABlobProvider + Send,
+    B: EigenDAPreimageProvider + Send,
 {
     /// Creates a new blob source.
     pub const fn new(eigenda_fetcher: B) -> Self {
@@ -33,7 +33,7 @@ where
         &mut self,
         calldata: &Bytes,
         l1_inclusion_bn: u64,
-    ) -> Result<EigenDABlobData, HokuleaErrorKind> {
+    ) -> Result<EncodedPayload, HokuleaErrorKind> {
         let eigenda_commitment = self.parse(calldata)?;
 
         // get recency window size, discard the old cert if necessary
@@ -65,11 +65,11 @@ where
         }
 
         // get blob via preimage oracle
-        match self.eigenda_fetcher.get_blob(&eigenda_commitment).await {
+        match self.eigenda_fetcher.get_encoded_payload(&eigenda_commitment).await {
             Ok(data) => {
                 let new_blob: Vec<u8> = data.into();
 
-                let eigenda_blob = EigenDABlobData {
+                let eigenda_blob = EncodedPayload {
                     blob: new_blob.into(),
                 };
 

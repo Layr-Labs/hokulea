@@ -5,9 +5,9 @@ use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::{EigenDABlobData, HokuleaPreimageError};
+use hokulea_eigenda::HokuleaPreimageError;
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
+    BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
     RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
@@ -56,7 +56,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 }
 
 /// Fetch the preimages for the given hint and insert then into the key-value store.
-/// We insert the recency_window, cert_validity, and blob_data.
+/// We insert the recency_window, cert_validity, and encoded_payload_data.
 /// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
 /// <https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135>
 pub async fn fetch_eigenda_hint(
@@ -76,7 +76,7 @@ pub async fn fetch_eigenda_hint(
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
-    // Fetch blob data and process response
+    // Fetch preimage data and process response
     let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
     // If cert is not recent, log and return early
@@ -107,8 +107,13 @@ pub async fn fetch_eigenda_hint(
         return Ok(());
     }
 
-    // Store blob data field-by-field in key-value store
-    store_blob_data(kv.clone(), &altda_commitment, derivation_stage.rollup_data).await?;
+    // Store encoded payload data field-by-field in key-value store
+    store_encoded_payload(
+        kv.clone(),
+        &altda_commitment,
+        derivation_stage.encoded_payload,
+    )
+    .await?;
 
     Ok(())
 }
@@ -153,7 +158,7 @@ pub struct ProxyDerivationStage {
     // proxy derivation determines cert is valid
     pub is_valid_cert: bool,
     // ToDo should have been encoded_payload, but until the endpoitn of proxy is implemented
-    pub rollup_data: Vec<u8>,
+    pub encoded_payload: Vec<u8>,
 }
 
 /// Process response from eigenda network
@@ -161,16 +166,16 @@ async fn fetch_data_from_proxy(
     providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
     altda_commitment_bytes: &Bytes,
 ) -> Result<ProxyDerivationStage> {
-    // Fetch the blob from the eigenda network
+    // Fetch the encoded payload from the eigenda network
     let response = providers
-        .eigenda_blob_provider
-        .fetch_eigenda_blob(altda_commitment_bytes)
+        .eigenda_preimage_provider
+        .fetch_eigenda_encoded_payload(altda_commitment_bytes)
         .await
-        .map_err(|e| anyhow!("failed to fetch eigenda blob: {e}"))?;
+        .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
 
     let mut is_valid_cert = true;
     let mut is_recent_cert = true;
-    let mut rollup_data = vec![];
+    let mut encoded_payload = vec![];
 
     // Handle response based on status code
     if !response.status().is_success() {
@@ -179,7 +184,7 @@ async fn fetch_data_from_proxy(
             // The error is handled by host library in kona, currently this triggers an infinite retry loop.
             // https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135
             return Err(anyhow!(
-                "failed to fetch eigenda blob, status {:?}",
+                "failed to fetch eigenda encoded payload, status {:?}",
                 response.error_for_status()
             ));
         }
@@ -203,7 +208,7 @@ async fn fetch_data_from_proxy(
         }
     } else {
         // Handle success response
-        rollup_data = response
+        encoded_payload = response
             .bytes()
             .await
             .map_err(|e| anyhow!("should be able to get rollup payload from http response {e}"))?
@@ -213,7 +218,7 @@ async fn fetch_data_from_proxy(
     Ok(ProxyDerivationStage {
         is_recent_cert,
         is_valid_cert,
-        rollup_data,
+        encoded_payload,
     })
 }
 
@@ -236,21 +241,20 @@ async fn store_cert_validity(
     Ok(())
 }
 
-/// Store blob data in key-value store
-async fn store_blob_data(
+/// Store encoded payload data in key-value store
+async fn store_encoded_payload(
     kv: SharedKeyValueStore,
     altda_commitment: &AltDACommitment,
-    rollup_data: Vec<u8>,
+    encoded_payload: Vec<u8>,
 ) -> Result<()> {
     // Acquire a lock on the key-value store
     let mut kv_write_lock = kv.write().await;
-    // Prepare blob data
+    // Prepare encoded payload data
     let blob_length_fe = altda_commitment.get_num_field_element();
-    let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
 
     // Verify blob data is properly formatted
-    assert!(eigenda_blob.blob.len() % 32 == 0);
-    let fetch_num_element = (eigenda_blob.blob.len() / BYTES_PER_FIELD_ELEMENT) as u64;
+    assert!(encoded_payload.len() % 32 == 0);
+    let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
 
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
@@ -262,7 +266,7 @@ async fn store_blob_data(
             // Store actual blob data
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                encoded_payload[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
             )?;
         } else {
             // Fill remaining elements with zeros

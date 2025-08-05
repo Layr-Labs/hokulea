@@ -1,4 +1,4 @@
-use crate::eigenda_blobs::OnlineEigenDABlobProvider;
+use crate::eigenda_preimage::OnlineEigenDAPreimageProvider;
 use crate::handler::SingleChainHintHandlerWithEigenDA;
 use anyhow::Result;
 use clap::Parser;
@@ -113,7 +113,7 @@ impl SingleChainHostWithEigenDA {
     ) -> Result<SingleChainProvidersWithEigenDA, SingleChainHostError> {
         let kona_providers = self.kona_cfg.create_providers().await?;
 
-        let eigenda_blob_provider = OnlineEigenDABlobProvider::new_http(
+        let eigenda_preimage_provider = OnlineEigenDAPreimageProvider::new_http(
             self.eigenda_proxy_address
                 .clone()
                 .ok_or(SingleChainHostError::Other("EigenDA API URL must be set"))?,
@@ -121,7 +121,7 @@ impl SingleChainHostWithEigenDA {
 
         Ok(SingleChainProvidersWithEigenDA {
             kona_providers,
-            eigenda_blob_provider,
+            eigenda_preimage_provider,
         })
     }
 
@@ -166,6 +166,6 @@ impl OnlineHostBackendCfg for SingleChainHostWithEigenDA {
 #[derive(Debug, Clone)]
 pub struct SingleChainProvidersWithEigenDA {
     pub kona_providers: SingleChainProviders,
-    /// The EigenDA blob provider
-    pub eigenda_blob_provider: OnlineEigenDABlobProvider,
+    /// The EigenDA preimage provider
+    pub eigenda_preimage_provider: OnlineEigenDAPreimageProvider,
 }

@@ -16,9 +16,9 @@ use serde::{Deserialize, Serialize};
 ///
 /// Two actors populates EigenDABlobWitnessData. One is the
 /// OracleEigenDAWitnessProvider which takes preimage data from the
-/// EigenDABlobProvider during the first run of the
+/// EigenDAPreimageProvider during the first run of the
 /// derivation pipeline. OracleEigenDAWitnessProvider wraps around an
-/// implementaion of EigenDABlobProvider trait to populate blob and recency.
+/// implementaion of EigenDAPreimageProvider trait to populate blob and recency.
 ///
 /// The remaining validity part is populated by a separator actor, usually in the
 /// zkVM host, which requests zk prover for generating zk validity proof.
@@ -27,7 +27,7 @@ use serde::{Deserialize, Serialize};
 /// the zkVM host to choose its the proving backend. Baking validity generation
 /// into the OracleEigenDAWitnessProvider is less ideal.
 ///
-/// After witness is populated, PreloadedEigenDABlobProvider takes witness
+/// After witness is populated, PreloadedEigenDAPreimageProvider takes witness
 /// and verify their correctness
 ///
 /// It is important to note that the length of recency, validity and blob
@@ -36,9 +36,9 @@ use serde::{Deserialize, Serialize};
 /// filtering.
 /// The vec data struct does not maintain the information about which cert
 /// is filtered at which layer. As it does not matter, since the data will
-/// be verified in the PreloadedEigenDABlobProvider. And when the derivation
+/// be verified in the PreloadedEigenDAPreimageProvider. And when the derivation
 /// pipeline calls for a preimage for a DA cert, the two DA certs must
-/// match, and otherwise there is failures. See PreloadedEigenDABlobProvider
+/// match, and otherwise there is failures. See PreloadedEigenDAPreimageProvider
 /// for more information
 /// TODO, replace EigenDACertV2 to AltDACommitment, it saves the effort to
 /// convert from AltDACommitment to EigenDACertV2 in all get methods.

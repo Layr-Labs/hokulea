@@ -7,7 +7,7 @@ use kona_proof::{errors::OracleProviderError, BootInfo, FlushableCache};
 
 use hokulea_proof::{
     canoe_verifier::CanoeVerifier, eigenda_blob_witness::EigenDABlobWitnessData,
-    preloaded_eigenda_provider::PreloadedEigenDABlobProvider,
+    preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
 };
 
 use alloc::sync::Arc;
@@ -22,7 +22,7 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
     mut witness: EigenDABlobWitnessData,
-) -> Result<PreloadedEigenDABlobProvider, OracleProviderError>
+) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
 {
@@ -42,7 +42,7 @@ where
         *recency = boot_info.rollup_config.seq_window_size + 100_000_000
     });
 
-    Ok(PreloadedEigenDABlobProvider::from_witness(
+    Ok(PreloadedEigenDAPreimageProvider::from_witness(
         witness,
         canoe_verifier,
     ))
