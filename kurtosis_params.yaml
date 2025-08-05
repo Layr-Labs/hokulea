@@ -64,8 +64,9 @@ optimism_package:
           - --eigenda.v2.max-blob-length=1MiB
           - --memstore.enabled
           - --memstore.expiration=180m
-          - --eigenda.v2.network=holesky_testnet # memstore disregard the network, but it simplifies the configuration 
-        image: ghcr.io/layr-labs/eigenda-proxy:latest
+          - --eigenda.v2.network=holesky_testnet # memstore disregards the network, but it simplifies the configuration 
+          - --log.level=debug
+        image: ghcr.io/layr-labs/eigenda-proxy:dev # TODO need to pin a public image when the memstore fix on proxy is merged
       network_params:
         fjord_time_offset: 0
         granite_time_offset: 0
