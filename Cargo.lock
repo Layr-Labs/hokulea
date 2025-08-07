@@ -2359,7 +2359,6 @@ dependencies = [
  "canoe-bindings",
  "canoe-provider",
  "canoe-steel-methods",
- "hokulea-proof",
  "risc0-steel",
  "risc0-zkvm",
  "tokio",

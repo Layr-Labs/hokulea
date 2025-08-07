@@ -62,12 +62,13 @@ impl PreloadedEigenDABlobProvider {
 
         // check all cert validity are substantiated by zk validity proof
         let mut validity_entries = vec![];
-        for (altda_commitment, cert_validity) in &value.validity {
-            // check cert validity
-            canoe_verifier
-                .validate_cert_receipt(cert_validity.clone(), altda_commitment.clone())
+
+        // check cert validity altogether in one verification
+        canoe_verifier
+                .validate_cert_receipt(value.validity.clone(), value.canoe_proof_bytes)
                 .expect("verification should have been passing");
 
+        for (altda_commitment, cert_validity) in &value.validity {
             // populate only the mapping <DAcert, boolean> for preimage trait
             validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
         }

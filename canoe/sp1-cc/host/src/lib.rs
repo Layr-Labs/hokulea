@@ -6,7 +6,6 @@ use async_trait::async_trait;
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use eigenda_cert::EigenDAVersionedCert;
-use hokulea_proof::canoe_verifier::cert_verifier_address;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{ProverClient, SP1Proof, SP1Stdin};
@@ -33,8 +32,8 @@ pub struct CanoeSp1CCProvider {
 impl CanoeProvider for CanoeSp1CCProvider {
     type Receipt = sp1_sdk::SP1ProofWithPublicValues;
 
-    async fn create_cert_validity_proof(&self, canoe_input: CanoeInput) -> Result<Self::Receipt> {
-        get_sp1_cc_proof(canoe_input, &self.eth_rpc_url).await
+    async fn create_certs_validity_proof(&self, canoe_inputs: Vec<CanoeInput>) -> Result<Self::Receipt> {
+        get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url).await
     }
 
     fn get_eth_rpc_url(&self) -> String {
@@ -57,8 +56,8 @@ pub struct CanoeSp1CCReducedProofProvider {
 impl CanoeProvider for CanoeSp1CCReducedProofProvider {
     type Receipt = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
 
-    async fn create_cert_validity_proof(&self, canoe_input: CanoeInput) -> Result<Self::Receipt> {
-        let proof = get_sp1_cc_proof(canoe_input, &self.eth_rpc_url).await?;
+    async fn create_certs_validity_proof(&self, canoe_inputs: Vec<CanoeInput>) -> Result<Self::Receipt> {
+        let proof = get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url).await?;
         let SP1Proof::Compressed(proof) = proof.proof else {
             panic!("cannot get Sp1ReducedProof")
         };
@@ -71,21 +70,27 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
 }
 
 async fn get_sp1_cc_proof(
-    canoe_input: CanoeInput,
+    canoe_inputs: Vec<CanoeInput>,
     eth_rpc_url: &str,
 ) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
+    if canoe_inputs.len() == 0 {
+        panic!(
+            "get_sp1_cc_proof has 0 certs to prove, panic immediately"
+        );
+    }
+
     info!(
         "begin to generate a sp1-cc proof invoked at l1 bn {}",
-        canoe_input.l1_head_block_number
+        canoe_inputs[0].l1_head_block_number
     );
     let start = Instant::now();
 
     // Which block VerifyDACert eth-calls are executed against.
-    let block_number = BlockNumberOrTag::Number(canoe_input.l1_head_block_number);
+    let block_number = BlockNumberOrTag::Number(canoe_inputs[0].l1_head_block_number);
 
     let rpc_url = Url::from_str(eth_rpc_url).unwrap();
 
-    let sketch = match Genesis::try_from(canoe_input.l1_chain_id) {
+    let sketch = match Genesis::try_from(canoe_inputs[0].l1_chain_id) {
         Ok(genesis) => {
             EvmSketch::builder()
                 .at_block(block_number)
@@ -105,39 +110,38 @@ async fn get_sp1_cc_proof(
         }
     };
 
-    let verifier_address =
-        cert_verifier_address(canoe_input.l1_chain_id, &canoe_input.altda_commitment);
+    for canoe_input in canoe_inputs.iter() {    
+        let contract_input = match CertVerifierCall::build(&canoe_inputs[0].altda_commitment) {
+            CertVerifierCall::V2(call) => {
+                ContractInput::new_call(canoe_input.verifier_address, Address::default(), call)
+            }
+            CertVerifierCall::Router(call) => {
+                ContractInput::new_call(canoe_input.verifier_address, Address::default(), call)
+            }
+        };
 
-    let contract_input = match CertVerifierCall::build(&canoe_input.altda_commitment) {
-        CertVerifierCall::V2(call) => {
-            ContractInput::new_call(verifier_address, Address::default(), call)
-        }
-        CertVerifierCall::Router(call) => {
-            ContractInput::new_call(verifier_address, Address::default(), call)
-        }
-    };
-
-    let returns_bytes = sketch
+        let returns_bytes = sketch
         .call(contract_input)
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-    // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
-    // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
-    // Talked to sp1-cc developer already, and it is agreed.
-    let returns = match &canoe_input.altda_commitment.versioned_cert {
-        EigenDAVersionedCert::V2(_) => {
-            Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes")
-        }
-        EigenDAVersionedCert::V3(_) => {
-            let returns = <StatusCode as SolType>::abi_decode(&returns_bytes)
-                .expect("deserialize returns_bytes");
-            returns == StatusCode::SUCCESS
-        }
-    };
+        // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
+        // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
+        // Talked to sp1-cc developer already, and it is agreed.
+        let returns = match &canoe_inputs[0].altda_commitment.versioned_cert {
+            EigenDAVersionedCert::V2(_) => {
+                Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes")
+            }
+            EigenDAVersionedCert::V3(_) => {
+                let returns = <StatusCode as SolType>::abi_decode(&returns_bytes)
+                    .expect("deserialize returns_bytes");
+                returns == StatusCode::SUCCESS
+            }
+        };
 
-    if returns != canoe_input.claimed_validity {
-        panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
+        if returns != canoe_inputs[0].claimed_validity {
+            panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
+        }
     }
 
     let evm_state_sketch = sketch
@@ -150,8 +154,7 @@ async fn get_sp1_cc_proof(
     let input_bytes = bincode::serialize(&evm_state_sketch)?;
     let mut stdin = SP1Stdin::new();
     stdin.write(&input_bytes);
-    stdin.write(&verifier_address);
-    stdin.write(&canoe_input);
+    stdin.write(&canoe_inputs);
 
     // Create a `ProverClient`.
     let client = ProverClient::from_env();

@@ -24,7 +24,6 @@ use risc0_steel::alloy::providers::ProviderBuilder;
 use risc0_steel::ethereum::EthChainSpec;
 use risc0_zkvm;
 
-use hokulea_proof::canoe_verifier::cert_verifier_address;
 use tracing::info;
 
 /// A canoe provider implementation with steel
@@ -39,10 +38,11 @@ impl CanoeProvider for CanoeSteelProvider {
     /// The receipt can be used for both mock proof and verification within zkVM
     type Receipt = risc0_zkvm::Receipt;
 
-    async fn create_cert_validity_proof(&self, canoe_input: CanoeInput) -> Result<Self::Receipt> {
+    async fn create_certs_validity_proof(&self, canoe_inputs: Vec<CanoeInput>) -> Result<Self::Receipt> {
+        assert!(canoe_inputs.len() > 0);
         info!(
             "begin to generate a steel proof invoked at l1 bn {}",
-            canoe_input.l1_head_block_number
+            canoe_inputs[0].l1_head_block_number
         );
         let start = Instant::now();
 
@@ -51,51 +51,54 @@ impl CanoeProvider for CanoeSteelProvider {
         // Create an alloy provider for that private key and URL.
         let provider = ProviderBuilder::new().connect_http(eth_rpc_url); //.await?;
 
-        let chain_spec = match canoe_input.l1_chain_id {
+
+        let l1_chain_id = canoe_inputs[0].l1_chain_id;
+        let l1_head_block_number = canoe_inputs[0].l1_head_block_number;
+        for canoe_input in canoe_inputs.iter() {
+            assert!(canoe_input.l1_chain_id == l1_chain_id);
+            assert!(canoe_input.l1_head_block_number == l1_head_block_number);
+        }
+        let chain_spec = match canoe_inputs[0].l1_chain_id {
             1 => ETH_MAINNET_CHAIN_SPEC.clone(),
             11155111 => ETH_SEPOLIA_CHAIN_SPEC.clone(),
             17000 => ETH_HOLESKY_CHAIN_SPEC.clone(),
-            _ => EthChainSpec::new_single(canoe_input.l1_chain_id, Default::default()),
+            _ => EthChainSpec::new_single(canoe_inputs[0].l1_chain_id, Default::default()),
         };
 
         let mut env = EthEvmEnv::builder()
             .chain_spec(&chain_spec)
             .provider(provider.clone())
-            .block_number_or_tag(BlockNumberOrTag::Number(canoe_input.l1_head_block_number))
+            .block_number_or_tag(BlockNumberOrTag::Number(canoe_inputs[0].l1_head_block_number))
             .build()
             .await?;
 
-        let verifier_address =
-            cert_verifier_address(canoe_input.l1_chain_id, &canoe_input.altda_commitment);
+        for canoe_input in canoe_inputs.iter() {        
+            // Preflight the call to prepare the input that is required to execute the function in
+            // the guest without RPC access. It also returns the result of the call.
+            let mut contract = Contract::preflight(canoe_input.verifier_address, &mut env);
 
-        // Preflight the call to prepare the input that is required to execute the function in
-        // the guest without RPC access. It also returns the result of the call.
-        let mut contract = Contract::preflight(verifier_address, &mut env);
+            // Prepare the function call
+            let returns = match CertVerifierCall::build(&canoe_input.altda_commitment) {
+                CertVerifierCall::V2(call) => contract.call_builder(&call).call().await?,
+                CertVerifierCall::Router(call) => {
+                    let status = contract.call_builder(&call).call().await?;
+                    status == StatusCode::SUCCESS as u8
+                }
+            };
 
-        // Prepare the function call
-        let returns = match CertVerifierCall::build(&canoe_input.altda_commitment) {
-            CertVerifierCall::V2(call) => contract.call_builder(&call).call().await?,
-            CertVerifierCall::Router(call) => {
-                let status = contract.call_builder(&call).call().await?;
-                status == StatusCode::SUCCESS as u8
+            //let returns = contract.call_builder(&call).call().await?;
+            if canoe_input.claimed_validity != returns {
+                panic!("in the preflight part, zkvm arrives to a different answer than claime. Something consistent in the view of eigenda-proxy and zkVM");
             }
-        };
-
-        //let returns = contract.call_builder(&call).call().await?;
-        if canoe_input.claimed_validity != returns {
-            panic!("in the preflight part, zkvm arrives to a different answer than claime. Something consistent in the view of eigenda-proxy and zkVM");
         }
-
         // Finally, construct the input from the environment.
-        let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> =
-            env.into_input().await?;
-
+        let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> = env.into_input().await?;
+        
         // Create the steel proof.
         let prove_info = task::spawn_blocking(move || {
             let env = ExecutorEnv::builder()
                 .write(&evm_input)?
-                .write(&verifier_address)?
-                .write(&canoe_input)?
+                .write(&canoe_inputs)?
                 .build()
                 .unwrap();
 

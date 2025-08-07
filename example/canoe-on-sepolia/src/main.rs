@@ -10,6 +10,7 @@ use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
 use hokulea_proof::cert_validity::CertValidity;
+use hokulea_proof::canoe_verifier::cert_verifier_address;
 use std::str::FromStr;
 use url::Url;
 
@@ -43,18 +44,18 @@ async fn main() -> anyhow::Result<()> {
         eth_rpc_url: args.eth_rpc_url.clone(),
     };
     let receipt = canoe_provider
-        .create_cert_validity_proof(canoe_input)
+        .create_certs_validity_proof(vec![canoe_input])
         .await?;
     let canoe_proof_bytes = serde_json::to_vec(&receipt).expect("serde error");
 
     // prepare value to verify canoe proof
     let cert_validity = CertValidity {
         claimed_validity,
-        canoe_proof: Some(canoe_proof_bytes),
+        canoe_proof: Some(canoe_proof_bytes.clone()),
         l1_head_block_hash,
         l1_chain_id: 11155111,
     };
-    verify_canoe_proof(cert_validity.clone(), altda_commitment.clone())
+    verify_canoe_proof(cert_validity.clone(), altda_commitment.clone(), canoe_proof_bytes)
         .expect("correct proof should have passed");
     println!("cert verification pass");
 
@@ -65,10 +66,12 @@ async fn main() -> anyhow::Result<()> {
 pub fn verify_canoe_proof(
     cert_validity: CertValidity,
     altda_commitment: AltDACommitment,
+    canoe_proof_bytes: Vec<u8>,
 ) -> Result<(), HokuleaCanoeVerificationError> {
     // verify canoe proof
     let canoe_verifier = CanoeSteelVerifier {};
-    canoe_verifier.validate_cert_receipt(cert_validity, altda_commitment)
+    let validity_cert_pair = (altda_commitment, cert_validity);
+    canoe_verifier.validate_cert_receipt(vec![validity_cert_pair], Some(canoe_proof_bytes))
 }
 
 /// It is a helper function that prepares canoe input which can be used to generate a
@@ -113,5 +116,6 @@ pub async fn get_canoe_input(
         l1_head_block_hash: l1_block_hash,
         l1_head_block_number: block_number,
         l1_chain_id: 11155111,
+        verifier_address: cert_verifier_address(11155111, &altda_commitment),
     })
 }

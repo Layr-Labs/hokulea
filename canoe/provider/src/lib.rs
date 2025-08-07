@@ -1,4 +1,4 @@
-use alloy_primitives::B256;
+use alloy_primitives::{B256, Address};
 use alloy_sol_types::SolValue;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -21,13 +21,16 @@ pub struct CanoeInput {
     pub l1_head_block_number: u64,
     /// l1 chain id specifies the chain which implicitly along with l1_head_block_number indicates the current EVM version due to hardfork
     pub l1_chain_id: u64,
+    /// cert verifier address with respect to the altda commitment at the reference block number within the altda commitment
+    /// if a cert verifier router is used, the address is the router address
+    pub verifier_address: Address,
 }
 
 #[async_trait]
 pub trait CanoeProvider: Clone + Send + 'static {
     type Receipt: Serialize + for<'de> Deserialize<'de>;
 
-    async fn create_cert_validity_proof(&self, input: CanoeInput) -> Result<Self::Receipt>;
+    async fn create_certs_validity_proof(&self, input: Vec<CanoeInput>) -> Result<Self::Receipt>;
 
     fn get_eth_rpc_url(&self) -> String;
 }
@@ -39,7 +42,7 @@ pub struct CanoeNoOpProvider {}
 impl CanoeProvider for CanoeNoOpProvider {
     type Receipt = ();
 
-    async fn create_cert_validity_proof(&self, _canoe_input: CanoeInput) -> Result<Self::Receipt> {
+    async fn create_certs_validity_proof(&self, _canoe_input: Vec<CanoeInput>) -> Result<Self::Receipt> {
         Ok(())
     }
 

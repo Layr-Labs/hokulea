@@ -143,7 +143,7 @@ where
     // get l1 header, does not have to come from oracle directly, it is for convenience
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
 
-    let canoe_proofs = hokulea_witgen::from_boot_info_to_canoe_proof(
+    let canoe_proof = hokulea_witgen::from_boot_info_to_canoe_proof(
         &boot_info,
         &wit,
         oracle.clone(),
@@ -159,10 +159,12 @@ where
     // For Steel, use CanoeSteelProvider to generate such proof
     // For verification in non zkVM context, canoe_proofs can be passed as part of serialized bytes
     // along with other
-    for ((_, cert_validity), canoe_proof) in wit.validity.iter_mut().zip(canoe_proofs.iter()) {
-        let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-        cert_validity.canoe_proof = Some(canoe_proof_bytes);
-    }
+    //for ((_, cert_validity), canoe_proof) in wit.validity.iter_mut().zip(canoe_proofs.iter()) {
+    //    let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
+    //    cert_validity.canoe_proof = Some(canoe_proof_bytes);
+    //}
+
+    wit.canoe_proof_bytes = Some(serde_json::to_vec(&canoe_proof).expect("serde error"));
 
     Ok(wit)
 }

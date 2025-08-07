@@ -50,4 +50,8 @@ pub struct EigenDABlobWitnessData {
     pub validity: Vec<(AltDACommitment, CertValidity)>,
     /// blobs corresponds to a da cert and its kzg proof
     pub blob: Vec<(AltDACommitment, Vec<u8>, FixedBytes<64>)>,
+    /// used and populated at the end of canoe proof
+    /// it should only deserialize to one zk proof that proves all DA certs are
+    /// correct
+    pub canoe_proof_bytes: Option<Vec<u8>>,
 }

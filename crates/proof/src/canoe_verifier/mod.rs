@@ -17,8 +17,8 @@ use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
 pub trait CanoeVerifier: Clone + Send + 'static {
     fn validate_cert_receipt(
         &self,
-        _cert_validity: CertValidity,
-        _eigenda_cert: AltDACommitment,
+        _cert_validity_pair: Vec<(AltDACommitment, CertValidity)>,
+        _canoe_proof: Option<Vec<u8>>,
     ) -> Result<(), errors::HokuleaCanoeVerificationError>;
 }
 
@@ -26,19 +26,23 @@ pub trait CanoeVerifier: Clone + Send + 'static {
 /// used to verify canoe proof. The returned type is abi encoded Journal, which is
 /// immediately consumable by zkVM
 pub fn to_journal_bytes(
-    cert_validity: &CertValidity,
-    altda_commitment: &AltDACommitment,
+    cert_validity_pair: Vec<(AltDACommitment, CertValidity)>,
 ) -> Vec<u8> {
-    let rlp_bytes = altda_commitment.to_rlp_bytes();
+    let mut journals: Vec<u8> = Vec::new();
+    for (altda_commitment, cert_validity) in &cert_validity_pair {
+        let rlp_bytes = altda_commitment.to_rlp_bytes();
 
-    let journal = Journal {
-        certVerifierAddress: cert_verifier_address(cert_validity.l1_chain_id, altda_commitment),
-        input: rlp_bytes.into(),
-        blockhash: cert_validity.l1_head_block_hash,
-        output: cert_validity.claimed_validity,
-        l1ChainId: cert_validity.l1_chain_id,
-    };
-    journal.abi_encode()
+        let journal = Journal {
+            certVerifierAddress: cert_verifier_address(cert_validity.l1_chain_id, altda_commitment),
+            input: rlp_bytes.into(),
+            blockhash: cert_validity.l1_head_block_hash,
+            output: cert_validity.claimed_validity,
+            l1ChainId: cert_validity.l1_chain_id,
+        };
+
+        journals.extend(journal.abi_encode());
+    }
+    journals
 }
 
 /// get cert verifier address based on chain id, and cert version from altda commitment
