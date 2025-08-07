@@ -102,9 +102,8 @@ impl CanoeProvider for CanoeSteelProvider {
             }
         }
         // Finally, construct the input from the environment.
-        let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> =
-            env.into_input().await?;
-
+        let evm_input: risc0_steel::EvmInput<risc0_steel::ethereum::EthEvmFactory> = env.into_input().await?;
+        
         // Create the steel proof.
         let prove_info = task::spawn_blocking(move || {
             let env = ExecutorEnv::builder()
