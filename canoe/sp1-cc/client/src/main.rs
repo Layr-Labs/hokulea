@@ -26,8 +26,10 @@ pub fn main() {
         .try_into()
         .expect("convert sp1 genesis into chain spec");
 
+    // journals is a concatenation of serialized proof journal for each canoe input
+    // we won't deserialize them, hence this is fine
     let mut journals: Vec<u8> = vec![];
-    // executes all calls, then combines and commits all journals 
+    // executes all calls, then combines and commits all journals
     for canoe_input in canoe_inputs.iter() {
         // TODO, are there no better way to reduce this duplicate code.
         // known constraint, new_call takes SolCall trait, which is Sized so not dyn trait
@@ -47,6 +49,7 @@ pub fn main() {
         // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
         let returns = Bool::abi_decode(&public_vals.contractOutput).expect("deserialize returns");
 
+        // TODO might be using a better serialization format
         let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
         let journal = Journal {
@@ -59,6 +62,6 @@ pub fn main() {
         journals.extend(journal.abi_encode());
     }
 
-    // Commit the abi-encoded output.
+    // Commit journals altogether
     sp1_zkvm::io::commit_slice(&journals);
 }

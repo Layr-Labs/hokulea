@@ -65,8 +65,8 @@ impl PreloadedEigenDABlobProvider {
 
         // check cert validity altogether in one verification
         canoe_verifier
-                .validate_cert_receipt(value.validity.clone(), value.canoe_proof_bytes)
-                .expect("verification should have been passing");
+            .validate_cert_receipt(value.validity.clone(), value.canoe_proof_bytes)
+            .expect("verification should have been passing");
 
         for (altda_commitment, cert_validity) in &value.validity {
             // populate only the mapping <DAcert, boolean> for preimage trait

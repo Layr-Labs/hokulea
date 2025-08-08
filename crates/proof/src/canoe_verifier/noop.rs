@@ -1,7 +1,7 @@
 use crate::canoe_verifier::{errors::HokuleaCanoeVerificationError, CanoeVerifier};
 use crate::cert_validity::CertValidity;
-use eigenda_cert::AltDACommitment;
 use alloc::vec::Vec;
+use eigenda_cert::AltDACommitment;
 use tracing::info;
 
 #[derive(Clone)]
