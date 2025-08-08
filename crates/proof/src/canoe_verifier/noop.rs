@@ -3,6 +3,7 @@ use crate::cert_validity::CertValidity;
 use alloc::vec::Vec;
 use eigenda_cert::AltDACommitment;
 use alloc::vec::Vec;
+use eigenda_cert::AltDACommitment;
 use tracing::info;
 
 #[derive(Clone)]

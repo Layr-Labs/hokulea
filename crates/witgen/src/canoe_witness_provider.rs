@@ -5,6 +5,7 @@ use core::fmt::Debug;
 use hokulea_proof::canoe_verifier::cert_verifier_address;
 use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use hokulea_proof::canoe_verifier::cert_verifier_address;
+use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
 use std::sync::Arc;

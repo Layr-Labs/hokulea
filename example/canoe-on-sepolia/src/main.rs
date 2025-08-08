@@ -11,7 +11,6 @@ use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
 use hokulea_proof::cert_validity::CertValidity;
-use hokulea_proof::canoe_verifier::cert_verifier_address;
 use std::str::FromStr;
 use url::Url;
 
@@ -52,7 +51,6 @@ async fn main() -> anyhow::Result<()> {
     // prepare value to verify canoe proof
     let cert_validity = CertValidity {
         claimed_validity,
-<<<<<<< HEAD
         l1_head_block_hash,
         l1_chain_id: 11155111,
     };
@@ -62,14 +60,6 @@ async fn main() -> anyhow::Result<()> {
         canoe_proof_bytes,
     )
     .expect("correct proof should have passed");
-=======
-        canoe_proof: Some(canoe_proof_bytes.clone()),
-        l1_head_block_hash,
-        l1_chain_id: 11155111,
-    };
-    verify_canoe_proof(cert_validity.clone(), altda_commitment.clone(), canoe_proof_bytes)
-        .expect("correct proof should have passed");
->>>>>>> 7d0bcf8 (working)
     println!("cert verification pass");
 
     Ok(())
