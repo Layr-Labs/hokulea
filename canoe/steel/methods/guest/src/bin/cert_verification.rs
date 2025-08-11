@@ -44,6 +44,7 @@ fn main() {
         assert!(canoe_input.l1_head_block_number == l1_head_block_number);
         assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
+
     
     // Converts the input into a `EvmEnv` for execution. The `with_chain_spec` method is used
     // to specify the chain configuration. It checks that the state matches the state root in the
