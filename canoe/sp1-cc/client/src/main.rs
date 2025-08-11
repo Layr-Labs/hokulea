@@ -64,6 +64,8 @@ pub fn main() {
         // TODO might be using a better serialization format
         let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
+        assert!(public_vals.anchorHash == l1_head_block_hash);
+
         let journal = Journal {
             certVerifierAddress: canoe_input.verifier_address,
             input: rlp_bytes.into(),

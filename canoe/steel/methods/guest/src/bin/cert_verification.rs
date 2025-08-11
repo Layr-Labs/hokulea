@@ -37,12 +37,13 @@ fn main() {
     assert!(!canoe_inputs.is_empty());
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
     let l1_head_block_number = canoe_inputs[0].l1_head_block_number;
+    let l1_head_block_hash = canoe_inputs[0].l1_head_block_hash;
     // require all canoe input share a common l1_chain_id
     for canoe_input in canoe_inputs.iter() {
         assert!(canoe_input.l1_chain_id == l1_chain_id);
         assert!(canoe_input.l1_head_block_number == l1_head_block_number);
+        assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
-
     
     // Converts the input into a `EvmEnv` for execution. The `with_chain_spec` method is used
     // to specify the chain configuration. It checks that the state matches the state root in the
@@ -57,7 +58,7 @@ fn main() {
     let mut journals: Vec<u8> = vec![];
     for canoe_input in canoe_inputs.iter() {
         // Prepare the function call and call the function
-        let returns = match CertVerifierCall::build(&canoe_input.altda_commitment) {
+        let is_valid = match CertVerifierCall::build(&canoe_input.altda_commitment) {
             CertVerifierCall::V2(call) => Contract::new(canoe_input.verifier_address, &env).call_builder(&call).call(),
             CertVerifierCall::Router(call) => {
                 let status = Contract::new(canoe_input.verifier_address, &env).call_builder(&call).call();
@@ -67,12 +68,14 @@ fn main() {
 
         let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
+        assert!(env.header().seal() == l1_head_block_hash);
+
         // Commit the block hash and number used when deriving `view_call_env` to the journal.
         let journal = Journal {
             certVerifierAddress: canoe_input.verifier_address,
             input: rlp_bytes.into(),
-            blockhash: env.header().seal(),
-            output: returns,
+            blockhash: l1_head_block_hash,
+            output: is_valid,
             l1ChainId: l1_chain_id,
         };
         journals.extend(journal.abi_encode());
