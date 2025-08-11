@@ -43,7 +43,7 @@ impl CanoeProvider for CanoeSteelProvider {
         canoe_inputs: Vec<CanoeInput>,
     ) -> Result<Self::Receipt> {
         if canoe_inputs.is_empty() {
-            return Err(CanoeProviderError::InsufficientCanoeInput.into());
+            return Err(CanoeProviderError::EmptyCanoeInput.into());
         }
         // ensure chain id and l1 block number across all DAcerts are identical
         let l1_chain_id = canoe_inputs[0].l1_chain_id;

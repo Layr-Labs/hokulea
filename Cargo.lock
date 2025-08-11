@@ -2340,7 +2340,6 @@ dependencies = [
  "canoe-bindings",
  "canoe-provider",
  "eigenda-cert",
- "hokulea-proof",
  "sp1-build",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",

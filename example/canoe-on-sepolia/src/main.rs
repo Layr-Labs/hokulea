@@ -51,7 +51,6 @@ async fn main() -> anyhow::Result<()> {
     // prepare value to verify canoe proof
     let cert_validity = CertValidity {
         claimed_validity,
-        canoe_proof: Some(canoe_proof_bytes.clone()),
         l1_head_block_hash,
         l1_chain_id: 11155111,
     };

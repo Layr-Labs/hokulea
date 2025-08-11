@@ -80,7 +80,7 @@ async fn get_sp1_cc_proof(
     eth_rpc_url: &str,
 ) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
     if canoe_inputs.is_empty() {
-        return Err(CanoeProviderError::InsufficientCanoeInput.into());
+        return Err(CanoeProviderError::EmptyCanoeInput.into());
     }
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;

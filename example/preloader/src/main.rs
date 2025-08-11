@@ -140,32 +140,29 @@ where
     let mut wit: EigenDABlobWitnessData =
         run_witgen_client(oracle.clone(), evm_factory.clone()).await?;
 
-    // get l1 header, does not have to come from oracle directly, it is for convenience
-    let boot_info = BootInfo::load(oracle.as_ref()).await?;
+    if wit.require_canoe_proof() {
+        // get l1 header, does not have to come from oracle directly, it is for convenience
+        let boot_info = BootInfo::load(oracle.as_ref()).await?;
 
-    let canoe_proof = hokulea_witgen::from_boot_info_to_canoe_proof(
-        &boot_info,
-        &wit,
-        oracle.clone(),
-        canoe_provider,
-    )
-    .await?;
+        // generate one canoe proof for all DA certs
+        let canoe_proof = hokulea_witgen::from_boot_info_to_canoe_proof(
+            &boot_info,
+            &wit,
+            oracle.clone(),
+            canoe_provider,
+        )
+        .await?;
 
-    // populate canoe proof for this example, in general canoe_proofs are used differently depending on
-    // where it is verified
-    // for verification within zkVM, canoe_proof should be passed in to zkVM via its stdin by a special
-    // function depending on zkVM framework. More see CanoeVerifier
-    // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
-    // For Steel, use CanoeSteelProvider to generate such proof
-    // For verification in non zkVM context, canoe_proofs can be passed as part of serialized bytes
-    // along with other
-    //for ((_, cert_validity), canoe_proof) in wit.validity.iter_mut().zip(canoe_proofs.iter()) {
-    //    let canoe_proof_bytes = serde_json::to_vec(&canoe_proof).expect("serde error");
-    //    cert_validity.canoe_proof = Some(canoe_proof_bytes);
-    //}
-
-    wit.canoe_proof_bytes = Some(serde_json::to_vec(&canoe_proof).expect("serde error"));
-
+        // populate canoe proof for this example, in general canoe_proof are used differently depending on
+        // where it is verified
+        // for verification within zkVM, canoe_proof should be passed in to zkVM via its stdin by a special
+        // function depending on zkVM framework. More see CanoeVerifier
+        // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
+        // For Steel, use CanoeSteelProvider to generate such proof
+        // For verification in non zkVM context,  can be passed as part of serialized bytes
+        // along with other
+        wit.canoe_proof_bytes = Some(serde_json::to_vec(&canoe_proof).expect("serde error"));
+    }
     Ok(wit)
 }
 

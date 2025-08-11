@@ -32,8 +32,9 @@ pub trait CanoeProvider: Clone + Send + 'static {
     type Receipt: Serialize + for<'de> Deserialize<'de>;
 
     /// create_certs_validity_proof takes a vector of canoe inputs and produces one zk proof attesting
-    /// the claimed validity boolean value is indeed the evaluating result of applying the DAcert on the
-    /// specified chain at a certain block number on the verifier address
+    /// all the claimed validity in vector are indeed correct result.
+    /// The correctness is defined by evaluating result of applying the DAcert on the specified chain
+    /// at a certain block number on the verifier address.
     /// The function assumes at least one CanoeInput, and all canoe inputs must share common
     /// (l1_chain_id, l1_head_block_number)
     async fn create_certs_validity_proof(
@@ -64,12 +65,13 @@ impl CanoeProvider for CanoeNoOpProvider {
     }
 }
 
-/// Caone Provider Error
+/// CanoeProviderError allows the caller to handle error types.
+/// EmptyCanoeInput happens when there is no canoe to be proven.
 #[derive(Debug, thiserror::Error)]
 pub enum CanoeProviderError {
-    /// Insufficient Canoe Input
-    #[error("Insufficient Canoe Input")]
-    InsufficientCanoeInput,
+    /// Empty Canoe Input
+    #[error("Empty Canoe Input")]
+    EmptyCanoeInput,
 }
 
 /// Call respecting solidity interface

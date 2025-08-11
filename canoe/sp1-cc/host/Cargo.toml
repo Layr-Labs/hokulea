@@ -16,7 +16,6 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 canoe-provider.workspace = true
 canoe-bindings.workspace = true
-hokulea-proof.workspace = true
 eigenda-cert.workspace = true
 
 # misc:
