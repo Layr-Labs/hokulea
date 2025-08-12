@@ -21,3 +21,4 @@ rust-kzg-bn254-primitives.workspace = true
 
 async-trait.workspace = true
 anyhow.workspace = true
+tracing.workspace = true

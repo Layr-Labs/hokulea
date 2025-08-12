@@ -9,6 +9,7 @@ use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
 use std::sync::Arc;
+use tracing::info;
 
 /// A helper function to create canoe proof by the provided canoe provider.
 /// The function relies on data stored in the oracle, for l1_head, l1_head_header.number
@@ -38,6 +39,8 @@ where
     });
 
     let mut canoe_inputs = vec![];
+
+    info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", wit.validity.len());
 
     for (altda_commitment, cert_validity) in &mut wit.validity {
         let canoe_input = CanoeInput {

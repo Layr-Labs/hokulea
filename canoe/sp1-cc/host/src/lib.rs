@@ -134,7 +134,7 @@ async fn get_sp1_cc_proof(
         };
 
         let returns_bytes = sketch
-            .call(contract_input)
+            .call_raw(&contract_input)
             .await
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 

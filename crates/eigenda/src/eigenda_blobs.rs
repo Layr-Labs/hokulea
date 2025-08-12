@@ -36,6 +36,8 @@ where
     ) -> Result<EigenDABlobData, HokuleaErrorKind> {
         let eigenda_commitment = self.parse(calldata)?;
 
+        info!(target: "eigenda_blob_source", "parsed an altda commitment of version {}", eigenda_commitment.cert_version_str());
+
         // get recency window size, discard the old cert if necessary
         match self
             .eigenda_fetcher

@@ -157,12 +157,12 @@ risc0-build = { version = "2.3.1", default-features = false, features = ["unstab
 canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false  }
 canoe-sp1-cc-client  = { path = "./canoe/sp1-cc/client", default-features = false  }
 
-sp1-sdk = "4.2.0"
-sp1-build = "4.2.0"
-sp1-zkvm = { version = "4.2.0" }
-sp1-lib = "4.2.0"
-sp1-core-executor = "4.2.0"
-sp1-prover = "4.2.0"
+sp1-sdk = "5.0.5"
+sp1-build = "5.0.5"
+sp1-zkvm = "5.0.5"
+sp1-lib = "5.0.5"
+sp1-core-executor = "5.0.5"
+sp1-prover = "5.0.5"
 
 # ZKVM deps (ToDo cleanup)
 log = { version = "0.4" }
