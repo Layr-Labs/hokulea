@@ -10,7 +10,7 @@ use tracing::{info, warn};
 // ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
 // To get vKey of ELF
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
-pub const VKEYHEXSTRING: &str = "00692d1aac07e614ced12f4b16f50834490e735b89d2d3492b343337bb31d227";
+pub const VKEYHEXSTRING: &str = "0022d123b6ec9304510809638a79a88fc0e83616ca334504705ab74b2eb773d6";
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}

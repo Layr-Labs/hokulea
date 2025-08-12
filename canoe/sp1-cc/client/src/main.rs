@@ -11,7 +11,8 @@ pub fn main() {
     // Read the state sketch from stdin. Use this during the execution in order to
     // access Ethereum state.
     let state_sketch_bytes = sp1_zkvm::io::read::<Vec<u8>>();
-    let state_sketch = bincode::deserialize::<EvmSketchInput>(&state_sketch_bytes).unwrap();
+    let state_sketch = bincode::deserialize::<EvmSketchInput>(&state_sketch_bytes)
+        .expect("should be able to deserialize evm sketch state");
 
     // read a list of canoe inputs and prove them all together in one sp1-cc proof
     let canoe_inputs = sp1_zkvm::io::read::<Vec<CanoeInput>>();
@@ -21,14 +22,15 @@ pub fn main() {
 
     // Initialize the client executor with the state sketch.
     // This step also validates all of the storage against state root provided by the host
-    let executor = ClientExecutor::eth(&state_sketch).unwrap();
-    let l1_chain_id = executor.chain_spec.chain().id();
+    let executor =
+        ClientExecutor::eth(&state_sketch).expect("should be able to initialize client executor");
 
+    let l1_chain_id_from_canoe_input = canoe_inputs[0].l1_chain_id;
     let l1_head_block_number = canoe_inputs[0].l1_head_block_number;
     let l1_head_block_hash = canoe_inputs[0].l1_head_block_hash;
     // require all canoe input share a common l1_chain_id
     for canoe_input in canoe_inputs.iter() {
-        assert!(canoe_input.l1_chain_id == l1_chain_id);
+        assert!(canoe_input.l1_chain_id == l1_chain_id_from_canoe_input);
         assert!(canoe_input.l1_head_block_number == l1_head_block_number);
         assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
@@ -62,7 +64,9 @@ pub fn main() {
             }
         };
 
-        let public_vals = executor.execute(call).unwrap();
+        let public_vals = executor
+            .execute(call)
+            .expect("executor should be able to execute call");
 
         // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
         let returns = Bool::abi_decode(&public_vals.contractOutput).expect("deserialize returns");
