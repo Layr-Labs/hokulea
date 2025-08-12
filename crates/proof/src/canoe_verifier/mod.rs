@@ -22,12 +22,13 @@ pub trait CanoeVerifier: Clone + Send + 'static {
     ) -> Result<(), errors::HokuleaCanoeVerificationError>;
 }
 
-/// a helper function to convert validity and eigenda_cert into a journal, which can be
-/// used to verify canoe proof. The returned type is abi encoded Journal, which is
-/// immediately consumable by zkVM
+/// A helper function to convert validity and eigenda_cert into journals.
+/// Those journals are concatenated in a serialized byte array which is then committed by the zkVM.
+/// The zkVM host is expected to provide a zk proof that commites to those serialized bytes array.
+/// Those bytes are never expected to be deserialized.
 pub fn to_journals_bytes(cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>) -> Vec<u8> {
     let mut journals: Vec<u8> = Vec::new();
-    for (altda_commitment, cert_validity) in &cert_validity_pair {
+    for (altda_commitment, cert_validity) in &cert_validity_pairs {
         let rlp_bytes = altda_commitment.to_rlp_bytes();
 
         let journal = Journal {

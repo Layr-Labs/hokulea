@@ -31,7 +31,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
                 use core::str::FromStr;
-                use crate::canoe_verifier::to_journal_bytes;
+                use crate::canoe_verifier::to_journals_bytes;
 
                 let journals_bytes = to_journals_bytes(cert_validity_pair);
 
