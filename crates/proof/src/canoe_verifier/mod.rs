@@ -25,7 +25,7 @@ pub trait CanoeVerifier: Clone + Send + 'static {
 /// a helper function to convert validity and eigenda_cert into a journal, which can be
 /// used to verify canoe proof. The returned type is abi encoded Journal, which is
 /// immediately consumable by zkVM
-pub fn to_journal_bytes(cert_validity_pair: Vec<(AltDACommitment, CertValidity)>) -> Vec<u8> {
+pub fn to_journals_bytes(cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>) -> Vec<u8> {
     let mut journals: Vec<u8> = Vec::new();
     for (altda_commitment, cert_validity) in &cert_validity_pair {
         let rlp_bytes = altda_commitment.to_rlp_bytes();

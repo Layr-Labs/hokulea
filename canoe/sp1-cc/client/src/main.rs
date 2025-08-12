@@ -14,7 +14,7 @@ pub fn main() {
     let state_sketch_bytes = sp1_zkvm::io::read::<Vec<u8>>();
     let state_sketch = bincode::deserialize::<EvmSketchInput>(&state_sketch_bytes).unwrap();
 
-    // read a list of canoe inputs and prove them altogether in one sp1-cc proof
+    // read a list of canoe inputs and prove them all together in one sp1-cc proof
     let canoe_inputs = sp1_zkvm::io::read::<Vec<CanoeInput>>();
 
     // ensure all canoe_proof uses identical l1 chain id and l1 head block number
