@@ -48,7 +48,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 //let v_key = b256_to_u32_array(v_key_b256);
                 // use software to get the vKey
                 let v_key: [u32; 8] = [292065755, 992264468, 553725041, 664439036, 121745590, 684528657, 1622503062, 783774678];
-                info!("using v_key {}", v_key);
+                info!("using v_key {:?}", v_key);
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&v_key, &public_values_digest.into());
