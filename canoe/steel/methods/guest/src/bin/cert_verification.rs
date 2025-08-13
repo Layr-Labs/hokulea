@@ -55,6 +55,10 @@ fn main() {
         _ => input.into_env(&EthChainSpec::new_single(l1_chain_id, Default::default())),
     };
 
+    // Those journals are concatenated in a serialized byte array which can be committed
+    // by the zkVM. The hokulea program independently reproduces the serialized journals, and verifies
+    // if zkVM has produced the proof for the exact serialized bytes.
+    // Those bytes are never expected to be deserialized.
     let mut journals: Vec<u8> = vec![];
     for canoe_input in canoe_inputs.iter() {
         // Prepare the function call and call the function

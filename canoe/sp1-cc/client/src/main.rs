@@ -38,8 +38,10 @@ pub fn main() {
         .try_into()
         .expect("convert sp1 genesis into chain spec");
 
-    // journals is a concatenation of serialized proof journal for each canoe input. The whole serialized vec is
-    // reproduced during the verification procedures
+    // Those journals are concatenated in a serialized byte array which can be committed
+    // by the zkVM. The hokulea program independently reproduce the serialized journals, and verify
+    // if zkVM has produced the proof for the exact serialized journals.
+    // Those bytes are never expected to be deserialized.
     let mut journals: Vec<u8> = vec![];
     // executes all calls, then combines and commits all journals
     for canoe_input in canoe_inputs.iter() {
