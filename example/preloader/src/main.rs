@@ -69,6 +69,7 @@ async fn main() -> anyhow::Result<()> {
 
             info!("canoe_vk hash aa");
             let (_pk, canoe_vk) = client.setup(CERT_VERIFICATION_ELF);
+            canoe_vk.
             println!("canoe_vk hash {:?}", canoe_vk.vk.hash_u32() );
 
             let canoe_provider = CanoeSp1CCReducedProofProvider{

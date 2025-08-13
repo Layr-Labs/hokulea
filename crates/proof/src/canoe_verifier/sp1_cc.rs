@@ -47,7 +47,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 //let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
                 //let v_key = b256_to_u32_array(v_key_b256);
                 // use software to get the vKey
-                let v_key: [u32; 8] = vec![292065755, 992264468, 553725041, 664439036, 121745590, 684528657, 1622503062, 783774678];
+                let v_key: [u32; 8] = vec![1544221694, 649783011, 1751963758, 599962036, 918100389, 1096987333, 1229879243, 1086020142];
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&v_key, &public_values_digest.into());
