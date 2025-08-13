@@ -10,6 +10,5 @@ state.bin.gz
 .run.*.env
 canoe/steel/methods/contracts/ImageID.sol
 canoe/steel/methods/contracts/ELF.sol
-canoe/sp1-cc/elf/canoe-sp1-cc-client
 .DS_store
 .idea
