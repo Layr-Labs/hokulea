@@ -12,6 +12,8 @@ use tracing::{info, warn};
 // cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
 pub const VKEYHEXSTRING: &str = "0022d123b6ec9304510809638a79a88fc0e83616ca334504705ab74b2eb773d6";
 
+
+
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
 
@@ -42,13 +44,19 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 }
                 // used within zkVM
                 let public_values_digest = Sha256::digest(journals_bytes);
-                let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
-                let v_key = b256_to_u32_array(v_key_b256);
+                //let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
+                //let v_key = b256_to_u32_array(v_key_b256);
+                // use software to get the vKey
+                let v_key: [u32; 8] = vec![292065755, 992264468, 553725041, 664439036, 121745590, 684528657, 1622503062, 783774678];
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&v_key, &public_values_digest.into());
             } else {
+                use core::str::FromStr;
                 warn!("Skipping sp1CC proof verification in native mode outside of zkVM, because sp1 cannot take sp1-sdk as dependency which is needed for verification in the native mode");
+                let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
+                let v_key = b256_to_u32_array(v_key_b256);
+                info!("v_key is {:?}", v_key);
             }
         }
         Ok(())

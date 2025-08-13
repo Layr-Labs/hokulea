@@ -4495,6 +4495,7 @@ dependencies = [
  "op-alloy-consensus 0.17.2",
  "op-revm 5.0.1",
  "serde_json",
+ "sp1-sdk",
  "tokio",
  "tracing",
 ]
