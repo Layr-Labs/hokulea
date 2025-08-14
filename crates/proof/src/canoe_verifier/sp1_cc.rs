@@ -20,7 +20,8 @@ use tracing::{info, warn};
 /// ``` bash
 /// just run-preloader .devnet.env sp1-cc
 /// ```
-/// It will print out the vkey in the terminal
+/// The v_key will be printed in the terminal.
+/// Both the ELF and v_key must be updated at the same time and merged to the repo
 /// TODO(bx) Figure out a way to automate the process
 pub const v_key: [u32; 8] = [1219192901, 8919521, 652817027, 1590006531, 414060243, 1639904125, 768591396, 1492827050];
 

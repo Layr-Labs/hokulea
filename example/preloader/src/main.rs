@@ -62,15 +62,12 @@ async fn main() -> anyhow::Result<()> {
             use canoe_sp1_cc_host::CanoeSp1CCReducedProofProvider;
             use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
             use sp1_sdk::{ProverClient, HashableKey};
-            pub const CANOE_ELF: &[u8] = include_bytes!("/Users/bxue/Documents/eigenda-integration/hokulea/canoe/sp1-cc/elf/canoe-sp1-cc-client");
-
-            //const CANOE_ELF: &[u8] = canoe_sp1_cc_host::ELF;
-            let client = ProverClient::from_env();
-
-            info!("canoe_vk hash aa");
-            let (_pk, canoe_vk) = client.setup(CANOE_ELF);
             
-            println!("canoe_vk hash {:?}", canoe_vk.vk.hash_u32() );
+            const CANOE_SP1CC_ELF: &[u8] = canoe_sp1_cc_host::ELF;
+            let client = ProverClient::from_env();
+            let (_pk, canoe_vk) = client.setup(CANOE_SP1CC_ELF);
+            
+            println!("canoe sp1cc v_key {:?}", canoe_vk.vk.hash_u32() );
 
             let canoe_provider = CanoeSp1CCReducedProofProvider{
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
