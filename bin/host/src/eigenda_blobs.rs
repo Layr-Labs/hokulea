@@ -29,15 +29,15 @@ impl OnlineEigenDABlobProvider {
         &self,
         cert: &Bytes,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        // the query params instructs proxy to return encoded payload
-        // without the query params, the proxy by default uses optimism_generic even without specifying commitment_mode
-        // the proxy by default returns the decoded rollup payload if without the [QUERY_PARAM_ENCODED_PAYLOAD]
-        // the secure integration expects encoded paload to allow eigenda derivation pipeline to cover the decoding procedures
+        // Query parameters configuration for proxy behavior:
+        // - commitment_mode=optimism_generic: Specifies the commitment mode (default even if not specified)
+        // - return_encoded_payload=true: Instructs proxy to return encoded payload instead of decoded rollup payload
+        // - Without these params: proxy returns decoded rollup payload by default
+        // - Secure integration requires encoded payload to allow derivation pipeline to handle decoding
         let url = format!(
             "{}/{}/{}?{}",
             self.base, GET_METHOD, cert, QUERY_PARAM_ENCODED_PAYLOAD
         );
-        //let resp1 = self.inner.get(url1).send().await.unwrap();
         self.inner.get(url).send().await
     }
 }

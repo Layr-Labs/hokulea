@@ -71,9 +71,8 @@ pub async fn fetch_eigenda_hint(
     trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
     // Convert commitment bytes to AltDACommitment
-    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into().expect(
-        "can't parse into AltDACommitment: hokulea client should have discarded this input",
-    );
+    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into()
+        .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
@@ -158,7 +157,7 @@ pub struct ProxyDerivationStage {
     pub is_recent_cert: bool,
     // proxy derivation determines cert is valid
     pub is_valid_cert: bool,
-    // ToDo should have been encoded_payload, but until the endpoitn of proxy is implemented
+    // encoded_payload
     pub encoded_payload: Vec<u8>,
 }
 
@@ -212,7 +211,7 @@ async fn fetch_data_from_proxy(
         encoded_payload = response
             .bytes()
             .await
-            .map_err(|e| anyhow!("should be able to get rollup payload from http response {e}"))?
+            .map_err(|e| anyhow!("should be able to get encoded payload from http response {e}"))?
             .into();
     }
 
