@@ -15,7 +15,11 @@ use tracing::{info, warn};
 use url::Url;
 
 /// The ELF we want to execute inside the zkVM.
-pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
+/// Always from the crate root
+pub const ELF: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/canoe/sp1-cc/elf/canoe-sp1-cc-client"
+));
 
 /// A canoe provider implementation with Sp1 contract call
 /// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
