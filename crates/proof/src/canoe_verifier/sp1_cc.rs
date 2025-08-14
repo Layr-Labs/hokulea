@@ -7,12 +7,22 @@ use eigenda_cert::AltDACommitment;
 
 use tracing::{info, warn};
 
-// ToDo(bx) how to automtically update it from ELF directly as oppose to hard code it
-// To get vKey of ELF
-// cargo prove vkey --elf target/elf-compilation/riscv32im-succinct-zkvm-elf/release/canoe-sp1-cc-client
-pub const VKEYHEXSTRING: &str = "0022d123b6ec9304510809638a79a88fc0e83616ca334504705ab74b2eb773d6";
-
-
+/// Any change to sp1-cc client produces a new ELF to be executed and proved by zkVM
+/// To generate the new ELF (a newer version tag is also fine)
+/// ``` bash
+/// cd canoe/sp1-cc/client
+/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
+/// ```
+/// 
+/// The verificaiton of the ELF must be hardcoded here which pins an exact version of ELF a prover can use
+/// Sp1 toolchain currently does not prove a way to generate such key. It has been raised to the sp1 team.
+/// Currently, one can run the preloader example under `example/preloader` and run
+/// ``` bash
+/// just run-preloader .devnet.env sp1-cc
+/// ```
+/// It will print out the vkey in the terminal
+/// TODO(bx) Figure out a way to automate the process
+pub const v_key: [u32; 8] = [1219192901, 8919521, 652817027, 1590006531, 414060243, 1639904125, 768591396, 1492827050];
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -26,7 +36,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         cert_validity_pair: Vec<(AltDACommitment, CertValidity)>,
         canoe_proof_bytes: Option<Vec<u8>>,
     ) -> Result<(), HokuleaCanoeVerificationError> {
-        info!("using CanoeSp1CCVerifier");
+        info!("using CanoeSp1CCVerifier with vKey {:?}", v_key);
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
@@ -44,41 +54,13 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 }
                 // used within zkVM
                 let public_values_digest = Sha256::digest(journals_bytes);
-                //let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
-                //let v_key = b256_to_u32_array(v_key_b256);
-                // use software to get the vKey
-                let v_key: [u32; 8] = [1012500536, 1619589221, 430102856, 1820008932, 1779699705, 1351922406, 140408728, 1164160947];
-                info!("using v_key {:?}", v_key);
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&v_key, &public_values_digest.into());
             } else {
-                use core::str::FromStr;
                 warn!("Skipping sp1CC proof verification in native mode outside of zkVM, because sp1 cannot take sp1-sdk as dependency which is needed for verification in the native mode");
-                let v_key_b256 = B256::from_str(VKEYHEXSTRING).map_err(|_| HokuleaCanoeVerificationError::InvalidVerificationKeyForSp1)?;
-                let v_key = b256_to_u32_array(v_key_b256);
-                info!("v_key is {:?}", v_key);
             }
         }
         Ok(())
     }
-}
-
-pub fn b256_to_u32_array(b: B256) -> [u32; 8] {
-    let bytes: [u8; 32] = b.into();
-
-    let mut out = [0u32; 8];
-    let mut i = 0;
-    while i < 8 {
-        let start = i * 4;
-        // sp1 zkvm is little endian
-        out[i] = u32::from_le_bytes([
-            bytes[start],
-            bytes[start + 1],
-            bytes[start + 2],
-            bytes[start + 3],
-        ]);
-        i += 1;
-    }
-    out
 }

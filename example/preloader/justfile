@@ -37,6 +37,13 @@ run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet
     FEATURES_FLAGS="--features {{features}}"
   fi
 
+  # compiles canoe sp1-cc ELF
+  if [ "{{features}}" == "sp1-cc" ]; then
+    pushd canoe/sp1-cc/client/
+      cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
+    popd
+  fi
+
   echo "Running host program with native client program..."
   cargo r --bin hokulea-example-preloader $FEATURES_FLAGS -- \
     --l1-head $L1_HEAD \
