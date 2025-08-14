@@ -70,9 +70,8 @@ pub async fn fetch_eigenda_hint(
     trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
     // Convert commitment bytes to AltDACommitment
-    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into().expect(
-        "can't parse into AltDACommitment: hokulea client should have discarded this input",
-    );
+    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into()
+        .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
@@ -157,7 +156,7 @@ pub struct ProxyDerivationStage {
     pub is_recent_cert: bool,
     // proxy derivation determines cert is valid
     pub is_valid_cert: bool,
-    // ToDo should have been encoded_payload, but until the endpoitn of proxy is implemented
+    // encoded_payload
     pub encoded_payload: Vec<u8>,
 }
 
@@ -211,7 +210,7 @@ async fn fetch_data_from_proxy(
         encoded_payload = response
             .bytes()
             .await
-            .map_err(|e| anyhow!("should be able to get rollup payload from http response {e}"))?
+            .map_err(|e| anyhow!("should be able to get encoded payload from http response {e}"))?
             .into();
     }
 
@@ -256,7 +255,8 @@ async fn store_blob_data(
     assert!(encoded_payload.len() % 32 == 0);
     let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
 
-    // Store each field element
+    // Store each field element if the returned encoded_payload is less than the blob length
+    // the missing data is automatically padded with 0s
     let mut field_element_key = altda_commitment.digest_template();
     for i in 0..blob_length_fe as u64 {
         field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
