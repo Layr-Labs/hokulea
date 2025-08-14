@@ -64,7 +64,8 @@ pub fn main() {
             .expect("executor should be able to execute call");
 
         // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
-        let returns = Bool::abi_decode(&public_vals.contractOutput).expect("should be able to deserialize returns");
+        let returns = Bool::abi_decode(&public_vals.contractOutput)
+            .expect("should be able to deserialize returns");
 
         // TODO might be using a better serialization format
         let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();

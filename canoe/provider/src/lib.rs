@@ -1,4 +1,3 @@
-
 use alloy_primitives::{Address, B256};
 use alloy_sol_types::SolValue;
 use anyhow::Result;
