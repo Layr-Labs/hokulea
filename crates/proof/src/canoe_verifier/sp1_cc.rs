@@ -14,7 +14,7 @@ use tracing::{info, warn};
 /// ```
 ///
 /// The verificaiton of the ELF must be hardcoded here which pins an exact version of ELF a prover can use
-/// Sp1 toolchain currently does not prove a way to generate such key. It has been raised to the sp1 team.
+/// Sp1 toolchain currently does not provide a way to generate such key. It has been raised to the sp1 team.
 /// Currently, one can run the preloader example under `example/preloader` and run
 /// ``` bash
 /// just run-preloader .devnet.env sp1-cc
