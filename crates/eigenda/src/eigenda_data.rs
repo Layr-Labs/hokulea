@@ -11,28 +11,28 @@ use rust_kzg_bn254_primitives::helpers;
 #[derive(Default, Clone, Debug)]
 /// Represents the data structure for EigenDA Blob
 /// intended for deriving rollup channel frame from eigenda blob
-pub struct EigenDABlobData {
+pub struct EncodedPayload {
     /// The calldata
-    pub blob: Bytes,
+    pub encoded_payload: Bytes,
 }
 
-impl EigenDABlobData {
+impl EncodedPayload {
     /// Decodes the blob into raw byte data. Reverse of the encode function below
     /// Returns a [BlobDecodingError] if the blob is invalid.
     pub fn decode(&self) -> Result<Bytes, HokuleaStatelessError> {
-        let blob = &self.blob;
-        if blob.len() < 32 {
-            return Err(BlobDecodingError::InvalidBlobSizeInBytes(blob.len() as u64).into());
+        let encoded_payload = &self.encoded_payload;
+        if encoded_payload.len() < 32 {
+            return Err(BlobDecodingError::InvalidBlobSizeInBytes(encoded_payload.len() as u64).into());
         }
 
         // blob must have multiple of 32 bytes
-        if blob.len() % BYTES_PER_FIELD_ELEMENT != 0 {
-            return Err(BlobDecodingError::InvalidBlobSizeInBytes(blob.len() as u64).into());
+        if encoded_payload.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+            return Err(BlobDecodingError::InvalidBlobSizeInBytes(encoded_payload.len() as u64).into());
         }
 
         // for every user payload, there is a encoding version, currently only one version is
         // supported, i.e. padding 0 for every 31 bytes
-        let blob_encoding_version = blob[1];
+        let blob_encoding_version = encoded_payload[1];
         if blob_encoding_version != PAYLOAD_ENCODING_VERSION_0 {
             return Err(
                 BlobDecodingError::InvalidBlobEncodingVersion(blob_encoding_version).into(),
@@ -40,11 +40,11 @@ impl EigenDABlobData {
         }
 
         // see https://github.com/Layr-Labs/eigenda/blob/f8b0d31d65b29e60172507074922668f4ca89420/api/clients/codecs/default_blob_codec.go#L44
-        let content_size = blob.slice(2..6).get_u32();
+        let content_size = encoded_payload.slice(2..6).get_u32();
         debug!(target: "eigenda-datasource", "content_size {:?}", content_size);
 
         // the first 32 Bytes are reserved as the header field element
-        let codec_data = blob.slice(32..);
+        let codec_data = encoded_payload.slice(32..);
 
         // verify there is an empty byte for every 31 bytes
         // this is a harder constraint than field element range check.
@@ -114,7 +114,7 @@ impl EigenDABlobData {
             .copy_from_slice(&codec_rollup_data);
 
         Self {
-            blob: Bytes::from(raw_blob),
+            encoded_payload: Bytes::from(raw_blob),
         }
     }
 }
@@ -128,11 +128,11 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success() {
         let rollup_data = vec![1, 2, 3, 4];
-        let eigenda_blob = EigenDABlobData::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
-        let data_len = eigenda_blob.blob.len();
+        let encoded_payload = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let data_len = encoded_payload.encoded_payload.len();
         assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0);
 
-        let result = eigenda_blob.decode();
+        let result = encoded_payload.decode();
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Bytes::from(rollup_data));
     }
@@ -140,12 +140,12 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success_empty() {
         let rollup_data = vec![];
-        let eigenda_blob = EigenDABlobData::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
-        let data_len = eigenda_blob.blob.len();
+        let encoded_payload = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let data_len = encoded_payload.encoded_payload.len();
         // 32 is eigenda blob header size
         assert!(data_len == 32);
 
-        let result = eigenda_blob.decode();
+        let result = encoded_payload.decode();
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Bytes::from(rollup_data));
     }
@@ -153,9 +153,9 @@ mod tests {
     #[test]
     fn test_encode_and_decode_error_invalid_length() {
         let rollup_data = vec![1, 2, 3, 4];
-        let mut eigenda_blob = EigenDABlobData::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
-        eigenda_blob.blob.truncate(33);
-        let result = eigenda_blob.decode();
+        let mut encoded_payload = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        encoded_payload.encoded_payload.truncate(33);
+        let result = encoded_payload.decode();
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),

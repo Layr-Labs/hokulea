@@ -4,7 +4,7 @@ use crate::traits::EigenDABlobProvider;
 use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
 use kona_derive::errors::PipelineErrorKind;
 
-use crate::eigenda_data::EigenDABlobData;
+use crate::eigenda_data::EncodedPayload;
 use alloc::vec::Vec;
 use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{Address, Bytes};
@@ -20,7 +20,7 @@ use tracing::warn;
 
 #[derive(Debug, Clone)]
 pub enum EigenDAOrCalldata {
-    EigenDA(EigenDABlobData),
+    EigenDA(EncodedPayload),
     Calldata(Bytes),
 }
 

@@ -5,7 +5,7 @@ use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::{EigenDABlobData, HokuleaPreimageError};
+use hokulea_eigenda::{EncodedPayload, HokuleaPreimageError};
 use hokulea_eigenda::{
     BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
     RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
@@ -246,11 +246,11 @@ async fn store_blob_data(
     let mut kv_write_lock = kv.write().await;
     // Prepare blob data
     let blob_length_fe = altda_commitment.get_num_field_element();
-    let eigenda_blob = EigenDABlobData::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
+    let encoded_payload = EncodedPayload::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
 
     // Verify blob data is properly formatted
-    assert!(eigenda_blob.blob.len() % 32 == 0);
-    let fetch_num_element = (eigenda_blob.blob.len() / BYTES_PER_FIELD_ELEMENT) as u64;
+    assert!(encoded_payload.encoded_payload.len() % 32 == 0);
+    let fetch_num_element = (encoded_payload.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
 
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
@@ -262,7 +262,7 @@ async fn store_blob_data(
             // Store actual blob data
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                eigenda_blob.blob[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                encoded_payload.encoded_payload[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
             )?;
         } else {
             // Fill remaining elements with zeros

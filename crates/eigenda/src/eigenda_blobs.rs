@@ -1,6 +1,6 @@
 //! Blob Data Source
 
-use crate::eigenda_data::EigenDABlobData;
+use crate::eigenda_data::EncodedPayload;
 use crate::traits::EigenDABlobProvider;
 use crate::HokuleaPreimageError;
 
@@ -33,7 +33,7 @@ where
         &mut self,
         calldata: &Bytes,
         l1_inclusion_bn: u64,
-    ) -> Result<EigenDABlobData, HokuleaErrorKind> {
+    ) -> Result<EncodedPayload, HokuleaErrorKind> {
         let eigenda_commitment = self.parse(calldata)?;
 
         info!(target: "eigenda_blob_source", "parsed an altda commitment of version {}", eigenda_commitment.cert_version_str());
@@ -69,13 +69,13 @@ where
         // get blob via preimage oracle
         match self.eigenda_fetcher.get_blob(&eigenda_commitment).await {
             Ok(data) => {
-                let new_blob: Vec<u8> = data.into();
+                let encoded_payload_bytes: Vec<u8> = data.into();
 
-                let eigenda_blob = EigenDABlobData {
-                    blob: new_blob.into(),
+                let encoded_payload = EncodedPayload {
+                    encoded_payload: encoded_payload_bytes.into(),
                 };
 
-                Ok(eigenda_blob)
+                Ok(encoded_payload)
             }
             Err(e) => Err(e.into()),
         }
