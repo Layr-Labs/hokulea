@@ -7,8 +7,9 @@ use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{EncodedPayload, HokuleaPreimageError};
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, PAYLOAD_ENCODING_VERSION_0, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
-    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
+    BYTES_PER_FIELD_ELEMENT, ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0,
+    RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
@@ -247,11 +248,30 @@ async fn store_blob_data(
     // Prepare blob data
     let blob_length_fe = altda_commitment.get_num_field_element();
     let encoded_payload = EncodedPayload::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
-
     // Verify blob data is properly formatted
     assert!(encoded_payload.encoded_payload.len() % 32 == 0);
-    let fetch_num_element = (encoded_payload.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
 
+    // Preliminary defense check against malicious eigenda proxy host
+    // Validate field elements (keeping existing field element validation for compatibility)
+    let encoded_payload_body = &encoded_payload.encoded_payload[ENCODED_PAYLOAD_HEADER_LEN_BYTES..];
+    // verify there is an empty byte for every 31 bytes. This is a harder constraint than field element range check.
+    for chunk in encoded_payload_body.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
+        // very conservative check on Field element range. It allows us to detect
+        // misbehaving at the host side when providing the field element. So we can stop early.
+        // the field element of on bn254 curve is some number less than 2^254
+        // that means both 255 and 254 th bits must be 0. out of conservation, we require the
+        // 253 bit to be 0. It aligns with our encoding scheme below that the first 8bits
+        // should be 0.
+        // Field elements are interpreted as big endian
+        if chunk[0] & 0b1110_0000 != 0 {
+            return Err(anyhow!("invalid field element encoding"));
+        }
+        // we don't have the check that the first 8 bits are zero, because it is a more restrictive check, that might
+        // affect future payload encoding scheme
+    }
+
+    let fetch_num_element =
+        (encoded_payload.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
     for i in 0..blob_length_fe as u64 {

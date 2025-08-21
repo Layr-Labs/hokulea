@@ -1,82 +1,138 @@
-use crate::PAYLOAD_ENCODING_VERSION_0;
 use crate::{
-    errors::{BlobDecodingError, HokuleaStatelessError},
+    errors::{EncodedPayloadDecodingError, HokuleaStatelessError},
     BYTES_PER_FIELD_ELEMENT,
 };
+use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
 use alloc::vec;
 use alloy_primitives::Bytes;
-use bytes::buf::Buf;
 use rust_kzg_bn254_primitives::helpers;
+
+/// Represents raw payload bytes, alias
+pub type Payload = Bytes;
 
 #[derive(Default, Clone, Debug)]
 /// Represents the data structure for EigenDA Blob
 /// intended for deriving rollup channel frame from eigenda blob
 pub struct EncodedPayload {
-    /// The calldata
+    /// Bytes over Vec because Bytes clone is a shallow copy
     pub encoded_payload: Bytes,
 }
 
 impl EncodedPayload {
-    /// Decodes the blob into raw byte data. Reverse of the encode function below
-    /// Returns a [BlobDecodingError] if the blob is invalid.
-    pub fn decode(&self) -> Result<Bytes, HokuleaStatelessError> {
-        let encoded_payload = &self.encoded_payload;
-        if encoded_payload.len() < 32 {
-            return Err(BlobDecodingError::InvalidBlobSizeInBytes(encoded_payload.len() as u64).into());
+    /// Constructs an EncodedPayload from bytes array.
+    /// Does not validate the bytes, to mimic the Blob.ToEncodedPayloadUnchecked process.
+    /// The length, header, and body invariants are checked when calling decode.
+    pub fn deserialize(bytes: Bytes) -> Self {
+        Self {
+            encoded_payload: bytes,
         }
+    }
 
-        // blob must have multiple of 32 bytes
-        if encoded_payload.len() % BYTES_PER_FIELD_ELEMENT != 0 {
-            return Err(BlobDecodingError::InvalidBlobSizeInBytes(encoded_payload.len() as u64).into());
+    /// Returns the raw bytes of the encoded payload.
+    pub fn serialize(&self) -> &Bytes {
+        &self.encoded_payload
+    }
+
+    /// Returns the number of symbols in the encoded payload
+    pub fn len_symbols(&self) -> u32 {
+        (self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u32
+    }
+
+    /// Checks whether the encoded payload satisfies its length invariant.
+    /// EncodedPayloads must contain a power of 2 number of Field Elements, each of length 32.
+    /// This means the only valid encoded payloads have byte lengths of 32, 64, 128, 256, etc.
+    ///
+    /// Note that this function only checks the length invariant, meaning that it doesn't check that
+    /// the 32 byte chunks are valid bn254 elements.
+    fn check_len_invariant(&self) -> Result<(), HokuleaStatelessError> {
+        // this check is redundant since 0 is not a valid power of 32, but we keep it for clarity.
+        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES {
+            return Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
+                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES,
+                actual: self.encoded_payload.len(),
+            }
+            .into());
         }
-
-        // for every user payload, there is a encoding version, currently only one version is
-        // supported, i.e. padding 0 for every 31 bytes
-        let blob_encoding_version = encoded_payload[1];
-        if blob_encoding_version != PAYLOAD_ENCODING_VERSION_0 {
+        // Check encoded payload has a power of two number of field elements
+        let num_field_elements = self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT;
+        if !is_power_of_two(num_field_elements) {
             return Err(
-                BlobDecodingError::InvalidBlobEncodingVersion(blob_encoding_version).into(),
+                EncodedPayloadDecodingError::InvalidPowerOfTwoLength(num_field_elements).into(),
             );
         }
+        Ok(())
+    }
 
-        // see https://github.com/Layr-Labs/eigenda/blob/f8b0d31d65b29e60172507074922668f4ca89420/api/clients/codecs/default_blob_codec.go#L44
-        let content_size = encoded_payload.slice(2..6).get_u32();
-        debug!(target: "eigenda-datasource", "content_size {:?}", content_size);
-
-        // the first 32 Bytes are reserved as the header field element
-        let codec_data = encoded_payload.slice(32..);
-
-        // verify there is an empty byte for every 31 bytes
-        // this is a harder constraint than field element range check.
-        for chunk in codec_data.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
-            // very conservative check on Field element range. It allows us to detect
-            // mishaving at the host side when providing the field element. So we can stop early.
-            // the field element of on bn254 curve is some number less than 2^254
-            // that means both 255 and 254 th bits must be 0. iut of conservation, we require the
-            // 253 bit to be 0. It aligns with our encoding scheme below that the first 8bits
-            // should be 0.
-            // Field elements are interpreted as big endian
-            if chunk[0] & 0b1110_0000 != 0 {
-                return Err(HokuleaStatelessError::FieldElementRangeError);
+    /// Validates the header (first field element = 32 bytes) of the encoded payload,
+    /// and returns the claimed length of the payload if the header is valid.
+    fn decode_header(&self) -> Result<u32, HokuleaStatelessError> {
+        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES {
+            return Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
+                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES,
+                actual: self.encoded_payload.len(),
             }
-
-            // field elements are interpreted as big endian. It can happen either because
-            // the host is misbehaving, or the op-batcher is not following the eigenda
-            // encoding standard
-            if chunk[0] != 0x0 {
-                return Err(BlobDecodingError::InvalidBlobEncoding.into());
+            .into());
+        }
+        if self.encoded_payload[0] != 0x00 {
+            return Err(EncodedPayloadDecodingError::InvalidHeaderFirstByte(
+                self.encoded_payload[0],
+            )
+            .into());
+        }
+        let payload_length = match self.encoded_payload[1] {
+            version if version == PAYLOAD_ENCODING_VERSION_0 => u32::from_be_bytes([
+                self.encoded_payload[2],
+                self.encoded_payload[3],
+                self.encoded_payload[4],
+                self.encoded_payload[5],
+            ]),
+            version => {
+                return Err(EncodedPayloadDecodingError::UnknownEncodingVersion(version).into());
             }
+        };
+        Ok(payload_length)
+    }
+
+    /// Decodes the payload from the encoded payload bytes.
+    /// Removes internal padding and extracts the payload data based on the claimed length.
+    fn decode_payload(&self, payload_len: u32) -> Result<Payload, HokuleaStatelessError> {
+        let body = self
+            .encoded_payload
+            .slice(ENCODED_PAYLOAD_HEADER_LEN_BYTES..);
+
+        // Decode the body by removing internal 0 byte padding (0x00 initial byte for every 32 byte chunk)
+        // The decodedBody should contain the payload bytes + potentially some external padding bytes.
+        let decoded_body = helpers::remove_internal_padding(body.as_ref())
+            .map_err(|_| EncodedPayloadDecodingError::InvalidBlobSizeInBytes(body.len() as u64))?;
+        let decoded_body: Bytes = decoded_body.into();
+
+        // data length is checked when constructing an encoded payload. If this error is encountered, that means there
+        // must be a flaw in the logic at construction time (or someone was bad and didn't use the proper construction methods)
+        if (decoded_body.len() as u32) < payload_len {
+            return Err(EncodedPayloadDecodingError::UnpaddedDataTooShort {
+                actual: decoded_body.len(),
+                claimed: payload_len,
+            }
+            .into());
         }
 
-        // rust kzg bn254 impl already
-        let blob_content =
-            helpers::remove_empty_byte_from_padded_bytes_unchecked(codec_data.as_ref());
-        let blob_content: Bytes = blob_content.into();
+        Ok(decoded_body.slice(0..payload_len as usize))
+    }
 
-        if blob_content.len() < content_size as usize {
-            return Err(BlobDecodingError::InvalidContentSize.into());
-        }
-        Ok(blob_content.slice(..content_size as usize))
+    /// Decodes the blob into raw byte data. Reverse of the encode function below
+    /// Returns a [EncodedPayloadDecodingError] if the blob is invalid.
+    ///
+    /// Applies the inverse of PayloadEncodingVersion0 to an EncodedPayload, and returns the decoded payload.
+    pub fn decode(&self) -> Result<Payload, HokuleaStatelessError> {
+        // Check length invariant
+        self.check_len_invariant()?;
+
+        // Decode header to get claimed payload length
+        let payload_len_in_header = self.decode_header()?;
+        debug!(target: "eigenda-datasource", "rollup payload length in bytes {:?}", payload_len_in_header);
+
+        // Decode payload using the helper method
+        self.decode_payload(payload_len_in_header)
     }
 
     /// The encode function accepts an input of opaque rollup data array into an EigenDABlobData.
@@ -90,11 +146,14 @@ impl EncodedPayload {
     ///
     /// The length of (header + payload) by the encode function is always multiple of 32
     /// The eigenda proxy does not take such constraint.
+    ///
+    /// (ToDo) with new proxy release, it can return the encoded payload, the encode function can
+    /// be moved into test, and no longer used anywhere else
     pub fn encode(rollup_data: &[u8], payload_encoding_version: u8) -> Self {
         let rollup_data_size = rollup_data.len() as u32;
 
         // encode to become raw blob
-        let codec_rollup_data = helpers::convert_by_padding_empty_byte(rollup_data);
+        let codec_rollup_data = helpers::pad_payload(rollup_data);
 
         let blob_payload_size = codec_rollup_data.len();
 
@@ -117,6 +176,11 @@ impl EncodedPayload {
             encoded_payload: Bytes::from(raw_blob),
         }
     }
+}
+
+/// Utility function to check if a number is a power of two
+fn is_power_of_two(n: usize) -> bool {
+    n != 0 && (n & (n - 1)) == 0
 }
 
 #[cfg(test)]
@@ -159,7 +223,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            BlobDecodingError::InvalidBlobSizeInBytes(33).into()
+            EncodedPayloadDecodingError::InvalidBlobSizeInBytes(33).into()
         );
     }
 }

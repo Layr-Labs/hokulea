@@ -80,13 +80,14 @@ impl PreloadedEigenDABlobProvider {
         let mut commitments = vec![];
         //for i in 0..value.eigenda_certs.len() {
         for (cert, eigenda_blobs, kzg_proof) in value.blob {
+            let blob = Blob::new(&eigenda_blobs).expect("should be able to construct a blob");
             // if valid, check blob kzg integrity
-            blobs.push(Blob::new(&eigenda_blobs));
+            blobs.push(blob.clone());
             proofs.push(kzg_proof);
             commitments.push(cert.get_kzg_commitment());
 
             // populate entries ahead of time, if something is invalid, batch_verify will abort
-            blob_entries.push((cert.clone(), Blob::new(&eigenda_blobs)));
+            blob_entries.push((cert.clone(), blob));
         }
         // check if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));

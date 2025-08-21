@@ -34,7 +34,7 @@ pub enum HokuleaStatelessError {
     FieldElementRangeError,
     /// blob decoding error, inbox sender has violated the encoding rule
     #[error("cannot decode a blob")]
-    BlobDecodeError(#[from] BlobDecodingError),
+    BlobDecodeError(#[from] EncodedPayloadDecodingError),
 }
 
 /// define conversion error
@@ -55,19 +55,35 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
 
 /// List of error can happen during blob decoding
 #[derive(Debug, thiserror::Error, PartialEq)]
-pub enum BlobDecodingError {
+pub enum EncodedPayloadDecodingError {
     /// the input blob has wrong size
     #[error("invalid blob length {0}")]
     InvalidBlobSizeInBytes(u64),
-    /// the input blob has wrong encoding version
-    #[error("invalid blob encoding version {0}")]
-    InvalidBlobEncodingVersion(u8),
-    /// the input blob violates the encoding semantics
-    #[error("invalid blob encoding")]
-    InvalidBlobEncoding,
-    /// the input blob has wrong size
-    #[error("invalid content size")]
-    InvalidContentSize,
+    /// encoded payload must contain a power of 2 number of field elements
+    #[error("encoded payload must be a power of 2 field elements (32 bytes chunks), but got {0} field elements")]
+    InvalidPowerOfTwoLength(usize),
+    /// encoded payload header validation error
+    #[error("encoded payload header first byte must be 0x00, but got {0:#04x}")]
+    InvalidHeaderFirstByte(u8),
+    /// encoded payload too short for header
+    #[error("encoded payload must be at least {expected} bytes long to contain a header, but got {actual} bytes")]
+    PayloadTooShortForHeader {
+        /// Expected minimum length
+        expected: usize,
+        /// Actual payload length
+        actual: usize,
+    },
+    /// unknown encoded payload header version
+    #[error("unknown encoded payload header version: {0}")]
+    UnknownEncodingVersion(u8),
+    /// length of unpadded data is less than claimed in header
+    #[error("length of unpadded data {actual} is less than length claimed in encoded payload header {claimed}")]
+    UnpaddedDataTooShort {
+        /// Actual unpadded data length
+        actual: usize,
+        /// Claimed length from header
+        claimed: u32,
+    },
 }
 
 /// A list of Hokulea error derived from data from preimage oracle

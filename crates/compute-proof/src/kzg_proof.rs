@@ -21,7 +21,7 @@ pub fn compute_kzg_proof(blob: &[u8]) -> Result<Bytes, KzgError> {
         .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err));
     let mut kzg = KZG::new();
 
-    let input = Blob::new(blob);
+    let input = Blob::new(blob).expect("should be able to construct a blob");
     let input_poly = input.to_polynomial_eval_form();
 
     kzg.calculate_and_store_roots_of_unity(blob.len() as u64)

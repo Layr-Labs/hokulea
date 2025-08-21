@@ -28,14 +28,15 @@ mod eigenda_blobs;
 pub use eigenda_blobs::EigenDABlobSource;
 
 mod eigenda_data;
-pub use eigenda_data::EncodedPayload;
+pub use eigenda_data::{EncodedPayload, Payload};
 
 mod errors;
 pub use errors::{
-    BlobDecodingError, HokuleaErrorKind, HokuleaPreimageError, HokuleaStatelessError,
+    EncodedPayloadDecodingError, HokuleaErrorKind, HokuleaPreimageError, HokuleaStatelessError,
 };
 
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;
+pub use constant::ENCODED_PAYLOAD_HEADER_LEN_BYTES;
 pub use constant::PAYLOAD_ENCODING_VERSION_0;
 pub use constant::STALE_GAP;

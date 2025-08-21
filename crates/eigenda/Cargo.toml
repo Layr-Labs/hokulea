@@ -10,7 +10,6 @@ eigenda-cert.workspace = true
 alloy-primitives.workspace = true
 tracing.workspace = true
 async-trait.workspace = true
-bytes.workspace = true
 rust-kzg-bn254-primitives.workspace = true
 kona-protocol.workspace = true
 thiserror.workspace = true
