@@ -49,8 +49,6 @@ optimism_package:
           - --target-num-frames=5
           - --max-l1-tx-size-bytes=1000
           - --batch-type=1
-          - --throttle-threshold=500_000
-          - --throttle-block-size=1000
       proposer_params:
         game_type: 1
         proposal_interval: 10m
@@ -65,7 +63,7 @@ optimism_package:
           - --memstore.enabled
           - --memstore.expiration=180m
           - --eigenda.v2.network=holesky_testnet # memstore disregard the network, but it simplifies the configuration 
-        image: ghcr.io/layr-labs/eigenda-proxy:latest
+        image: ghcr.io/layr-labs/eigenda-proxy:2.2.1
       network_params:
         fjord_time_offset: 0
         granite_time_offset: 0
