@@ -102,8 +102,9 @@ impl EncodedPayload {
 
         // Decode the body by removing internal 0 byte padding (0x00 initial byte for every 32 byte chunk)
         // The decodedBody should contain the payload bytes + potentially some external padding bytes.
-        let decoded_body = helpers::remove_internal_padding(body.as_ref())
-            .map_err(|_| EncodedPayloadDecodingError::InvalidBlobSizeInBytes(body.len() as u64))?;
+        let decoded_body = helpers::remove_internal_padding(body.as_ref()).map_err(|_| {
+            EncodedPayloadDecodingError::InvalidLengthInEncodedPayloadBody(body.len() as u64)
+        })?;
         let decoded_body: Bytes = decoded_body.into();
 
         // data length is checked when constructing an encoded payload. If this error is encountered, that means there
@@ -221,9 +222,10 @@ mod tests {
         encoded_payload.encoded_payload.truncate(33);
         let result = encoded_payload.decode();
         assert!(result.is_err());
+        // after truncation, 33 - 32(header length) = 1
         assert_eq!(
             result.unwrap_err(),
-            EncodedPayloadDecodingError::InvalidBlobSizeInBytes(33).into()
+            EncodedPayloadDecodingError::InvalidLengthInEncodedPayloadBody(1).into()
         );
     }
 }

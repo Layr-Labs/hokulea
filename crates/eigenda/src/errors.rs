@@ -57,8 +57,8 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum EncodedPayloadDecodingError {
     /// the input blob has wrong size
-    #[error("invalid blob length {0}")]
-    InvalidBlobSizeInBytes(u64),
+    #[error("invalid number of bytes in the encoded payload body {0}")]
+    InvalidLengthInEncodedPayloadBody(u64),
     /// encoded payload must contain a power of 2 number of field elements
     #[error("encoded payload must be a power of 2 field elements (32 bytes chunks), but got {0} field elements")]
     InvalidPowerOfTwoLength(usize),
