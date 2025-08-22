@@ -251,7 +251,7 @@ async fn store_blob_data(
     // Verify blob data is properly formatted
     assert!(
         encoded_payload.encoded_payload.len() % 32 == 0
-            && encoded_payload.encoded_payload.len() != 0
+            && !encoded_payload.encoded_payload.is_empty()
     );
 
     // Preliminary defense check against malicious eigenda proxy host
