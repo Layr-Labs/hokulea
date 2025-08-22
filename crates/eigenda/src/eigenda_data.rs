@@ -148,7 +148,7 @@ impl EncodedPayload {
     /// The length of (header + payload) by the encode function is always multiple of 32
     /// The eigenda proxy does not take such constraint.
     ///
-    /// (ToDo) with new proxy release, it can return the encoded payload, the encode function can
+    /// (ToDo) with proxy release 2.2.1, it can return the encoded payload, the encode function can
     /// be moved into test, and no longer used anywhere else
     pub fn encode(rollup_data: &[u8], payload_encoding_version: u8) -> Self {
         let rollup_data_size = rollup_data.len() as u32;

@@ -249,7 +249,10 @@ async fn store_blob_data(
     let blob_length_fe = altda_commitment.get_num_field_element();
     let encoded_payload = EncodedPayload::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
     // Verify blob data is properly formatted
-    assert!(encoded_payload.encoded_payload.len() % 32 == 0);
+    assert!(
+        encoded_payload.encoded_payload.len() % 32 == 0
+            && encoded_payload.encoded_payload.len() != 0
+    );
 
     // Preliminary defense check against malicious eigenda proxy host
     // Validate field elements (keeping existing field element validation for compatibility)
@@ -263,11 +266,11 @@ async fn store_blob_data(
         // 253 bit to be 0. It aligns with our encoding scheme below that the first 8bits
         // should be 0.
         // Field elements are interpreted as big endian
+        // We don't have the check that the first 8 bits are zero, because it is a more restrictive check, that might
+        // affect future payload encoding scheme
         if chunk[0] & 0b1110_0000 != 0 {
             return Err(anyhow!("invalid field element encoding"));
         }
-        // we don't have the check that the first 8 bits are zero, because it is a more restrictive check, that might
-        // affect future payload encoding scheme
     }
 
     let fetch_num_element =
