@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::HokuleaPreimageError;
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0,
+    BYTES_PER_FIELD_ELEMENT, ENCODED_PAYLOAD_HEADER_LEN_BYTES,
     RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
     RESERVED_EIGENDA_API_BYTE_INDEX,
 };
@@ -71,7 +71,9 @@ pub async fn fetch_eigenda_hint(
     trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
     // Convert commitment bytes to AltDACommitment
-    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into()
+    let altda_commitment: AltDACommitment = altda_commitment_bytes
+        .as_ref()
+        .try_into()
         .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
@@ -252,10 +254,7 @@ async fn store_blob_data(
     // Prepare blob data
     let blob_length_fe = altda_commitment.get_num_field_element();
     // Verify blob data is properly formatted
-    assert!(
-        encoded_payload.len() % 32 == 0
-            && !encoded_payload.is_empty()
-    );
+    assert!(encoded_payload.len() % 32 == 0 && !encoded_payload.is_empty());
 
     // Preliminary defense check against malicious eigenda proxy host
     // Validate field elements (keeping existing field element validation for compatibility)
@@ -276,8 +275,7 @@ async fn store_blob_data(
         }
     }
 
-    let fetch_num_element =
-        (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
+    let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
     for i in 0..blob_length_fe as u64 {
