@@ -5,9 +5,9 @@ use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::{EncodedPayload, HokuleaPreimageError};
+use hokulea_eigenda::HokuleaPreimageError;
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0,
+    BYTES_PER_FIELD_ELEMENT, ENCODED_PAYLOAD_HEADER_LEN_BYTES,
     RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
     RESERVED_EIGENDA_API_BYTE_INDEX,
 };
@@ -71,9 +71,10 @@ pub async fn fetch_eigenda_hint(
     trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
 
     // Convert commitment bytes to AltDACommitment
-    let altda_commitment: AltDACommitment = altda_commitment_bytes.as_ref().try_into().expect(
-        "can't parse into AltDACommitment: hokulea client should have discarded this input",
-    );
+    let altda_commitment: AltDACommitment = altda_commitment_bytes
+        .as_ref()
+        .try_into()
+        .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
@@ -109,7 +110,12 @@ pub async fn fetch_eigenda_hint(
     }
 
     // Store blob data field-by-field in key-value store
-    store_blob_data(kv.clone(), &altda_commitment, derivation_stage.rollup_data).await?;
+    store_blob_data(
+        kv.clone(),
+        &altda_commitment,
+        derivation_stage.encoded_payload,
+    )
+    .await?;
 
     Ok(())
 }
@@ -153,8 +159,8 @@ pub struct ProxyDerivationStage {
     pub is_recent_cert: bool,
     // proxy derivation determines cert is valid
     pub is_valid_cert: bool,
-    // ToDo should have been encoded_payload, but until the endpoitn of proxy is implemented
-    pub rollup_data: Vec<u8>,
+    // encoded_payload
+    pub encoded_payload: Vec<u8>,
 }
 
 /// Process response from eigenda network
@@ -171,7 +177,7 @@ async fn fetch_data_from_proxy(
 
     let mut is_valid_cert = true;
     let mut is_recent_cert = true;
-    let mut rollup_data = vec![];
+    let mut encoded_payload = vec![];
 
     // Handle response based on status code
     if !response.status().is_success() {
@@ -204,17 +210,17 @@ async fn fetch_data_from_proxy(
         }
     } else {
         // Handle success response
-        rollup_data = response
+        encoded_payload = response
             .bytes()
             .await
-            .map_err(|e| anyhow!("should be able to get rollup payload from http response {e}"))?
+            .map_err(|e| anyhow!("should be able to get encoded payload from http response {e}"))?
             .into();
     }
 
     Ok(ProxyDerivationStage {
         is_recent_cert,
         is_valid_cert,
-        rollup_data,
+        encoded_payload,
     })
 }
 
@@ -241,22 +247,18 @@ async fn store_cert_validity(
 async fn store_blob_data(
     kv: SharedKeyValueStore,
     altda_commitment: &AltDACommitment,
-    rollup_data: Vec<u8>,
+    encoded_payload: Vec<u8>,
 ) -> Result<()> {
     // Acquire a lock on the key-value store
     let mut kv_write_lock = kv.write().await;
     // Prepare blob data
     let blob_length_fe = altda_commitment.get_num_field_element();
-    let encoded_payload = EncodedPayload::encode(rollup_data.as_ref(), PAYLOAD_ENCODING_VERSION_0);
     // Verify blob data is properly formatted
-    assert!(
-        encoded_payload.encoded_payload.len() % 32 == 0
-            && !encoded_payload.encoded_payload.is_empty()
-    );
+    assert!(encoded_payload.len() % 32 == 0 && !encoded_payload.is_empty());
 
     // Preliminary defense check against malicious eigenda proxy host
     // Validate field elements (keeping existing field element validation for compatibility)
-    let encoded_payload_body = &encoded_payload.encoded_payload[ENCODED_PAYLOAD_HEADER_LEN_BYTES..];
+    let encoded_payload_body = &encoded_payload[ENCODED_PAYLOAD_HEADER_LEN_BYTES..];
     // verify there is an empty byte for every 31 bytes. This is a harder constraint than field element range check.
     for chunk in encoded_payload_body.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
         // very conservative check on Field element range. It allows us to detect
@@ -273,8 +275,7 @@ async fn store_blob_data(
         }
     }
 
-    let fetch_num_element =
-        (encoded_payload.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
+    let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
     for i in 0..blob_length_fe as u64 {
@@ -285,7 +286,7 @@ async fn store_blob_data(
             // Store actual blob data
             kv_write_lock.set(
                 PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
-                encoded_payload.encoded_payload[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
+                encoded_payload[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
             )?;
         } else {
             // Fill remaining elements with zeros
