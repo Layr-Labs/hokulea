@@ -3,7 +3,6 @@ use crate::{
     BYTES_PER_FIELD_ELEMENT,
 };
 use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
-use alloc::vec;
 use alloy_primitives::Bytes;
 use rust_kzg_bn254_primitives::helpers;
 
@@ -135,6 +134,18 @@ impl EncodedPayload {
         // Decode payload using the helper method
         self.decode_payload(payload_len_in_header)
     }
+}
+
+/// Utility function to check if a number is a power of two
+fn is_power_of_two(n: usize) -> bool {
+    n != 0 && (n & (n - 1)) == 0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec;
+    use alloy_primitives::Bytes;
 
     /// The encode function accepts an input of opaque rollup data array into an EigenDABlobData.
     /// EigenDABlobData contains a header of 32 bytes and a transformation of input data
@@ -147,10 +158,7 @@ impl EncodedPayload {
     ///
     /// The length of (header + payload) by the encode function is always multiple of 32
     /// The eigenda proxy does not take such constraint.
-    ///
-    /// (ToDo) with proxy release 2.2.1, it can return the encoded payload, the encode function can
-    /// be moved into test, and no longer used anywhere else
-    pub fn encode(rollup_data: &[u8], payload_encoding_version: u8) -> Self {
+    fn encode(rollup_data: &[u8], payload_encoding_version: u8) -> EncodedPayload {
         let rollup_data_size = rollup_data.len() as u32;
 
         // encode to become raw blob
@@ -173,27 +181,15 @@ impl EncodedPayload {
         raw_blob[BYTES_PER_FIELD_ELEMENT..(BYTES_PER_FIELD_ELEMENT + blob_payload_size as usize)]
             .copy_from_slice(&codec_rollup_data);
 
-        Self {
+        EncodedPayload {
             encoded_payload: Bytes::from(raw_blob),
         }
     }
-}
-
-/// Utility function to check if a number is a power of two
-fn is_power_of_two(n: usize) -> bool {
-    n != 0 && (n & (n - 1)) == 0
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use alloc::vec;
-    use alloy_primitives::Bytes;
 
     #[test]
     fn test_encode_and_decode_success() {
         let rollup_data = vec![1, 2, 3, 4];
-        let encoded_payload = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
         assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0);
 
@@ -205,7 +201,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_success_empty() {
         let rollup_data = vec![];
-        let encoded_payload = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
         // 32 is eigenda blob header size
         assert!(data_len == 32);
@@ -218,7 +214,7 @@ mod tests {
     #[test]
     fn test_encode_and_decode_error_invalid_length() {
         let rollup_data = vec![1, 2, 3, 4];
-        let mut encoded_payload = EncodedPayload::encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
+        let mut encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         encoded_payload.encoded_payload.truncate(33);
         let result = encoded_payload.decode();
         assert!(result.is_err());
