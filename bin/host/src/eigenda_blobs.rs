@@ -11,7 +11,12 @@ pub struct OnlineEigenDABlobProvider {
 }
 
 const GET_METHOD: &str = "get";
-const QUERY_PARAM_ENCODED_PAYLOAD: &str =
+// Query parameters configuration for proxy behavior:
+// - commitment_mode=optimism_generic: Specifies the commitment mode (default even if not specified)
+// - return_encoded_payload=true: Instructs proxy to return encoded payload instead of decoded rollup payload
+// - Without these params: proxy returns decoded rollup payload by default
+// - Secure integration requires encoded payload to allow derivation pipeline to handle decoding
+const GET_QUERY_PARAMS_ENCODED_PAYLOAD: &str =
     "commitment_mode=optimism_generic&return_encoded_payload=true";
 
 impl OnlineEigenDABlobProvider {
@@ -29,14 +34,9 @@ impl OnlineEigenDABlobProvider {
         &self,
         cert: &Bytes,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        // Query parameters configuration for proxy behavior:
-        // - commitment_mode=optimism_generic: Specifies the commitment mode (default even if not specified)
-        // - return_encoded_payload=true: Instructs proxy to return encoded payload instead of decoded rollup payload
-        // - Without these params: proxy returns decoded rollup payload by default
-        // - Secure integration requires encoded payload to allow derivation pipeline to handle decoding
         let url = format!(
             "{}/{}/{}?{}",
-            self.base, GET_METHOD, cert, QUERY_PARAM_ENCODED_PAYLOAD
+            self.base, GET_METHOD, cert, GET_QUERY_PARAMS_ENCODED_PAYLOAD
         );
         self.inner.get(url).send().await
     }

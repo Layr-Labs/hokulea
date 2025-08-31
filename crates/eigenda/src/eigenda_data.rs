@@ -191,7 +191,7 @@ mod tests {
         let rollup_data = vec![1, 2, 3, 4];
         let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
-        assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0);
+        assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0 && data_len != 0);
 
         let result = encoded_payload.decode();
         assert!(result.is_ok());
