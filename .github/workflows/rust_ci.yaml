@@ -91,7 +91,7 @@ jobs:
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just test-docs
   cargo-hack:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
