@@ -18,7 +18,7 @@ jobs:
         with:
           version: ${{ env.MISE_VERSION }}
           experimental: true
-      - run: just run-kurtosis-devnet
+      - run: just run-kurtosis-devnet-with-eigenlabs-package
       # We build the client here because `just run-client-native-against-devnet`
       # first polls op-geth for a first finalized block, which takes a few minutes,
       # and only after that runs `cargo run` which then builds the client, and takes another
