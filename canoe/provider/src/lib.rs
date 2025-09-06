@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 pub struct CanoeInput {
     /// altda commitment
     pub altda_commitment: AltDACommitment,
-    /// the claim about if the cert is valid, received from the signature from OracleEigenDAProvider from the derivation pipeline
+    /// the claim about if the cert is valid, received from the signature from OracleEigenDAPreimageProvider from the derivation pipeline
     /// Added here only for a preventive measure, such that if in the state loading part, zkvm got a different answer than claimed
     /// zkVM can stop early without proving anything.
     pub claimed_validity: bool,

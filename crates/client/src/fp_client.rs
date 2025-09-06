@@ -5,7 +5,7 @@ use core::fmt::Debug;
 use alloy_consensus::Sealed;
 use tracing::{error, info};
 
-use hokulea_eigenda::{EigenDABlobProvider, EigenDABlobSource, EigenDADataSource};
+use hokulea_eigenda::{EigenDADataSource, EigenDAPreimageProvider, EigenDAPreimageSource};
 
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_derive::traits::BlobProvider;
@@ -27,7 +27,7 @@ use op_revm::OpSpecId;
 pub async fn run_fp_client<
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     B: BlobProvider + Send + Sync + Debug + Clone,
-    E: EigenDABlobProvider + Send + Sync + Debug + Clone,
+    E: EigenDAPreimageProvider + Send + Sync + Debug + Clone,
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
 >(
     oracle: Arc<O>,
@@ -37,7 +37,7 @@ pub async fn run_fp_client<
 ) -> Result<(), FaultProofProgramError>
 where
     <B as BlobProvider>::Error: Debug,
-    <E as EigenDABlobProvider>::Error: Debug,
+    <E as EigenDAPreimageProvider>::Error: Debug,
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     ////////////////////////////////////////////////////////////////
@@ -102,8 +102,8 @@ where
     l2_provider.set_cursor(cursor.clone());
 
     let dap = EthereumDataSource::new_from_parts(l1_provider.clone(), beacon, &rollup_config);
-    let eigenda_blob_source = EigenDABlobSource::new(eigenda);
-    let dap = EigenDADataSource::new(dap, eigenda_blob_source);
+    let eigenda_preimage_source = EigenDAPreimageSource::new(eigenda);
+    let dap = EigenDADataSource::new(dap, eigenda_preimage_source);
 
     let pipeline = OraclePipeline::new(
         rollup_config.clone(),

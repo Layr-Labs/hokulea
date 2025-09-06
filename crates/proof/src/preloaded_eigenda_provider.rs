@@ -1,11 +1,11 @@
-use crate::eigenda_blob_witness::EigenDABlobWitnessData;
+use crate::eigenda_preimage_witness::EigenDAPreimageWitness;
 use crate::errors::HokuleaOracleProviderError;
 use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::EigenDABlobProvider;
+use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
 
@@ -15,24 +15,24 @@ use alloc::vec::Vec;
 
 use crate::canoe_verifier::CanoeVerifier;
 
-/// PreloadedEigenDABlobProvider converts EigenDABlobWitnessData into preimage data
-/// can be used to implement the EigenDABlobProvider trait, that contains
+/// PreloadedEigenDAPreimageProvider converts EigenDAPreimageWitness into preimage data
+/// can be used to implement the EigenDAPreimageProvider trait, that contains
 ///   get_validity
-///   get_blob
+///   get_encoded_payload
 ///
-/// For each function above, internally PreloadedEigenDABlobProvider maintain a separate
+/// For each function above, internally PreloadedEigenDAPreimageProvider maintain a separate
 /// struct in the form of a tuple (DA cert, returned data by the interface).
 ///
-/// This allows a safety checks that PreloadedEigenDABlobProvider
+/// This allows a safety checks that PreloadedEigenDAPreimageProvider
 /// indeed provides the response back to the correct DA certs
 ///
 /// At the conversion side (i.e from_witness), we only have to maintain the correctness
 /// from (DA cert, returned data by the interface).
 ///
-/// Note it is possible, the lenght of validity_entries is greater than len of blob_entries
+/// Note it is possible, the lenght of validity_entries is greater than len of encoded_payload_entries
 /// due to possible invalid cert, that does not require preimage to populate a blob
 #[derive(Clone, Debug, Default)]
-pub struct PreloadedEigenDABlobProvider {
+pub struct PreloadedEigenDAPreimageProvider {
     /// The tuple contains a mapping from DAcert to recency window size
     /// Although currently, recency window does not change across EigenDACertV2
     /// But to be future compatible, we anchor recency window size by rbn from EigenDACertV2
@@ -40,82 +40,82 @@ pub struct PreloadedEigenDABlobProvider {
     /// The tuple contains a mapping from DAcert to cert validity
     pub validity_entries: Vec<(AltDACommitment, bool)>,
     /// The tuple contains a mapping from DAcert to Eigenda blob
-    pub blob_entries: Vec<(AltDACommitment, Blob)>,
+    pub encoded_payload_entries: Vec<(AltDACommitment, EncodedPayload)>,
 }
 
-impl PreloadedEigenDABlobProvider {
-    /// Convert EigenDABlobWitnessData into the PreloadedEigenDABlobProvider
+impl PreloadedEigenDAPreimageProvider {
+    /// Convert EigenDAPreimageWitness into the PreloadedEigenDAPreimageProvider
     pub fn from_witness(
-        value: EigenDABlobWitnessData,
+        value: EigenDAPreimageWitness,
         canoe_verifier: impl CanoeVerifier,
-    ) -> PreloadedEigenDABlobProvider {
+    ) -> PreloadedEigenDAPreimageProvider {
         // check number of element invariants
-        assert!(value.recency.len() >= value.validity.len());
-        assert!(value.validity.len() >= value.blob.len());
+        assert!(value.recencies.len() >= value.validities.len());
+        assert!(value.validities.len() >= value.encoded_payloads.len());
 
         // recency window is the first check against incoming DA cert from derivation pipeline
         //
         // Important assumption, recency must come from a trusted or validated source
         // currently, recency is set to be identical to sequencing window, which come directly
         // boot info
-        let mut recency_entries = value.recency.clone();
+        let mut recency_entries = value.recencies.clone();
 
         // check all cert validity are substantiated by zk validity proof
         let mut validity_entries = vec![];
 
         // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
         // da cert is valid or not. Otherwise, skip the verification
-        if !value.validity.is_empty() {
+        if !value.validities.is_empty() {
             // check cert validity altogether in one verification
             canoe_verifier
-                .validate_cert_receipt(value.validity.clone(), value.canoe_proof_bytes)
+                .validate_cert_receipt(value.validities.clone(), value.canoe_proof_bytes)
                 .expect("verification should have been passing");
         }
 
-        for (altda_commitment, cert_validity) in &value.validity {
+        for (altda_commitment, cert_validity) in &value.validities {
             // populate only the mapping <DAcert, boolean> for preimage trait
             validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
         }
 
         // check all blobs correponds to cert are correct
-        let mut blob_entries = vec![];
+        let mut encoded_payload_entries = vec![];
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
+        //for i in 0..value.eigenda_certs.len() {
+        for (cert, encoded_payload, kzg_proof) in value.encoded_payloads {
+            // populate entries ahead of time, if something is invalid, batch_verify will abort
+            encoded_payload_entries.push((cert.clone(), encoded_payload.clone()));
 
-        // checking the blob is consistent to the kzg commitment from the da certs
-        for (cert, eigenda_blobs, kzg_proof) in value.blob {
-            let blob = Blob::new(&eigenda_blobs).expect("should be able to construct a blob");
-            // if valid, check blob kzg integrity
+            // gather fiat shamir kzg commitment and proof for batch verification
+            let blob =
+                Blob::new(encoded_payload.serialize()).expect("should be able to construct a blob");
             blobs.push(blob.clone());
             proofs.push(kzg_proof);
             commitments.push(cert.get_kzg_commitment());
-
-            // populate entries ahead of time, if something is invalid, batch_verify will abort
-            blob_entries.push((cert.clone(), blob));
         }
         assert!(batch_verify(blobs, commitments, proofs));
         // invariant check
         assert!(recency_entries.len() >= validity_entries.len());
-        assert!(validity_entries.len() >= blob_entries.len());
+        assert!(validity_entries.len() >= encoded_payload_entries.len());
 
         // The pop methods is used by the Preloaded provider when getting the next data
         // reverse there, so that what is being popped is the early data
         validity_entries.reverse();
-        blob_entries.reverse();
+        encoded_payload_entries.reverse();
         recency_entries.reverse();
 
-        PreloadedEigenDABlobProvider {
+        PreloadedEigenDAPreimageProvider {
             recency_entries,
             validity_entries,
-            blob_entries,
+            encoded_payload_entries,
         }
     }
 }
 
 #[async_trait]
-impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
-    // TODO investigate if create a speical error type EigenDABlobProviderError
+impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
+    // TODO investigate if create a speical error type EigenDAPreimageProviderError
     type Error = HokuleaOracleProviderError;
 
     async fn get_recency_window(
@@ -127,7 +127,7 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
             Ok(recency)
         } else {
             // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-            panic!("preloaded eigenda blob provider does not match altda commitment requested from derivation pipeline
+            panic!("preloaded eigenda preimage provider does not match altda commitment requested from derivation pipeline
                 requested altda commitment is {:?}, stored is {:?}", altda_commitment.to_digest(), stored_altda_commitment.to_digest());
         }
     }
@@ -141,17 +141,21 @@ impl EigenDABlobProvider for PreloadedEigenDABlobProvider {
             Ok(validity)
         } else {
             // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-            panic!("preloaded eigenda blob provider does not match altda commitment requested from derivation pipeline
+            panic!("preloaded eigenda preimage provider does not match altda commitment requested from derivation pipeline
                 requested altda commitment is {:?}, stored is {:?}", altda_commitment.to_digest(), stored_altda_commitment.to_digest());
         }
     }
 
     /// Fetches a blob for V2 using preloaded data
     /// Return an error if cert does not match the immeditate next item
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
-        let (stored_altda_commitment, eigenda_blob) = self.blob_entries.pop().unwrap();
+    async fn get_encoded_payload(
+        &mut self,
+        altda_commitment: &AltDACommitment,
+    ) -> Result<EncodedPayload, Self::Error> {
+        let (stored_altda_commitment, encoded_payload) =
+            self.encoded_payload_entries.pop().unwrap();
         if stored_altda_commitment == *altda_commitment {
-            Ok(eigenda_blob)
+            Ok(encoded_payload)
         } else {
             // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
             panic!("preloaded eigenda blob provider does not match altda commitment requested from derivation pipeline

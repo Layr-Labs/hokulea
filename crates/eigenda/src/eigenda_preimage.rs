@@ -1,56 +1,55 @@
-//! Blob Data Source
+//! EigenDAPreimageSource Source
 
 use crate::eigenda_data::EncodedPayload;
-use crate::traits::EigenDABlobProvider;
+use crate::traits::EigenDAPreimageProvider;
 use crate::HokuleaPreimageError;
 
 use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
-use alloc::vec::Vec;
 use alloy_primitives::Bytes;
 use eigenda_cert::AltDACommitment;
 
 /// A data iterator that reads from a blob.
 #[derive(Debug, Clone)]
-pub struct EigenDABlobSource<B>
+pub struct EigenDAPreimageSource<B>
 where
-    B: EigenDABlobProvider + Send,
+    B: EigenDAPreimageProvider + Send,
 {
-    /// Fetches blobs.
+    /// Fetches eigenda preimage.
     pub eigenda_fetcher: B,
 }
 
-impl<B> EigenDABlobSource<B>
+impl<B> EigenDAPreimageSource<B>
 where
-    B: EigenDABlobProvider + Send,
+    B: EigenDAPreimageProvider + Send,
 {
-    /// Creates a new blob source.
+    /// Creates a new preimage source.
     pub const fn new(eigenda_fetcher: B) -> Self {
         Self { eigenda_fetcher }
     }
 
-    /// Fetches the next blob from the source.
+    /// Fetches the preimages from the source for calldata.
     pub async fn next(
         &mut self,
         calldata: &Bytes,
         l1_inclusion_bn: u64,
     ) -> Result<EncodedPayload, HokuleaErrorKind> {
-        let eigenda_commitment = self.parse(calldata)?;
+        let altda_commitment = self.parse(calldata)?;
 
-        info!(target: "eigenda_blob_source", "parsed an altda commitment of version {}", eigenda_commitment.cert_version_str());
+        info!(target: "eigenda_preimage_source", "parsed an altda commitment of version {}", altda_commitment.cert_version_str());
 
         // get recency window size, discard the old cert if necessary
         match self
             .eigenda_fetcher
-            .get_recency_window(&eigenda_commitment)
+            .get_recency_window(&altda_commitment)
             .await
         {
             Ok(recency) => {
                 // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
-                if l1_inclusion_bn > eigenda_commitment.get_rbn() + recency {
+                if l1_inclusion_bn > altda_commitment.get_rbn() + recency {
                     warn!(
                         "da cert is not recent enough l1_inclusion_bn:{} rbn:{} recency:{}",
                         l1_inclusion_bn,
-                        eigenda_commitment.get_rbn(),
+                        altda_commitment.get_rbn(),
                         recency
                     );
                     return Err(HokuleaPreimageError::NotRecentCert.into());
@@ -60,25 +59,17 @@ where
         };
 
         // get cert validty via preimage oracle, discard cert if invalid
-        match self.eigenda_fetcher.get_validity(&eigenda_commitment).await {
+        match self.eigenda_fetcher.get_validity(&altda_commitment).await {
             Ok(true) => (),
             Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
             Err(e) => return Err(e.into()),
         }
 
-        // get blob via preimage oracle
-        match self.eigenda_fetcher.get_blob(&eigenda_commitment).await {
-            Ok(data) => {
-                let encoded_payload_bytes: Vec<u8> = data.into();
-
-                let encoded_payload = EncodedPayload {
-                    encoded_payload: encoded_payload_bytes.into(),
-                };
-
-                Ok(encoded_payload)
-            }
-            Err(e) => Err(e.into()),
-        }
+        // get encoded payload via preimage oracle
+        self.eigenda_fetcher
+            .get_encoded_payload(&altda_commitment)
+            .await
+            .map_err(|e| e.into())
     }
 
     fn parse(&mut self, data: &Bytes) -> Result<AltDACommitment, HokuleaStatelessError> {

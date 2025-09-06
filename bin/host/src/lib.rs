@@ -1,4 +1,4 @@
-pub mod eigenda_blobs;
+pub mod eigenda_preimage;
 
 pub mod cfg;
 

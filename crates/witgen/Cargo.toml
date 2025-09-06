@@ -17,8 +17,6 @@ hokulea-eigenda.workspace = true
 eigenda-cert.workspace = true
 canoe-provider.workspace = true
 
-rust-kzg-bn254-primitives.workspace = true
-
 async-trait.workspace = true
 anyhow.workspace = true
 tracing.workspace = true

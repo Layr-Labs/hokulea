@@ -3,7 +3,7 @@ use reqwest;
 
 /// Fetches blobs from EigenDA via an eigenda-proxy instance.
 #[derive(Debug, Clone)]
-pub struct OnlineEigenDABlobProvider {
+pub struct OnlineEigenDAPreimageProvider {
     /// The base url.
     base: String,
     /// The inner reqwest client. Used to talk to proxy
@@ -19,18 +19,18 @@ const GET_METHOD: &str = "get";
 const GET_QUERY_PARAMS_ENCODED_PAYLOAD: &str =
     "commitment_mode=optimism_generic&return_encoded_payload=true";
 
-impl OnlineEigenDABlobProvider {
-    /// Creates a new instance of the [OnlineEigenDABlobProvider].
+impl OnlineEigenDAPreimageProvider {
+    /// Creates a new instance of the [OnlineEigenDAPreimageProvider].
     ///
     /// The `genesis_time` and `slot_interval` arguments are _optional_ and the
-    /// [OnlineEigenDABlobProvider] will attempt to load them dynamically at runtime if they are not
+    /// [OnlineEigenDAPreimageProvider] will attempt to load them dynamically at runtime if they are not
     /// provided.
     pub fn new_http(base: String) -> Self {
         let inner = reqwest::Client::new();
         Self { base, inner }
     }
 
-    pub async fn fetch_eigenda_blob(
+    pub async fn fetch_eigenda_encoded_payload(
         &self,
         cert: &Bytes,
     ) -> Result<reqwest::Response, reqwest::Error> {
