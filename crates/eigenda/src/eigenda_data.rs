@@ -5,13 +5,14 @@ use crate::{
 use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
 use alloy_primitives::Bytes;
 use rust_kzg_bn254_primitives::helpers;
+use serde::{Deserialize, Serialize};
 
 /// Represents raw payload bytes, alias
 pub type Payload = Bytes;
 
-#[derive(Default, Clone, Debug)]
-/// Represents the data structure for EigenDA Blob
-/// intended for deriving rollup channel frame from eigenda blob
+#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+// [EigenDAPreimageWitness] requires serde for EncodedPayload
+/// intended for deriving rollup channel frame from eigenda encoded payload
 pub struct EncodedPayload {
     /// Bytes over Vec because Bytes clone is a shallow copy
     pub encoded_payload: Bytes,
@@ -19,8 +20,8 @@ pub struct EncodedPayload {
 
 impl EncodedPayload {
     /// Constructs an EncodedPayload from bytes array.
-    /// Does not validate the bytes, to mimic the Blob.ToEncodedPayloadUnchecked process.
-    /// The length, header, and body invariants are checked when calling decode.
+    /// Does not validate the bytes, the length, header, and body invariants are checked
+    /// when calling decode.
     pub fn deserialize(bytes: Bytes) -> Self {
         Self {
             encoded_payload: bytes,
@@ -119,8 +120,8 @@ impl EncodedPayload {
         Ok(decoded_body.slice(0..payload_len as usize))
     }
 
-    /// Decodes the blob into raw byte data. Reverse of the encode function below
-    /// Returns a [EncodedPayloadDecodingError] if the blob is invalid.
+    /// Decodes the encoded payload into raw byte data. Reverse of the encode function below
+    /// Returns a [EncodedPayloadDecodingError] if the encoded payload is invalid.
     ///
     /// Applies the inverse of PayloadEncodingVersion0 to an EncodedPayload, and returns the decoded payload.
     pub fn decode(&self) -> Result<Payload, HokuleaStatelessError> {
@@ -147,8 +148,8 @@ mod tests {
     use alloc::vec;
     use alloy_primitives::Bytes;
 
-    /// The encode function accepts an input of opaque rollup data array into an EigenDABlobData.
-    /// EigenDABlobData contains a header of 32 bytes and a transformation of input data
+    /// The encode function accepts an input of opaque rollup data array into an [EncodedPayload].
+    /// [EncodedPayload] contains a header of 32 bytes and a transformation of input data
     /// The 0 index byte of header is always 0, to comply to bn254 field element constraint
     /// The 1 index byte of header is proxy encoding version.
     /// The 2-4 indices of header are storing the length of the input rollup data in big endien
@@ -161,28 +162,28 @@ mod tests {
     fn encode(rollup_data: &[u8], payload_encoding_version: u8) -> EncodedPayload {
         let rollup_data_size = rollup_data.len() as u32;
 
-        // encode to become raw blob
-        let codec_rollup_data = helpers::pad_payload(rollup_data);
+        let padded_rollup_data = helpers::pad_payload(rollup_data);
 
-        let blob_payload_size = codec_rollup_data.len();
+        let min_blob_payload_size = padded_rollup_data.len();
 
         // the first field element contains the header
-        let blob_size = blob_payload_size + BYTES_PER_FIELD_ELEMENT;
+        let blob_size = min_blob_payload_size + BYTES_PER_FIELD_ELEMENT;
 
         // round up to the closest multiple of 32
         let blob_size = blob_size.div_ceil(BYTES_PER_FIELD_ELEMENT) * BYTES_PER_FIELD_ELEMENT;
 
-        let mut raw_blob = vec![0u8; blob_size as usize];
+        let mut encoded_payload = vec![0u8; blob_size as usize];
 
-        raw_blob[1] = payload_encoding_version;
-        raw_blob[2..6].copy_from_slice(&rollup_data_size.to_be_bytes());
-
+        encoded_payload[1] = payload_encoding_version;
         // encode length as uint32
-        raw_blob[BYTES_PER_FIELD_ELEMENT..(BYTES_PER_FIELD_ELEMENT + blob_payload_size as usize)]
-            .copy_from_slice(&codec_rollup_data);
+        encoded_payload[2..6].copy_from_slice(&rollup_data_size.to_be_bytes());
+
+        encoded_payload
+            [BYTES_PER_FIELD_ELEMENT..(BYTES_PER_FIELD_ELEMENT + min_blob_payload_size as usize)]
+            .copy_from_slice(&padded_rollup_data);
 
         EncodedPayload {
-            encoded_payload: Bytes::from(raw_blob),
+            encoded_payload: Bytes::from(encoded_payload),
         }
     }
 
@@ -203,7 +204,7 @@ mod tests {
         let rollup_data = vec![];
         let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
-        // 32 is eigenda blob header size
+        // 32 byte is payload header size
         assert!(data_len == 32);
 
         let result = encoded_payload.decode();
