@@ -13,6 +13,7 @@ async-trait.workspace = true
 rust-kzg-bn254-primitives.workspace = true
 kona-protocol.workspace = true
 thiserror.workspace = true
+serde = { workspace = true, features = ["derive"] }
 
 [features]
 serde = [

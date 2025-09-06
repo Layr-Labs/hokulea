@@ -57,7 +57,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 }
 
 /// Fetch the preimages for the given hint and insert then into the key-value store.
-/// We insert the recency_window, cert_validity, and blob_data.
+/// We insert the recency_window, cert_validity, and encoded_payload_data.
 /// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
 /// <https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135>
 pub async fn fetch_eigenda_hint(
@@ -78,7 +78,7 @@ pub async fn fetch_eigenda_hint(
 
     store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
 
-    // Fetch blob data and process response
+    // Fetch preimage data and process response
     let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
     // If cert is not recent, log and return early
@@ -109,8 +109,8 @@ pub async fn fetch_eigenda_hint(
         return Ok(());
     }
 
-    // Store blob data field-by-field in key-value store
-    store_blob_data(
+    // Store encoded payload data field-by-field in key-value store
+    store_encoded_payload(
         kv.clone(),
         &altda_commitment,
         derivation_stage.encoded_payload,
@@ -168,12 +168,12 @@ async fn fetch_data_from_proxy(
     providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
     altda_commitment_bytes: &Bytes,
 ) -> Result<ProxyDerivationStage> {
-    // Fetch the blob from the eigenda network
+    // Fetch the encoded payload from the eigenda network
     let response = providers
-        .eigenda_blob_provider
-        .fetch_eigenda_blob(altda_commitment_bytes)
+        .eigenda_preimage_provider
+        .fetch_eigenda_encoded_payload(altda_commitment_bytes)
         .await
-        .map_err(|e| anyhow!("failed to fetch eigenda blob: {e}"))?;
+        .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
 
     let mut is_valid_cert = true;
     let mut is_recent_cert = true;
@@ -186,7 +186,7 @@ async fn fetch_data_from_proxy(
             // The error is handled by host library in kona, currently this triggers an infinite retry loop.
             // https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135
             return Err(anyhow!(
-                "failed to fetch eigenda blob, status {:?}",
+                "failed to fetch eigenda encoded payload, status {:?}",
                 response.error_for_status()
             ));
         }
@@ -243,17 +243,17 @@ async fn store_cert_validity(
     Ok(())
 }
 
-/// Store blob data in key-value store
-async fn store_blob_data(
+/// Store encoded payload data in key-value store
+async fn store_encoded_payload(
     kv: SharedKeyValueStore,
     altda_commitment: &AltDACommitment,
     encoded_payload: Vec<u8>,
 ) -> Result<()> {
     // Acquire a lock on the key-value store
     let mut kv_write_lock = kv.write().await;
-    // Prepare blob data
+    // encoded_payload has identical length as eigenda blob
     let blob_length_fe = altda_commitment.get_num_field_element();
-    // Verify blob data is properly formatted
+    // Verify encoded_payload data is properly formatted
     assert!(encoded_payload.len() % 32 == 0 && !encoded_payload.is_empty());
 
     // Preliminary defense check against malicious eigenda proxy host
@@ -280,18 +280,18 @@ async fn store_blob_data(
     let mut field_element_key = altda_commitment.digest_template();
     for i in 0..blob_length_fe as u64 {
         field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
-        let blob_key_hash = keccak256(field_element_key.as_ref());
+        let encoded_payload_key_hash = keccak256(field_element_key.as_ref());
 
         if i < fetch_num_element {
-            // Store actual blob data
+            // Store actual encoded payload data
             kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                PreimageKey::new(*encoded_payload_key_hash, PreimageKeyType::GlobalGeneric).into(),
                 encoded_payload[(i as usize) << 5..(i as usize + 1) << 5].to_vec(),
             )?;
         } else {
             // Fill remaining elements with zeros
             kv_write_lock.set(
-                PreimageKey::new(*blob_key_hash, PreimageKeyType::GlobalGeneric).into(),
+                PreimageKey::new(*encoded_payload_key_hash, PreimageKeyType::GlobalGeneric).into(),
                 vec![0u8; 32],
             )?;
         }

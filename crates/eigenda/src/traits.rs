@@ -1,15 +1,14 @@
-use crate::errors::HokuleaErrorKind;
+use crate::{errors::HokuleaErrorKind, EncodedPayload};
 use alloc::{boxed::Box, string::ToString};
 use async_trait::async_trait;
 use core::fmt::Display;
 use eigenda_cert::AltDACommitment;
-use rust_kzg_bn254_primitives::blob::Blob;
 
-/// A trait for providing EigenDA blobs.
-/// TODO: add explanation for why we need this to be a trait.
+/// This traits defines functions to access preimage oracle for EigenDA blob derivation. See
+/// <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#derivation-process>
 #[async_trait]
-pub trait EigenDABlobProvider {
-    /// The error type for the [EigenDABlobProvider].
+pub trait EigenDAPreimageProvider {
+    /// The error type for the [EigenDAPreimageProvider].
     type Error: Display + ToString + Into<HokuleaErrorKind>;
 
     /// Fetch primage about the recency window. To be future compatible when recency window can be a function
@@ -26,8 +25,13 @@ pub trait EigenDABlobProvider {
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error>;
 
-    /// Fetch eigenda blob. The returned blob must contain a number of field elements that is power of 2
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error>;
+    /// Fetch the encoded payloas from the altda commitment
+    /// The encoded payload size is always a power of 2, with a minimum of 32 bytes.
+    /// (e.g., 32, 64, 128, 256, 512, ... bytes)
+    async fn get_encoded_payload(
+        &mut self,
+        altda_commitment: &AltDACommitment,
+    ) -> Result<EncodedPayload, Self::Error>;
 }
 
 /// The index where INTERFACE_BYTE is located

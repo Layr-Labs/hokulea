@@ -10,7 +10,7 @@ The Kona post-Holocene derivation pipeline contains the following stages
             - ChannelReader
                 - ChannelProvider
                     - FrameQueue                                                
-                        - L1Retrieval (Hokulea enables EigenDABlobProvider to become one of data availability provider)
+                        - L1Retrieval (Hokulea enables EigenDAPreimageProvider to become one of data availability provider)
                             - L1Traversal
 
 The driver of the derivation pipelines calls from the top, and one stage owns the immediate stage below. The L1Traversal stage iterates
@@ -21,20 +21,20 @@ With `BlockInfo`, L1Retrieval can either retrieve data from eth calldata or Ethe
 
 The Hokulea repo defines traits, implementation and supporting crates to provide secure EigenDA integration in the kona framework.
 
-At the high level, EigenDABlobProvider implements [DataAvailabilityProvider](https://docs.rs/kona-derive/latest/kona_derive/traits/trait.DataAvailabilityProvider.html), that takes `BlockInfo` and `batcher_address` and returns opaque
+At the high level, EigenDAPreimageProvider implements [DataAvailabilityProvider](https://docs.rs/kona-derive/latest/kona_derive/traits/trait.DataAvailabilityProvider.html), that takes `BlockInfo` and `batcher_address` and returns opaque
 bytes that are passed into the FrameQueue to derive channel frames.
 
-Under the hood, Hokulea implements the `DataAvailabilityProvider` by composing `EthereumDataSource` from kona and a new Hokulea type `EigenDABlobSource`. The two sources
-are glued together in a pipeline fashion, where `EthereumDataSource` passes down L1 calldata retrieved from batcher inbox to `EigenDABlobSource`, which process the calldata to retrieve blobs from EigenDA.
+Under the hood, Hokulea implements the `DataAvailabilityProvider` by composing `EthereumDataSource` from kona and a new Hokulea type `EigenDAPreimageSource`. The two sources
+are glued together in a pipeline fashion, where `EthereumDataSource` passes down L1 calldata retrieved from batcher inbox to `EigenDAPreimageSource`, which process the calldata to retrieve blobs from EigenDA.
 
 - L1Retrieval
     - EthereumDataSource
-        - EigenDABlobProvider
+        - EigenDAPreimageProvider
 
 On the batcher side, channel frames are converted into EigenDA blob, whose DA certificate is sent over to L1.
 On the op-node side where the hokulea derivation pipeline is ran, the `block_info` is first passed to `EthereumDataSource` to retrieve the
 DA certificate.
-Then DA certificate is passed to `EigenDABlobProvider` into bytes representing `channel frames`.
+Then DA certificate is passed to `EigenDAPreimageProvider` into bytes representing `channel frames`.
 
 Here is a high level diagram that illustrates what hokulea looks like from inside, and where hokulea derivation pipeline lives inside the kona-deriviation.
 ![](../assets/hokulea-in-kona-derivation-pipeline.png)

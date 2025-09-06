@@ -17,15 +17,15 @@ extern crate tracing;
 
 mod traits;
 pub use traits::{
-    EigenDABlobProvider, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
+    EigenDAPreimageProvider, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
     RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 
 mod eigenda;
 pub use eigenda::EigenDADataSource;
 
-mod eigenda_blobs;
-pub use eigenda_blobs::EigenDABlobSource;
+mod eigenda_preimage;
+pub use eigenda_preimage::EigenDAPreimageSource;
 
 mod eigenda_data;
 pub use eigenda_data::{EncodedPayload, Payload};
