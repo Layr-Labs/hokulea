@@ -74,14 +74,14 @@ impl PreloadedEigenDABlobProvider {
         for (altda_commitment, cert_validity) in &value.validity {
             // populate only the mapping <DAcert, boolean> for preimage trait
             validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
-        }    
+        }
 
         // check all blobs correponds to cert are correct
         let mut blob_entries = vec![];
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
-        
+
         // checking the blob is consistent to the kzg commitment from the da certs
         // note it only includes those DA certs that reach the point of blob retrieval from the preimage oracle
         // i.e parse correctly, recent enough, and valid
