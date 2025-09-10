@@ -63,7 +63,8 @@ impl PreloadedEigenDABlobProvider {
         // check all cert validity are substantiated by zk validity proof
         let mut validity_entries = vec![];
 
-        // if the number of da cert is 0 regardless if any da cert is valid or not
+        // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
+        // da cert is valid or not. Otherwise, skip the verification  
         if !value.validity.is_empty() {
             // check cert validity altogether in one verification
             canoe_verifier
@@ -83,8 +84,6 @@ impl PreloadedEigenDABlobProvider {
         let mut commitments = vec![];
 
         // checking the blob is consistent to the kzg commitment from the da certs
-        // note it only includes those DA certs that reach the point of blob retrieval from the preimage oracle
-        // i.e parse correctly, recent enough, and valid
         for (cert, eigenda_blobs, kzg_proof) in value.blob {
             let blob = Blob::new(&eigenda_blobs).expect("should be able to construct a blob");
             // if valid, check blob kzg integrity
