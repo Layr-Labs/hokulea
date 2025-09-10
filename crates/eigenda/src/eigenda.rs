@@ -1,7 +1,7 @@
-//! Contains the [EigenDADataSource], which is a concrete implementation of the
-//! [DataAvailabilityProvider] trait for the EigenDA protocol.
-use crate::traits::EigenDABlobProvider;
-use crate::{eigenda_blobs::EigenDABlobSource, HokuleaErrorKind};
+//! Contains the [EigenDAPreimageSource] and EigenDA blob derivation, which is a concrete
+//! implementation of the [DataAvailabilityProvider] trait for the EigenDA protocol.
+use crate::traits::EigenDAPreimageProvider;
+use crate::{eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind};
 use kona_derive::errors::PipelineErrorKind;
 
 use crate::eigenda_data::EncodedPayload;
@@ -26,23 +26,23 @@ pub enum EigenDAOrCalldata {
 
 /// A factory for creating an EigenDADataSource iterator. The internal behavior is that
 /// data is fetched from eigenda or stays as it is if Eth calldata is desired. Those data
-/// are cached. When next() is called it just returns the next blob cached. Otherwise,
-/// EOF is sent if iterator is empty
+/// are cached. When next() is called it just returns the next cached encoded payload.
+/// Otherwise, EOF is sent if iterator is empty
 #[derive(Debug, Clone)]
 pub struct EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Clone,
     B: BlobProvider + Send + Clone,
-    A: EigenDABlobProvider + Send + Clone,
+    A: EigenDAPreimageProvider + Send + Clone,
 {
-    /// The blob source.
+    /// The ethereum source.
     pub ethereum_source: EthereumDataSource<C, B>,
-    /// The eigenda source.
-    pub eigenda_source: EigenDABlobSource<A>,
+    /// The eigenda preimage source.
+    pub eigenda_source: EigenDAPreimageSource<A>,
     /// Whether the source is open. When it is open, the next() call will consume data
     /// at this current stage, as opposed to pull it from the next stage
     pub open: bool,
-    /// eigenda blob or ethereum calldata that does not use eigenda in failover mode
+    /// eigenda encoded payload or ethereum calldata that does not use eigenda in failover mode
     pub data: Vec<EigenDAOrCalldata>,
 }
 
@@ -50,12 +50,12 @@ impl<C, B, A> EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Clone + Debug,
     B: BlobProvider + Send + Clone + Debug,
-    A: EigenDABlobProvider + Send + Clone + Debug,
+    A: EigenDAPreimageProvider + Send + Clone + Debug,
 {
     /// Instantiates a new [EigenDADataSource].
     pub const fn new(
         ethereum_source: EthereumDataSource<C, B>,
-        eigenda_source: EigenDABlobSource<A>,
+        eigenda_source: EigenDAPreimageSource<A>,
     ) -> Self {
         Self {
             ethereum_source,
@@ -71,7 +71,7 @@ impl<C, B, A> DataAvailabilityProvider for EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Sync + Clone + Debug,
     B: BlobProvider + Send + Sync + Clone + Debug,
-    A: EigenDABlobProvider + Send + Sync + Clone + Debug,
+    A: EigenDAPreimageProvider + Send + Sync + Clone + Debug,
 {
     type Item = Bytes;
 
@@ -81,17 +81,18 @@ where
         batcher_addr: Address,
     ) -> PipelineResult<Self::Item> {
         debug!("Data Available Source next {} {}", block_ref, batcher_addr);
-        // if loading failed for provider reason, the entire blobs are reloaded next time,
+        // if loading failed for provider reason, the all data are reloaded next time,
         // no data is consumed at this point
-        self.load_blobs(block_ref, batcher_addr).await?;
+        self.load_eigenda_or_calldata(block_ref, batcher_addr)
+            .await?;
 
         match self.next_data()? {
             EigenDAOrCalldata::Calldata(c) => return Ok(c),
-            EigenDAOrCalldata::EigenDA(blob) => {
-                match blob.decode() {
+            EigenDAOrCalldata::EigenDA(encoded_payload) => {
+                match encoded_payload.decode() {
                     Ok(c) => return Ok(c),
-                    // if blob cannot be decoded, try next data, since load_blobs has openned the
-                    // stage already, it won't load the l1 block again
+                    // if encodoed payload cannot be decoded, try next data, since load_encoded_payload
+                    // has openned the stage already, it won't load the l1 block again
                     Err(_) => self.next(block_ref, batcher_addr).await,
                 }
             }
@@ -109,13 +110,13 @@ impl<C, B, A> EigenDADataSource<C, B, A>
 where
     C: ChainProvider + Send + Sync + Clone + Debug,
     B: BlobProvider + Send + Sync + Clone + Debug,
-    A: EigenDABlobProvider + Send + Sync + Clone + Debug,
+    A: EigenDAPreimageProvider + Send + Sync + Clone + Debug,
 {
     // load calldata, currenly there is only one cert per calldata
     // this is still required, in case the provider returns error
     // the open variable ensures we don't have to load the ethereum source again
     // If this function returns early with error, no state is corrupted
-    async fn load_blobs(
+    async fn load_eigenda_or_calldata(
         &mut self,
         block_ref: &BlockInfo,
         batcher_addr: Address,
@@ -139,8 +140,8 @@ where
             };
         }
 
-        // all data returnable to l1 retriever, including both eigenda blob and Derivation version 0
-        // data in a form that no longer requires preimage oracle access
+        // all data returnable to l1 retriever, including both eigenda encoded payload and Derivation version 0
+        // eth data defined
         let mut self_contained_data: Vec<EigenDAOrCalldata> = Vec::new();
 
         for data in &calldata_list {
@@ -148,7 +149,7 @@ where
             if data[0] == DERIVATION_VERSION_0 {
                 info!(
                     target = "eth-datasource",
-                    stage = "hokulea_load_blob",
+                    stage = "hokulea_load_encoded_payload",
                     "use ethda at l1 block number {}",
                     block_ref.number
                 );
@@ -168,8 +169,8 @@ where
                             return Err(PipelineError::Provider(e).crit())
                         }
                     },
-                    Ok(eigenda_blob) => {
-                        self_contained_data.push(EigenDAOrCalldata::EigenDA(eigenda_blob));
+                    Ok(encoded_payload) => {
+                        self_contained_data.push(EigenDAOrCalldata::EigenDA(encoded_payload));
                     }
                 }
             }
@@ -182,7 +183,7 @@ where
 
     #[allow(clippy::result_large_err)]
     fn next_data(&mut self) -> Result<EigenDAOrCalldata, PipelineErrorKind> {
-        // if all eigenda blob are processed, send signal to driver to advance
+        // if all eigenda encoded payload are processed, send signal to driver to advance
         if self.data.is_empty() {
             return Err(PipelineError::Eof.temp());
         }

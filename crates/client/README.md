@@ -4,7 +4,7 @@ hokulea-client provides building blocks for higher levels clients.
 
 The building blocks contains
 - core-client: just basic kona-client with eigenda
-- witgen-client: run basic 1. kona-client with eigenda, 2. returns EigenDABlobWitnessData which can be used to prepare proofs for the correctness. This is usually run in the preparation phase. The resulting proof will be supplied to the final run that shows the entire derivation is correct.
+- witgen-client: run basic 1. kona-client with eigenda, 2. returns EigenDAPreimageWitness which can be used to prepare proofs for the correctness. This is usually run in the preparation phase. The resulting proof will be supplied to the final run that shows the entire derivation is correct.
 
 ## usage pattern
 For ZK fault proof,

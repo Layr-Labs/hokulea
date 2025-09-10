@@ -3,7 +3,7 @@ use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use core::fmt::Debug;
 use hokulea_proof::canoe_verifier::cert_verifier_address;
-use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
+use hokulea_proof::eigenda_preimage_witness::EigenDAPreimageWitness;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
 use std::sync::Arc;
@@ -14,7 +14,7 @@ use tracing::info;
 /// and chain_id.
 pub async fn from_boot_info_to_canoe_proof<P, O>(
     boot_info: &BootInfo,
-    witness: &EigenDABlobWitnessData,
+    witness: &EigenDAPreimageWitness,
     oracle: Arc<O>,
     canoe_provider: P,
 ) -> anyhow::Result<P::Receipt>
@@ -32,15 +32,15 @@ where
     let mut wit = witness.clone();
 
     // generate canoe proof
-    wit.validity.iter_mut().for_each(|(_, cert_validity)| {
+    wit.validities.iter_mut().for_each(|(_, cert_validity)| {
         cert_validity.l1_head_block_hash = boot_info.l1_head;
     });
 
     let mut canoe_inputs = vec![];
 
-    info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", wit.validity.len());
+    info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", wit.validities.len());
 
-    for (altda_commitment, cert_validity) in &mut wit.validity {
+    for (altda_commitment, cert_validity) in &mut wit.validities {
         let canoe_input = CanoeInput {
             altda_commitment: altda_commitment.clone(),
             claimed_validity: cert_validity.claimed_validity,

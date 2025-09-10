@@ -4451,6 +4451,7 @@ dependencies = [
  "kona-derive",
  "kona-protocol",
  "rust-kzg-bn254-primitives",
+ "serde",
  "thiserror 2.0.12",
  "tracing",
 ]
@@ -4567,7 +4568,6 @@ dependencies = [
  "hokulea-proof",
  "kona-preimage",
  "kona-proof",
- "rust-kzg-bn254-primitives",
  "tracing",
 ]
 

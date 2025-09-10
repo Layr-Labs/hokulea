@@ -2,34 +2,36 @@ use alloy_primitives::{FixedBytes, B256};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
-use hokulea_eigenda::EigenDABlobProvider;
+use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use hokulea_proof::cert_validity::CertValidity;
-use hokulea_proof::eigenda_blob_witness::EigenDABlobWitnessData;
-use rust_kzg_bn254_primitives::blob::Blob;
+use hokulea_proof::eigenda_preimage_witness::EigenDAPreimageWitness;
 use std::sync::{Arc, Mutex};
 
-/// This is a wrapper around OracleEigenDAProvider, with
+/// This is a wrapper around OracleEigenDAPreimageProvider, with
 /// additional functionalities to generate eigenda witness
-/// which is KZG proof on the FS point out of the blob itself.
+/// which is KZG proof on the FS point out of the encoded payload
+/// (blob is an inverse Fourier Transform of encoded payload).
 /// OracleEigenDAWitnessProvider is only inteneded to be used outside
 /// FPVM or ZKVM. Its sole purpose is to generate KZG proof at the
 /// client side
 #[derive(Debug, Clone)]
-pub struct OracleEigenDAWitnessProvider<T: EigenDABlobProvider> {
+pub struct OracleEigenDAWitnessProvider<T: EigenDAPreimageProvider> {
     /// Eigenda provider
     pub provider: T,
     /// Store witness data
-    pub witness: Arc<Mutex<EigenDABlobWitnessData>>,
+    pub witness: Arc<Mutex<EigenDAPreimageWitness>>,
 }
 
-/// Implement EigenDABlobProvider for OracleEigenDAWitnessProvider
+/// Implement EigenDAPreimageProvider for OracleEigenDAWitnessProvider
 /// whose goal is to prepare preimage sucht that the guest code of zkvm can consume data that is
 /// easily verifiable.
-/// Note because EigenDA uses filtering approach, in the EigenDABlobWitnessData
+/// Note because EigenDA uses filtering approach, in the EigenDAPreimageWitness
 /// the number of certs does not have to equal to
-/// the number of blobs, since some certs might have been invalid due to incorrect or stale certs
+/// the number of encoded payload, since some certs might have been invalid due to incorrect or stale certs
 #[async_trait]
-impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitnessProvider<T> {
+impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
+    for OracleEigenDAWitnessProvider<T>
+{
     type Error = T::Error;
 
     /// Fetch primage about the recency window
@@ -41,7 +43,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
             Ok(recency) => {
                 let mut witness = self.witness.lock().unwrap();
 
-                witness.recency.push((altda_commitment.clone(), recency));
+                witness.recencies.push((altda_commitment.clone(), recency));
                 Ok(recency)
             }
             Err(e) => Err(e),
@@ -66,7 +68,7 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
                 };
 
                 witness
-                    .validity
+                    .validities
                     .push((altda_commitment.clone(), cert_validity));
                 Ok(validity)
             }
@@ -74,12 +76,15 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
         }
     }
 
-    async fn get_blob(&mut self, altda_commitment: &AltDACommitment) -> Result<Blob, Self::Error> {
-        // only a single blob is returned from a cert
-        match self.provider.get_blob(altda_commitment).await {
-            Ok(blob) => {
-                // Compute kzg proof for the entire blob on a deterministic random point
-                let kzg_proof = match compute_kzg_proof(blob.data()) {
+    async fn get_encoded_payload(
+        &mut self,
+        altda_commitment: &AltDACommitment,
+    ) -> Result<EncodedPayload, Self::Error> {
+        // only a single encoded payload is returned from a cert
+        match self.provider.get_encoded_payload(altda_commitment).await {
+            Ok(encoded_payload) => {
+                // Compute kzg proof for the entire encoded payload on a deterministic random point
+                let kzg_proof = match compute_kzg_proof(encoded_payload.serialize()) {
                     Ok(p) => p,
                     Err(e) => panic!("cannot generate a kzg proof: {}", e),
                 };
@@ -87,10 +92,12 @@ impl<T: EigenDABlobProvider + Send> EigenDABlobProvider for OracleEigenDAWitness
 
                 // ToDo(bx) claimed_validity currently set to true, but needs to connect from response from the host
                 let mut witness = self.witness.lock().unwrap();
-                witness
-                    .blob
-                    .push((altda_commitment.clone(), blob.clone().into(), fixed_bytes));
-                Ok(blob)
+                witness.encoded_payloads.push((
+                    altda_commitment.clone(),
+                    encoded_payload.clone(),
+                    fixed_bytes,
+                ));
+                Ok(encoded_payload)
             }
             Err(e) => Err(e),
         }
