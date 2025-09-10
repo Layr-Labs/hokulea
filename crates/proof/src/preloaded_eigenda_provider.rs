@@ -64,7 +64,7 @@ impl PreloadedEigenDABlobProvider {
         let mut validity_entries = vec![];
 
         // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
-        // da cert is valid or not. Otherwise, skip the verification  
+        // da cert is valid or not. Otherwise, skip the verification
         if !value.validity.is_empty() {
             // check cert validity altogether in one verification
             canoe_verifier
