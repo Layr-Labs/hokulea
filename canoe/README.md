@@ -4,7 +4,7 @@
 
 ## 1 · Protocol Overview  
 
-**Canoe** is a framework that proves—on Ethereum—that a given EigenDA blob has been attested by **sufficient stake across every quorum** of EigenDA operators.
+**Canoe** is a framework that proves—on Ethereum—that a given EigenDA certificate has been attested by **sufficient stake across every quorum** of EigenDA operators.
 
 | Part | Role |
 |-------|------|
