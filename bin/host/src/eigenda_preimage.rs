@@ -1,7 +1,7 @@
 use alloy_primitives::Bytes;
 use reqwest;
 
-/// Fetches blobs from EigenDA via an eigenda-proxy instance.
+/// Fetches encoded payload from EigenDA via an eigenda-proxy instance.
 #[derive(Debug, Clone)]
 pub struct OnlineEigenDAPreimageProvider {
     /// The base url.

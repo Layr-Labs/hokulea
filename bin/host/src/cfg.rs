@@ -166,6 +166,6 @@ impl OnlineHostBackendCfg for SingleChainHostWithEigenDA {
 #[derive(Debug, Clone)]
 pub struct SingleChainProvidersWithEigenDA {
     pub kona_providers: SingleChainProviders,
-    /// The EigenDA blob provider
+    /// The EigenDA preimage provider
     pub eigenda_preimage_provider: OnlineEigenDAPreimageProvider,
 }
