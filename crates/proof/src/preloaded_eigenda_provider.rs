@@ -63,22 +63,28 @@ impl PreloadedEigenDABlobProvider {
         // check all cert validity are substantiated by zk validity proof
         let mut validity_entries = vec![];
 
-        // check cert validity altogether in one verification
-        canoe_verifier
-            .validate_cert_receipt(value.validity.clone(), value.canoe_proof_bytes)
-            .expect("verification should have been passing");
+        // if the number of da cert is 0 regardless if any da cert is valid or not
+        if !value.validity.is_empty() {
+            // check cert validity altogether in one verification
+            canoe_verifier
+                .validate_cert_receipt(value.validity.clone(), value.canoe_proof_bytes)
+                .expect("verification should have been passing");
+        }
 
         for (altda_commitment, cert_validity) in &value.validity {
             // populate only the mapping <DAcert, boolean> for preimage trait
             validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
-        }
+        }    
 
         // check all blobs correponds to cert are correct
         let mut blob_entries = vec![];
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
-        //for i in 0..value.eigenda_certs.len() {
+        
+        // checking the blob is consistent to the kzg commitment from the da certs
+        // note it only includes those DA certs that reach the point of blob retrieval from the preimage oracle
+        // i.e parse correctly, recent enough, and valid
         for (cert, eigenda_blobs, kzg_proof) in value.blob {
             let blob = Blob::new(&eigenda_blobs).expect("should be able to construct a blob");
             // if valid, check blob kzg integrity
@@ -89,7 +95,6 @@ impl PreloadedEigenDABlobProvider {
             // populate entries ahead of time, if something is invalid, batch_verify will abort
             blob_entries.push((cert.clone(), blob));
         }
-        // check if cert is not valie, the blob must be empty, assert that commitments in the cert and blobs are consistent
         assert!(batch_verify(blobs, commitments, proofs));
         // invariant check
         assert!(recency_entries.len() >= validity_entries.len());
