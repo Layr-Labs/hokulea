@@ -19,6 +19,8 @@ use std::{
 };
 use tracing::{info, warn};
 use url::Url;
+use reth_chainspec::Chain;
+
 
 /// The ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
@@ -48,6 +50,7 @@ fn env_fulfillment_strategy(var_name: &str) -> FulfillmentStrategy {
     }
 }
 
+pub const GENESIS: &str = include_str!("./genesis.json");
 /// A canoe provider implementation with Sp1 contract call
 /// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
 /// SP1ProofWithPublicValues contains a Stark proof which can be verified in
@@ -120,6 +123,9 @@ async fn get_sp1_cc_proof(
     }
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
+
+    println!("l1_chain_id {}", l1_chain_id);
+
     let l1_head_block_number = canoe_inputs[0].l1_head_block_number;
     for canoe_input in canoe_inputs.iter() {
         assert!(canoe_input.l1_chain_id == l1_chain_id);
@@ -151,11 +157,18 @@ async fn get_sp1_cc_proof(
         // sp1-cc is the mainnet. Ideally, Sp1-cc should make it easier to use a custom genesis config.
         Err(_) => {
             warn!("Only use for testing environment");
+            use rsp_primitives::genesis::genesis_from_json;
+            warn!("1");
+            let chain_config = genesis_from_json(GENESIS).expect("genesis from json");
+            warn!("Only use for testing environment");
+            let genesis = Genesis::Custom(chain_config.config);
+            warn!("2");
             EvmSketch::builder()
                 .at_block(block_number)
+                .with_genesis(genesis)
                 .el_rpc_url(rpc_url)
                 .build()
-                .await?
+                .await.expect("evm sketch builder")
         }
     };
 
@@ -169,12 +182,17 @@ async fn get_sp1_cc_proof(
                 ContractInput::new_call(canoe_input.verifier_address, Address::default(), call)
             }
         };
+        warn!("3-1");
 
         let returns_bytes = sketch
             .call_raw(&contract_input)
             .await
-            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+            .map_err(|e| {
+                warn!("3-2 {}", e);
+                anyhow::anyhow!(e.to_string())
+            })?;
 
+        warn!("3-3");
         // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
         // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
         // Talked to sp1-cc developer already, and it is agreed.
@@ -188,17 +206,21 @@ async fn get_sp1_cc_proof(
                 returns == StatusCode::SUCCESS
             }
         };
-
+        warn!("3-3");
         if is_valid != canoe_input.claimed_validity {
             panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
         }
     }
+
+    warn!("4-1");
 
     let evm_state_sketch = sketch
         .finalize()
         .await
         .map_err(|e| anyhow::anyhow!(e.to_string()))
         .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+
+    warn!("4");
 
     // Feed the sketch into the client.
     let input_bytes = bincode::serialize(&evm_state_sketch)
