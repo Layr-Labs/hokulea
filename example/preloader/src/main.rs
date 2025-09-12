@@ -28,6 +28,7 @@ use hokulea_proof::{
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
 use std::{
+    env,
     ops::DerefMut,
     sync::{Arc, Mutex},
 };
@@ -69,8 +70,15 @@ async fn main() -> anyhow::Result<()> {
 
             println!("canoe sp1cc v_key {:?}", canoe_vk.vk.hash_u32() );
 
+            let mock_mode = env::var("OP_SUCCINCT_MOCK")
+                .map(|v| v.to_ascii_lowercase())
+                .ok()
+                .and_then(|v| v.parse::<bool>().ok())
+                .unwrap_or(false);
+
             let canoe_provider = CanoeSp1CCReducedProofProvider{
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
+                mock_mode,
             };
             let canoe_verifier = CanoeSp1CCVerifier{};
         } else {
