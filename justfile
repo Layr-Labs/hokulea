@@ -143,7 +143,7 @@ run-kurtosis-devnet-with-cached-images ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="
 # which recently changes its interface and broke and stable optimism kurtosis package branch
 [group('local-env')]
 run-kurtosis-devnet-with-eigenlabs-package ENCLAVE_NAME="eigenda-devnet" ARGS_FILE="kurtosis_params.yaml":
-  kurtosis run --enclave {{ENCLAVE_NAME}} github.com/Layr-Labs/optimism-package@stable-pin-ethereum-package --args-file {{ARGS_FILE}} --image-download always
+  kurtosis run --enclave {{ENCLAVE_NAME}} github.com/Layr-Labs/optimism-package@stable-pin-ethereum-package-more-recent --args-file {{ARGS_FILE}} --image-download always
 
 # Deploy a mock contract that always return true. Designed to work with a devnet that uses eigenda-proxy memstore feature
 # which does not return a legitimate DA cert
