@@ -28,7 +28,6 @@ use hokulea_proof::{
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
 use std::{
-    env,
     ops::DerefMut,
     sync::{Arc, Mutex},
 };
@@ -63,6 +62,7 @@ async fn main() -> anyhow::Result<()> {
             use canoe_sp1_cc_host::CanoeSp1CCReducedProofProvider;
             use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
             use sp1_sdk::{ProverClient, HashableKey};
+            use std::env;
 
             const CANOE_SP1CC_ELF: &[u8] = canoe_sp1_cc_host::ELF;
             let client = ProverClient::from_env();

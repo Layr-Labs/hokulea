@@ -9,14 +9,23 @@ use eigenda_cert::EigenDAVersionedCert;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{
-    ProverClient, SP1Proof, SP1ProofMode, SP1ProofWithPublicValues, SP1Stdin, SP1_CIRCUIT_VERSION,
+    network::FulfillmentStrategy, Prover, ProverClient, SP1Proof, SP1ProofMode,
+    SP1ProofWithPublicValues, SP1Stdin, SP1_CIRCUIT_VERSION,
 };
-use std::{str::FromStr, time::Instant};
+use std::{
+    env,
+    str::FromStr,
+    time::{Duration, Instant},
+};
 use tracing::{info, warn};
 use url::Url;
 
 /// The ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
+
+const DEFAULT_NETWORK_PRIVATE_KEY: &str =
+    "0x0000000000000000000000000000000000000000000000000000000000000001";
+
 /// A canoe provider implementation with Sp1 contract call
 /// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
 /// SP1ProofWithPublicValues contains a Stark proof which can be verified in
@@ -176,8 +185,15 @@ async fn get_sp1_cc_proof(
     stdin.write(&input_bytes);
     stdin.write(&canoe_inputs);
 
-    // Create a `ProverClient`.
-    let client = ProverClient::from_env();
+    // Create a `NetworkProver`.
+    let network_private_key = env::var("NETWORK_PRIVATE_KEY").unwrap_or_else(|_| {
+        warn!("NETWORK_PRIVATE_KEY is not set, using default network private key");
+        DEFAULT_NETWORK_PRIVATE_KEY.to_string()
+    });
+    let client = ProverClient::builder()
+        .network()
+        .private_key(&network_private_key)
+        .build();
     let (pk, _vk) = client.setup(ELF);
 
     let proof = if mock_mode {
@@ -206,6 +222,11 @@ async fn get_sp1_cc_proof(
         let proof = client
             .prove(&pk, &stdin)
             .compressed()
+            .strategy(FulfillmentStrategy::Hosted)
+            .skip_simulation(true)
+            .cycle_limit(1_000_000_000_000)
+            .gas_limit(1_000_000_000_000)
+            .timeout(Duration::from_secs(4 * 60 * 60))
             .run()
             .expect("sp1-cc should have produced a compressed proof");
 
