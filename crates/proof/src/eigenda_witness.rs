@@ -8,14 +8,14 @@ use hokulea_eigenda::EncodedPayload;
 use crate::cert_validity::CertValidity;
 use serde::{Deserialize, Serialize};
 
-/// EigenDAPreimageWitness contains preimage data to be provided into
+/// EigenDAWitness contains preimage and witness data to be provided into
 /// the zkVM as part of Preimage Oracle. Those data have three categories.
 /// In each category, we group (DA cert, preimage data) into a tuple, such
 /// that there is one-to-one mapping from DA cert to the value.
 /// It is possible that the same DA certs are populated twice especially
 /// batcher is misbehaving. The data structures preserve this information.
 ///
-/// Two actors populates EigenDAPreimageWitness. One is the
+/// Two actors populates EigenDAWitness. One is the
 /// OracleEigenDAWitnessProvider which takes preimage data from the
 /// EigenDAPreimageProvider during the first run of the
 /// derivation pipeline. OracleEigenDAWitnessProvider wraps around an
@@ -42,7 +42,7 @@ use serde::{Deserialize, Serialize};
 /// match, and otherwise there is failures. See PreloadedEigenDAPreimageProvider
 /// for more information
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-pub struct EigenDAPreimageWitness {
+pub struct EigenDAWitness {
     /// u64 containing the recency_window
     pub recencies: Vec<(AltDACommitment, u64)>,
     /// validity of a da cert
@@ -55,7 +55,7 @@ pub struct EigenDAPreimageWitness {
     pub canoe_proof_bytes: Option<Vec<u8>>,
 }
 
-impl EigenDAPreimageWitness {
+impl EigenDAWitness {
     /// require_canoe_proof checks if there is at least one canoe proof needed for any DAcerts
     /// in the eigenda blob derivation
     pub fn require_canoe_proof(&self) -> bool {

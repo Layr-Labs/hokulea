@@ -6,13 +6,13 @@ use kona_preimage::CommsClient;
 use kona_proof::{errors::OracleProviderError, BootInfo, FlushableCache};
 
 use hokulea_proof::{
-    canoe_verifier::CanoeVerifier, eigenda_preimage_witness::EigenDAPreimageWitness,
+    canoe_verifier::CanoeVerifier, eigenda_witness::EigenDAWitness,
     preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
 };
 
 use alloc::sync::Arc;
 
-// The function overwrites information from bootInfo into EigenDAPreimageWitness, because information inside
+// The function overwrites information from bootInfo into EigenDAWitness, because information inside
 // bootInfo is secured. It uses all the secure information to verify against the canoe proof to ensure the
 // validity of the cert. Then it checks the consistency between kzg commitment from the cert and the encoded payload.
 // The function takes an oracle at whole, and assume what is inside the oracle will be or already been verified
@@ -21,7 +21,7 @@ use alloc::sync::Arc;
 pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
-    mut witness: EigenDAPreimageWitness,
+    mut witness: EigenDAWitness,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,

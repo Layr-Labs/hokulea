@@ -1,4 +1,4 @@
-use crate::eigenda_preimage_witness::EigenDAPreimageWitness;
+use crate::eigenda_witness::EigenDAWitness;
 use crate::errors::HokuleaOracleProviderError;
 use alloy_primitives::{FixedBytes, U256};
 use ark_bn254::{Fq, G1Affine};
@@ -15,7 +15,7 @@ use alloc::vec::Vec;
 
 use crate::canoe_verifier::CanoeVerifier;
 
-/// PreloadedEigenDAPreimageProvider converts EigenDAPreimageWitness into preimage data
+/// PreloadedEigenDAPreimageProvider converts EigenDAWitness into preimage data
 /// can be used to implement the EigenDAPreimageProvider trait, that contains
 ///   get_validity
 ///   get_encoded_payload
@@ -29,8 +29,8 @@ use crate::canoe_verifier::CanoeVerifier;
 /// At the conversion side (i.e from_witness), we only have to maintain the correctness
 /// from (DA cert, returned data by the interface).
 ///
-/// Note it is possible, the lenght of validity_entries is greater than len of encoded_payload_entries
-/// due to possible invalid cert, that does not require preimage to populate a blob
+/// Note it is possible, the length of validity_entries is greater than len of encoded_payload_entries
+/// due to possible invalid cert, that does not require preimage to populate a encoded payload
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDAPreimageProvider {
     /// The tuple contains a mapping from DAcert to recency window size
@@ -39,14 +39,14 @@ pub struct PreloadedEigenDAPreimageProvider {
     pub recency_entries: Vec<(AltDACommitment, u64)>,
     /// The tuple contains a mapping from DAcert to cert validity
     pub validity_entries: Vec<(AltDACommitment, bool)>,
-    /// The tuple contains a mapping from DAcert to Eigenda blob
+    /// The tuple contains a mapping from DAcert to Eigenda encoded payload
     pub encoded_payload_entries: Vec<(AltDACommitment, EncodedPayload)>,
 }
 
 impl PreloadedEigenDAPreimageProvider {
-    /// Convert EigenDAPreimageWitness into the PreloadedEigenDAPreimageProvider
+    /// Convert EigenDAWitness into the PreloadedEigenDAPreimageProvider
     pub fn from_witness(
-        value: EigenDAPreimageWitness,
+        value: EigenDAWitness,
         canoe_verifier: impl CanoeVerifier,
     ) -> PreloadedEigenDAPreimageProvider {
         // check number of element invariants
@@ -77,8 +77,9 @@ impl PreloadedEigenDAPreimageProvider {
             validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
         }
 
-        // check all blobs correponds to cert are correct
         let mut encoded_payload_entries = vec![];
+
+        // check all blobs correponds to cert are correct
         let mut blobs = vec![];
         let mut proofs = vec![];
         let mut commitments = vec![];
@@ -90,7 +91,7 @@ impl PreloadedEigenDAPreimageProvider {
             // gather fiat shamir kzg commitment and proof for batch verification
             let blob =
                 Blob::new(encoded_payload.serialize()).expect("should be able to construct a blob");
-            blobs.push(blob.clone());
+            blobs.push(blob);
             proofs.push(kzg_proof);
             commitments.push(cert.get_kzg_commitment());
         }
@@ -158,22 +159,22 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
             Ok(encoded_payload)
         } else {
             // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-            panic!("preloaded eigenda blob provider does not match altda commitment requested from derivation pipeline
+            panic!("preloaded preimage provider does not match altda commitment requested from derivation pipeline
                 requested altda commitment is {:?}, stored is {:?}", altda_commitment.to_digest(), stored_altda_commitment.to_digest());
         }
     }
 }
 
-/// Eventually, rust-kzg-bn254 would provide a nice interface that takes
+/// Eventually, rust-kzg-bn254 would provide an interface that takes
 /// bytes input, so that we can remove this wrapper. For now, just include it here
 pub fn batch_verify(
-    eigenda_blobs: Vec<Blob>,
+    blobs: Vec<Blob>,
     commitments: Vec<(U256, U256)>,
     proofs: Vec<FixedBytes<64>>,
 ) -> bool {
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
-    let lib_blobs: Vec<Blob> = eigenda_blobs;
+    let lib_blobs: Vec<Blob> = blobs;
     let lib_commitments: Vec<G1Affine> = commitments
         .iter()
         .map(|c| {

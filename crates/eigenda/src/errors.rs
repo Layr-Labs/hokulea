@@ -32,9 +32,9 @@ pub enum HokuleaStatelessError {
     /// field element is out of bn254 field, a critical error
     #[error("field element too large")]
     FieldElementRangeError,
-    /// blob decoding error, inbox sender has violated the encoding rule
-    #[error("cannot decode a blob")]
-    BlobDecodeError(#[from] EncodedPayloadDecodingError),
+    /// encoded payload decoding error, inbox sender has violated the encoding rule
+    #[error("cannot decode an encoded payload")]
+    DecodingError(#[from] EncodedPayloadDecodingError),
 }
 
 /// define conversion error
@@ -48,15 +48,15 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
             HokuleaStatelessError::FieldElementRangeError => {
                 HokuleaErrorKind::Critical("field element too large".to_string())
             }
-            HokuleaStatelessError::BlobDecodeError(e) => HokuleaErrorKind::Discard(e.to_string()),
+            HokuleaStatelessError::DecodingError(e) => HokuleaErrorKind::Discard(e.to_string()),
         }
     }
 }
 
-/// List of error can happen during blob decoding
+/// List of error can happen during decoding an encoded payload
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum EncodedPayloadDecodingError {
-    /// the input blob has wrong size
+    /// the input encoded payload has wrong size
     #[error("invalid number of bytes in the encoded payload body {0}")]
     InvalidLengthInEncodedPayloadBody(u64),
     /// encoded payload must contain a power of 2 number of field elements

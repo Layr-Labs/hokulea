@@ -41,7 +41,8 @@ pub enum AltDACommitmentParseError {
     InvalidRlpCert(Error),
 }
 
-/// AltDACommitment is used as the query key to retrieve eigenda blob from the eigenda proxy
+/// AltDACommitment contains EigenDA cert, and is used as a part of key to uniquely
+/// address the preimage data including: cert validity, field elements, recency window
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct AltDACommitment {
     /// <https://specs.optimism.io/experimental/alt-da.html#input-commitment-submission>
@@ -104,7 +105,7 @@ impl TryFrom<&[u8]> for AltDACommitment {
 
 impl AltDACommitment {
     /// This function preprare a holder for a key used to fetch field elements for
-    /// eigenda blob. The analogous code for eth blob can be found
+    /// eigenda encoded payload. The analogous code for eth blob can be found
     /// <https://github.com/op-rs/kona/blob/08064c4f464b016dc98671f2b3ea60223cfa11a9/crates/proof/proof/src/l1/blob_provider.rs#L57C9-L57C70>
     ///
     /// A template contains 80 bytes in total

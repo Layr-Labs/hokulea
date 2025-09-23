@@ -3,7 +3,7 @@ use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use core::fmt::Debug;
 use hokulea_proof::canoe_verifier::cert_verifier_address;
-use hokulea_proof::eigenda_preimage_witness::EigenDAPreimageWitness;
+use hokulea_proof::eigenda_witness::EigenDAWitness;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
 use std::sync::Arc;
@@ -14,7 +14,7 @@ use tracing::info;
 /// and chain_id.
 pub async fn from_boot_info_to_canoe_proof<P, O>(
     boot_info: &BootInfo,
-    witness: &EigenDAPreimageWitness,
+    witness: &EigenDAWitness,
     oracle: Arc<O>,
     canoe_provider: P,
 ) -> anyhow::Result<P::Receipt>

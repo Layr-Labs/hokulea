@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 pub type Payload = Bytes;
 
 #[derive(Default, Clone, Debug, Deserialize, Serialize)]
-// [EigenDAPreimageWitness] requires serde for EncodedPayload
+// [EigenDAWitness] requires serde for EncodedPayload
 /// intended for deriving rollup channel frame from eigenda encoded payload
 pub struct EncodedPayload {
     /// Bytes over Vec because Bytes clone is a shallow copy

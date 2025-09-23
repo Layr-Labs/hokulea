@@ -17,7 +17,7 @@ Canoe is under active development and currently supports two zkVM back‑ends: [
 
 ## 2 · EigenDA V2 (“Blazar”) Upgrade  
 
-In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Rollup wants to let Ethereum aware cert blob is available can use Canoe or directly verify the DA cert on Etheurem.
+In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Rollup that wants Ethereum to be aware a cert is available can use Canoe or directly verify the DA cert on Etheurem.
 
 
 ## 3 · Canoe security
@@ -67,9 +67,10 @@ For `N` DA certs, protocols can aggregate them together into a single aggregated
 
 ![](../assets/usecase2.png)
 
-### 4.3 Blob Validity Inside a zkVM (verified by Hokulea)
+### 4.3 Acquiring validity of a DA certificate Inside a zkVM
 
-In rollups that rely on EigenDA, Hokulea is embedded in the derivation pipeline to enable secure OP integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. After this ELF binary executes, the zkVM outputs a validity proof attesting to the Hokulea client’s run.
+For rollups with EigenDA, the [eigenda blob derivation](https://layr-labs.github.io/eigenda/) is embedded into the OP derivation pipeline for secure integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. The ELF binary requires information about the validity for every DA cert to produce correct results. The validity information (among recency, encoded payload) is provided by preimage oracle which is a verifiable key value map. A canoe proof cryptographically attests the cert validity for each DA cert.
+
 While executing, the client validates each canoe certificate by:
 
 Expecting a proof P for every EigenDA certificate encountered.

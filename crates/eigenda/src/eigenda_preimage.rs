@@ -8,7 +8,7 @@ use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
 use alloy_primitives::Bytes;
 use eigenda_cert::AltDACommitment;
 
-/// A data iterator that reads from a blob.
+/// A data iterator that reads from a preimage.
 #[derive(Debug, Clone)]
 pub struct EigenDAPreimageSource<B>
 where
@@ -75,7 +75,7 @@ where
     fn parse(&mut self, data: &Bytes) -> Result<AltDACommitment, HokuleaStatelessError> {
         if data.len() <= 2 {
             // recurse if data is mailformed
-            warn!(target: "blob_source", "Failed to decode blob data, skipping");
+            warn!(target: "preimage_source", "Failed to decode altda commitment, skipping");
             return Err(HokuleaStatelessError::InsufficientEigenDACertLength);
         }
         let altda_commitment: AltDACommitment = match data[1..].try_into() {

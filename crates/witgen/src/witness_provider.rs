@@ -4,7 +4,7 @@ use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use hokulea_proof::cert_validity::CertValidity;
-use hokulea_proof::eigenda_preimage_witness::EigenDAPreimageWitness;
+use hokulea_proof::eigenda_witness::EigenDAWitness;
 use std::sync::{Arc, Mutex};
 
 /// This is a wrapper around OracleEigenDAPreimageProvider, with
@@ -19,13 +19,13 @@ pub struct OracleEigenDAWitnessProvider<T: EigenDAPreimageProvider> {
     /// Eigenda provider
     pub provider: T,
     /// Store witness data
-    pub witness: Arc<Mutex<EigenDAPreimageWitness>>,
+    pub witness: Arc<Mutex<EigenDAWitness>>,
 }
 
 /// Implement EigenDAPreimageProvider for OracleEigenDAWitnessProvider
 /// whose goal is to prepare preimage sucht that the guest code of zkvm can consume data that is
 /// easily verifiable.
-/// Note because EigenDA uses filtering approach, in the EigenDAPreimageWitness
+/// Note because EigenDA uses filtering approach, in the EigenDAWitness
 /// the number of certs does not have to equal to
 /// the number of encoded payload, since some certs might have been invalid due to incorrect or stale certs
 #[async_trait]

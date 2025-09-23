@@ -1,4 +1,4 @@
-//! This is a crate for generating a kzg proof using eigenda blob. In the future,
+//! This is a crate for generating a kzg proof for an eigenda blob. In the future,
 //! such proof is carried inside the blob header. Then it can be removed. This crate access filesystem,
 //! cannot be used in any fault proof or zk vm.
 extern crate alloc;
@@ -13,24 +13,25 @@ use rust_kzg_bn254_prover::srs::SRS;
 /// This function computes a KZG proof for a eigenDA blob
 /// nitro code <https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141>
 /// could refactor in the future, such that both host and client can compute the proof
-pub fn compute_kzg_proof(blob: &[u8]) -> Result<Bytes, KzgError> {
+pub fn compute_kzg_proof(encoded_payload: &[u8]) -> Result<Bytes, KzgError> {
     let srs_file_path = "resources/g1.point";
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
     let srs = SRS::new(srs_file_path, 268435456, 524288)
         .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err));
     let mut kzg = KZG::new();
 
-    let input = Blob::new(blob).expect("should be able to construct a blob");
+    // The encoded payload is a polynomial presented in its evaluation form
+    let input = Blob::new(encoded_payload).expect("should be able to construct a blob");
     let input_poly = input.to_polynomial_eval_form();
 
-    kzg.calculate_and_store_roots_of_unity(blob.len() as u64)
+    kzg.calculate_and_store_roots_of_unity(encoded_payload.len() as u64)
         .unwrap();
 
     let mut commitment_bytes = vec![0u8; 0];
 
     let commitment = kzg.commit_eval_form(&input_poly, &srs)?;
 
-    // TODO the library should have returned the bytes, or provide a helper
+    // TODO the rust bn254 library should have returned the bytes, or provide a helper
     // for conversion. For both proof and commitment
     let commitment_x_bigint: BigUint = commitment.x.into();
     let commitment_y_bigint: BigUint = commitment.y.into();

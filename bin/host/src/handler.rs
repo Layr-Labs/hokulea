@@ -202,7 +202,7 @@ async fn fetch_data_from_proxy(
                 HokuleaPreimageError::InvalidCert => is_valid_cert = false,
                 HokuleaPreimageError::NotRecentCert => is_recent_cert = false,
             },
-            HostHandlerError::HokuleaBlobDecodingError(e)
+            HostHandlerError::HokuleaEncodedPayloadDecodingError(e)
             | HostHandlerError::IllogicalStatusCodeError(e)
             | HostHandlerError::UndefinedStatusCodeError(e) => {
                 return Err(anyhow!("failed to handle http response: {e}"))

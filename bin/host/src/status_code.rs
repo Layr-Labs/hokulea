@@ -29,8 +29,11 @@ pub enum HostHandlerError {
     #[error("hokulea client preimage error {0}")]
     HokuleaPreimageError(#[from] HokuleaPreimageError),
     // error which hokulea client uses to discard cert
+    // but the decoding only happens if proxy is queried to return the decoded
+    // payload, which is only used by op-node. For hokulea, the proxy returns
+    // the encoded payload therefore, we shall not see any Decoding Error. 
     #[error("hokulea client blob decoding error {0}")]
-    HokuleaBlobDecodingError(u8),
+    HokuleaEncodedPayloadDecodingError(u8),
     // status code is not defined
     #[error("undefined status code error {0}")]
     UndefinedStatusCodeError(u8),
@@ -53,7 +56,7 @@ impl From<DerivationError> for HostHandlerError {
                 HostHandlerError::IllogicalStatusCodeError(status.status_code)
             }
             STATUS_CODE_BLOB_DECODING_ERROR => {
-                HostHandlerError::HokuleaBlobDecodingError(status.status_code)
+                HostHandlerError::HokuleaEncodedPayloadDecodingError(status.status_code)
             }
             _ => HostHandlerError::UndefinedStatusCodeError(status.status_code),
         }
