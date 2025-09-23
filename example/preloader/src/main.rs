@@ -23,8 +23,8 @@ use kona_proof::{l1::OracleBlobProvider, BootInfo, FlushableCache};
 use canoe_provider::CanoeProvider;
 use hokulea_client::fp_client;
 use hokulea_proof::{
-    canoe_verifier::CanoeVerifier, eigenda_witness::EigenDAWitness,
-    eigenda_provider::OracleEigenDAPreimageProvider,
+    canoe_verifier::CanoeVerifier, eigenda_provider::OracleEigenDAPreimageProvider,
+    eigenda_witness::EigenDAWitness,
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
 use std::{
@@ -145,8 +145,7 @@ where
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     // Run derivation for the first time to populate the witness data
-    let mut wit: EigenDAWitness =
-        run_witgen_client(oracle.clone(), evm_factory.clone()).await?;
+    let mut wit: EigenDAWitness = run_witgen_client(oracle.clone(), evm_factory.clone()).await?;
 
     if wit.require_canoe_proof() {
         // get l1 header, does not have to come from oracle directly, it is for convenience
@@ -201,13 +200,7 @@ where
         witness: eigenda_witness.clone(),
     };
 
-    fp_client::run_fp_client(
-        oracle,
-        beacon,
-        eigenda_witness_provider,
-        evm_factory,
-    )
-    .await?;
+    fp_client::run_fp_client(oracle, beacon, eigenda_witness_provider, evm_factory).await?;
 
     let wit = core::mem::take(eigenda_witness.lock().unwrap().deref_mut());
 

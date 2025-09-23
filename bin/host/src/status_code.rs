@@ -31,7 +31,7 @@ pub enum HostHandlerError {
     // error which hokulea client uses to discard cert
     // but the decoding only happens if proxy is queried to return the decoded
     // payload, which is only used by op-node. For hokulea, the proxy returns
-    // the encoded payload therefore, we shall not see any Decoding Error. 
+    // the encoded payload therefore, we shall not see any Decoding Error.
     #[error("hokulea client blob decoding error {0}")]
     HokuleaEncodedPayloadDecodingError(u8),
     // status code is not defined
