@@ -35,6 +35,8 @@ Sp1 contract call Preloader, generate zk proof with sp1-cc backend, but in mock 
 ```bash
 just run-preloader .devnet.env sp1-cc
 ```
+The SP1-CC host reads `RANGE_PROOF_STRATEGY` to pick the proof fulfillment mode. The default is `reserved` to prove with reserved capacity, or you can set it to `hosted` to prove with Succinct's on-demand prover.
+
 Compiling rust code to zkVM bytecode requires installing Sp1 toolchain, see [sp1up](https://docs.succinct.xyz/docs/sp1/getting-started/install).
 
 

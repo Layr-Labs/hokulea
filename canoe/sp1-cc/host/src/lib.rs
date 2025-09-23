@@ -25,6 +25,28 @@ pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 const DEFAULT_NETWORK_PRIVATE_KEY: &str =
     "0x0000000000000000000000000000000000000000000000000000000000000001";
+const SP1_CC_PROOF_STRATEGY_ENV: &str = "SP1_CC_PROOF_STRATEGY";
+
+/// Get the fulfillment strategy from the environment variable
+fn env_fulfillment_strategy(var_name: &str) -> FulfillmentStrategy {
+    match env::var(var_name) {
+        Ok(value) => {
+            let value_lower = value.to_ascii_lowercase();
+            match value_lower.as_str() {
+                "hosted" => FulfillmentStrategy::Hosted,
+                "reserved" => FulfillmentStrategy::Reserved,
+                _ => {
+                    warn!(
+                        "Unknown `{}` value `{}`; defaulting to reserved fulfillment strategy",
+                        var_name, value_lower
+                    );
+                    FulfillmentStrategy::Reserved
+                }
+            }
+        }
+        Err(_) => FulfillmentStrategy::Reserved,
+    }
+}
 
 /// A canoe provider implementation with Sp1 contract call
 /// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
@@ -218,11 +240,13 @@ async fn get_sp1_cc_proof(
             SP1_CIRCUIT_VERSION,
         )
     } else {
+        let sp1_cc_proof_strategy = env_fulfillment_strategy(SP1_CC_PROOF_STRATEGY_ENV);
+
         // Generate the proof for the given program and input.
         let proof = client
             .prove(&pk, &stdin)
             .compressed()
-            .strategy(FulfillmentStrategy::Hosted)
+            .strategy(sp1_cc_proof_strategy)
             .skip_simulation(true)
             .cycle_limit(1_000_000_000_000)
             .gas_limit(1_000_000_000_000)
