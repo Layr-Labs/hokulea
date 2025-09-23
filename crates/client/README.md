@@ -1,3 +1,3 @@
 # `hokulea-client`
 
-hokulea-client provides building blocks for higher levels clients.
+hokulea-client provides building blocks for higher level clients.

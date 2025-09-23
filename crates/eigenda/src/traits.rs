@@ -25,7 +25,7 @@ pub trait EigenDAPreimageProvider {
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error>;
 
-    /// Fetch the encoded payloas from the altda commitment
+    /// Fetch the encoded payloads from the altda commitment
     /// The encoded payload size is always a power of 2, with a minimum of 32 bytes.
     /// (e.g., 32, 64, 128, 256, 512, ... bytes)
     async fn get_encoded_payload(

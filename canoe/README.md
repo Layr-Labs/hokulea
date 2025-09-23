@@ -17,7 +17,7 @@ Canoe is under active development and currently supports two zkVM back‑ends: [
 
 ## 2 · EigenDA V2 (“Blazar”) Upgrade  
 
-In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Rollup that wants Ethereum to be aware a cert is available can use Canoe or directly verify the DA cert on Etheurem.
+In EigenDA V2 the certificate (DA cert) is returned to the requester immediately after quorum attestation; the disperser no longer pessimistically bridges the certs to the L1. Rollup that wants Ethereum to be aware a cert is valid or not can use Canoe or directly verify the DA cert on Etheurem.
 
 
 ## 3 · Canoe security
