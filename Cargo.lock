@@ -2748,7 +2748,6 @@ dependencies = [
  "canoe-bindings",
  "canoe-provider",
  "eigenda-cert",
- "reth-chainspec",
  "rsp-primitives",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",
