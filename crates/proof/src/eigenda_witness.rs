@@ -9,8 +9,8 @@ use crate::cert_validity::CertValidity;
 use serde::{Deserialize, Serialize};
 
 /// EigenDAWitness contains preimage and witness data to be provided into
-/// the zkVM as part of Preimage Oracle. There are three types of preimages:
-/// 1. recency, 2. validity, 3. encoded payload.
+/// the zkVM as part of Preimage Oracle. There are three types of preimages: 1. recency,
+/// 2. validity, 3. encoded payload.
 /// In each type, we group (DA cert, preimage data) into a tuple, such
 /// that there is one-to-one mapping from DA cert to the value.
 /// It is possible that the same DA certs are populated twice especially
