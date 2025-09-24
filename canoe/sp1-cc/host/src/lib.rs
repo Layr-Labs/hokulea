@@ -50,7 +50,7 @@ fn env_fulfillment_strategy(var_name: &str) -> FulfillmentStrategy {
     }
 }
 
-pub const DEVNET_GENESIS: &str = include_str!("./devnet_genesis.json");
+pub const KURTOSIS_DEVNET_GENESIS: &str = include_str!("./kurtosis_devnet_genesis.json");
 pub const HOLESKY_GENESIS: &str = include_str!("./holesky_genesis.json");
 /// A canoe provider implementation with Sp1 contract call
 /// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
@@ -156,7 +156,7 @@ async fn get_sp1_cc_proof(
         Err(_) => {
             let chain_config = match l1_chain_id {
                 17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
-                3151908 => genesis_from_json(DEVNET_GENESIS).expect("genesis from json"),
+                3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
                 _ => panic!("chain id {l1_chain_id} is not supported"),
             };
 
