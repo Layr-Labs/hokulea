@@ -6,7 +6,8 @@ edition = "2021"
 [dependencies]
 sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "ec6ff219beb831ac744d1569f03483dd601ec618" }
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "ec6ff219beb831ac744d1569f03483dd601ec618" }
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", rev = "881ba190e758e01e72399df462ac99864930ddb0" }
+# 881ba190e758e01e72399df462ac99864930ddb0 is also used by ec6ff219beb831ac744d1569f03483dd601ec618
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", rev = "881ba190e758e01e72399df462ac99864930ddb0" } 
 
 alloy-primitives.workspace = true
 alloy-sol-types = { workspace = true }

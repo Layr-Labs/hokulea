@@ -20,6 +20,8 @@ use std::{
 use tracing::{info, warn};
 use url::Url;
 
+use rsp_primitives::genesis::genesis_from_json;
+
 /// The ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
@@ -152,7 +154,6 @@ async fn get_sp1_cc_proof(
         }
         // if genesis is not available in the sp1-cc library, the code uses custom genesis config
         Err(_) => {
-            use rsp_primitives::genesis::genesis_from_json;
             let chain_config = match l1_chain_id {
                 17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
                 3151908 => genesis_from_json(DEVNET_GENESIS).expect("genesis from json"),
