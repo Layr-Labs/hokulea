@@ -1072,7 +1072,6 @@ dependencies = [
  "canoe-bindings",
  "eigenda-cert",
  "serde",
- "thiserror",
 ]
 
 [[package]]

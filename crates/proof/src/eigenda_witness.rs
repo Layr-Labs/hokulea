@@ -55,11 +55,3 @@ pub struct EigenDAWitness {
     /// correct
     pub canoe_proof_bytes: Option<Vec<u8>>,
 }
-
-impl EigenDAWitness {
-    /// A helper function to determine if any canoe proof shall be generated.
-    /// It returns true if the witness requires a canoe proof.
-    pub fn require_canoe_proof(&self) -> bool {
-        !self.validities.is_empty()
-    }
-}

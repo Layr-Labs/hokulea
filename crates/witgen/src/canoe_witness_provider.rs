@@ -12,7 +12,7 @@ use tracing::info;
 /// A helper function to create canoe proof by the provided canoe provider.
 /// The function relies on data stored in the oracle, for l1_head, l1_head_header.number
 /// and chain_id.
-/// 
+///
 /// If no canoe proof is needed, it returns Ok(None)
 pub async fn from_boot_info_to_canoe_proof<P, O>(
     boot_info: &BootInfo,
