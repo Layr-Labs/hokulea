@@ -1,5 +1,5 @@
-/// This PAYLOAD_ENCODING_VERSION_0 requires payload to be encoded as follows
-/// - 32 byte header = [0x00, version byte 0, uint32 len of data, 0x00, 0x00,..., 0x00]
+/// The PAYLOAD_ENCODING_VERSION_0 requires payload to be encoded as follows
+/// - begin with 32 byte header = [0x00, version byte 0, uint32 len of data, 0x00, 0x00,..., 0x00]
 /// - followed by the encoded data [0x00, 31 bytes of data, 0x00, 31 bytes of data,...]
 pub const PAYLOAD_ENCODING_VERSION_0: u8 = 0x0;
 /// TODO: make it part of rollup config

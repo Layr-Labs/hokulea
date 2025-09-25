@@ -23,8 +23,8 @@ pub enum HokuleaErrorKind {
 #[error(transparent)]
 pub enum HokuleaStatelessError {
     /// Data is too short for parsing the altda commitment
-    #[error("calldata length is not sufficient")]
-    InsufficientEigenDACertLength,
+    #[error("calldata length is not sufficient for altda commitment")]
+    InsufficientLengthAltDACommimtment,
     /// Parse from bytes into Altda commitment containing a DA certificate
     /// use source because eventualy hokulea error will be overwritten into pipeline error
     #[error("parsing error {0}")]
@@ -41,7 +41,7 @@ pub enum HokuleaStatelessError {
 impl From<HokuleaStatelessError> for HokuleaErrorKind {
     fn from(e: HokuleaStatelessError) -> Self {
         match e {
-            HokuleaStatelessError::InsufficientEigenDACertLength => {
+            HokuleaStatelessError::InsufficientLengthAltDACommimtment => {
                 HokuleaErrorKind::Discard("Insufficient EigenDA Cert Length".to_string())
             }
             HokuleaStatelessError::ParseError(e) => HokuleaErrorKind::Discard(e.to_string()),
@@ -57,8 +57,8 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum EncodedPayloadDecodingError {
     /// the input encoded payload has wrong size
-    #[error("invalid number of bytes in the encoded payload body {0}")]
-    InvalidLengthInEncodedPayloadBody(u64),
+    #[error("invalid number of bytes in the encoded payload {0}, that is not multiple of bytes per field element")]
+    InvalidLengthEncodedPayload(u64),
     /// encoded payload must contain a power of 2 number of field elements
     #[error("encoded payload must be a power of 2 field elements (32 bytes chunks), but got {0} field elements")]
     InvalidPowerOfTwoLength(usize),

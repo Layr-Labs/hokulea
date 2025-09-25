@@ -76,7 +76,7 @@ where
         if data.len() <= 2 {
             // recurse if data is mailformed
             warn!(target: "preimage_source", "Failed to decode altda commitment, skipping");
-            return Err(HokuleaStatelessError::InsufficientEigenDACertLength);
+            return Err(HokuleaStatelessError::InsufficientLengthAltDACommimtment);
         }
         let altda_commitment: AltDACommitment = match data[1..].try_into() {
             Ok(a) => a,
@@ -87,4 +87,16 @@ where
         };
         Ok(altda_commitment)
     }
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse() {
+        // insufficie length
+        let altda_commitment = Bytes::new();
+        
+    }
+
 }

@@ -90,8 +90,6 @@ where
     ////////////////////////////////////////////////////////////////
 
     // Create a new derivation driver with the given boot information and oracle.
-
-    // Create a new derivation driver with the given boot information and oracle.
     let cursor = new_oracle_pipeline_cursor(
         rollup_config.as_ref(),
         safe_head,
