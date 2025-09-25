@@ -57,8 +57,8 @@ pub struct EigenDAWitness {
 }
 
 impl EigenDAWitness {
-    /// require_canoe_proof checks if there is at least one canoe proof needed for any DAcerts
-    /// in the eigenda blob derivation
+    /// A helper function to determine if any canoe proof shall be generated.
+    /// It returns true if the witness requires a canoe proof.
     pub fn require_canoe_proof(&self) -> bool {
         !self.validities.is_empty()
     }

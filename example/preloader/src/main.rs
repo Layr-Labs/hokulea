@@ -168,15 +168,16 @@ where
         )
         .await?;
 
-        // populate canoe proof for this example, in general canoe_proof are used differently depending on
-        // where it is verified
-        // for verification within zkVM, canoe_proof should be passed in to zkVM via its stdin by a special
+        // populate canoe proof only if there are validity to be proven against
+        // 
+        // for verification within zkVM, canoe_proof should be passed into zkVM via its stdin by a special
         // function depending on zkVM framework. More see CanoeVerifier
         // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
         // For Steel, use CanoeSteelProvider to generate such proof
-        // For verification in non zkVM context,  can be passed as part of serialized bytes
-        // along with other
-        wit.canoe_proof_bytes = Some(serde_json::to_vec(&canoe_proof).expect("serde error"));
+        // For verification in non zkVM context, the proof can be passed as part of serialized bytes
+        if let Some(proof) = canoe_proof {
+            wit.canoe_proof_bytes = Some(serde_json::to_vec(&proof).expect("serde error"));
+        }
     }
     Ok(wit)
 }

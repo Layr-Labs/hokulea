@@ -19,7 +19,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use url::Url;
 
-use canoe_provider::{CanoeInput, CanoeProvider, CanoeProviderError, CertVerifierCall};
+use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use risc0_steel::alloy::providers::ProviderBuilder;
 use risc0_steel::ethereum::EthChainSpec;
 use risc0_zkvm;
@@ -41,9 +41,9 @@ impl CanoeProvider for CanoeSteelProvider {
     async fn create_certs_validity_proof(
         &self,
         canoe_inputs: Vec<CanoeInput>,
-    ) -> Result<Self::Receipt> {
+    ) -> Result<Option<Self::Receipt>> {
         if canoe_inputs.is_empty() {
-            return Err(CanoeProviderError::EmptyCanoeInput.into());
+            return Ok(None);
         }
         // ensure chain id and l1 block number across all DAcerts are identical
         let l1_chain_id = canoe_inputs[0].l1_chain_id;
@@ -126,7 +126,7 @@ impl CanoeProvider for CanoeSteelProvider {
         let elapsed = start.elapsed();
         info!("finish a steel proof generation spent {:?}", elapsed);
 
-        Ok(receipt)
+        Ok(Some(receipt))
     }
 
     fn get_eth_rpc_url(&self) -> String {

@@ -4,7 +4,7 @@ use alloy_sol_types::{sol_data::Bool, SolType};
 use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::StatusCode;
-use canoe_provider::{CanoeInput, CanoeProvider, CanoeProviderError, CertVerifierCall};
+use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use eigenda_cert::EigenDAVersionedCert;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
@@ -72,7 +72,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
     async fn create_certs_validity_proof(
         &self,
         canoe_inputs: Vec<CanoeInput>,
-    ) -> Result<Self::Receipt> {
+    ) -> Result<Option<Self::Receipt>> {
         get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await
     }
 
@@ -101,12 +101,16 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
     async fn create_certs_validity_proof(
         &self,
         canoe_inputs: Vec<CanoeInput>,
-    ) -> Result<Self::Receipt> {
-        let proof = get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await?;
-        let SP1Proof::Compressed(proof) = proof.proof else {
-            panic!("cannot get Sp1ReducedProof")
-        };
-        Ok(*proof)
+    ) -> Result<Option<Self::Receipt>> {
+        match get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await? {
+            Some(proof) => {
+                let SP1Proof::Compressed(proof) = proof.proof else {
+                    panic!("cannot get Sp1ReducedProof")
+                };
+                Ok(Some(*proof))
+            }
+            None => Ok(None),
+        }
     }
 
     fn get_eth_rpc_url(&self) -> String {
@@ -118,9 +122,10 @@ async fn get_sp1_cc_proof(
     canoe_inputs: Vec<CanoeInput>,
     eth_rpc_url: &str,
     mock_mode: bool,
-) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
+) -> Result<Option<sp1_sdk::SP1ProofWithPublicValues>> {
+    // if there is nothing to prove against return early
     if canoe_inputs.is_empty() {
-        return Err(CanoeProviderError::EmptyCanoeInput.into());
+        return Ok(None);
     }
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
@@ -278,5 +283,5 @@ async fn get_sp1_cc_proof(
         "sp1-cc commited: in elapsed_time {:?}",
         elapsed,
     );
-    Ok(proof)
+    Ok(Some(proof))
 }
