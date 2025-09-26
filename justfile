@@ -372,4 +372,12 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
     exit 1
   fi
 
-
+############################### Utils ###############################
+[group('utils')]
+get-sp1cc-elf-and-vkey sp1_tag='v5.2.1':
+  #!/usr/bin/env bash  
+  pushd canoe/sp1-cc/client/
+      cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag {{sp1_tag}}
+  popd
+  echo "Finished building elf with sp1 {{sp1_tag}}"
+  cargo run --bin canoe-sp1-cc-vkey-bin --release

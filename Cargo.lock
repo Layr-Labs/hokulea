@@ -2758,6 +2758,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "canoe-sp1-cc-vkey-bin"
+version = "0.1.0"
+dependencies = [
+ "canoe-sp1-cc-host",
+ "sp1-sdk",
+]
+
+[[package]]
 name = "canoe-steel-apps"
 version = "0.1.0"
 dependencies = [

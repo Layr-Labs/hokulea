@@ -1,0 +1,8 @@
+[package]
+name = "canoe-sp1-cc-vkey-bin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sp1-sdk.workspace = true
+canoe-sp1-cc-host = { workspace = true}
