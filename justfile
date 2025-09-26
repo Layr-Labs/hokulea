@@ -381,3 +381,4 @@ get-sp1cc-elf-and-vkey sp1_tag='v5.2.1':
   popd
   echo "Finished building elf with sp1 {{sp1_tag}}"
   cargo run --bin canoe-sp1-cc-vkey-bin --release
+  echo "This vKey must match the V_KEY variable inside crates/proof/src/canoe_verifier/sp1_cc.rs"
