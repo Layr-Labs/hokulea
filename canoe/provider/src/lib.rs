@@ -60,7 +60,7 @@ impl CanoeProvider for CanoeNoOpProvider {
         &self,
         _canoe_inputs: Vec<CanoeInput>,
     ) -> Result<Option<Self::Receipt>> {
-        Ok(Some(()))
+        Ok(None)
     }
 
     fn get_eth_rpc_url(&self) -> String {
