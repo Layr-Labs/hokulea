@@ -38,12 +38,12 @@ pub trait CanoeProvider: Clone + Send + 'static {
     /// The correctness is defined by evaluating result of applying the DAcert on the specified chain
     /// at a certain block number on the verifier address.
     ///
-    /// If the input does not contain any canoe_input to prove against, it returns Ok(None)
+    /// If the input does not contain any canoe_input to prove against, it returns None
     /// All canoe CanoeInput must share common (l1_chain_id, l1_head_block_number)
     async fn create_certs_validity_proof(
         &self,
         _canoe_inputs: Vec<CanoeInput>,
-    ) -> Result<Option<Self::Receipt>>;
+    ) -> Option<Result<Self::Receipt>>;
 
     /// get_eth_rpc_url returns eth rpc for fetching the state in order to generate the zk validity proof for DACert
     fn get_eth_rpc_url(&self) -> String;
@@ -59,8 +59,8 @@ impl CanoeProvider for CanoeNoOpProvider {
     async fn create_certs_validity_proof(
         &self,
         _canoe_inputs: Vec<CanoeInput>,
-    ) -> Result<Option<Self::Receipt>> {
-        Ok(None)
+    ) -> Option<Result<Self::Receipt>> {
+        None
     }
 
     fn get_eth_rpc_url(&self) -> String {

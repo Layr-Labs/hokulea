@@ -54,9 +54,14 @@ where
         canoe_inputs.push(canoe_input);
     }
 
-    let canoe_proof = canoe_provider
+    match canoe_provider
         .create_certs_validity_proof(canoe_inputs)
-        .await?;
-
-    Ok(canoe_proof)
+        .await
+    {
+        Some(result) => {
+            let proof = result?;
+            Ok(Some(proof))
+        }
+        None => Ok(None),
+    }
 }

@@ -45,7 +45,8 @@ async fn main() -> anyhow::Result<()> {
     };
     let receipt = canoe_provider
         .create_certs_validity_proof(vec![canoe_input])
-        .await?;
+        .await
+        .unwrap()?;
     let canoe_proof_bytes = serde_json::to_vec(&receipt).expect("serde error");
 
     // prepare value to verify canoe proof
