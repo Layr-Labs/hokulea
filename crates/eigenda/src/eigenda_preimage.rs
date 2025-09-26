@@ -88,15 +88,3 @@ where
         Ok(altda_commitment)
     }
 }
-
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse() {
-        // insufficie length
-        let altda_commitment = Bytes::new();
-        
-    }
-
-}
