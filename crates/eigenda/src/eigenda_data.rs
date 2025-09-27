@@ -249,158 +249,152 @@ mod tests {
 
     #[test]
     fn test_check_len_invariant() {
-        let payload = vec![1, 2, 3, 4];
-        let encoded_payload = EncodedPayload {
-            encoded_payload: payload.into(),
-        };
-        let err = encoded_payload
-            .check_len_invariant()
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::PayloadTooShortForHeader {
-                expected: 32,
-                actual: 4
+        struct Case {
+            input: vec::Vec<u8>,
+            result: Result<(), HokuleaStatelessError>,
+        }
+        let cases = [
+            // not long enough
+            Case {
+                input: vec![1, 2, 3, 4],
+                result: Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
+                    expected: 32,
+                    actual: 4,
+                }
+                .into()),
+            },
+            // not power of 2
+            Case {
+                input: vec![0; 96],
+                result: Err(EncodedPayloadDecodingError::InvalidPowerOfTwoLength(
+                    96 / BYTES_PER_FIELD_ELEMENT,
+                )
+                .into()),
+            },
+            // not divide 32
+            Case {
+                input: vec![0; 34],
+                result: Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(34).into()),
+            },
+            Case {
+                input: vec![0; 64],
+                result: Ok(()),
+            },
+        ];
+
+        for case in cases {
+            let encoded_payload = EncodedPayload {
+                encoded_payload: case.input.into(),
+            };
+            if let Err(e) = encoded_payload.check_len_invariant() {
+                assert_eq!(Err(e), case.result)
             }
-            .into()
-        );
-
-        let payload = vec![0; 96];
-        let payload_length_byte = payload.len();
-        let encoded_payload = EncodedPayload {
-            encoded_payload: payload.into(),
-        };
-        let err = encoded_payload
-            .check_len_invariant()
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::InvalidPowerOfTwoLength(
-                payload_length_byte / BYTES_PER_FIELD_ELEMENT
-            )
-            .into()
-        );
-
-        let payload = vec![0; 34];
-        let encoded_payload = EncodedPayload {
-            encoded_payload: payload.into(),
-        };
-        let err = encoded_payload
-            .check_len_invariant()
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::InvalidLengthEncodedPayload(34).into()
-        );
+        }
     }
 
     #[test]
     fn test_decode_header() {
-        // insufficient length
-        let encoded_payload_inner = vec![1, 2, 3, 4];
-        let encoded_payload = EncodedPayload {
-            encoded_payload: encoded_payload_inner.into(),
-        };
-        let err = encoded_payload
-            .decode_header()
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::PayloadTooShortForHeader {
-                expected: 32,
-                actual: 4
-            }
-            .into()
-        );
-
-        // First byte is not 0
-        let encoded_payload_inner = vec![1; 32];
-        let encoded_payload = EncodedPayload {
-            encoded_payload: encoded_payload_inner.into(),
-        };
-        let err = encoded_payload
-            .decode_header()
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::InvalidHeaderFirstByte(1).into()
-        );
-
-        // unknown encoding version
-        let mut encoded_payload_inner = vec![2; 32];
-        encoded_payload_inner[0] = 0x00;
-        let encoded_payload = EncodedPayload {
-            encoded_payload: encoded_payload_inner.into(),
-        };
-        let err = encoded_payload
-            .decode_header()
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::UnknownEncodingVersion(2).into()
-        );
-
-        // decode header success
-        let mut encoded_payload_inner = vec![1; 32];
-        encoded_payload_inner[0] = 0x00;
-        encoded_payload_inner[1] = 0x00;
-        let encoded_payload = EncodedPayload {
-            encoded_payload: encoded_payload_inner.clone().into(),
-        };
-        let length_in_byte = encoded_payload
-            .decode_header()
-            .expect("should have decoded header successfully");
-        let length_bytes = [
-            encoded_payload_inner[2],
-            encoded_payload_inner[3],
-            encoded_payload_inner[4],
-            encoded_payload_inner[5],
+        struct Case {
+            input: vec::Vec<u8>,
+            result: Result<u32, HokuleaStatelessError>,
+        }
+        let cases = [
+            // insufficient length
+            Case {
+                input: vec![1, 2, 3, 4],
+                result: Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
+                    expected: 32,
+                    actual: 4,
+                }
+                .into()),
+            },
+            // First byte is not 0
+            Case {
+                input: vec![1; 32],
+                result: Err(EncodedPayloadDecodingError::InvalidHeaderFirstByte(1).into()),
+            },
+            // unknown encoding version
+            Case {
+                input: vec![
+                    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2,
+                ],
+                result: Err(EncodedPayloadDecodingError::UnknownEncodingVersion(2).into()),
+            },
+            // working case
+            Case {
+                input: vec![
+                    0, 0, 0, 0, 0, 129, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2,
+                ],
+                result: Ok(129),
+            },
         ];
-        assert_eq!(length_in_byte, u32::from_be_bytes(length_bytes));
+
+        for case in cases {
+            let encoded_payload = EncodedPayload {
+                encoded_payload: case.input.into(),
+            };
+            match encoded_payload.decode_header() {
+                Ok(length) => assert_eq!(length, case.result.unwrap()),
+                Err(err) => assert_eq!(Err(err), case.result),
+            }
+        }
     }
 
     #[test]
     fn test_decode_payload() {
-        // invalid length not divide 32 byte, which is size of field element
-        let mut encoded_payload_inner = vec![1; 33];
-        encoded_payload_inner[0] = 0x00;
-        encoded_payload_inner[1] = 0x00;
-        let encoded_payload = EncodedPayload {
-            encoded_payload: encoded_payload_inner.clone().into(),
-        };
-        let length_in_byte = encoded_payload
-            .decode_header()
-            .expect("should have decoded header successfully");
+        struct Case {
+            input: vec::Vec<u8>,
+            result: Result<Bytes, HokuleaStatelessError>,
+        }
+        let cases = [
+            // invalid length not divide 32 byte, which is size of field element
+            Case {
+                // 33 bytes
+                input: vec![
+                    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 2,
+                ],
+                result: Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(33).into()),
+            },
+            Case {
+                // 64 bytes
+                input: vec![
+                    0, 0, 0, 0, 0, 128, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                ],
+                result: Err(EncodedPayloadDecodingError::UnpaddedDataTooShort {
+                    // acutal = 64 - 32 - 1 (encoding pad byte)
+                    actual: 31,
+                    claimed: 128,
+                }
+                .into()),
+            },
+            Case {
+                // 64 bytes
+                input: vec![
+                    0, 0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                ],
+                result: Ok(vec![1; 31].into()),
+            },
+        ];
 
-        let err = encoded_payload
-            .decode_payload(length_in_byte)
-            .expect_err("expected an error, got Ok");
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::InvalidLengthEncodedPayload(33).into()
-        );
+        for case in cases {
+            let encoded_payload = EncodedPayload {
+                encoded_payload: case.input.into(),
+            };
+            let length_in_byte = encoded_payload
+                .decode_header()
+                .expect("should have decoded header successfully");
 
-        let mut encoded_payload_inner = vec![1; 64];
-        encoded_payload_inner[0] = 0x00;
-        encoded_payload_inner[1] = 0x00;
-        let encoded_payload = EncodedPayload {
-            encoded_payload: encoded_payload_inner.clone().into(),
-        };
-        let length_in_byte = encoded_payload
-            .decode_header()
-            .expect("should have decoded header successfully");
-
-        let err = encoded_payload
-            .decode_payload(length_in_byte)
-            .expect_err("expected an error, got Ok");
-        // acutal = 64 - 32 - 1 (encoding pad byte)
-        assert_eq!(
-            err,
-            EncodedPayloadDecodingError::UnpaddedDataTooShort {
-                actual: 31,
-                claimed: length_in_byte
+            match encoded_payload.decode_payload(length_in_byte) {
+                Ok(payload) => assert_eq!(Ok(payload), case.result),
+                Err(e) => assert_eq!(Err(e), case.result),
             }
-            .into()
-        );
+        }
     }
 }
