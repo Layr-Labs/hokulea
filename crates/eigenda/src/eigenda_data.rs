@@ -381,6 +381,15 @@ mod tests {
                 ],
                 result: Ok(vec![1; 31].into()),
             },
+            Case {
+                // 64 bytes with special case when length is 0
+                input: vec![
+                    0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                ],
+                result: Ok(vec![1].into()),
+            },
         ];
 
         for case in cases {
