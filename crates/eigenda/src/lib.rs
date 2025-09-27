@@ -35,6 +35,9 @@ pub use errors::{
     EncodedPayloadDecodingError, HokuleaErrorKind, HokuleaPreimageError, HokuleaStatelessError,
 };
 
+#[cfg(test)]
+mod test_utils;
+
 mod constant;
 pub use constant::BYTES_PER_FIELD_ELEMENT;
 pub use constant::ENCODED_PAYLOAD_HEADER_LEN_BYTES;

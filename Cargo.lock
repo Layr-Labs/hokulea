@@ -4461,6 +4461,7 @@ dependencies = [
  "rust-kzg-bn254-primitives",
  "serde",
  "thiserror 2.0.12",
+ "tokio",
  "tracing",
 ]
 

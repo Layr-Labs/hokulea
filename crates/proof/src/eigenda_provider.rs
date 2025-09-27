@@ -63,7 +63,7 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
 
         // recency is 8 bytes
         if recency_bytes.is_empty() || recency_bytes.len() != 8 {
-            return Err(HokuleaOracleProviderError::InvalidCertQueryResponse);
+            return Err(HokuleaOracleProviderError::InvalidHokuleaPreimageQueryResponse);
         }
 
         let mut buf: [u8; 8] = [0; 8];
@@ -102,13 +102,13 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
 
         // validity is expected as a boolean
         if validity.is_empty() || validity.len() != 1 {
-            return Err(HokuleaOracleProviderError::InvalidCertQueryResponse);
+            return Err(HokuleaOracleProviderError::InvalidHokuleaPreimageQueryResponse);
         }
 
         match validity[0] {
             0 => Ok(false),
             1 => Ok(true),
-            _ => Err(HokuleaOracleProviderError::InvalidCertQueryResponse),
+            _ => Err(HokuleaOracleProviderError::InvalidHokuleaPreimageQueryResponse),
         }
     }
 

@@ -15,6 +15,9 @@ kona-protocol.workspace = true
 thiserror.workspace = true
 serde = { workspace = true, features = ["derive"] }
 
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+
 [features]
 serde = [
   "kona-protocol/serde",
