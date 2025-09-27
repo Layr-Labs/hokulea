@@ -85,7 +85,7 @@ pub enum EncodedPayloadDecodingError {
 /// A list of Hokulea error derived from data from preimage oracle
 /// This error is intended for application logics, and it is separate from
 /// the more basic error type that deals with Provider error like
-/// [HokuleaOracleProviderError] which hanldes communicates, response format
+/// HokuleaOracleProviderError which hanldes communicates and response format
 /// error
 #[derive(Debug, thiserror::Error, PartialEq)]
 #[error(transparent)]
