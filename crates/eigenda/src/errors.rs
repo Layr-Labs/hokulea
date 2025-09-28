@@ -1,4 +1,4 @@
-//! High level Error type defined by hokulea
+//! High level application error type for eigenda blob derivation
 
 use alloc::string::{String, ToString};
 use eigenda_cert::AltDACommitmentParseError;
@@ -17,10 +17,10 @@ pub enum HokuleaErrorKind {
     Temporary(String),
 }
 
-/// A list of Hokulea application error purely out of data processing.
-/// They are at the same level as preimage error, except those error
-/// does not depends on the state returned from the preimage oracle.
-/// Those are higher level errors than provider error
+/// Both [HokuleaStatelessError] and [HokuleaPreimageError] defined at the bottom
+/// represents all application error for hokulea. The [HokuleaStatelessError] is
+/// different that the errors comes from pure data processing of altDA commitment
+/// and encoded payload
 #[derive(Debug, thiserror::Error, PartialEq)]
 #[error(transparent)]
 pub enum HokuleaStatelessError {
@@ -82,11 +82,11 @@ pub enum EncodedPayloadDecodingError {
     },
 }
 
-/// A list of Hokulea error derived from data from preimage oracle
-/// This error is intended for application logics, and it is separate from
-/// the more basic error type that deals with Provider error like
-/// HokuleaOracleProviderError which hanldes communicates and response format
-/// error
+/// The [HokuleaPreimageError] contains application errors, that is directly relates
+/// to the preimage returned by the preimage provider. There is no error for
+/// EncodedPayload which is also a preimage, because EncodedPayload is only a vector
+/// of bytes, but its decoding check is covered by [HokuleaStatelessError] in the data
+/// processing stage.
 #[derive(Debug, thiserror::Error, PartialEq)]
 #[error(transparent)]
 pub enum HokuleaPreimageError {
