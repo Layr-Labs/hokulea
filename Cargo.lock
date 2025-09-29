@@ -4453,10 +4453,13 @@ dependencies = [
 name = "hokulea-eigenda"
 version = "0.1.0"
 dependencies = [
+ "alloy-consensus 1.0.9",
  "alloy-primitives 1.2.0",
+ "alloy-rlp",
  "async-trait",
  "eigenda-cert",
  "kona-derive",
+ "kona-genesis",
  "kona-protocol",
  "rust-kzg-bn254-primitives",
  "serde",
@@ -5264,8 +5267,10 @@ dependencies = [
  "kona-protocol",
  "op-alloy-consensus 0.17.2",
  "op-alloy-rpc-types-engine",
+ "spin 0.10.0",
  "thiserror 2.0.12",
  "tracing",
+ "tracing-subscriber 0.3.19",
 ]
 
 [[package]]
