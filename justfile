@@ -333,6 +333,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --native \
       --data-dir ./data \
+      --l1-config-path l1_config.json \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
   elif [ "{{native_or_asterisc}}" = "asterisc" ]; then

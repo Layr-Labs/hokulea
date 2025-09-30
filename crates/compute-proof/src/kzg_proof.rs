@@ -17,7 +17,7 @@ pub fn compute_kzg_proof(encoded_payload: &[u8]) -> Result<Bytes, KzgError> {
     let srs_file_path = "resources/g1.point";
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
     let srs = SRS::new(srs_file_path, 268435456, 524288)
-        .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err));
+        .unwrap_or_else(|err| panic!("Failed to load SRS file {srs_file_path}: {err}"));
     let mut kzg = KZG::new();
 
     // The encoded payload is a polynomial presented in its evaluation form

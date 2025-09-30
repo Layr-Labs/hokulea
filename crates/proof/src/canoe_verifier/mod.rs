@@ -1,7 +1,7 @@
 pub mod errors;
 pub mod noop;
-#[cfg(feature = "steel")]
-pub mod steel;
+//#[cfg(feature = "steel")]
+//pub mod steel;
 
 #[cfg(feature = "sp1-cc")]
 pub mod sp1_cc;

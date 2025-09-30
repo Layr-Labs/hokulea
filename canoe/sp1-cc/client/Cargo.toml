@@ -4,13 +4,14 @@ description = ""
 edition = "2021"
 
 [dependencies]
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "ec6ff219beb831ac744d1569f03483dd601ec618" }
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "24462b15c9da843e27a80164c9d5316a1e2f9a35" }
 
 # alloy
 alloy-primitives = { workspace = true, features = ["serde"] }
 alloy-sol-types.workspace = true
 canoe-bindings = { workspace = true }
 canoe-provider = { workspace = true }
+alloy-hardforks = { version = "0.3.5", default-features = false }
 
 # sp1
 sp1-zkvm = { workspace = true, features = ["default"] }
