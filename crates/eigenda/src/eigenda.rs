@@ -83,7 +83,8 @@ where
         debug!("Data Available Source next {} {}", block_ref, batcher_addr);
         // this is the only function that depends on external IO. No data is consumed at this point,
         // and if loading failed for IO provider reason, then next time all data are reloaded again.
-        // if it ever succeed, this function is skipped due to channel being open
+        // if loading succeeds, then all data has been loaded, so next time the next() function is
+        // called, load_eigenda_or_calldata would simply skipped.
         self.load_eigenda_or_calldata(block_ref, batcher_addr)
             .await?;
 
@@ -133,6 +134,7 @@ where
                 Ok(d) => calldata_list.push(d),
                 Err(e) => {
                     // break out the loop after having all batcher calldata for that block number
+                    // OP has different struct for handling pre and post ecotone. But both returns PipelineError::Eof
                     // post ecotone https://github.com/op-rs/kona/blob/1133800fcb23c4515ed919407742a22f222d88b1/crates/protocol/derive/src/sources/blobs.rs#L175
                     // pre ecotone https://github.com/op-rs/kona/blob/1133800fcb23c4515ed919407742a22f222d88b1/crates/protocol/derive/src/sources/calldata.rs#L86
                     if let PipelineErrorKind::Temporary(PipelineError::Eof) = e {
