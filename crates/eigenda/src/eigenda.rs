@@ -2,7 +2,7 @@
 //! implementation of the [DataAvailabilityProvider] trait for the EigenDA protocol.
 use crate::traits::EigenDAPreimageProvider;
 use crate::{eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind};
-use kona_derive::errors::PipelineErrorKind;
+use kona_derive::PipelineErrorKind;
 
 use crate::eigenda_data::EncodedPayload;
 use alloc::vec::Vec;
@@ -10,10 +10,8 @@ use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{Address, Bytes};
 use async_trait::async_trait;
 use kona_derive::{
-    errors::PipelineError,
-    sources::EthereumDataSource,
-    traits::{BlobProvider, ChainProvider, DataAvailabilityProvider},
-    types::PipelineResult,
+    BlobProvider, ChainProvider, DataAvailabilityProvider, EthereumDataSource, PipelineError,
+    PipelineResult,
 };
 use kona_protocol::{BlockInfo, DERIVATION_VERSION_0};
 use tracing::warn;
@@ -210,8 +208,8 @@ mod tests {
     use alloy_consensus::TxEnvelope;
     use alloy_rlp::Decodable;
     use eigenda_cert::AltDACommitment;
-    use kona_derive::sources::{BlobSource, CalldataSource};
     use kona_derive::test_utils::{TestBlobProvider, TestChainProvider};
+    use kona_derive::{BlobSource, CalldataSource};
     use kona_genesis::{HardForkConfig, RollupConfig};
 
     const L1_INBOX_ADDRESS: Address =

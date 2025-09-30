@@ -18,7 +18,7 @@ impl ExtendedHintType {
     /// Encodes the hint type as a string.
     pub fn encode_with(&self, data: &[&[u8]]) -> String {
         let concatenated = hex::encode(data.iter().copied().flatten().copied().collect::<Vec<_>>());
-        alloc::format!("{} {}", self, concatenated)
+        alloc::format!("{self} {concatenated}")
     }
 }
 
@@ -46,6 +46,6 @@ impl From<ExtendedHintType> for &str {
 impl Display for ExtendedHintType {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let s: &str = (*self).into();
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }

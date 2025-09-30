@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "bin/*",
     "crates/*",
-    "example/*",    
+    "example/preloader",    
     "canoe/bindings",
     "canoe/provider",
     "canoe/steel/apps",
@@ -59,8 +59,8 @@ alloy-primitives = { version = "1.1.2", default-features = false }
 alloy-sol-types = { version = "1.1.2", default-features = false }
 
 # Execution
-alloy-evm = { version = "0.10.0", default-features = false, features = ["op"] }
-op-revm = { version = "5.0.1", default-features = false }
+alloy-evm = { version = "0.21.0", default-features = false }
+op-revm = { version = "10.0.0", default-features = false }
 
 # OP Alloy
 op-alloy-consensus = { version = "0.17.2", default-features = false }
@@ -107,10 +107,10 @@ canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
 canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }
 canoe-steel-verifier = { path = "./canoe/steel/verifier", default-features = false  }
 
-risc0-zkvm = { version = "2.3.1" }
-risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", tag = "v2.2.2", default-features = false}
-risc0-build-ethereum = { version = "2.2.2" }
-risc0-build = { version = "2.3.1", default-features = false, features = ["unstable"] }
+#risc0-zkvm = { version = "3.0.3" }
+#risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.3.0" }
+#risc0-build-ethereum = { version = "3.0" }
+#risc0-build = { version = "3.0", features = ["docker"] }
 
 # Sp1-contract-call
 canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false  }
