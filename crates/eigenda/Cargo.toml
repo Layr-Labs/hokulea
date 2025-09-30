@@ -18,9 +18,9 @@ serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 kona-derive = { workspace = true, features = ["test-utils"] }
 kona-genesis = { workspace = true }
-alloy-consensus = { workspace = true, features = ["k256"]}
-alloy-primitives = { workspace = true, features = ["rlp"]}
-alloy-rlp = { workspace = true, features = ["derive"] }
+alloy-consensus = { workspace = true}
+alloy-primitives = { workspace = true}
+alloy-rlp = { workspace = true }
 
 [features]
 serde = [
