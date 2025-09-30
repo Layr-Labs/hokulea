@@ -38,13 +38,17 @@ impl From<TestHokuleaProviderError> for HokuleaErrorKind {
 
 // a mock object implements the EigenDAPreimageProvider trait
 #[derive(Debug, Clone, Default)]
-pub(crate) struct TestEigenDAPreimageSource {
-    recencies: HashMap<B256, Result<u64, TestHokuleaProviderError>>,
-    validities: HashMap<B256, Result<bool, TestHokuleaProviderError>>,
-    encoded_payloads: HashMap<B256, Result<EncodedPayload, TestHokuleaProviderError>>,
+pub(crate) struct TestEigenDAPreimageProvider {
+    pub recencies: HashMap<B256, Result<u64, TestHokuleaProviderError>>,
+    pub validities: HashMap<B256, Result<bool, TestHokuleaProviderError>>,
+    pub encoded_payloads: HashMap<B256, Result<EncodedPayload, TestHokuleaProviderError>>,
+    // a backend error propogated to the client
+    pub should_preimage_err: bool,
+    // an invalid response error
+    pub should_response_err: bool,
 }
 
-impl TestEigenDAPreimageSource {
+impl TestEigenDAPreimageProvider {
     pub(crate) fn insert_recency(
         &mut self,
         altda_commitment: &AltDACommitment,
@@ -73,13 +77,20 @@ impl TestEigenDAPreimageSource {
 }
 
 #[async_trait]
-impl EigenDAPreimageProvider for TestEigenDAPreimageSource {
+impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
     type Error = TestHokuleaProviderError;
 
     async fn get_recency_window(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<u64, Self::Error> {
+        if self.should_preimage_err {
+            return Err(TestHokuleaProviderError::Preimage);
+        }
+        if self.should_response_err {
+            return Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse);
+        }
+
         self.recencies
             .get(&altda_commitment.to_digest())
             .unwrap()
@@ -90,6 +101,13 @@ impl EigenDAPreimageProvider for TestEigenDAPreimageSource {
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
+        if self.should_preimage_err {
+            return Err(TestHokuleaProviderError::Preimage);
+        }
+        if self.should_response_err {
+            return Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse);
+        }
+
         self.validities
             .get(&altda_commitment.to_digest())
             .unwrap()
@@ -100,6 +118,13 @@ impl EigenDAPreimageProvider for TestEigenDAPreimageSource {
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<EncodedPayload, Self::Error> {
+        if self.should_preimage_err {
+            return Err(TestHokuleaProviderError::Preimage);
+        }
+        if self.should_response_err {
+            return Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse);
+        }
+
         self.encoded_payloads
             .get(&altda_commitment.to_digest())
             .unwrap()
