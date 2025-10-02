@@ -58,4 +58,5 @@ run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet
     --native \
     --data-dir ./data \
     --rollup-config-path $(realpath $ROLLUP_CONFIG_PATH) \
+    --l1-config-path l1_config.json \
     {{verbosity}}
