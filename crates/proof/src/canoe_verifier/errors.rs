@@ -6,9 +6,6 @@ use alloc::string::String;
 /// sp1 cannot take sp1-sdk as dependency which is needed for verification in non zkvm mode
 #[derive(Debug, thiserror::Error)]
 pub enum HokuleaCanoeVerificationError {
-    /// Cannot fetch address for chainID
-    #[error("Unable to fetch contract address which verifies in chain id {0} at reference block number {1}")]
-    UnableToFetchContractAddress(u64, u32),
     /// Invalid Cert validity response
     #[error("Non zkvm environment: inconsistency between public journal proven by the zk proof and user supplied journal")]
     InconsistentPublicJournal,
@@ -21,7 +18,4 @@ pub enum HokuleaCanoeVerificationError {
     /// unable to deserialize receipt
     #[error("Non zkvm environment: unable to deserialize receipt: {0}")]
     UnableToDeserializeReceipt(String),
-    /// an invalid verification key for sp1
-    #[error("Invalid verification key for Sp1")]
-    InvalidVerificationKeyForSp1,
 }
