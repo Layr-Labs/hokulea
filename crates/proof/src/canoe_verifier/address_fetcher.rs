@@ -7,7 +7,9 @@ pub enum CanoeVerifierAddressFetcherError {
     #[error("Unable to fetch contract address at chain id {0} for abi encode interface, available for router and at least V3 certificate")]
     UnknownChainIDForABIEncodeInterface(u64),
     /// Cannot fetch address for chainID for legacy interface
-    #[error("Unable to fetch contract address at chain id {0} for legacy interface for V2 certificate")]
+    #[error(
+        "Unable to fetch contract address at chain id {0} for legacy interface for V2 certificate"
+    )]
     UnknownChainIDForLegacyInterface(u64),
 }
 
