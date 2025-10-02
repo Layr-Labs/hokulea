@@ -8,5 +8,6 @@ edition = "2021"
 rust-kzg-bn254-prover.workspace = true
 rust-kzg-bn254-primitives.workspace = true
 num.workspace = true
+spin.workspace = true
 
 alloy-primitives.workspace = true
