@@ -40,7 +40,11 @@ where
 
     let mut canoe_inputs = vec![];
 
-    info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", wit.validities.len());
+    if wit.validities.is_empty() {
+        info!(target: "canoe witness provider", "no DA certs to process, skipping canoe proof generation");
+    } else {
+        info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", wit.validities.len());
+    }
 
     for (altda_commitment, cert_validity) in &mut wit.validities {
         let canoe_input = CanoeInput {
