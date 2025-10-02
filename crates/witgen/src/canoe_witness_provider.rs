@@ -2,7 +2,7 @@ use alloy_consensus::Header;
 use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use core::fmt::Debug;
-use hokulea_proof::canoe_verifier::cert_verifier_address;
+use hokulea_proof::canoe_verifier::address_fetcher::CanoeVerifierAddressFetcher;
 use hokulea_proof::eigenda_witness::EigenDAWitness;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
@@ -14,13 +14,15 @@ use tracing::info;
 /// and chain_id.
 ///
 /// If no canoe proof is needed, it returns Ok(None)
-pub async fn from_boot_info_to_canoe_proof<P, O>(
+pub async fn from_boot_info_to_canoe_proof<A, P, O>(
     boot_info: &BootInfo,
     witness: &EigenDAWitness,
     oracle: Arc<O>,
     canoe_provider: P,
+    canoe_address_fetcher: A,
 ) -> anyhow::Result<Option<P::Receipt>>
 where
+    A: CanoeVerifierAddressFetcher,
     P: CanoeProvider,
     O: CommsClient + FlushableCache + Send + Sync + Debug,
 {
@@ -53,7 +55,8 @@ where
             l1_head_block_hash: boot_info.l1_head,
             l1_head_block_number: l1_head_header.number,
             l1_chain_id,
-            verifier_address: cert_verifier_address(l1_chain_id, altda_commitment),
+            verifier_address: canoe_address_fetcher
+                .fetch_address(l1_chain_id, &altda_commitment.versioned_cert)?,
         };
         canoe_inputs.push(canoe_input);
     }

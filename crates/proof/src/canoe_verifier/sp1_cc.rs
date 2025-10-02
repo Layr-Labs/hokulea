@@ -47,7 +47,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 use core::str::FromStr;
                 use crate::canoe_verifier::to_journals_bytes;
 
-                let journals_bytes = to_journals_bytes(cert_validity_pair);
+                let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
 
                 // if not in dev mode, the receipt should be empty
                 if canoe_proof_bytes.is_some() {

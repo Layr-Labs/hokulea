@@ -6,10 +6,8 @@ use alloc::string::String;
 /// sp1 cannot take sp1-sdk as dependency which is needed for verification in non zkvm mode
 #[derive(Debug, thiserror::Error)]
 pub enum HokuleaCanoeVerificationError {
-    /// Invalid Cert validity response
     #[error("Non zkvm environment: inconsistency between public journal proven by the zk proof and user supplied journal")]
     InconsistentPublicJournal,
-    /// Invalid Cert validity response
     #[error("Non zkvm environment: proof is missing")]
     MissingProof,
     /// Invalid Cert validity response. To avoid taking dep on specific zkVM error message, we convert them into string
@@ -18,7 +16,4 @@ pub enum HokuleaCanoeVerificationError {
     /// unable to deserialize receipt
     #[error("Non zkvm environment: unable to deserialize receipt: {0}")]
     UnableToDeserializeReceipt(String),
-    /// an invalid verification key for sp1
-    #[error("Invalid verification key for Sp1")]
-    InvalidVerificationKeyForSp1,
 }

@@ -6,7 +6,8 @@ use kona_preimage::CommsClient;
 use kona_proof::{errors::OracleProviderError, BootInfo, FlushableCache};
 
 use hokulea_proof::{
-    canoe_verifier::CanoeVerifier, eigenda_witness::EigenDAWitness,
+    canoe_verifier::{address_fetcher::CanoeVerifierAddressFetcher, CanoeVerifier},
+    eigenda_witness::EigenDAWitness,
     preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
 };
 
@@ -21,12 +22,14 @@ use alloc::sync::Arc;
 pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
+    canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
     mut witness: EigenDAWitness,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
 {
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
+    let boot_info_chain_id = boot_info.rollup_config.l1_chain_id;
 
     // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM
     // force canoe verifier to use l1 chain id from rollup config.
@@ -34,9 +37,12 @@ where
     witness
         .validities
         .iter_mut()
-        .for_each(|(_, cert_validity)| {
+        .for_each(|(altda_commitment, cert_validity)| {
             cert_validity.l1_head_block_hash = boot_info.l1_head;
-            cert_validity.l1_chain_id = boot_info.rollup_config.l1_chain_id;
+            cert_validity.l1_chain_id = boot_info_chain_id;
+            cert_validity.verifier_address = canoe_address_fetcher
+                .fetch_address(boot_info_chain_id, &altda_commitment.versioned_cert)
+                .expect("should be able to get verifier address");
         });
 
     witness
