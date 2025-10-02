@@ -3,11 +3,11 @@ use eigenda_cert::EigenDAVersionedCert;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CanoeVerifierAddressFetcherError {
-    /// Cannot fetch address for chainID
-    #[error("Unable to fetch contract address at in chain id {0} for abi encode interface, available for router and at least V3 certificate")]
+    /// Cannot fetch address for chainID for abi encoding interface
+    #[error("Unable to fetch contract address at chain id {0} for abi encode interface, available for router and at least V3 certificate")]
     UnknownChainIDForABIEncodeInterface(u64),
-    /// Invalid Cert validity response
-    #[error("Unable to fetch contract address at in chain id {0} for legacy interface for V2 certificate")]
+    /// Cannot fetch address for chainID for legacy interface
+    #[error("Unable to fetch contract address at chain id {0} for legacy interface for V2 certificate")]
     UnknownChainIDForLegacyInterface(u64),
 }
 
