@@ -23,7 +23,8 @@ use kona_proof::{l1::OracleBlobProvider, BootInfo, FlushableCache};
 use canoe_provider::CanoeProvider;
 use hokulea_client::fp_client;
 use hokulea_proof::{
-    canoe_verifier::CanoeVerifier, eigenda_provider::OracleEigenDAPreimageProvider,
+    canoe_verifier::{address_fetcher::CanoeVerifierAddressFetcher, CanoeVerifier},
+    eigenda_provider::OracleEigenDAPreimageProvider,
     eigenda_witness::EigenDAWitness,
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
@@ -31,6 +32,8 @@ use std::{
     ops::DerefMut,
     sync::{Arc, Mutex},
 };
+
+use hokulea_proof::canoe_verifier::address_fetcher::CanoeVerifierAddressFetcherDeployedByEigenLabs;
 use tracing::info;
 
 #[tokio::main(flavor = "multi_thread")]
@@ -89,6 +92,8 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
+    let canoe_address_fetcher = CanoeVerifierAddressFetcherDeployedByEigenLabs {};
+
     // Spawn the client logic as a concurrent task
     let client_task = task::spawn(run_witgen_and_zk_verification(
         OracleReader::new(preimage.client.clone()),
@@ -99,6 +104,7 @@ async fn main() -> anyhow::Result<()> {
         ),
         canoe_provider,
         canoe_verifier,
+        canoe_address_fetcher,
     ));
 
     let (_, client_result) = tokio::try_join!(server_task, client_task)?;
@@ -120,6 +126,7 @@ pub async fn run_witgen_and_zk_verification<P, H, Evm>(
     evm_factory: Evm,
     canoe_provider: impl CanoeProvider,
     canoe_verifier: impl CanoeVerifier,
+    canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
 ) -> anyhow::Result<()>
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
@@ -135,9 +142,22 @@ where
         hint_client,
     ));
 
-    let wit = prepare_witness(oracle.clone(), evm_factory.clone(), canoe_provider).await?;
+    let wit = prepare_witness(
+        oracle.clone(),
+        evm_factory.clone(),
+        canoe_provider,
+        canoe_address_fetcher.clone(),
+    )
+    .await?;
 
-    run_within_zkvm(oracle, evm_factory, canoe_verifier, wit).await
+    run_within_zkvm(
+        oracle,
+        evm_factory,
+        canoe_verifier,
+        canoe_address_fetcher,
+        wit,
+    )
+    .await
 }
 
 /// used internal
@@ -146,6 +166,7 @@ pub async fn prepare_witness<O, Evm>(
     oracle: Arc<O>,
     evm_factory: Evm,
     canoe_provider: impl CanoeProvider,
+    canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
 ) -> anyhow::Result<EigenDAWitness>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
@@ -164,6 +185,7 @@ where
         &wit,
         oracle.clone(),
         canoe_provider,
+        canoe_address_fetcher,
     )
     .await?;
 
@@ -224,6 +246,7 @@ pub async fn run_within_zkvm<O, Evm>(
     oracle: Arc<O>,
     evm_factory: Evm,
     canoe_verifier: impl CanoeVerifier,
+    canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
     witness: EigenDAWitness,
 ) -> anyhow::Result<()>
 where
@@ -232,9 +255,15 @@ where
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     info!("start the code supposed to run inside zkVM");
+
     let beacon = OracleBlobProvider::new(oracle.clone());
-    let preloaded_preimage_provider =
-        eigenda_witness_to_preloaded_provider(oracle.clone(), canoe_verifier, witness).await?;
+    let preloaded_preimage_provider = eigenda_witness_to_preloaded_provider(
+        oracle.clone(),
+        canoe_verifier,
+        canoe_address_fetcher,
+        witness,
+    )
+    .await?;
 
     // this is replaced by fault proof client developed by zkVM team
     fp_client::run_fp_client(oracle, beacon, preloaded_preimage_provider, evm_factory).await?;

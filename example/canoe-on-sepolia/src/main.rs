@@ -6,7 +6,9 @@ use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_steel_apps::apps::CanoeSteelProvider;
 use clap::Parser;
 use eigenda_cert::AltDACommitment;
-use hokulea_proof::canoe_verifier::cert_verifier_address;
+use hokulea_proof::canoe_verifier::address_fetcher::{
+    CanoeVerifierAddressFetcher, CanoeVerifierAddressFetcherDeployedByEigenLabs,
+};
 use hokulea_proof::canoe_verifier::{
     errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
 };
@@ -32,7 +34,15 @@ async fn main() -> anyhow::Result<()> {
     let v2_cert_rlp_vec = Vec::from(V2_CERT_RLP_BYTES);
     let validity = true;
 
-    let canoe_input = get_canoe_input(&v2_cert_rlp_vec, validity, args.eth_rpc_url.clone()).await?;
+    let canoe_address_fetcher = CanoeVerifierAddressFetcherDeployedByEigenLabs {};
+
+    let canoe_input = get_canoe_input(
+        &v2_cert_rlp_vec,
+        validity,
+        args.eth_rpc_url.clone(),
+        canoe_address_fetcher.clone(),
+    )
+    .await?;
 
     // value to be used for zk verification
     let altda_commitment = canoe_input.altda_commitment.clone();
@@ -54,6 +64,8 @@ async fn main() -> anyhow::Result<()> {
         claimed_validity,
         l1_head_block_hash,
         l1_chain_id: 11155111,
+        verifier_address: canoe_address_fetcher
+            .fetch_address(11155111, &altda_commitment.versioned_cert)?,
     };
     verify_canoe_proof(
         cert_validity.clone(),
@@ -85,6 +97,7 @@ pub async fn get_canoe_input(
     v2_cert_rlp_vec: &[u8],
     validity: bool,
     eth_rpc_url: String,
+    canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
 ) -> anyhow::Result<CanoeInput> {
     let altda_commitment = AltDACommitment::try_from(v2_cert_rlp_vec)
         .expect("should be able to convert bytes to altda commitment");
@@ -120,6 +133,7 @@ pub async fn get_canoe_input(
         l1_head_block_hash: l1_block_hash,
         l1_head_block_number: block_number,
         l1_chain_id: 11155111,
-        verifier_address: cert_verifier_address(11155111, &altda_commitment),
+        verifier_address: canoe_address_fetcher
+            .fetch_address(11155111, &altda_commitment.versioned_cert)?,
     })
 }

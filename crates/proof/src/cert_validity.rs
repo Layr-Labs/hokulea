@@ -1,4 +1,4 @@
-use alloy_primitives::B256;
+use alloy_primitives::{Address, B256};
 use serde::{Deserialize, Serialize};
 
 /// The l1_head from the kona_cfg is chosen to anchor the view call.
@@ -18,4 +18,6 @@ pub struct CertValidity {
     /// is not available in this struct, we take assumptions that no two block number
     /// will contain the same block hash
     pub l1_chain_id: u64,
+    /// verfier address
+    pub verifier_address: Address,
 }

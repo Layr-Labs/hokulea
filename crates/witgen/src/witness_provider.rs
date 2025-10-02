@@ -1,4 +1,4 @@
-use alloy_primitives::{FixedBytes, B256};
+use alloy_primitives::{Address, FixedBytes, B256};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
@@ -65,6 +65,7 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
                     // the rest of the field needs to be supplied within zkVM
                     l1_head_block_hash: B256::ZERO,
                     l1_chain_id: 0,
+                    verifier_address: Address::default(),
                 };
 
                 witness

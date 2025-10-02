@@ -1,5 +1,5 @@
 use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
-use crate::canoe_verifier::{to_journals_bytes, CanoeVerifier};
+use crate::canoe_verifier::CanoeVerifier;
 use crate::cert_validity::CertValidity;
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -27,7 +27,8 @@ impl CanoeVerifier for CanoeSteelVerifier {
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSteelVerifier");
 
-        let journals_bytes = to_journals_bytes(cert_validity_pair);
+        // use default to_journals_bytes implementation
+        let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
