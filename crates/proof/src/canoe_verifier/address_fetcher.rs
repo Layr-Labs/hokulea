@@ -83,13 +83,17 @@ fn cert_verifier_address_abi_encode_interface(
         // if user uses a different private key, or nonce for deployment are different from
         // the default, the address below would change
         3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),
-        chain_id => Err(CanoeVerifierAddressFetcherError::UnknownChainIDForABIEncodeInterface(chain_id)),
+        chain_id => {
+            Err(CanoeVerifierAddressFetcherError::UnknownChainIDForABIEncodeInterface(chain_id))
+        }
     }
 }
 
 /// legacy interface
 /// <https://github.com/Layr-Labs/eigenda/blob/bf714cb07fc2dee8b8c8ad7fb6043f9a030f7550/contracts/src/integrations/cert/legacy/IEigenDACertVerifierLegacy.sol#L62>
-fn cert_verifier_legacy_v2_interface(chain_id: u64) -> Result<Address, CanoeVerifierAddressFetcherError> {
+fn cert_verifier_legacy_v2_interface(
+    chain_id: u64,
+) -> Result<Address, CanoeVerifierAddressFetcherError> {
     // this is kurtosis devnet
     match chain_id {
         // Sepolia V2 cert verifier address
@@ -103,8 +107,8 @@ fn cert_verifier_legacy_v2_interface(chain_id: u64) -> Result<Address, CanoeVeri
         // if user uses a different private key, or nonce for deployment are different from
         // the default, the address below would change
         3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),
-        chain_id => Err(CanoeVerifierAddressFetcherError::UnknownChainIDForLegacyInterface(
-            chain_id,
-        )),
+        chain_id => {
+            Err(CanoeVerifierAddressFetcherError::UnknownChainIDForLegacyInterface(chain_id))
+        }
     }
 }
