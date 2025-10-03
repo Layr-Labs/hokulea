@@ -17,17 +17,16 @@ use canoe_verifier::CanoeVerifier;
 
 /// PreloadedEigenDAPreimageProvider converts EigenDAWitness into preimage data
 /// can be used to implement the EigenDAPreimageProvider trait, that contains
+///   get_recency_window
 ///   get_validity
 ///   get_encoded_payload
 ///
 /// For each function above, internally PreloadedEigenDAPreimageProvider maintain a separate
-/// struct in the form of a tuple (DA cert, returned data by the interface).
+/// struct in the form of a tuple (AltDACommitment, expected preimage).
 ///
 /// This allows a safety checks that PreloadedEigenDAPreimageProvider
-/// indeed provides the response back to the correct DA certs
+/// ensues all provided preimage is binding and correct with respect to the AltDA commitment.
 ///
-/// At the conversion side (i.e from_witness), we only have to maintain the correctness
-/// from (DA cert, returned data by the interface).
 ///
 /// Note it is possible, the length of validity_entries is greater than len of encoded_payload_entries
 /// due to possible invalid cert, that does not require preimage to populate a encoded payload
@@ -45,6 +44,15 @@ pub struct PreloadedEigenDAPreimageProvider {
 
 impl PreloadedEigenDAPreimageProvider {
     /// Convert EigenDAWitness into the PreloadedEigenDAPreimageProvider
+    /// This function is only responsible for checking if the provided preimage is correct.
+    /// It does not perform the filtering operation taking place in eigenda blob derivation.
+    /// It implies that an adversarial prover can supply a stale altda commitment, then supply
+    /// canoe proof for proving the cert is valid or invalid. However, during the eigenda blob derivation
+    /// that only the recency preimage corresponding to the altda commitment is popped, and
+    /// the vailidity corresponding to it stil remains in the vec. If it is the last altda commitment
+    /// the validity is left unused. If it is not the last, the next altda commitment will panic
+    /// due to unmatched key.
+    /// The Canoe proof validates all the validity all at once.
     pub fn from_witness(
         value: EigenDAWitness,
         canoe_verifier: impl CanoeVerifier,
@@ -60,7 +68,7 @@ impl PreloadedEigenDAPreimageProvider {
         // boot info
         let mut recency_entries = value.recencies.clone();
 
-        // check all cert validity are substantiated by zk validity proof
+        // check all altda commitment validity are supported by zk validity proof
         let mut validity_entries = vec![];
 
         // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
@@ -73,7 +81,7 @@ impl PreloadedEigenDAPreimageProvider {
         }
 
         for (altda_commitment, cert_validity) in &value.validities {
-            // populate only the mapping <DAcert, boolean> for preimage trait
+            // populate only the mapping <DAcert, boolean> for preimage trait, by this time it has been verified
             validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
         }
 
@@ -88,7 +96,7 @@ impl PreloadedEigenDAPreimageProvider {
             // populate entries ahead of time, if something is invalid, batch_verify will abort
             encoded_payload_entries.push((cert.clone(), encoded_payload.clone()));
 
-            // gather fiat shamir kzg commitment and proof for batch verification
+            // gather kzg commitment and proof for batch verification
             let blob =
                 Blob::new(encoded_payload.serialize()).expect("should be able to construct a blob");
             blobs.push(blob);
@@ -117,7 +125,7 @@ impl PreloadedEigenDAPreimageProvider {
 
 #[async_trait]
 impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
-    // TODO investigate if create a speical error type EigenDAPreimageProviderError
+    // The error is a place holder, we intentionally abort everything
     type Error = HokuleaOracleProviderError;
 
     async fn get_recency_window(
@@ -148,8 +156,6 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
         }
     }
 
-    /// Fetches a blob for V2 using preloaded data
-    /// Return an error if cert does not match the immeditate next item
     async fn get_encoded_payload(
         &mut self,
         altda_commitment: &AltDACommitment,
@@ -168,6 +174,7 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
 
 /// Eventually, rust-kzg-bn254 would provide an interface that takes big endian
 /// bytes input, so that we can remove this wrapper. For now, just include it here
+/// the proving locates inside hokulea-compute-proof crate
 pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
@@ -275,48 +282,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_batch_verify() {
-        let encoded_payload_inner_1 = vec![
-            0, 0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-            2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1,
-        ];
-        // though this not a valid encoded payload, but it is a valid blob
-        let encoded_payload_inner_2 = vec![
-            0, 1, 1, 1, 1, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-            2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1,
-        ];
-
-        let batch_encoded_payload = vec![encoded_payload_inner_1, encoded_payload_inner_2];
-
-        // collects arrays
-        let mut blobs = Vec::with_capacity(batch_encoded_payload.len());
-        let mut commitments = Vec::with_capacity(batch_encoded_payload.len());
-        let mut proofs = Vec::with_capacity(batch_encoded_payload.len());
-
-        for (blob, commitment, proof) in batch_encoded_payload
-            .into_iter()
-            .map(compute_kzg_proof_and_commitment)
-        {
-            blobs.push(blob);
-            commitments.push(commitment);
-            proofs.push(proof);
-        }
-
-        assert!(batch_verify(&blobs, &commitments, &proofs));
-        let mut proofs = proofs.clone();
-
-        // switch order of proof 0 and 1 should be enough to corrupt
-        proofs.swap(0, 1);
-
-        assert!(!batch_verify(&blobs, &commitments, &proofs));
-
-        // corrupt proof by using the second srs as proof
-        assert!(!batch_verify(&blobs[..1], &commitments[..1], &proofs[..1]));
-    }
-
     // witness data that can be verified correctly with a no op canoe verifier
     fn prepare_ok_data() -> EigenDAWitness {
         let encoded_payload_inner = vec![
@@ -376,12 +341,57 @@ mod tests {
         ok_data
     }
 
+    #[test]
+    fn test_batch_verify() {
+        let encoded_payload_inner_1 = vec![
+            0, 0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1,
+        ];
+        // though this not a valid encoded payload, but it is a valid blob
+        let encoded_payload_inner_2 = vec![
+            0, 1, 1, 1, 1, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1,
+        ];
+
+        let batch_encoded_payload = vec![encoded_payload_inner_1, encoded_payload_inner_2];
+
+        // collects arrays
+        let mut blobs = Vec::with_capacity(batch_encoded_payload.len());
+        let mut commitments = Vec::with_capacity(batch_encoded_payload.len());
+        let mut proofs = Vec::with_capacity(batch_encoded_payload.len());
+
+        for (blob, commitment, proof) in batch_encoded_payload
+            .into_iter()
+            .map(compute_kzg_proof_and_commitment)
+        {
+            blobs.push(blob);
+            commitments.push(commitment);
+            proofs.push(proof);
+        }
+
+        assert!(batch_verify(&blobs, &commitments, &proofs));
+        let mut proofs = proofs.clone();
+
+        // switch order of proof 0 and 1 should be enough to corrupt
+        proofs.swap(0, 1);
+
+        assert!(!batch_verify(&blobs, &commitments, &proofs));
+
+        // corrupt proof by using the second srs as proof
+        assert!(!batch_verify(&blobs[..1], &commitments[..1], &proofs[..1]));
+    }
+
     #[tokio::test]
     async fn test_from_witness_ok_0_preimage() {
-        let _ = PreloadedEigenDAPreimageProvider::from_witness(
+        let preimage = PreloadedEigenDAPreimageProvider::from_witness(
             EigenDAWitness::default(),
             CanoeNoOpVerifier {},
         );
+        assert_eq!(preimage.encoded_payload_entries.len(), 0);
+        assert_eq!(preimage.validity_entries.len(), 0);
+        assert_eq!(preimage.recency_entries.len(), 0);
     }
 
     // no more preimage available
