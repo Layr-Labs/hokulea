@@ -1,6 +1,6 @@
 use alloy_primitives::Bytes;
 use alloy_primitives::{keccak256, B256};
-use alloy_rlp::{Decodable, Encodable, RlpDecodable, RlpEncodable};
+use alloy_rlp::{Encodable, RlpDecodable, RlpEncodable};
 use serde::{Deserialize, Serialize};
 
 use crate::{BatchHeaderV2, BlobInclusionInfo, NonSignerStakesAndSignature};
@@ -23,11 +23,5 @@ impl EigenDACertV2 {
         // rlp encode of cert
         self.encode(&mut cert_rlp_bytes);
         keccak256(&cert_rlp_bytes)
-    }
-
-    pub fn from_bytes(data: &[u8]) -> Self {
-        let mut slice = data;
-        EigenDACertV2::decode(&mut slice)
-            .expect("should be able to convert to EigenDACertV2 struct")
     }
 }

@@ -1,7 +1,7 @@
 #![no_std]
 use alloy_primitives::Bytes;
 use alloy_primitives::{FixedBytes, U256};
-use alloy_rlp::{Decodable, RlpDecodable, RlpEncodable};
+use alloy_rlp::{RlpDecodable, RlpEncodable};
 use canoe_bindings as sol_struct;
 use serde::{Deserialize, Serialize};
 
@@ -183,22 +183,4 @@ impl NonSignerStakesAndSignature {
             nonSignerStakeIndices: self.non_signer_stake_indices.clone(),
         }
     }
-}
-
-pub fn parse_batch_header(data: &Vec<u8>) -> sol_struct::BatchHeaderV2 {
-    BatchHeaderV2::decode(&mut data.as_slice())
-        .unwrap()
-        .to_sol()
-}
-
-pub fn parse_non_signer(data: &Vec<u8>) -> sol_struct::NonSignerStakesAndSignature {
-    NonSignerStakesAndSignature::decode(&mut data.as_slice())
-        .unwrap()
-        .to_sol()
-}
-
-pub fn parse_blob_inclusion(data: &Vec<u8>) -> sol_struct::BlobInclusionInfo {
-    BlobInclusionInfo::decode(&mut data.as_slice())
-        .expect("decode to rust blob inclusion struct")
-        .to_sol()
 }

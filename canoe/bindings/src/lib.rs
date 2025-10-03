@@ -92,6 +92,7 @@ sol! {
         uint32[][] nonSignerStakeIndices;
     }
 
+    // we need this for abi encode
     struct EigenDACertV3 {
         BatchHeaderV2 batchHeaderV2;
         BlobInclusionInfo blobInclusionInfo;
