@@ -1,6 +1,8 @@
-//! create [CanoeVerifierAddressFetcher] trait which returns contract verifier address, rollup can either
-//! use eigenlabs deployed address fetcher, or use rollup deployed address fetcher by implementing the
-//! trait
+//! create [CanoeVerifierAddressFetcher] trait which returns contract verifier address, which the
+//! CanoeVerifier and CanoeProvider relies on to verify and prove the smart contract logic against.
+//! EigenLabs deploys CertVerifier and CertVerifier router contracts on each chains. However, a
+//! rollup has the option to deployed their own CertVerifier or router, if the rollup has security
+//! constraint.
 #![no_std]
 use alloy_primitives::{address, Address};
 use eigenda_cert::EigenDAVersionedCert;
