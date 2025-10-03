@@ -1,7 +1,7 @@
-use crate::{EigenDACertV2, EigenDACertV3};
+use crate::{EigenDACertV2, EigenDACertV3, G1Point};
 use alloc::vec::Vec;
 use alloy_primitives::keccak256;
-use alloy_primitives::{B256, U256};
+use alloy_primitives::B256;
 use alloy_rlp::Decodable;
 use alloy_rlp::Encodable;
 use alloy_rlp::Error;
@@ -157,36 +157,36 @@ impl AltDACommitment {
     }
 
     /// get kzg commitment g1 point, first U256 is x coordinate, second is y
-    pub fn get_kzg_commitment(&self) -> (U256, U256) {
+    pub fn get_kzg_commitment(&self) -> G1Point {
         match &self.versioned_cert {
-            EigenDAVersionedCert::V2(c) => (
-                c.blob_inclusion_info
+            EigenDAVersionedCert::V2(c) => G1Point {
+                x: c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
                     .commitment
                     .x,
-                c.blob_inclusion_info
+                y: c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
                     .commitment
                     .y,
-            ),
-            EigenDAVersionedCert::V3(c) => (
-                c.blob_inclusion_info
+            },
+            EigenDAVersionedCert::V3(c) => G1Point {
+                x: c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
                     .commitment
                     .x,
-                c.blob_inclusion_info
+                y: c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
                     .commitment
                     .y,
-            ),
+            },
         }
     }
 

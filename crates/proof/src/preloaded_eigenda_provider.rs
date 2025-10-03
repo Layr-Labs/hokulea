@@ -1,10 +1,10 @@
 use crate::eigenda_witness::EigenDAWitness;
 use crate::errors::HokuleaOracleProviderError;
-use alloy_primitives::{FixedBytes, U256};
+use alloy_primitives::FixedBytes;
 use ark_bn254::{Fq, G1Affine};
 use ark_ff::PrimeField;
 use async_trait::async_trait;
-use eigenda_cert::AltDACommitment;
+use eigenda_cert::{AltDACommitment, G1Point};
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_verifier::batch;
@@ -168,19 +168,15 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
 
 /// Eventually, rust-kzg-bn254 would provide an interface that takes
 /// bytes input, so that we can remove this wrapper. For now, just include it here
-pub fn batch_verify(
-    blobs: &[Blob],
-    commitments: &[(U256, U256)],
-    proofs: &[FixedBytes<64>],
-) -> bool {
+pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
     let lib_blobs: &[Blob] = blobs;
     let lib_commitments: Vec<G1Affine> = commitments
         .iter()
         .map(|c| {
-            let a: [u8; 32] = c.0.to_be_bytes();
-            let b: [u8; 32] = c.1.to_be_bytes();
+            let a: [u8; 32] = c.x.to_be_bytes();
+            let b: [u8; 32] = c.y.to_be_bytes();
             let x = Fq::from_be_bytes_mod_order(&a);
             let y = Fq::from_be_bytes_mod_order(&b);
             G1Affine::new(x, y)
@@ -205,7 +201,7 @@ mod tests {
     use super::*;
     use crate::{canoe_verifier::noop::CanoeNoOpVerifier, cert_validity::CertValidity};
     use alloc::vec;
-    use alloy_primitives::{hex, Bytes};
+    use alloy_primitives::{hex, Bytes, U256};
     use eigenda_cert::AltDACommitment;
     use num::BigUint;
     use rust_kzg_bn254_primitives::errors::KzgError;
@@ -215,7 +211,7 @@ mod tests {
     // first 128 bytes of resources/g1.point corresponding to 4 g1 points
     pub const G1_POINTS_BYTE: &str = "8000000000000000000000000000000000000000000000000000000000000001cbfc87ecbdcdc23ef5481bb179aaada7f42c22d2dfd52b4655a18c2879c54eea9fb27cc0e2465b3e57a42a051dbfbd8d0b62eec80cd07c46401781deab36ca27c44ab250113840f37622eb001cfbcb1dec55f15e6ea48333ddb63e9d2befecab";
 
-    pub fn compute_kzg_commitment(blob: &Blob) -> Result<(U256, U256), KzgError> {
+    pub fn compute_kzg_commitment(blob: &Blob) -> Result<G1Point, KzgError> {
         let mut kzg = KZG::new();
         kzg.calculate_and_store_roots_of_unity(blob.len() as u64)
             .unwrap();
@@ -233,15 +229,15 @@ mod tests {
         let commitment_y_bytes =
             hokulea_compute_proof::convert_biguint_to_be_32_bytes(&commitment_y_bigint);
 
-        Ok((
-            U256::from_be_bytes(commitment_x_bytes),
-            U256::from_be_bytes(commitment_y_bytes),
-        ))
+        Ok(G1Point {
+            x: U256::from_be_bytes(commitment_x_bytes),
+            y: U256::from_be_bytes(commitment_y_bytes),
+        })
     }
 
     fn compute_kzg_proof_and_commitment(
         encoded_payload_inner: Vec<u8>,
-    ) -> (Blob, (U256, U256), FixedBytes<64>) {
+    ) -> (Blob, G1Point, FixedBytes<64>) {
         let encoded_payload = EncodedPayload {
             encoded_payload: encoded_payload_inner.into(),
         };
@@ -335,21 +331,22 @@ mod tests {
         let mut claimed_true_cert_validity = claimed_false_cert_validity.clone();
         claimed_true_cert_validity.claimed_validity = true;
 
-        let (_, (x, y), proof) = compute_kzg_proof_and_commitment(encoded_payload_inner.clone());
+        let (_, commitment, proof) =
+            compute_kzg_proof_and_commitment(encoded_payload_inner.clone());
         match &mut altda_commitment.versioned_cert {
             eigenda_cert::EigenDAVersionedCert::V2(c) => {
                 c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
-                    .commitment = eigenda_cert::G1Point { x, y };
+                    .commitment = commitment;
             }
             eigenda_cert::EigenDAVersionedCert::V3(c) => {
                 c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
-                    .commitment = eigenda_cert::G1Point { x, y };
+                    .commitment = commitment;
             }
         };
 
