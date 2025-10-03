@@ -2,7 +2,6 @@ use alloy_primitives::{Address, FixedBytes, B256};
 use async_trait::async_trait;
 use canoe_verifier::CertValidity;
 use eigenda_cert::AltDACommitment;
-use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use hokulea_proof::eigenda_witness::EigenDAWitness;
 use std::sync::{Arc, Mutex};
@@ -59,7 +58,6 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
             Ok(validity) => {
                 let mut witness = self.witness.lock().unwrap();
 
-                // ToDo (bx) could have got l1_head_hash, l1_chain_id from oracle, like what we did in preloader example
                 let cert_validity = CertValidity {
                     claimed_validity: validity,
                     // the rest of the field needs to be supplied within zkVM
@@ -85,13 +83,13 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
         match self.provider.get_encoded_payload(altda_commitment).await {
             Ok(encoded_payload) => {
                 // Compute kzg proof for the entire encoded payload on a deterministic random point
-                let kzg_proof = match compute_kzg_proof(encoded_payload.serialize()) {
-                    Ok(p) => p,
-                    Err(e) => panic!("cannot generate a kzg proof: {}", e),
-                };
+                let kzg_proof =
+                    match hokulea_compute_proof::compute_kzg_proof(encoded_payload.serialize()) {
+                        Ok(p) => p,
+                        Err(e) => panic!("cannot generate a kzg proof: {}", e),
+                    };
                 let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
 
-                // ToDo(bx) claimed_validity currently set to true, but needs to connect from response from the host
                 let mut witness = self.witness.lock().unwrap();
                 witness.encoded_payloads.push((
                     altda_commitment.clone(),

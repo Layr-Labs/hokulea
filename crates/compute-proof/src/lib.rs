@@ -10,4 +10,6 @@
 #![cfg_attr(not(test), warn(unused_crate_dependencies))]
 
 pub mod kzg_proof;
-pub use kzg_proof::compute_kzg_proof;
+pub use kzg_proof::{
+    compute_kzg_proof, compute_kzg_proof_with_srs, convert_biguint_to_be_32_bytes, G1_SRS,
+};
