@@ -206,9 +206,9 @@ pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{canoe_verifier::noop::CanoeNoOpVerifier, cert_validity::CertValidity};
     use alloc::vec;
     use alloy_primitives::{hex, Bytes, U256};
+    use canoe_verifier::{CanoeNoOpVerifier, CertValidity};
     use eigenda_cert::AltDACommitment;
     use num::BigUint;
     use rust_kzg_bn254_primitives::errors::KzgError;

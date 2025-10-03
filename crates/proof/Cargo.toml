@@ -27,3 +27,9 @@ thiserror.workspace = true
 
 # Canoe
 canoe-verifier = { workspace = true } 
+
+[dev-dependencies]
+hokulea-compute-proof.workspace = true
+rust-kzg-bn254-prover.workspace = true
+num.workspace = true
+tokio = { workspace = true, features = ["full"] }

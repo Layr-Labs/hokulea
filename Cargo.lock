@@ -4600,13 +4600,17 @@ dependencies = [
  "async-trait",
  "canoe-verifier",
  "eigenda-cert",
+ "hokulea-compute-proof",
  "hokulea-eigenda",
  "kona-preimage",
  "kona-proof",
+ "num",
  "rust-kzg-bn254-primitives",
+ "rust-kzg-bn254-prover",
  "rust-kzg-bn254-verifier",
  "serde",
  "thiserror 2.0.12",
+ "tokio",
 ]
 
 [[package]]
