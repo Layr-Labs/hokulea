@@ -166,7 +166,7 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
     }
 }
 
-/// Eventually, rust-kzg-bn254 would provide an interface that takes
+/// Eventually, rust-kzg-bn254 would provide an interface that takes big endian
 /// bytes input, so that we can remove this wrapper. For now, just include it here
 pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
     // transform to rust-kzg-bn254 inputs types
