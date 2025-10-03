@@ -63,3 +63,28 @@ pub fn convert_biguint_to_be_32_bytes(biguint: &BigUint) -> [u8; 32] {
     output[padding..].copy_from_slice(&be_bytes);
     output
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convert_biguint_to_be_32_bytes() {
+        // most significant bit 1
+        let a = vec![129, 255];
+        let a_biguint = BigUint::from_bytes_be(&a);
+        let out_a = convert_biguint_to_be_32_bytes(&a_biguint);
+
+        let mut expected = vec![0u8; 30];
+        expected.extend_from_slice(&a);
+        assert_eq!(&out_a[..], &expected[..]);
+
+        // most significant bit 0 of 2 bytes are 0
+        let a = vec![1; 32];
+        let a_biguint = BigUint::from_bytes_be(&a);
+        let out_a = convert_biguint_to_be_32_bytes(&a_biguint);
+
+        let expected = a;
+        assert_eq!(&out_a[..], &expected[..]);
+    }
+}
