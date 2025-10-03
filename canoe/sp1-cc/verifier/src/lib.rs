@@ -44,12 +44,13 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSp1CCVerifier with v_key {:?}", V_KEY);
 
+        assert!(!cert_validity_pair.is_empty());
+
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
                 use core::str::FromStr;
-                use crate::canoe_verifier::to_journals_bytes;
 
                 let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
 

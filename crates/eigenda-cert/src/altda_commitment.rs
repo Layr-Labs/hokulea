@@ -8,8 +8,6 @@ use alloy_rlp::Error;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-/// EigenDACert can be either v1 or v2
-/// TODO consider boxing them, since the variant has large size
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum EigenDAVersionedCert {
