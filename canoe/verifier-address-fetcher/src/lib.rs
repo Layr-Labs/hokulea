@@ -1,13 +1,17 @@
+//! create [CanoeVerifierAddressFetcher] trait which returns contract verifier address, rollup can either
+//! use eigenlabs deployed address fetcher, or use rollup deployed address fetcher by implementing the
+//! trait
+#![no_std]
 use alloy_primitives::{address, Address};
 use eigenda_cert::EigenDAVersionedCert;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CanoeVerifierAddressFetcherError {
     /// Cannot fetch address for chainID
-    #[error("Unable to fetch contract address at in chain id {0} for abi encode interface, available for router and at least V3 certificate")]
+    #[error("Unable to fetch contract address with chain id {0} for abi encode interface, available for router and at least V3 certificate")]
     UnknownChainIDForABIEncodeInterface(u64),
     /// Invalid Cert validity response
-    #[error("Unable to fetch contract address at in chain id {0} for legacy interface for V2 certificate")]
+    #[error("Unable to fetch contract address with chain id {0} for legacy interface for V2 certificate")]
     UnknownChainIDForLegacyInterface(u64),
 }
 

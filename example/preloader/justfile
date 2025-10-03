@@ -40,7 +40,7 @@ run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet
   # compiles canoe sp1-cc ELF
   if [ "{{features}}" == "sp1-cc" ]; then
     pushd canoe/sp1-cc/client/
-      #cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
+      cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
     popd
   fi
 

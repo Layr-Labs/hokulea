@@ -1,6 +1,6 @@
 [package]
 name = "canoe-steel-verifier"
-description = "Eigenda Canoe Verifier"
+description = "Eigenda Canoe Steel Verifier"
 version = "0.1.0"
 edition = "2021"
 

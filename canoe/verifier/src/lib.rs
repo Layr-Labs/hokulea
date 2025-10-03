@@ -1,3 +1,4 @@
+//! canoe verifier trait and core data structure, which specific type can implement
 #![no_std]
 extern crate alloc;
 

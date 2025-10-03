@@ -1,3 +1,4 @@
+//! implement [CanoeVerifier] with steel
 #![no_std]
 extern crate alloc;
 
@@ -33,7 +34,8 @@ impl CanoeVerifier for CanoeSteelVerifier {
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
-                risc0_zkvm::guest::env;
+                use risc0_zkvm::guest::env;
+                use tracing::warn;
                 if canoe_proof_bytes.is_some() {
                     // Risc0 doc https://github.com/risc0/risc0/tree/main/examples/composition
                     warn!("steel verification within zkvm requires proof provided via zkVM STDIN by the 'add_assumption'

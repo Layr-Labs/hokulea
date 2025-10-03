@@ -91,8 +91,7 @@ This creates a mapping from (f, S, C, I) to O, and the value of the zkVM p
 It is crucial that given (f, S, C, I), there is only one answer. This is achieved by having a determinstic relation from (f, S, C, I) to O.  
 To prevent a host from fabicating a proof attesting some random logic, 
 the verifiation logic must independently construct the (f, S, C, I) part of the journal using the trusted data source and compare it against the journal committed by the zkVM, on top of verifying the validity proof produced by Canoe provider. certVerifierAddress is either built into binary or committed onchain L1,
-input is the DA certificate, l1ChainId can be found from the bootInfo, the state is anchored by the l1_head used during the challenge process
-In Hokulea, such verification takes place in [canoe_verifier](../crates/proof/src/canoe_verifier/).
+input is the DA certificate, l1ChainId can be found from the bootInfo, the state is anchored by the l1_head used during the challenge process.
 
 
 ## 6 · Remark

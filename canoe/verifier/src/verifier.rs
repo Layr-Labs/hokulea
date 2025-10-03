@@ -18,7 +18,7 @@ pub enum HokuleaCanoeVerificationError {
     #[error("Non zkvm environment: proof is missing")]
     MissingProof,
     /// Invalid Cert validity response. To avoid taking dep on specific zkVM error message, we convert them into string
-    #[error("The verifier cannot verify the validity proof and the provided jounral it can happen in both zk or non zkvm mode: {0}")]
+    #[error("The verifier cannot verify the validity proof and the provided journal it can happen in both zk or non zkvm mode: {0}")]
     InvalidProofAndJournal(String),
     /// unable to deserialize receipt
     #[error("Non zkvm environment: unable to deserialize receipt: {0}")]

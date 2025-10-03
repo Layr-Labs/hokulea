@@ -1,3 +1,4 @@
+//! implement [CanoeVerifier] with sp1-cc
 #![no_std]
 extern crate alloc;
 
@@ -20,9 +21,11 @@ use tracing::{info, warn};
 /// ``` bash
 /// just run-preloader .devnet.env sp1-cc
 /// ```
+/// or
+/// ```bash
+/// just get-sp1cc-elf-and-vkey
+/// ```
 /// The v_key will be printed in the terminal.
-/// Both the ELF and v_key must be updated at the same time and merged to the repo
-/// TODO(bx) Figure out a way to automate the process
 pub const V_KEY: [u32; 8] = [
     937049807, 1549350954, 494025872, 452277516, 1735403534, 49694047, 545335304, 513583722,
 ];
