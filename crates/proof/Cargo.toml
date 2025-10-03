@@ -22,23 +22,8 @@ alloy-primitives.workspace = true
 
 # General
 async-trait.workspace = true
-alloy-sol-types.workspace = true
 serde.workspace = true
-serde_json.workspace = true
-tracing.workspace = true
-cfg-if.workspace = true
 thiserror.workspace = true
 
-canoe-bindings = { workspace = true }
-
-# Steel 
-canoe-steel-methods = { workspace = true, optional = true }
-risc0-zkvm = { workspace = true, optional = true }
-
-# Sp1-CC
-sp1-lib = { workspace = true, features = ["verify"], optional = true}
-sha2 = { workspace = true, optional = true }
-
-[features]
-steel = ["canoe-steel-methods", "risc0-zkvm"]
-sp1-cc = ["sha2", "sp1-lib"]
+# Canoe
+canoe-verifier = { workspace = true } 

@@ -16,6 +16,8 @@ hokulea-compute-proof.workspace = true
 hokulea-eigenda.workspace = true
 eigenda-cert.workspace = true
 canoe-provider.workspace = true
+canoe-verifier.workspace = true
+canoe-verifier-address-fetcher.workspace = true
 
 async-trait.workspace = true
 anyhow.workspace = true

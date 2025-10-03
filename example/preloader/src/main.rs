@@ -21,11 +21,14 @@ use op_revm::OpSpecId;
 use kona_proof::{l1::OracleBlobProvider, BootInfo, FlushableCache};
 
 use canoe_provider::CanoeProvider;
+use canoe_verifier::CanoeVerifier;
+use canoe_verifier_address_fetcher::{
+    CanoeVerifierAddressFetcher, CanoeVerifierAddressFetcherDeployedByEigenLabs,
+};
+
 use hokulea_client::fp_client;
 use hokulea_proof::{
-    canoe_verifier::{address_fetcher::CanoeVerifierAddressFetcher, CanoeVerifier},
-    eigenda_provider::OracleEigenDAPreimageProvider,
-    eigenda_witness::EigenDAWitness,
+    eigenda_provider::OracleEigenDAPreimageProvider, eigenda_witness::EigenDAWitness,
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
 use std::{
@@ -33,7 +36,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use hokulea_proof::canoe_verifier::address_fetcher::CanoeVerifierAddressFetcherDeployedByEigenLabs;
 use tracing::info;
 
 #[tokio::main(flavor = "multi_thread")]
@@ -49,7 +51,8 @@ async fn main() -> anyhow::Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(feature = "steel")] {
             use canoe_steel_apps::apps::CanoeSteelProvider;
-            use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
+            use canoe_steel_verifier::CanoeSteelVerifier;
+            //use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
             let canoe_provider = CanoeSteelProvider{
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
             };
@@ -63,7 +66,7 @@ async fn main() -> anyhow::Result<()> {
             // Particularly, op-succinct integration needs to use write_proof() to supply compressed proof
             // into SP1 zkvm when using hokulea as an ELF.
             use canoe_sp1_cc_host::CanoeSp1CCReducedProofProvider;
-            use hokulea_proof::canoe_verifier::sp1_cc::CanoeSp1CCVerifier;
+            use canoe_sp1_cc_verifier::CanoeSp1CCVerifier;
             use sp1_sdk::{ProverClient, HashableKey};
             use std::env;
 
@@ -86,7 +89,7 @@ async fn main() -> anyhow::Result<()> {
             let canoe_verifier = CanoeSp1CCVerifier{};
         } else {
             use canoe_provider::CanoeNoOpProvider;
-            use hokulea_proof::canoe_verifier::noop::CanoeNoOpVerifier;
+            use canoe_verifier::CanoeNoOpVerifier;
             let canoe_provider = CanoeNoOpProvider{};
             let canoe_verifier = CanoeNoOpVerifier{};
         }

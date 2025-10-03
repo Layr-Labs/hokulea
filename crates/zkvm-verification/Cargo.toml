@@ -7,3 +7,5 @@ edition = "2021"
 hokulea-proof.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
+canoe-verifier.workspace = true
+canoe-verifier-address-fetcher.workspace = true

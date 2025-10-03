@@ -1,9 +1,9 @@
 use alloy_primitives::{Address, FixedBytes, B256};
 use async_trait::async_trait;
+use canoe_verifier::CertValidity;
 use eigenda_cert::AltDACommitment;
 use hokulea_compute_proof::compute_kzg_proof;
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
-use hokulea_proof::cert_validity::CertValidity;
 use hokulea_proof::eigenda_witness::EigenDAWitness;
 use std::sync::{Arc, Mutex};
 

@@ -1,0 +1,9 @@
+[package]
+name = "canoe-verifier-address-fetcher"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eigenda-cert = { workspace = true }
+alloy-primitives = { workspace = true }
+thiserror =  { workspace = true }

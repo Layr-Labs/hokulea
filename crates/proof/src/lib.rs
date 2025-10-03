@@ -9,8 +9,4 @@ pub mod preloaded_eigenda_provider;
 
 pub mod eigenda_witness;
 
-pub mod cert_validity;
-
-pub mod canoe_verifier;
-
 pub mod errors;

@@ -2758,6 +2758,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "canoe-sp1-cc-verifier"
+version = "0.1.0"
+dependencies = [
+ "canoe-verifier",
+ "cfg-if",
+ "eigenda-cert",
+ "sha2 0.10.9",
+ "sp1-lib",
+ "tracing",
+]
+
+[[package]]
 name = "canoe-sp1-cc-vkey-bin"
 version = "0.1.0"
 dependencies = [
@@ -2791,6 +2803,40 @@ dependencies = [
  "risc0-build",
  "risc0-build-ethereum",
  "risc0-zkvm",
+]
+
+[[package]]
+name = "canoe-steel-verifier"
+version = "0.1.0"
+dependencies = [
+ "canoe-steel-methods",
+ "canoe-verifier",
+ "cfg-if",
+ "eigenda-cert",
+ "risc0-zkvm",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "canoe-verifier"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives 1.2.0",
+ "alloy-sol-types",
+ "canoe-bindings",
+ "eigenda-cert",
+ "serde",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "canoe-verifier-address-fetcher"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives 1.2.0",
+ "eigenda-cert",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -4447,6 +4493,7 @@ dependencies = [
  "num",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-prover",
+ "spin 0.10.0",
 ]
 
 [[package]]
@@ -4476,9 +4523,11 @@ dependencies = [
  "anyhow",
  "canoe-provider",
  "canoe-steel-apps",
+ "canoe-steel-verifier",
+ "canoe-verifier",
+ "canoe-verifier-address-fetcher",
  "clap",
  "eigenda-cert",
- "hokulea-proof",
  "serde_json",
  "tokio",
  "url",
@@ -4492,7 +4541,11 @@ dependencies = [
  "anyhow",
  "canoe-provider",
  "canoe-sp1-cc-host",
+ "canoe-sp1-cc-verifier",
  "canoe-steel-apps",
+ "canoe-steel-verifier",
+ "canoe-verifier",
+ "canoe-verifier-address-fetcher",
  "cfg-if",
  "clap",
  "hokulea-client",
@@ -4542,26 +4595,18 @@ name = "hokulea-proof"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.2.0",
- "alloy-sol-types",
  "ark-bn254",
  "ark-ff 0.5.0",
  "async-trait",
- "canoe-bindings",
- "canoe-steel-methods",
- "cfg-if",
+ "canoe-verifier",
  "eigenda-cert",
  "hokulea-eigenda",
  "kona-preimage",
  "kona-proof",
- "risc0-zkvm",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-verifier",
  "serde",
- "serde_json",
- "sha2 0.10.9",
- "sp1-lib",
  "thiserror 2.0.12",
- "tracing",
 ]
 
 [[package]]
@@ -4574,6 +4619,8 @@ dependencies = [
  "anyhow",
  "async-trait",
  "canoe-provider",
+ "canoe-verifier",
+ "canoe-verifier-address-fetcher",
  "eigenda-cert",
  "hokulea-compute-proof",
  "hokulea-eigenda",
@@ -4587,6 +4634,8 @@ dependencies = [
 name = "hokulea-zkvm-verification"
 version = "0.1.0"
 dependencies = [
+ "canoe-verifier",
+ "canoe-verifier-address-fetcher",
  "hokulea-proof",
  "kona-preimage",
  "kona-proof",

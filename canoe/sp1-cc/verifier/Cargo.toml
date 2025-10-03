@@ -1,0 +1,16 @@
+[package]
+name = "canoe-sp1-cc-verifier"
+description = "Eigenda Canoe Verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eigenda-cert.workspace = true
+
+canoe-verifier = { workspace = true }
+
+cfg-if.workspace = true
+tracing.workspace = true
+
+sp1-lib = { workspace = true, features = ["verify"]}
+sha2 = { workspace = true }

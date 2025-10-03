@@ -1,6 +1,6 @@
-use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
-use crate::canoe_verifier::CanoeVerifier;
-use crate::cert_validity::CertValidity;
+#![no_std]
+extern crate alloc;
+
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use eigenda_cert::AltDACommitment;
@@ -8,6 +8,7 @@ use eigenda_cert::AltDACommitment;
 use risc0_zkvm::Receipt;
 
 use canoe_steel_methods::CERT_VERIFICATION_ID;
+use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use tracing::info;
 
 #[derive(Clone)]

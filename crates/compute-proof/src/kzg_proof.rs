@@ -9,15 +9,22 @@ use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_primitives::errors::KzgError;
 use rust_kzg_bn254_prover::kzg::KZG;
 use rust_kzg_bn254_prover::srs::SRS;
+use spin::Lazy;
+
+/// load srs points
+pub static G1_SRS: Lazy<SRS> = Lazy::new(load_g1_srs);
+
+fn load_g1_srs() -> SRS {
+    let srs_file_path = "resources/g1.point";
+    // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
+    SRS::new(srs_file_path, 268435456, 524288)
+        .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err))
+}
 
 /// This function computes a KZG proof for a eigenDA blob
 /// nitro code <https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141>
 /// could refactor in the future, such that both host and client can compute the proof
 pub fn compute_kzg_proof(encoded_payload: &[u8]) -> Result<Bytes, KzgError> {
-    let srs_file_path = "resources/g1.point";
-    // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
-    let srs = SRS::new(srs_file_path, 268435456, 524288)
-        .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err));
     let mut kzg = KZG::new();
 
     // The encoded payload is a polynomial presented in its evaluation form
@@ -29,7 +36,7 @@ pub fn compute_kzg_proof(encoded_payload: &[u8]) -> Result<Bytes, KzgError> {
 
     let mut commitment_bytes = vec![0u8; 0];
 
-    let commitment = kzg.commit_eval_form(&input_poly, &srs)?;
+    let commitment = kzg.commit_eval_form(&input_poly, &G1_SRS)?;
 
     // TODO the rust bn254 library should have returned the bytes, or provide a helper
     // for conversion. For both proof and commitment
@@ -41,7 +48,7 @@ pub fn compute_kzg_proof(encoded_payload: &[u8]) -> Result<Bytes, KzgError> {
 
     let mut proof_bytes = vec![0u8; 0];
 
-    let proof = kzg.compute_blob_proof(&input, &commitment, &srs)?;
+    let proof = kzg.compute_blob_proof(&input, &commitment, &G1_SRS)?;
     let proof_x_bigint: BigUint = proof.x.into();
     let proof_y_bigint: BigUint = proof.y.into();
 

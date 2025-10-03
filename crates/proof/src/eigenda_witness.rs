@@ -5,7 +5,7 @@ use alloy_primitives::FixedBytes;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::EncodedPayload;
 
-use crate::cert_validity::CertValidity;
+use canoe_verifier::CertValidity;
 use serde::{Deserialize, Serialize};
 
 /// EigenDAWitness contains preimage and witness data to be provided into

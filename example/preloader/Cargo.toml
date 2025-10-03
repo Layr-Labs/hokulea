@@ -28,13 +28,17 @@ alloy-evm.workspace = true
 op-revm.workspace = true
 op-alloy-consensus.workspace = true
 
-canoe-provider  = { workspace = true }
+canoe-provider = { workspace = true }
+canoe-verifier = { workspace = true }
+canoe-verifier-address-fetcher = { workspace = true }
 canoe-steel-apps = { workspace = true, optional = true }
+canoe-steel-verifier = { workspace = true, optional = true }
 canoe-sp1-cc-host = { workspace = true, optional = true }
+canoe-sp1-cc-verifier = { workspace = true, optional = true }
 
 sp1-sdk = {workspace = true}
 
 [features]
-steel = ["canoe-steel-apps", "hokulea-proof/steel"]
-sp1-cc = ["canoe-sp1-cc-host", "hokulea-proof/sp1-cc"]
+steel = ["canoe-steel-apps", "canoe-steel-verifier"]
+sp1-cc = ["canoe-sp1-cc-host", "canoe-sp1-cc-verifier"]
 

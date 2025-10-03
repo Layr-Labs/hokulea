@@ -1,7 +1,8 @@
-use crate::canoe_verifier::errors::HokuleaCanoeVerificationError;
-use crate::canoe_verifier::CanoeVerifier;
-use crate::cert_validity::CertValidity;
+#![no_std]
+extern crate alloc;
+
 use alloc::vec::Vec;
+use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use eigenda_cert::AltDACommitment;
 
 use tracing::{info, warn};

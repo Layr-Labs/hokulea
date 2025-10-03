@@ -13,7 +13,7 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use crate::canoe_verifier::CanoeVerifier;
+use canoe_verifier::CanoeVerifier;
 
 /// PreloadedEigenDAPreimageProvider converts EigenDAWitness into preimage data
 /// can be used to implement the EigenDAPreimageProvider trait, that contains

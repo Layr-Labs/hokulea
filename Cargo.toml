@@ -7,10 +7,14 @@ members = [
     "canoe/bindings",
     "canoe/provider",
     "canoe/steel/apps",
-    "canoe/steel/methods", 
+    "canoe/steel/methods",
+    "canoe/steel/verifier", 
     "canoe/sp1-cc/host",
     "canoe/sp1-cc/client",
     "canoe/sp1-cc/vkey-bin",
+    "canoe/sp1-cc/verifier",
+    "canoe/verifier",
+    "canoe/verifier-address-fetcher",
 ]
 
 [profile.release-client-lto]
@@ -142,12 +146,14 @@ revm = { version = "24.0.1", default-features = false }
 rocksdb = { version = "0.23.0", default-features = false }
 
 canoe-provider = { path = "./canoe/provider", default-features = false  }
-
 canoe-bindings = { path = "./canoe/bindings", default-features = false  }
+canoe-verifier = { path = "./canoe/verifier", default-features = false  }
+canoe-verifier-address-fetcher = { path = "./canoe/verifier-address-fetcher", default-features = false  }
 
 # Steel
 canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
 canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }
+canoe-steel-verifier = { path = "./canoe/steel/verifier", default-features = false  }
 
 risc0-zkvm = { version = "2.3.1" }
 risc0-steel = { git = "https://github.com/risc0/risc0-ethereum.git", tag = "v2.2.2", default-features = false}
@@ -157,6 +163,7 @@ risc0-build = { version = "2.3.1", default-features = false, features = ["unstab
 # Sp1-contract-call
 canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false  }
 canoe-sp1-cc-client  = { path = "./canoe/sp1-cc/client", default-features = false  }
+canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false  }
 
 sp1-sdk = "5.0.5"
 sp1-build = "5.0.5"

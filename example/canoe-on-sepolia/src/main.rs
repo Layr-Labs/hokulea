@@ -3,16 +3,16 @@
 
 use alloy_provider::{Provider, ProviderBuilder};
 use canoe_provider::{CanoeInput, CanoeProvider};
-use canoe_steel_apps::apps::CanoeSteelProvider;
-use clap::Parser;
-use eigenda_cert::AltDACommitment;
-use hokulea_proof::canoe_verifier::address_fetcher::{
+use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
+use canoe_verifier_address_fetcher::{
     CanoeVerifierAddressFetcher, CanoeVerifierAddressFetcherDeployedByEigenLabs,
 };
-use hokulea_proof::canoe_verifier::{
-    errors::HokuleaCanoeVerificationError, steel::CanoeSteelVerifier, CanoeVerifier,
-};
-use hokulea_proof::cert_validity::CertValidity;
+
+use canoe_steel_apps::apps::CanoeSteelProvider;
+use canoe_steel_verifier::CanoeSteelVerifier;
+use clap::Parser;
+use eigenda_cert::AltDACommitment;
+
 use std::str::FromStr;
 use url::Url;
 

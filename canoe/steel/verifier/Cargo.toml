@@ -1,0 +1,18 @@
+[package]
+name = "canoe-steel-verifier"
+description = "Eigenda Canoe Verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eigenda-cert.workspace = true
+
+canoe-verifier = { workspace = true }
+
+cfg-if.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+
+# Steel 
+canoe-steel-methods = { workspace = true }
+risc0-zkvm = { workspace = true }

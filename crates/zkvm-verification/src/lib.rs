@@ -6,10 +6,11 @@ use kona_preimage::CommsClient;
 use kona_proof::{errors::OracleProviderError, BootInfo, FlushableCache};
 
 use hokulea_proof::{
-    canoe_verifier::{address_fetcher::CanoeVerifierAddressFetcher, CanoeVerifier},
-    eigenda_witness::EigenDAWitness,
-    preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
+    eigenda_witness::EigenDAWitness, preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
 };
+
+use canoe_verifier::CanoeVerifier;
+use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 
 use alloc::sync::Arc;
 

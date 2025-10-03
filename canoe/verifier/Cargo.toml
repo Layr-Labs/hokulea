@@ -1,0 +1,13 @@
+[package]
+name = "canoe-verifier"
+description = "Eigenda canoe verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eigenda-cert.workspace = true
+alloy-sol-types.workspace = true
+canoe-bindings = { workspace = true }
+alloy-primitives = { workspace = true }
+serde.workspace = true
+thiserror.workspace = true

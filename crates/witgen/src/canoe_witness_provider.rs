@@ -1,8 +1,8 @@
 use alloy_consensus::Header;
 use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
+use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 use core::fmt::Debug;
-use hokulea_proof::canoe_verifier::address_fetcher::CanoeVerifierAddressFetcher;
 use hokulea_proof::eigenda_witness::EigenDAWitness;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
