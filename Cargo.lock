@@ -4493,7 +4493,6 @@ dependencies = [
  "num",
  "rust-kzg-bn254-primitives",
  "rust-kzg-bn254-prover",
- "spin 0.10.0",
 ]
 
 [[package]]
