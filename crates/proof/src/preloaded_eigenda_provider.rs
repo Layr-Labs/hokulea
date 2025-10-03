@@ -169,13 +169,13 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
 /// Eventually, rust-kzg-bn254 would provide an interface that takes
 /// bytes input, so that we can remove this wrapper. For now, just include it here
 pub fn batch_verify(
-    blobs: &Vec<Blob>,
-    commitments: &Vec<(U256, U256)>,
-    proofs: &Vec<FixedBytes<64>>,
+    blobs: &[Blob],
+    commitments: &[(U256, U256)],
+    proofs: &[FixedBytes<64>],
 ) -> bool {
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
-    let lib_blobs: &Vec<Blob> = blobs;
+    let lib_blobs: &[Blob] = blobs;
     let lib_commitments: Vec<G1Affine> = commitments
         .iter()
         .map(|c| {
@@ -197,7 +197,7 @@ pub fn batch_verify(
         .collect();
 
     // convert all the error to false
-    batch::verify_blob_kzg_proof_batch(&lib_blobs, &lib_commitments, &lib_proofs).unwrap_or(false)
+    batch::verify_blob_kzg_proof_batch(lib_blobs, &lib_commitments, &lib_proofs).unwrap_or(false)
 }
 
 #[cfg(test)]
@@ -233,10 +233,10 @@ mod tests {
         let commitment_y_bytes =
             hokulea_compute_proof::convert_biguint_to_be_32_bytes(&commitment_y_bigint);
 
-        return Ok((
+        Ok((
             U256::from_be_bytes(commitment_x_bytes),
             U256::from_be_bytes(commitment_y_bytes),
-        ));
+        ))
     }
 
     fn compute_kzg_proof_and_commitment(
@@ -313,18 +313,12 @@ mod tests {
         let mut proofs = proofs.clone();
 
         // switch order of proof 0 and 1 should be enough to corrupt
-        let temp = proofs[0];
-        proofs[0] = proofs[1];
-        proofs[1] = temp;
+        proofs.swap(0, 1);
 
         assert!(!batch_verify(&blobs, &commitments, &proofs));
 
         // corrupt proof by using the second srs as proof
-        assert!(!batch_verify(
-            &blobs[..1].into(),
-            &commitments[..1].into(),
-            &proofs[..1].into()
-        ));
+        assert!(!batch_verify(&blobs[..1], &commitments[..1], &proofs[..1]));
     }
 
     // witness data that can be verified correctly with a no op canoe verifier
@@ -348,14 +342,14 @@ mod tests {
                     .blob_certificate
                     .blob_header
                     .commitment
-                    .commitment = eigenda_cert::G1Point { x: x, y: y };
+                    .commitment = eigenda_cert::G1Point { x, y };
             }
             eigenda_cert::EigenDAVersionedCert::V3(c) => {
                 c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
-                    .commitment = eigenda_cert::G1Point { x: x, y: y };
+                    .commitment = eigenda_cert::G1Point { x, y };
             }
         };
 
