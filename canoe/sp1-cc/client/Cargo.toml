@@ -4,7 +4,7 @@ description = ""
 edition = "2021"
 
 [dependencies]
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "ec6ff219beb831ac744d1569f03483dd601ec618" }
+sp1-cc-client-executor = { workspace = true }
 
 # alloy
 alloy-primitives = { workspace = true, features = ["serde"] }
@@ -16,4 +16,4 @@ canoe-provider = { workspace = true }
 sp1-zkvm = { workspace = true, features = ["default"] }
 
 # misc
-bincode = "1.3.3"
+bincode.workspace = true

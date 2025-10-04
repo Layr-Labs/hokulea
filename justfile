@@ -7,10 +7,10 @@ default:
 ############################### BUILD ###############################
 
 # Build the workspace for all available targets
-alias b := build-all
 [group('build')]
 build-all: build-native-all build-client-for-asterisc
 
+alias b := build-native-all
 # Build for the all native target
 [group('build')]
 build-native-all *args='':
