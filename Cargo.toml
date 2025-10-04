@@ -53,7 +53,6 @@ hokulea-witgen = { path = "crates/witgen", version = "0.1.0", default-features =
 hokulea-zkvm-verification = { path = "crates/zkvm-verification", version = "0.1.0", default-features = false }
 
 # EigenDA v2 struct
-# TODO: this should be moved elsewhere, probably to https://github.com/Layr-Labs/eigenda-rs
 eigenda-cert = { path = "crates/eigenda-cert" }
 
 # Alloy (Network)

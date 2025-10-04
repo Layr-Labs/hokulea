@@ -2746,7 +2746,6 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
- "eigenda-cert",
  "rsp-primitives",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",

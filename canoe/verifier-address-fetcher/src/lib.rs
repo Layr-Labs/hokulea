@@ -77,9 +77,9 @@ fn cert_verifier_address_abi_encode_interface(
     // this is kurtosis devnet
     match chain_id {
         // mainnet
-        1 => Ok(address!("0x61692e93b6B045c444e942A91EcD1527F23A3FB7")),
+        1 => Ok(address!("0x1be7258230250Bc6a4548F8D59d576a87D216C12")),
         // Sepolia router cert verifier address
-        11155111 => Ok(address!("0x58D2B844a894f00b7E6F9F492b9F43aD54Cd4429")),
+        11155111 => Ok(address!("0x17ec4112c4BbD540E2c1fE0A49D264a280176F0D")),
         // holesky router cert verifier address
         17000 => Ok(address!("0xDD735AFFe77A5ED5b21ED47219f95ED841f8Ffbd")),
         // kurtosis l1 chain id => mock contract address
@@ -102,6 +102,7 @@ fn cert_verifier_legacy_v2_interface(
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
     // this is kurtosis devnet
     match chain_id {
+        1 => Ok(address!("0xE1Ae45810A738F13e70Ac8966354d7D0feCF7BD6")),
         // Sepolia V2 cert verifier address
         11155111 => Ok(address!("0x73818fed0743085c4557a736a7630447fb57c662")),
         // holesky V2 cert verifier address

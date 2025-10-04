@@ -48,10 +48,6 @@ impl CanoeProvider for CanoeSteelProvider {
 
         Some(get_steel_proof(canoe_inputs, &self.eth_rpc_url).await)
     }
-
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
-    }
 }
 
 async fn get_steel_proof(
@@ -99,8 +95,10 @@ async fn get_steel_proof(
 
         // calls the function
         let is_valid = match CertVerifierCall::build(&canoe_input.altda_commitment) {
-            CertVerifierCall::V2(call) => contract.call_builder(&call).call().await?,
-            CertVerifierCall::Router(call) => {
+            CertVerifierCall::LegacyV2Interface(call) => {
+                contract.call_builder(&call).call().await?
+            }
+            CertVerifierCall::ABIEncodeInterface(call) => {
                 let status = contract.call_builder(&call).call().await?;
                 status == StatusCode::SUCCESS as u8
             }

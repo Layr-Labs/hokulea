@@ -5,7 +5,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::StatusCode;
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
-use eigenda_cert::EigenDAVersionedCert;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{
@@ -80,10 +79,6 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         Some(get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await)
     }
-
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
-    }
 }
 
 /// A canoe provider implementation with Sp1 contract call
@@ -121,10 +116,6 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             }
             Err(e) => Some(Err(e)),
         }
-    }
-
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
     }
 }
 
@@ -168,7 +159,7 @@ async fn get_sp1_cc_proof(
             let chain_config = match l1_chain_id {
                 17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
                 3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
-                _ => panic!("chain id {l1_chain_id} is not supported"),
+                _ => panic!("chain id {l1_chain_id} is not supported by canoe sp1 cc"),
             };
 
             let genesis = Genesis::Custom(chain_config.config);
@@ -185,36 +176,36 @@ async fn get_sp1_cc_proof(
 
     // pre populate the state
     for canoe_input in canoe_inputs.iter() {
-        let contract_input = match CertVerifierCall::build(&canoe_input.altda_commitment) {
-            CertVerifierCall::V2(call) => {
-                ContractInput::new_call(canoe_input.verifier_address, Address::default(), call)
-            }
-            CertVerifierCall::Router(call) => {
-                ContractInput::new_call(canoe_input.verifier_address, Address::default(), call)
-            }
-        };
+        match CertVerifierCall::build(&canoe_input.altda_commitment) {
+            CertVerifierCall::LegacyV2Interface(call) => {
+                let contract_input =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+                let returns_bytes = sketch
+                    .call_raw(&contract_input)
+                    .await
+                    .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-        let returns_bytes = sketch
-            .call_raw(&contract_input)
-            .await
-            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
-
-        // If the view call reverts within EVM, the output is empty. Therefore abi_decode can correctly
-        // catch such case. But ideally, the sp1-cc should handle the type conversion for its users.
-        // Talked to sp1-cc developer already, and it is agreed.
-        let is_valid = match &canoe_input.altda_commitment.versioned_cert {
-            EigenDAVersionedCert::V2(_) => {
-                Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes")
+                let is_valid = Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes");
+                if is_valid != canoe_input.claimed_validity {
+                    panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
+                }
             }
-            EigenDAVersionedCert::V3(_) => {
+            CertVerifierCall::ABIEncodeInterface(call) => {
+                let contract_input =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+                let returns_bytes = sketch
+                    .call_raw(&contract_input)
+                    .await
+                    .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+
                 let returns = <StatusCode as SolType>::abi_decode(&returns_bytes)
                     .expect("deserialize returns_bytes");
-                returns == StatusCode::SUCCESS
+                let is_valid = returns == StatusCode::SUCCESS;
+                if is_valid != canoe_input.claimed_validity {
+                    panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
+                }
             }
         };
-        if is_valid != canoe_input.claimed_validity {
-            panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
-        }
     }
 
     let evm_state_sketch = sketch

@@ -101,14 +101,18 @@ sol! {
         bytes signedQuorumNumbers;
     }
 
+    // see contract status code
+    // https://github.com/Layr-Labs/eigenda/blob/f5032bb8683baa2a9eff58443c013f39005d7680/contracts/src/integrations/cert/EigenDACertVerifier.sol#L52
     #[derive(PartialEq)]
     enum StatusCode {
         NULL_ERROR, // Unused error code. If this is returned, there is a bug in the code.
         SUCCESS, // Verification succeeded
-        INVALID_INCLUSION_PROOF, // Merkle inclusion proof is invalid
-        SECURITY_ASSUMPTIONS_NOT_MET, // Security assumptions not met
-        BLOB_QUORUMS_NOT_SUBSET, // Blob quorums not a subset of confirmed quorums
-        REQUIRED_QUORUMS_NOT_SUBSET // Required quorums not a subset of blob quorums
+        UNUSED_HISTORICAL_INVALID_INCLUSION_PROOF, // Merkle inclusion proof is invalid
+        UNUSED_HISTORICAL_SECURITY_ASSUMPTIONS_NOT_MET, // Security assumptions not met
+        UNUSED_HISTORICAL_BLOB_QUORUMS_NOT_SUBSET, // Blob quorums not a subset of confirmed quorums
+        UNUSED_HISTORICAL_REQUIRED_QUORUMS_NOT_SUBSET, // Required quorums not a subset of blob quorums
+        INVALID_CERT,
+        INTERNAL_ERROR,
     }
 
     interface IEigenDACertVerifier {

@@ -27,7 +27,7 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    506913354, 215418087, 1535807693, 675290808, 1172635926, 1694225029, 1510498258, 1868250240,
+    1184335638, 1135783716, 1423207388, 911618791, 1295955408, 1041966695, 440842582, 38998658,
 ];
 
 #[derive(Clone)]
@@ -44,12 +44,13 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
     ) -> Result<(), HokuleaCanoeVerificationError> {
         info!("using CanoeSp1CCVerifier with v_key {:?}", V_KEY);
 
+        assert!(!cert_validity_pair.is_empty());
+
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
                 use core::str::FromStr;
-                use crate::canoe_verifier::to_journals_bytes;
 
                 let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
 
