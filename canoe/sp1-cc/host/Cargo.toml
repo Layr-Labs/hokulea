@@ -18,8 +18,6 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 canoe-provider.workspace = true
 canoe-bindings.workspace = true
-canoe-verifier.workspace = true
-eigenda-cert.workspace = true
 
 # misc:
 url.workspace = true
