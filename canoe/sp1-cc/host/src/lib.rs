@@ -5,7 +5,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::StatusCode;
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
-use eigenda_cert::EigenDAVersionedCert;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{
@@ -80,10 +79,6 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         Some(get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await)
     }
-
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
-    }
 }
 
 /// A canoe provider implementation with Sp1 contract call
@@ -121,10 +116,6 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             }
             Err(e) => Some(Err(e)),
         }
-    }
-
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
     }
 }
 
@@ -187,7 +178,8 @@ async fn get_sp1_cc_proof(
     for canoe_input in canoe_inputs.iter() {
         match CertVerifierCall::build(&canoe_input.altda_commitment) {
             CertVerifierCall::LegacyV2Interface(call) => {
-                let contract_input = ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+                let contract_input =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
                 let returns_bytes = sketch
                     .call_raw(&contract_input)
                     .await
@@ -199,7 +191,8 @@ async fn get_sp1_cc_proof(
                 }
             }
             CertVerifierCall::ABIEncodeInterface(call) => {
-                let contract_input = ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+                let contract_input =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
                 let returns_bytes = sketch
                     .call_raw(&contract_input)
                     .await

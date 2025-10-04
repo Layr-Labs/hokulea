@@ -18,9 +18,6 @@ pub trait CanoeProvider: Clone + Send + 'static {
         &self,
         _canoe_inputs: Vec<CanoeInput>,
     ) -> Option<Result<Self::Receipt>>;
-
-    /// get_eth_rpc_url returns eth rpc for fetching the state in order to generate the zk validity proof for DACert
-    fn get_eth_rpc_url(&self) -> String;
 }
 
 #[derive(Clone)]
@@ -35,9 +32,5 @@ impl CanoeProvider for CanoeNoOpProvider {
         _canoe_inputs: Vec<CanoeInput>,
     ) -> Option<Result<Self::Receipt>> {
         None
-    }
-
-    fn get_eth_rpc_url(&self) -> String {
-        "".to_string()
     }
 }

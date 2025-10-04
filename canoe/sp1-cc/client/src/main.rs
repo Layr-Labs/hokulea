@@ -48,20 +48,22 @@ pub fn main() {
     for canoe_input in canoe_inputs.iter() {
         let (returns, anchor_hash) = match CertVerifierCall::build(&canoe_input.altda_commitment) {
             CertVerifierCall::LegacyV2Interface(call) => {
-                let call= ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+                let call =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
 
                 let public_vals = executor
                     .execute(call)
                     .expect("executor should be able to execute call");
 
                 // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
-                let validity =Bool::abi_decode(&public_vals.contractOutput)
+                let validity = Bool::abi_decode(&public_vals.contractOutput)
                     .expect("should be able to deserialize returns");
                 (validity, public_vals.anchorHash)
-            },
+            }
             CertVerifierCall::ABIEncodeInterface(call) => {
-                let call = ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
-                
+                let call =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+
                 let public_vals = executor
                     .execute(call)
                     .expect("executor should be able to execute call");

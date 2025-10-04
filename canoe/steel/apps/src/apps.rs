@@ -48,10 +48,6 @@ impl CanoeProvider for CanoeSteelProvider {
 
         Some(get_steel_proof(canoe_inputs, &self.eth_rpc_url).await)
     }
-
-    fn get_eth_rpc_url(&self) -> String {
-        self.eth_rpc_url.clone()
-    }
 }
 
 async fn get_steel_proof(
