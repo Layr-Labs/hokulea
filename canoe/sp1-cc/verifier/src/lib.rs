@@ -27,7 +27,7 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    155840827, 1054807976, 1117502010, 411643090, 1737149458, 1390688513, 1427847064, 415719986,
+    689598351, 1928425288, 1516312431, 1076850441, 1694801413, 340662279, 609170610, 1102316031,
 ];
 
 #[derive(Clone)]
@@ -50,7 +50,6 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
-                use core::str::FromStr;
 
                 let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
 
