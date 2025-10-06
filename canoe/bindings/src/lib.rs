@@ -102,6 +102,8 @@ sol! {
     }
 
     // see contract status code
+    // the enumuration must be a superset of what is returned by the smart contract in all historical versions.
+    // Otherwise, the decode function of status code will not be able to parse the solidity returned error.
     // https://github.com/Layr-Labs/eigenda/blob/f5032bb8683baa2a9eff58443c013f39005d7680/contracts/src/integrations/cert/EigenDACertVerifier.sol#L52
     #[derive(PartialEq)]
     enum StatusCode {

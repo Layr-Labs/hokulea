@@ -75,7 +75,6 @@ pub fn main() {
             }
         };
 
-        // TODO might be using a better serialization format
         let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
         assert!(anchor_hash == l1_head_block_hash);
