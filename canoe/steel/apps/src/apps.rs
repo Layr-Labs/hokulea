@@ -63,7 +63,7 @@ async fn get_steel_proof(
     }
     let start = Instant::now();
     info!(
-        "begin to generate a sp1-cc proof for {} number of altda commitment at l1 block number {} with chainID {}",
+        "begin to generate a steel proof for {} number of altda commitment at l1 block number {} with chainID {}",
         canoe_inputs.len(),
         l1_head_block_number,
         l1_chain_id,

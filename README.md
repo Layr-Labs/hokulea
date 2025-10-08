@@ -16,7 +16,7 @@ Hokulea's proving client currently computes a challenge proof that validates the
 We use kurtosis to start an [optimism-package](https://github.com/ethpandaops/optimism-package/tree/main) devnet, and run the hokulea host and client against it.
 
 ```bash
-just run-kurtosis-devnet
+just run-kurtosis-devnet-with-eigenlabs-package
 ```
 
 ### Running the native client
