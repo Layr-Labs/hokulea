@@ -8,7 +8,7 @@ use tracing::{error, info};
 use hokulea_eigenda::{EigenDADataSource, EigenDAPreimageProvider, EigenDAPreimageSource};
 
 use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
-use kona_derive::traits::BlobProvider;
+use kona_derive::BlobProvider;
 use kona_driver::Driver;
 use kona_executor::TrieDBProvider;
 use kona_preimage::CommsClient;
@@ -17,7 +17,7 @@ use kona_proof::{
     l2::OracleL2ChainProvider, sync::new_oracle_pipeline_cursor, BootInfo, FlushableCache,
 };
 
-use kona_derive::sources::EthereumDataSource;
+use kona_derive::EthereumDataSource;
 
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
 use op_alloy_consensus::OpTxEnvelope;
