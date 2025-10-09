@@ -70,6 +70,7 @@ impl CanoeProvider for CanoeNoOpProvider {
 
 /// Call respecting solidity interface
 /// V2 is deprecated once router is released
+#[allow(clippy::large_enum_variant)]
 pub enum CertVerifierCall {
     /// V2 calldata
     V2(IEigenDACertVerifier::verifyDACertV2ForZKProofCall),

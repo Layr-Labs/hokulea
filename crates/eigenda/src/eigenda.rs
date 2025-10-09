@@ -10,9 +10,7 @@ use alloc::{boxed::Box, fmt::Debug};
 use alloy_primitives::{Address, Bytes};
 use async_trait::async_trait;
 use kona_derive::{
-    PipelineError,
-    EthereumDataSource,
-    BlobProvider, ChainProvider, DataAvailabilityProvider,
+    BlobProvider, ChainProvider, DataAvailabilityProvider, EthereumDataSource, PipelineError,
     PipelineResult,
 };
 use kona_protocol::{BlockInfo, DERIVATION_VERSION_0};
@@ -210,8 +208,8 @@ mod tests {
     use alloy_consensus::TxEnvelope;
     use alloy_rlp::Decodable;
     use eigenda_cert::AltDACommitment;
-    use kona_derive::{BlobSource, CalldataSource};
     use kona_derive::test_utils::{TestBlobProvider, TestChainProvider};
+    use kona_derive::{BlobSource, CalldataSource};
     use kona_genesis::{HardForkConfig, RollupConfig};
 
     const L1_INBOX_ADDRESS: Address =
