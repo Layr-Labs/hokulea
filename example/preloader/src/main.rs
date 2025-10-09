@@ -45,12 +45,12 @@ async fn main() -> anyhow::Result<()> {
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "steel")] {
-            use canoe_steel_apps::apps::CanoeSteelProvider;
-            use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
-            let canoe_provider = CanoeSteelProvider{
-                eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
-            };
-            let canoe_verifier = CanoeSteelVerifier{};
+           use canoe_steel_apps::apps::CanoeSteelProvider;
+           use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
+           let canoe_provider = CanoeSteelProvider{
+               eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
+           };
+           let canoe_verifier = CanoeSteelVerifier{};
         } else
         if #[cfg(feature = "sp1-cc")] {
             // Note that in order to run hokulea in zkVM with the sp1-cc proof verified within
