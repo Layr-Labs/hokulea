@@ -4,8 +4,8 @@ name = "canoe-sp1-cc-host"
 edition = "2021"
 
 [dependencies]
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "24462b15c9da843e27a80164c9d5316a1e2f9a35" }
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "24462b15c9da843e27a80164c9d5316a1e2f9a35" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "dad9b9ce41febf0dbd408b350d909a8800ba89e2" }
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "dad9b9ce41febf0dbd408b350d909a8800ba89e2" }
 # 881ba190e758e01e72399df462ac99864930ddb0 is also used by ec6ff219beb831ac744d1569f03483dd601ec618
 #rsp-primitives = { git = "https://github.com/succinctlabs/rsp", rev = "881ba190e758e01e72399df462ac99864930ddb0" } 
 rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.8.2" }
