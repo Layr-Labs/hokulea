@@ -6,8 +6,8 @@ members = [
     "example/preloader",    
     "canoe/bindings",
     "canoe/provider",
-    #"canoe/steel/apps",
-    #"canoe/steel/methods", 
+    "canoe/steel/apps",
+    "canoe/steel/methods", 
     "canoe/sp1-cc/host",
     "canoe/sp1-cc/client",
     "canoe/sp1-cc/vkey-bin",
@@ -146,13 +146,13 @@ canoe-provider = { path = "./canoe/provider", default-features = false  }
 canoe-bindings = { path = "./canoe/bindings", default-features = false  }
 
 # Steel
-#canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
-#canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }
+canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
+canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }
 
-#risc0-zkvm = { version = "3.0.3" }
-#risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.3.0" }
-#risc0-build-ethereum = { version = "3.0" }
-#risc0-build = { version = "3.0", features = ["docker"] }
+risc0-zkvm = { version = "3.0.3", features = ["heap-embedded-alloc", "unstable"] }
+risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }
+risc0-build-ethereum = { version = "3.0" }
+risc0-build = { version = "3.0.3", features = ["unstable"] }
 
 # Sp1-contract-call
 canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false  }
