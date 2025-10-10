@@ -8,5 +8,7 @@ meta.json
 state.bin.gz
 .*.env
 .run.*.env
+canoe/steel/methods/contracts/ImageID.sol
+canoe/steel/methods/contracts/ELF.sol
 .DS_store
 .idea
