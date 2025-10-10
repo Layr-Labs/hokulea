@@ -20,23 +20,23 @@ codegen-units = 1
 lto = "fat"
 
 [workspace.dependencies]
-kona-client = { git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-host = { git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-derive = { version = "0.4.5", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-driver = { version = "0.4.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-executor = { version = "0.4.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-mpt = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-providers-alloy = { version = "0.3.3", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
+kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-derive = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-driver = { version = "0.4.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-executor = { version = "0.4.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-mpt = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-providers-alloy = { version = "0.3.3", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
 # Maili
-kona-genesis = { version = "0.4.5", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-protocol = { version = "0.4.5", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-registry = { version = "0.4.5", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-rpc = { version = "0.3.2", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
-kona-cli = { version = "0.3.2", git = "https://github.com/op-rs/kona", rev = "31241796e226199ece84c78c57b40d9e8389ff5b", default-features = false }
+kona-genesis = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-protocol = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-registry = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-rpc = { version = "0.3.2", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
+kona-cli = { version = "0.3.2", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.3", default-features = false }
 
 # Workspace
 hokulea-host-bin = { path = "bin/host", version = "0.1.0", default-features = false }
@@ -78,7 +78,7 @@ alloy-sol-macro = { version = "1.3.1", default-features = false }
 
 # Execution
 alloy-evm = { version = "0.21.0", default-features = false }
-op-revm = { version = "10.0.0", default-features = false }
+op-revm = { version = "10.1.0", default-features = false }
 
 # OP Alloy
 op-alloy-consensus = { version = "0.20.0", default-features = false }
@@ -136,7 +136,7 @@ serde_json = { version = "1.0.140", default-features = false }
 
 # Ethereum
 unsigned-varint = "0.8.0"
-revm = { version = "29.0.0", default-features = false }
+revm = { version = "29.0.1", default-features = false }
 
 # K/V database
 rocksdb = { version = "0.23.0", default-features = false }
