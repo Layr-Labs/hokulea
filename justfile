@@ -244,7 +244,7 @@ save-all-env env_file run_env_file block_number rollup_config_path='rollup.json'
 
 # save rpc variable in to .devnet.env
 [group('local-env')]
-save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908':
+save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' l1_config_path="kurtosis_l1_config.json":
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
@@ -254,7 +254,8 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
   ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
-  ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"    
+  ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
+  L1_CONFIG_PATH="$(realpath {{l1_config_path}})"    
 
   echo "L1_RPC=$L1_RPC" > {{env_file}}
   echo "L1_BEACON_RPC=$L1_BEACON_RPC" >> {{env_file}}
@@ -262,6 +263,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   echo "ROLLUP_NODE_RPC=$ROLLUP_NODE_RPC" >> {{env_file}}
   echo "EIGENDA_PROXY_RPC=$EIGENDA_PROXY_RPC" >> {{env_file}}
   echo "ROLLUP_CONFIG_PATH=$ROLLUP_CONFIG_PATH" >> {{env_file}}
+  echo "L1_CONFIG_PATH=$L1_CONFIG_PATH" >> {{env_file}}
 
 
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
@@ -306,6 +308,9 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
     source {{run_env_file}}
   set a+
 
+  echo "ROLLUP_CONFIG_PATH $ROLLUP_CONFIG_PATH"
+  echo "ROLLUP_CONFIG_PATH $L1_CONFIG_PATH"
+
   L2_CHAIN_ID=$(cast chain-id --rpc-url $L2_RPC)
   if [ -z "$ROLLUP_CONFIG_PATH" ]; then
     CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--l2-chain-id $L2_CHAIN_ID"
@@ -333,7 +338,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --native \
       --data-dir ./data \
-      --l1-config-path l1_config.json \
+      --l1-config-path $L1_CONFIG_PATH \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
   elif [ "{{native_or_asterisc}}" = "asterisc" ]; then
@@ -367,6 +372,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --l2-chain-id $L2_CHAIN_ID \
       --server \
       --data-dir ./data \
+      --l1-config-path $L1_CONFIG_PATH \
       {{verbosity}}      
   else
     echo "Unknown value for NATIVE_OR_ASTERISC: "{{native_or_asterisc}}""
