@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        justfile-target: [build-native-all, build-client-for-asterisc]
+        justfile-target: [build-native-all]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
