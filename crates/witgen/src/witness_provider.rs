@@ -86,7 +86,7 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
                 let kzg_proof =
                     match hokulea_compute_proof::compute_kzg_proof(encoded_payload.serialize()) {
                         Ok(p) => p,
-                        Err(e) => panic!("cannot generate a kzg proof: {}", e),
+                        Err(e) => panic!("cannot generate a kzg proof: {e}"),
                     };
                 let fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
 

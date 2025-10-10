@@ -3,6 +3,7 @@ use canoe_bindings::{IEigenDACertVerifier, IEigenDACertVerifierBase};
 use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
 
 /// Call respecting solidity interface
+#[allow(clippy::large_enum_variant)]
 pub enum CertVerifierCall {
     /// contract interface for v2 cert
     /// <https://github.com/Layr-Labs/eigenda/blob/f5032bb8683baa2a9eff58443c013f39005d7680/contracts/src/integrations/cert/legacy/IEigenDACertVerifierLegacy.sol#L62>

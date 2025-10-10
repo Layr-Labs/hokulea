@@ -16,7 +16,7 @@ fn load_g1_srs() -> SRS {
     let srs_file_path = "resources/g1.point";
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
     SRS::new(srs_file_path, 268435456, 524288)
-        .unwrap_or_else(|err| panic!("Failed to load SRS file {}: {}", srs_file_path, err))
+        .unwrap_or_else(|err| panic!("Failed to load SRS file {srs_file_path}: {err}"))
 }
 
 /// This function computes a KZG proof for a eigenDA blob
