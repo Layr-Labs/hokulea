@@ -123,9 +123,9 @@ sp1-zkvm = "5.2.1"
 sp1-lib = "5.2.1"
 sp1-core-executor = "5.2.1"
 sp1-prover = "5.2.1"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "dad9b9ce41febf0dbd408b350d909a8800ba89e2" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "dad9b9ce41febf0dbd408b350d909a8800ba89e2" }
-# 881ba190e758e01e72399df462ac99864930ddb0 is also used by dad9b9ce41febf0dbd408b350d909a8800ba89e2
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.2b" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.2b" }
+# reth-1.8.2 is also used by reth-1.8.2b
 rsp-primitives = { git = "https://github.com/succinctlabs/rsp", rev = "reth-1.8.2" } 
 
 # ZKVM deps
