@@ -516,10 +516,7 @@ mod tests {
 
     // (ToDo bx) once there is calldata failover transaction, complete this test
     #[tokio::test]
-    async fn test_load_eigenda_or_calldata_chain_provider_1559_tx_with_ethda_failover() {
-
-        
-    }
+    async fn test_load_eigenda_or_calldata_chain_provider_1559_tx_with_ethda_failover() {}
 
     // for tests below test on next() function, we can test it individually by setting open = true
     // then the data is no longer loaded from chain provider
