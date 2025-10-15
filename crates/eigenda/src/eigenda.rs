@@ -1,7 +1,9 @@
 //! Contains the [EigenDAPreimageSource] and EigenDA blob derivation, which is a concrete
 //! implementation of the [DataAvailabilityProvider] trait for the EigenDA protocol.
 use crate::traits::EigenDAPreimageProvider;
-use crate::{eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind};
+use crate::{
+    eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind, EIGENDA_DERIVATION_VERSION,
+};
 use kona_derive::PipelineErrorKind;
 
 use crate::eigenda_data::EncodedPayload;
@@ -13,7 +15,7 @@ use kona_derive::{
     BlobProvider, ChainProvider, DataAvailabilityProvider, EthereumDataSource, PipelineError,
     PipelineResult,
 };
-use kona_protocol::{BlockInfo, DERIVATION_VERSION_0};
+use kona_protocol::BlockInfo;
 use tracing::warn;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -147,16 +149,7 @@ where
         // eth data defined
         let mut self_contained_data: Vec<EigenDAOrCalldata> = Vec::new();
         for data in &calldata_list {
-            // if data is op channel frame
-            if data[0] == DERIVATION_VERSION_0 {
-                info!(
-                    target = "eth-datasource",
-                    stage = "hokulea_load_encoded_payload",
-                    "use ethda at l1 block number {}",
-                    block_ref.number
-                );
-                self_contained_data.push(EigenDAOrCalldata::Calldata(data.clone()));
-            } else {
+            if data[0] == EIGENDA_DERIVATION_VERSION {
                 // retrieve all data from eigenda
                 match self.eigenda_source.next(data, block_ref.number).await {
                     Err(e) => match e {
@@ -181,6 +174,16 @@ where
                         self_contained_data.push(EigenDAOrCalldata::EigenDA(encoded_payload));
                     }
                 }
+            } else {
+                // it could have been a OP standard frame or invalid derivation version (also known as version byte)
+                // OP downstream can handle it. https://specs.optimism.io/experimental/alt-da.html#example-commitments
+                info!(
+                    target = "eth-datasource",
+                    stage = "hokulea_load_encoded_payload",
+                    "use ethda at l1 block number {}",
+                    block_ref.number
+                );
+                self_contained_data.push(EigenDAOrCalldata::Calldata(data.clone()));
             }
         }
 
@@ -513,7 +516,10 @@ mod tests {
 
     // (ToDo bx) once there is calldata failover transaction, complete this test
     #[tokio::test]
-    async fn test_load_eigenda_or_calldata_chain_provider_1559_tx_with_ethda_failover() {}
+    async fn test_load_eigenda_or_calldata_chain_provider_1559_tx_with_ethda_failover() {
+
+        
+    }
 
     // for tests below test on next() function, we can test it individually by setting open = true
     // then the data is no longer loaded from chain provider
