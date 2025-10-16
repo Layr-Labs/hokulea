@@ -10,9 +10,9 @@ use rust_kzg_bn254_prover::srs::SRS;
 use spin::Lazy;
 
 /// load srs points
-pub static G1_SRS: Lazy<SRS> = Lazy::new(load_g1_srs);
+pub static G1_SRS: Lazy<SRS<'static>> = Lazy::new(load_g1_srs);
 
-fn load_g1_srs() -> SRS {
+fn load_g1_srs() -> SRS<'static> {
     let srs_file_path = "resources/g1.point";
     // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
     SRS::new(srs_file_path, 268435456, 524288)
@@ -29,14 +29,17 @@ pub fn compute_kzg_proof(encoded_payload: &[u8]) -> Result<Bytes, KzgError> {
 /// This function computes a KZG proof for a eigenDA blob
 /// nitro code <https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141>
 /// could refactor in the future, such that both host and client can compute the proof
-pub fn compute_kzg_proof_with_srs(encoded_payload: &[u8], srs: &SRS) -> Result<Bytes, KzgError> {
+pub fn compute_kzg_proof_with_srs<'s>(
+    encoded_payload: &[u8],
+    srs: &SRS<'s>,
+) -> Result<Bytes, KzgError> {
     let mut kzg = KZG::new();
     kzg.calculate_and_store_roots_of_unity(encoded_payload.len() as u64)
         .unwrap();
 
     // The encoded payload is a polynomial presented in its evaluation form
     let blob = Blob::new(encoded_payload).expect("should be able to construct a blob");
-    let input_poly = blob.to_polynomial_eval_form();
+    let input_poly = blob.to_polynomial_eval_form()?;
 
     let commitment = kzg.commit_eval_form(&input_poly, srs)?;
 

@@ -256,7 +256,7 @@ pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
 mod tests {
     use super::*;
     use crate::eigenda_witness::EigenDAWitness;
-    use alloc::vec;
+    use alloc::{borrow::Cow, vec};
     use alloy_primitives::{hex, Bytes, U256};
     use canoe_verifier::CanoeNoOpVerifier;
     use canoe_verifier_address_fetcher::CanoeNoOpVerifierAddressFetcher;
@@ -269,13 +269,28 @@ mod tests {
     // first 128 bytes of resources/g1.point corresponding to 4 g1 points
     pub const G1_POINTS_BYTE: &str = "8000000000000000000000000000000000000000000000000000000000000001cbfc87ecbdcdc23ef5481bb179aaada7f42c22d2dfd52b4655a18c2879c54eea9fb27cc0e2465b3e57a42a051dbfbd8d0b62eec80cd07c46401781deab36ca27c44ab250113840f37622eb001cfbcb1dec55f15e6ea48333ddb63e9d2befecab";
 
+    // the passed in vector must outlive SRS
+    fn load_g1_srs(g1_srs: &mut vec::Vec<G1Affine>) -> SRS {
+        let g1_points_bytes = hex::decode(G1_POINTS_BYTE).unwrap();
+
+        g1_srs.push(read_g1_point_from_bytes_be(&g1_points_bytes[..32]).unwrap());
+        g1_srs.push(read_g1_point_from_bytes_be(&g1_points_bytes[32..64]).unwrap());
+        g1_srs.push(read_g1_point_from_bytes_be(&g1_points_bytes[64..96]).unwrap());
+        g1_srs.push(read_g1_point_from_bytes_be(&g1_points_bytes[96..128]).unwrap());
+        SRS {
+            g1: Cow::Borrowed(g1_srs),
+            order: 4,
+        }
+    }
+
     pub fn compute_kzg_commitment(blob: &Blob) -> Result<G1Point, KzgError> {
         let mut kzg = KZG::new();
         kzg.calculate_and_store_roots_of_unity(blob.len() as u64)
             .unwrap();
 
-        let input_poly = blob.to_polynomial_eval_form();
-        let commitment = kzg.commit_eval_form(&input_poly, &get_g1_points())?;
+        let input_poly = blob.to_polynomial_eval_form()?;
+        let mut srs = vec![];
+        let commitment = kzg.commit_eval_form(&input_poly, &load_g1_srs(&mut srs))?;
 
         // TODO the rust bn254 library should have returned the bytes, or provide a helper
         // for conversion. For both proof and commitment
@@ -299,9 +314,10 @@ mod tests {
         let encoded_payload = EncodedPayload {
             encoded_payload: encoded_payload_inner.into(),
         };
+        let mut srs = vec![];
         let kzg_proof = hokulea_compute_proof::compute_kzg_proof_with_srs(
             encoded_payload.serialize(),
-            &get_g1_points(),
+            &load_g1_srs(&mut srs),
         )
         .expect("should be able to produce a proof");
         let kzg_proof_fixed_bytes: FixedBytes<64> = FixedBytes::from_slice(kzg_proof.as_ref());
@@ -316,21 +332,6 @@ mod tests {
         let kzg_commitment = compute_kzg_commitment(&blob).unwrap();
 
         (blob, kzg_commitment, kzg_proof_fixed_bytes)
-    }
-
-    fn get_g1_points() -> SRS {
-        let g1_points_bytes = hex::decode(G1_POINTS_BYTE).unwrap();
-
-        let g1_srs = vec![
-            read_g1_point_from_bytes_be(&g1_points_bytes[..32]).unwrap(),
-            read_g1_point_from_bytes_be(&g1_points_bytes[32..64]).unwrap(),
-            read_g1_point_from_bytes_be(&g1_points_bytes[64..96]).unwrap(),
-            read_g1_point_from_bytes_be(&g1_points_bytes[96..128]).unwrap(),
-        ];
-        SRS {
-            g1: g1_srs,
-            order: 4,
-        }
     }
 
     // witness data that can be verified correctly with a no op canoe verifier
