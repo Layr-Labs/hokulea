@@ -6,3 +6,6 @@ pub const PAYLOAD_ENCODING_VERSION_0: u8 = 0x0;
 pub const BYTES_PER_FIELD_ELEMENT: usize = 32;
 /// Encoded payload header length in bytes (first field element)
 pub const ENCODED_PAYLOAD_HEADER_LEN_BYTES: usize = 32;
+/// EigenDA Version in OP Derivation Version Byte
+/// See <https://specs.optimism.io/experimental/alt-da.html#example-commitments>
+pub const ALTDA_DERIVATION_VERSION: u8 = 0x1;
