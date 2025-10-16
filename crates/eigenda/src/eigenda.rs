@@ -1,9 +1,7 @@
 //! Contains the [EigenDAPreimageSource] and EigenDA blob derivation, which is a concrete
 //! implementation of the [DataAvailabilityProvider] trait for the EigenDA protocol.
 use crate::traits::EigenDAPreimageProvider;
-use crate::{
-    eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind, EIGENDA_DERIVATION_VERSION,
-};
+use crate::{eigenda_preimage::EigenDAPreimageSource, HokuleaErrorKind, ALTDA_DERIVATION_VERSION};
 use kona_derive::PipelineErrorKind;
 
 use crate::eigenda_data::EncodedPayload;
@@ -149,7 +147,7 @@ where
         // eth data defined
         let mut self_contained_data: Vec<EigenDAOrCalldata> = Vec::new();
         for data in &calldata_list {
-            if data[0] == EIGENDA_DERIVATION_VERSION {
+            if data[0] == ALTDA_DERIVATION_VERSION {
                 // retrieve all data from eigenda
                 match self.eigenda_source.next(data, block_ref.number).await {
                     Err(e) => match e {
