@@ -33,3 +33,4 @@ hokulea-compute-proof.workspace = true
 rust-kzg-bn254-prover.workspace = true
 num.workspace = true
 tokio = { workspace = true, features = ["full"] }
+spin.workspace = true

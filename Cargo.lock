@@ -4402,6 +4402,7 @@ dependencies = [
  "rust-kzg-bn254-prover",
  "rust-kzg-bn254-verifier",
  "serde",
+ "spin 0.10.0",
  "thiserror 2.0.17",
  "tokio",
 ]
@@ -8724,7 +8725,7 @@ checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
 [[package]]
 name = "rust-kzg-bn254-primitives"
 version = "0.1.2"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?rev=4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d#4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?rev=2e057d80470b43b5701ac0ead0844fbdda564bb6#2e057d80470b43b5701ac0ead0844fbdda564bb6"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -8742,12 +8743,13 @@ dependencies = [
 [[package]]
 name = "rust-kzg-bn254-prover"
 version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?rev=4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d#4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?rev=2e057d80470b43b5701ac0ead0844fbdda564bb6#2e057d80470b43b5701ac0ead0844fbdda564bb6"
 dependencies = [
  "ark-bn254",
  "ark-ec",
  "ark-ff 0.5.0",
  "ark-poly",
+ "ark-serialize 0.5.0",
  "ark-std 0.5.0",
  "crossbeam-channel",
  "num-traits",
@@ -8759,7 +8761,7 @@ dependencies = [
 [[package]]
 name = "rust-kzg-bn254-verifier"
 version = "0.1.2"
-source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?rev=4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d#4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d"
+source = "git+https://github.com/Layr-Labs/rust-kzg-bn254.git?rev=2e057d80470b43b5701ac0ead0844fbdda564bb6#2e057d80470b43b5701ac0ead0844fbdda564bb6"
 dependencies = [
  "ark-bn254",
  "ark-ec",
