@@ -39,6 +39,7 @@ pub use errors::{
 mod test_utils;
 
 mod constant;
+pub use constant::ALTDA_DERIVATION_VERSION;
 pub use constant::BYTES_PER_FIELD_ELEMENT;
 pub use constant::ENCODED_PAYLOAD_HEADER_LEN_BYTES;
 pub use constant::PAYLOAD_ENCODING_VERSION_0;
