@@ -30,7 +30,7 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    689598351, 1928425288, 1516312431, 1076850441, 1694801413, 340662279, 609170610, 1102316031,
+    150293372, 1859374714, 98342050, 731396871, 1604934329, 2010445997, 227176607, 214543235,
 ];
 
 /// Determine the active fork in L1 chain. It must match the active fork version used by sp1-cc for that specific
