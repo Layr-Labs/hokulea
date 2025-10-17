@@ -33,7 +33,6 @@ pub trait CanoeVerifier: Clone + Send + 'static {
     /// The function converts validity and altda commitment into journals.
     /// Journals are concatenated in a serialized byte array. The output of
     /// the serialization must be identical to one committed by zkVM.
-    /// Those bytes are never expected to be deserialized.
     fn to_journals_bytes(
         &self,
         cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>,
