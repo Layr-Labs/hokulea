@@ -6,12 +6,15 @@ edition = "2021"
 
 [dependencies]
 eigenda-cert.workspace = true
+canoe-bindings.workspace = true
+alloy-primitives.workspace = true
 
 canoe-verifier = { workspace = true }
 
 cfg-if.workspace = true
 tracing.workspace = true
 serde_json.workspace = true
+bincode.workspace = true
 
 # Steel 
 canoe-steel-methods = { workspace = true }

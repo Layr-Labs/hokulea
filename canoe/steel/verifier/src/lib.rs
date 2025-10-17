@@ -4,10 +4,12 @@ extern crate alloc;
 
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use alloy_primitives::B256;
 use eigenda_cert::AltDACommitment;
 
 use risc0_zkvm::Receipt;
 
+use canoe_bindings::Journal;
 use canoe_steel_methods::CERT_VERIFICATION_ID;
 use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use tracing::info;
@@ -30,7 +32,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
         info!("using CanoeSteelVerifier");
 
         // use default to_journals_bytes implementation
-        let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
+        let journals_bytes = self.to_journals_bytes(cert_validity_pair);
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
@@ -59,5 +61,29 @@ impl CanoeVerifier for CanoeSteelVerifier {
             }
         }
         Ok(())
+    }
+
+    fn to_journals_bytes(
+        &self,
+        cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>,
+    ) -> Vec<u8> {
+        let mut journals: Vec<Journal> = Vec::new();
+        for (altda_commitment, cert_validity) in &cert_validity_pairs {
+            let rlp_bytes = altda_commitment.to_rlp_bytes();
+            assert!(cert_validity.chain_config_hash.is_none());
+
+            let journal = Journal {
+                certVerifierAddress: cert_validity.verifier_address,
+                input: rlp_bytes.into(),
+                blockhash: cert_validity.l1_head_block_hash,
+                output: cert_validity.claimed_validity,
+                l1ChainId: cert_validity.l1_chain_id,
+                chainConfigHash: B256::default(),
+            };
+
+            journals.push(journal);
+        }
+
+        bincode::serialize(&journals).expect("should be able to serialize")
     }
 }

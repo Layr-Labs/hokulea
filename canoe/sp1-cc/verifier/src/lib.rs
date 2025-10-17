@@ -3,8 +3,11 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
+use canoe_bindings::Journal;
 use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use eigenda_cert::AltDACommitment;
+use revm_primitives::hardfork::SpecId;
+use sp1_cc_client_executor::verifiy_chain_config_eth;
 
 use tracing::{info, warn};
 
@@ -27,8 +30,13 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    1437335030, 249599110, 678272083, 1333039736, 1093726219, 566909684, 1461390407, 1199517452,
+    1777037043, 1398335269, 149551801, 141656872, 911486423, 903165919, 1244778574, 1857742015,
 ];
+
+/// Determine the active fork in L1 chain. It must match the active fork version used by sp1-cc for that specific
+/// L1 block height. If there is more active L1 fork, but the verions of sp1-cc used is not up to date. The L1_ACTIVE_FORK
+/// must be kept identical to sp1-cc, but it is best to update sp1-cc version.
+pub const L1_ACTIVE_FORK: SpecId = SpecId::PRAGUE;
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -46,12 +54,13 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
 
         assert!(!cert_validity_pair.is_empty());
 
+        // while transforming to journal bytes, it verifies if chain config hash is correctly set
+        let journals_bytes = self.to_journals_bytes(cert_validity_pair);
+
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
-
-                let journals_bytes = CanoeVerifier::to_journals_bytes(self, cert_validity_pair);
 
                 // if not in dev mode, the receipt should be empty
                 if canoe_proof_bytes.is_some() {
@@ -68,5 +77,37 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             }
         }
         Ok(())
+    }
+
+    fn to_journals_bytes(
+        &self,
+        cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>,
+    ) -> Vec<u8> {
+        let mut journals: Vec<Journal> = Vec::new();
+        for (altda_commitment, cert_validity) in &cert_validity_pairs {
+            let rlp_bytes = altda_commitment.to_rlp_bytes();
+
+            let chain_config_hash = cert_validity
+                .chain_config_hash
+                .expect("sp1cc verifier expects l1 chain config hash");
+
+            // check chain_config_hash supplied by the host is indeed correct with respect to l1 chain id
+            // and active fork
+            verifiy_chain_config_eth(chain_config_hash, cert_validity.l1_chain_id, L1_ACTIVE_FORK)
+                .expect("sp1cc canoe verifies chain config should have succeeded");
+
+            let journal = Journal {
+                certVerifierAddress: cert_validity.verifier_address,
+                input: rlp_bytes.into(),
+                blockhash: cert_validity.l1_head_block_hash,
+                output: cert_validity.claimed_validity,
+                l1ChainId: cert_validity.l1_chain_id,
+                chainConfigHash: cert_validity.l1_head_block_hash,
+            };
+
+            journals.push(journal);
+        }
+
+        bincode::serialize(&journals).expect("should be able to serialize")
     }
 }

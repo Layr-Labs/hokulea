@@ -18,6 +18,9 @@ pub struct CertValidity {
     /// is not available in this struct, we take assumptions that no two block number
     /// will contain the same block hash
     pub l1_chain_id: u64,
+    /// chain config hash that not only includes l1_chain_id but other information like
+    /// fork activation time
+    pub chain_config_hash: Option<B256>,
     /// verfier address
     pub verifier_address: Address,
 }

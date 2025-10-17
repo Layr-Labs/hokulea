@@ -43,6 +43,10 @@ pub trait CanoeProvider: Clone + Send + 'static {
         &self,
         _canoe_inputs: Vec<CanoeInput>,
     ) -> Option<Result<Self::Receipt>>;
+
+    /// get_config_hash allows getting l1 config hash from receipt. Note some backend like steel does not
+    /// need it, and return None. It is up to the implementer to decide if its CanoeProvider provides it
+    fn get_config_hash(&self, receipt: &Self::Receipt) -> Option<B256>;
 }
 
 #[derive(Clone)]
@@ -56,6 +60,10 @@ impl CanoeProvider for CanoeNoOpProvider {
         &self,
         _canoe_inputs: Vec<CanoeInput>,
     ) -> Option<Result<Self::Receipt>> {
+        None
+    }
+
+    fn get_config_hash(&self, _receipt: &Self::Receipt) -> Option<B256> {
         None
     }
 }

@@ -15,7 +15,6 @@
 #![allow(unused_doc_comments)]
 #![no_main]
 
-use alloy_sol_types::SolValue;
 use risc0_steel::{
     ethereum::{EthEvmInput, ETH_SEPOLIA_CHAIN_SPEC, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC},    
     Contract,
@@ -26,6 +25,8 @@ use canoe_bindings::{
     Journal, StatusCode
 };
 use canoe_provider::{CanoeInput, CertVerifierCall};
+use alloy_primitives::B256;
+use bincode;
 
 risc0_zkvm::guest::entry!(main);
 
@@ -55,11 +56,12 @@ fn main() {
         _ => input.into_env(&EthChainSpec::new_single(l1_chain_id, Default::default())),
     };
 
-    // Those journals are concatenated in a serialized byte array which can be committed
-    // by the zkVM. The hokulea program independently reproduces the serialized journals, and verifies
-    // if zkVM has produced the proof for the exact serialized bytes.
-    // Those bytes are never expected to be deserialized.
-    let mut journals: Vec<u8> = vec![];
+    assert_eq!(l1_head_block_number, env.header().number);
+
+    // Those journals are pushed into a vector and later serialized in a byte array which can be committed
+    // by the zkVM. To verify if zkVM has produced the proof for the exact serialized journals, canoe verifier
+    // verifies the zkVM proof against the commited journals.
+    let mut journals: Vec<Journal> = vec![];
     for canoe_input in canoe_inputs.iter() {
         // Prepare the function call and call the function
         let is_valid = match CertVerifierCall::build(&canoe_input.altda_commitment) {
@@ -81,9 +83,12 @@ fn main() {
             blockhash: l1_head_block_hash,
             output: is_valid,
             l1ChainId: l1_chain_id,
+            chainConfigHash: B256::default(), // steel does not have the problem to pin chain Config
         };
-        journals.extend(journal.abi_encode());
+        journals.push(journal);
     }
 
-    env::commit_slice(&journals);
+    let journal_bytes = bincode::serialize(&journals).expect("should be able to serialize");
+
+    env::commit_slice(&journal_bytes);
 }

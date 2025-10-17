@@ -8,9 +8,13 @@ edition = "2021"
 eigenda-cert.workspace = true
 
 canoe-verifier = { workspace = true }
+canoe-bindings = { workspace = true }
+sp1-cc-client-executor = { workspace = true }
 
 cfg-if.workspace = true
 tracing.workspace = true
 
 sp1-lib = { workspace = true, features = ["verify"]}
 sha2 = { workspace = true }
+bincode = { workspace = true }
+revm-primitives = { workspace = true }

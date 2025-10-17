@@ -1142,6 +1142,7 @@ name = "canoe-bindings"
 version = "0.1.0"
 dependencies = [
  "alloy-sol-types",
+ "serde",
 ]
 
 [[package]]
@@ -1194,7 +1195,8 @@ dependencies = [
 name = "cert-verification-guests"
 version = "0.1.0"
 dependencies = [
- "alloy-sol-types",
+ "alloy-primitives",
+ "bincode",
  "canoe-bindings",
  "canoe-provider",
  "risc0-steel",

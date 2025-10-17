@@ -2,6 +2,7 @@
 use std::str::FromStr;
 use std::time::Instant;
 
+use alloy_primitives::B256;
 use canoe_bindings::StatusCode;
 
 use risc0_steel::{
@@ -47,6 +48,11 @@ impl CanoeProvider for CanoeSteelProvider {
         }
 
         Some(get_steel_proof(canoe_inputs, &self.eth_rpc_url).await)
+    }
+
+    // steel does not require config hash to pin l1 chain config
+    fn get_config_hash(&self, _receipt: &Self::Receipt) -> Option<B256> {
+        None
     }
 }
 
