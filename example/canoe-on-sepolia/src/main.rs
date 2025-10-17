@@ -66,6 +66,7 @@ async fn main() -> anyhow::Result<()> {
         l1_chain_id: 11155111,
         verifier_address: canoe_address_fetcher
             .fetch_address(11155111, &altda_commitment.versioned_cert)?,
+        chain_config_hash: None,
     };
     verify_canoe_proof(
         cert_validity.clone(),

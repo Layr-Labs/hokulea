@@ -23,18 +23,21 @@ sol! {
     /// from a trusted source from the hokulea client's point. The
     /// output are taken based on claims by the host, therefore it
     /// needs to be verified against. Since the output is a deterministic
-    /// function of (blockhash, input, verifierAddress, chain_id),
+    /// function of (blockhash, input, verifierAddress, chain_id,
+    /// l1_chain_config_hash).
     /// the hokulea client can use output field of the journal committed
     /// by zkVM, and its trustness is protected by the zk validity proof.
     /// After comparing the supplied output by the host, and the
     /// output from the journal, the client can safely consumes the
     /// DA certificate.
+    #[derive(serde::Serialize, serde::Deserialize, Default)]
     struct Journal {
         bytes32 blockhash;
         address certVerifierAddress;
         bytes input;
         bool output;
         uint64 l1ChainId;
+        bytes32 chainConfigHash;
     }
 }
 

@@ -31,10 +31,13 @@ where
 {
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
     let boot_info_chain_id = boot_info.rollup_config.l1_chain_id;
-
     // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM
     // force canoe verifier to use l1 chain id from rollup config.
     // it assumes the l1_chain_id from boot_info is trusted or verifiable at early or later stage
+    //
+    // Note, the chain_config_hash is not provided by via boot info. The l1 boot info is included only after
+    // kona 1.1.3 release. For backward compatibility, we accept the hash returned from the certValidity but
+    // verify it inside Canoe Verifier
     witness
         .validities
         .iter_mut()

@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 alloy-sol-types = { workspace = true, features = ["json"]}
+serde.workspace = true

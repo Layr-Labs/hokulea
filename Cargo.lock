@@ -2706,6 +2706,7 @@ name = "canoe-bindings"
 version = "0.1.0"
 dependencies = [
  "alloy-sol-types",
+ "serde",
 ]
 
 [[package]]
@@ -2760,10 +2761,14 @@ dependencies = [
 name = "canoe-sp1-cc-verifier"
 version = "0.1.0"
 dependencies = [
+ "bincode",
+ "canoe-bindings",
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
+ "revm-primitives 18.0.0",
  "sha2 0.10.9",
+ "sp1-cc-client-executor",
  "sp1-lib",
  "tracing",
 ]
@@ -2780,6 +2785,7 @@ dependencies = [
 name = "canoe-steel-apps"
 version = "0.1.0"
 dependencies = [
+ "alloy-primitives 1.2.0",
  "anyhow",
  "async-trait",
  "canoe-bindings",
@@ -2808,6 +2814,9 @@ dependencies = [
 name = "canoe-steel-verifier"
 version = "0.1.0"
 dependencies = [
+ "alloy-primitives 1.2.0",
+ "bincode",
+ "canoe-bindings",
  "canoe-steel-methods",
  "canoe-verifier",
  "cfg-if",
@@ -2822,8 +2831,6 @@ name = "canoe-verifier"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.2.0",
- "alloy-sol-types",
- "canoe-bindings",
  "eigenda-cert",
  "serde",
  "thiserror 2.0.12",
