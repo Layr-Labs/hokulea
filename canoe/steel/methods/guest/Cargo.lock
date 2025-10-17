@@ -1088,7 +1088,7 @@ dependencies = [
 name = "cert-verification-guests"
 version = "0.1.0"
 dependencies = [
- "alloy-sol-types",
+ "alloy-primitives",
  "bincode",
  "canoe-bindings",
  "canoe-provider",
