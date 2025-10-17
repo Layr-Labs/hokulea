@@ -187,7 +187,7 @@ where
         &boot_info,
         &wit,
         oracle.clone(),
-        canoe_provider,
+        canoe_provider.clone(),
         canoe_address_fetcher,
     )
     .await?;
@@ -200,6 +200,19 @@ where
     // For Steel, use CanoeSteelProvider to generate such proof
     // For verification in non zkVM context, the proof can be passed as part of serialized bytes
     if let Some(proof) = canoe_proof {
+        // chain_config_hash will be verified later within zkVM
+        match canoe_provider.get_config_hash(&proof) {
+            // for sp1-cc that requires verification of chain config hash
+            Some(chain_config_hash) => wit
+                .validities
+                .iter_mut()
+                .for_each(|j| j.1.chain_config_hash = Some(chain_config_hash)),
+            // for steel that does not requires verification of chain config hash
+            None => wit
+                .validities
+                .iter_mut()
+                .for_each(|j| j.1.chain_config_hash = None),
+        };
         wit.canoe_proof_bytes = Some(serde_json::to_vec(&proof).expect("serde error"));
     }
 

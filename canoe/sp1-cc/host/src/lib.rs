@@ -1,9 +1,9 @@
-use alloy_primitives::Address;
+use alloy_primitives::{Address, B256};
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::{sol_data::Bool, SolType};
 use anyhow::Result;
 use async_trait::async_trait;
-use canoe_bindings::StatusCode;
+use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
@@ -79,6 +79,17 @@ impl CanoeProvider for CanoeSp1CCProvider {
 
         Some(get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await)
     }
+
+    fn get_config_hash(&self, receipt: &Self::Receipt) -> Option<B256> {
+        let journals: Vec<Journal> = bincode::deserialize(receipt.public_values.as_slice())
+            .expect("should be able to deserialize to journals");
+        assert!(!journals.is_empty());
+        let chain_config_hash = journals[0].chainConfigHash;
+        for journal in journals {
+            assert_eq!(chain_config_hash, journal.chainConfigHash);
+        }
+        Some(chain_config_hash)
+    }
 }
 
 /// A canoe provider implementation with Sp1 contract call
@@ -96,7 +107,10 @@ pub struct CanoeSp1CCReducedProofProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCReducedProofProvider {
-    type Receipt = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
+    type Receipt = (
+        sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>,
+        Vec<u8>,
+    );
 
     async fn create_certs_validity_proof(
         &self,
@@ -109,13 +123,26 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
 
         match get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await {
             Ok(proof) => {
+                let journals_bytes = proof.public_values.to_vec();
                 let SP1Proof::Compressed(proof) = proof.proof else {
                     panic!("cannot get Sp1ReducedProof")
                 };
-                Some(Ok(*proof))
+                Some(Ok((*proof, journals_bytes)))
             }
             Err(e) => Some(Err(e)),
         }
+    }
+
+    fn get_config_hash(&self, receipt: &Self::Receipt) -> Option<B256> {
+        let journals: Vec<Journal> = bincode::deserialize(receipt.1.as_slice())
+            .expect("should be able to deserialize to journals");
+        assert!(!journals.is_empty());
+        let chain_config_hash = journals[0].chainConfigHash;
+        // all chainConfigHash must be identical
+        for journal in journals {
+            assert_eq!(chain_config_hash, journal.chainConfigHash);
+        }
+        Some(chain_config_hash)
     }
 }
 
