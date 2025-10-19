@@ -102,7 +102,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 blockhash: cert_validity.l1_head_block_hash,
                 output: cert_validity.claimed_validity,
                 l1ChainId: cert_validity.l1_chain_id,
-                chainConfigHash: cert_validity.l1_head_block_hash,
+                chainConfigHash: chain_config_hash,
             };
 
             journals.push(journal);
