@@ -66,6 +66,7 @@ pub struct CanoeSp1CCProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCProvider {
+    type Proof = sp1_sdk::SP1ProofWithPublicValues;
     type Receipt = sp1_sdk::SP1ProofWithPublicValues;
 
     async fn create_certs_validity_proof(
@@ -90,6 +91,10 @@ impl CanoeProvider for CanoeSp1CCProvider {
         }
         Some(chain_config_hash)
     }
+
+    fn get_recursive_proof(&self, receipt: &Self::Receipt) -> Option<Self::Proof> {
+        Some(receipt.clone())
+    }
 }
 
 /// A canoe provider implementation with Sp1 contract call
@@ -107,10 +112,8 @@ pub struct CanoeSp1CCReducedProofProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCReducedProofProvider {
-    type Receipt = (
-        sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>,
-        Vec<u8>,
-    );
+    type Proof = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
+    type Receipt = (Self::Proof, Vec<u8>);
 
     async fn create_certs_validity_proof(
         &self,
@@ -143,6 +146,10 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             assert_eq!(chain_config_hash, journal.chainConfigHash);
         }
         Some(chain_config_hash)
+    }
+
+    fn get_recursive_proof(&self, receipt: &Self::Receipt) -> Option<Self::Proof> {
+        Some(receipt.0.clone())
     }
 }
 
