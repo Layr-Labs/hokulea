@@ -213,7 +213,13 @@ where
                 .iter_mut()
                 .for_each(|j| j.1.chain_config_hash = None),
         };
-        wit.canoe_proof_bytes = Some(serde_json::to_vec(&proof).expect("serde error"));
+        match canoe_provider.get_recursive_proof(&proof) {
+            Some(recursive_proof) => {
+                wit.canoe_proof_bytes =
+                    Some(serde_json::to_vec(&recursive_proof).expect("serde error"))
+            }
+            None => wit.canoe_proof_bytes = None,
+        }
     }
 
     Ok(wit)
