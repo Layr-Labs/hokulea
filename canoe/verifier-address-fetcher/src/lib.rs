@@ -59,7 +59,7 @@ fn cert_verifier_address(
     chain_id: u64,
     versioned_cert: &EigenDAVersionedCert,
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
-    // all cert version usse the new interface
+    // all cert version use the new interface
     // https://github.com/Layr-Labs/eigenda/blob/e51dcc5f2919c952bc8f603d1269528ee5373ad1/contracts/src/integrations/cert/interfaces/IEigenDACertVerifierBase.sol#L11
     match &versioned_cert {
         EigenDAVersionedCert::V2(_) => cert_verifier_address_abi_encode_interface(chain_id),
