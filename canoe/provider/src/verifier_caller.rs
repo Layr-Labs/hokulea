@@ -3,7 +3,6 @@ use canoe_bindings::IEigenDACertVerifierBase;
 use eigenda_cert::{AltDACommitment, EigenDACertV3, EigenDAVersionedCert};
 
 /// Call respecting solidity interface
-/// We intentionally remove the support for LegacyV2Interface
 #[allow(clippy::large_enum_variant)]
 pub enum CertVerifierCall {
     /// Base is compatible with Router and calling V3 directly
