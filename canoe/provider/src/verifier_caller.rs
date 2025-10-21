@@ -15,7 +15,7 @@ impl CertVerifierCall {
     /// convert eigenda cert type into its solidity type that works with solidity cert verifier interface
     pub fn build(altda_commitment: &AltDACommitment) -> Self {
         match &altda_commitment.versioned_cert {
-            // first convert v2 cert into v3 cert, then use new solidity interface
+            // convert v2 cert into v3 cert in order to call Router/CertVerifier which only supports version >= 3
             EigenDAVersionedCert::V2(v2_cert) => {
                 let v3_cert: EigenDACertV3 = v2_cert.into();
                 let v3_soltype_cert = v3_cert.to_sol();
