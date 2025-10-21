@@ -36,7 +36,7 @@ impl EigenDACertV3 {
     }
 }
 
-// V3 cert is swap members for V2 cert
+// V2 cert is equivalent to the V3 cert, except for swapping field orderings.
 // https://github.com/Layr-Labs/eigenda/blob/e51dcc5f2919c952bc8f603d1269528ee5373ad1/api/clients/v2/coretypes/eigenda_cert.go#L341
 impl From<&EigenDACertV2> for EigenDACertV3 {
     fn from(v2cert: &EigenDACertV2) -> EigenDACertV3 {
