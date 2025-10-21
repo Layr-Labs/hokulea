@@ -65,7 +65,6 @@ fn main() {
     for canoe_input in canoe_inputs.iter() {
         // Prepare the function call and call the function
         let is_valid = match CertVerifierCall::build(&canoe_input.altda_commitment) {
-            CertVerifierCall::LegacyV2Interface(call) => Contract::new(canoe_input.verifier_address, &env).call_builder(&call).call(),
             CertVerifierCall::ABIEncodeInterface(call) => {
                 let status = Contract::new(canoe_input.verifier_address, &env).call_builder(&call).call();
                 status == StatusCode::SUCCESS as u8
