@@ -4,7 +4,7 @@ use alloy_rlp::{Encodable, RlpDecodable, RlpEncodable};
 use canoe_bindings;
 use serde::{Deserialize, Serialize};
 
-use crate::{BatchHeaderV2, BlobInclusionInfo, EigenDACertV2, NonSignerStakesAndSignature};
+use crate::{BatchHeaderV2, BlobInclusionInfo, NonSignerStakesAndSignature};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -32,19 +32,6 @@ impl EigenDACertV3 {
             nonSignerStakesAndSignature: self.nonsigner_stake_and_signature.to_sol(),
             // solidity translate of bytes is alloy-primitives::Bytes
             signedQuorumNumbers: self.signed_quorum_numbers.clone(),
-        }
-    }
-}
-
-// V2 cert is equivalent to the V3 cert, except for swapping field orderings.
-// https://github.com/Layr-Labs/eigenda/blob/e51dcc5f2919c952bc8f603d1269528ee5373ad1/api/clients/v2/coretypes/eigenda_cert.go#L341
-impl From<&EigenDACertV2> for EigenDACertV3 {
-    fn from(v2cert: &EigenDACertV2) -> EigenDACertV3 {
-        EigenDACertV3 {
-            batch_header_v2: v2cert.batch_header_v2.clone(),
-            blob_inclusion_info: v2cert.blob_inclusion_info.clone(),
-            nonsigner_stake_and_signature: v2cert.nonsigner_stake_and_signature.clone(),
-            signed_quorum_numbers: v2cert.signed_quorum_numbers.clone(),
         }
     }
 }

@@ -1,6 +1,6 @@
 use alloy_primitives::{Address, B256};
 use alloy_rpc_types::BlockNumberOrTag;
-use alloy_sol_types::SolType;
+use alloy_sol_types::{sol_data::Bool, SolType};
 use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{Journal, StatusCode};
@@ -204,6 +204,19 @@ async fn get_sp1_cc_proof(
     // pre populate the state
     for canoe_input in canoe_inputs.iter() {
         match CertVerifierCall::build(&canoe_input.altda_commitment) {
+            CertVerifierCall::LegacyV2Interface(call) => {
+                let contract_input =
+                    ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
+                let returns_bytes = sketch
+                    .call_raw(&contract_input)
+                    .await
+                    .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+
+                let is_valid = Bool::abi_decode(&returns_bytes).expect("deserialize returns_bytes");
+                if is_valid != canoe_input.claimed_validity {
+                    panic!("in the host executor part, executor arrives to a different answer than the claimed answer. Something inconsistent in the view of eigenda-proxy and zkVM");
+                }
+            }
             CertVerifierCall::ABIEncodeInterface(call) => {
                 let contract_input =
                     ContractInput::new_call(canoe_input.verifier_address, Address::default(), call);
