@@ -36,7 +36,7 @@ pub const V_KEY: [u32; 8] = [
 /// Determine the active fork in L1 chain. It must match the active fork version used by sp1-cc for that specific
 /// L1 block height. If there is more active L1 fork, but the verions of sp1-cc used is not up to date. The L1_ACTIVE_FORK
 /// must be kept identical to sp1-cc, but it is best to update sp1-cc version.
-pub const L1_ACTIVE_FORK: SpecId = SpecId::PRAGUE;
+pub const L1_ACTIVE_FORK: SpecId = SpecId::OSAKA;
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
