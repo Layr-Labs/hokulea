@@ -200,6 +200,9 @@ where
     // For Steel, use CanoeSteelProvider to generate such proof
     // For verification in non zkVM context, the proof can be passed as part of serialized bytes
     if let Some(proof) = canoe_proof {
+        // feel free to use any tools to serialize and deserialize the proof. In this example, serde_json
+        // is used for convenience. For verifying the recursive proof, the proof is typically deserialized
+        // first, then feed to zkVM directly via write_proof as opposed to deserialized within zkVM.
         wit.canoe_proof_bytes = Some(serde_json::to_vec(&proof).expect("serde error"))
     }
 

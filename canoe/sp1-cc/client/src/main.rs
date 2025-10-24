@@ -2,7 +2,7 @@
 sp1_zkvm::entrypoint!(main);
 
 use alloy_primitives::Address;
-use alloy_sol_types::{sol_data::Bool, SolType};
+use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CertVerifierCall};
 use sp1_cc_client_executor::{io::EvmSketchInput, AnchorType, ClientExecutor, ContractInput};
@@ -43,10 +43,9 @@ pub fn main() {
     let l1_chain_id = executor.chain_spec.chain().id();
     assert!(l1_chain_id_from_canoe_input == l1_chain_id);
 
-    // Those journals are pushed into a vector and later serialized in a byte array which can be committed
-    // by the zkVM. To verify if zkVM has produced the proof for the exact serialized journals, canoe verifier
-    // verifies the zkVM proof against the commited journals.
-    let mut journals: Vec<Journal> = vec![];
+    // Those journals are pushed into a byte array which can be committed by the zkVM.
+    // The journal are not meant to be deserialized
+    let mut journals_bytes: Vec<u8> = vec![];
     // executes all calls, then combines and commits all journals
     for canoe_input in canoe_inputs.iter() {
         let (returns, anchor_hash, chain_config_hash, anchor_type) =
@@ -127,14 +126,8 @@ pub fn main() {
             l1ChainId: l1_chain_id,
             chainConfigHash: chain_config_hash,
         };
-        journals.push(journal);
+        journals_bytes.extend_from_slice(&journal.abi_encode_packed());
     }
-
-    // use bincode to serialize, such that it can be deserialized to parse the commited content. All the
-    // material are vector, and said to be deterministic.
-    // bincode is also used in op-succinct aggregate program
-    // https://github.com/succinctlabs/op-succinct/blob/c30c5a083fdc7e2da99ece249ca2fffb7d2498e5/programs/aggregation/src/main.rs#L43
-    let journals_bytes = bincode::serialize(&journals).expect("should be able to serialize");
 
     // Commit journals altogether
     sp1_zkvm::io::commit_slice(&journals_bytes);

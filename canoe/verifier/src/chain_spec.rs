@@ -11,16 +11,19 @@ pub fn derive_chain_config_hash(
     l1_head_block_number: u64,
 ) -> SpecId {
     match l1_chain_id {
+        // mainnet
         1 => spec_by_timestamp_and_block_number(
             MAINNET.as_ref(),
             l1_head_block_timestamp,
             l1_head_block_number,
         ),
+        // sepolia
         11155111 => spec_by_timestamp_and_block_number(
             SEPOLIA.as_ref(),
             l1_head_block_timestamp,
             l1_head_block_number,
         ),
+        // kurtosis devnet
         3151908 => {
             let chain_spec = create_kurtosis_chain_spec();
             spec_by_timestamp_and_block_number(

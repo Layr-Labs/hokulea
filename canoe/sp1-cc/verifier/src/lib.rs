@@ -34,7 +34,7 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    1643941578, 715951059, 1788838312, 1249088288, 1765888335, 45618231, 776381573, 1059800200,
+    68762863, 632313373, 71926260, 984825429, 497550479, 1252562262, 591368209, 1620507202,
 ];
 
 #[derive(Clone)]
@@ -82,10 +82,15 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         &self,
         cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>,
     ) -> Vec<u8> {
-        let mut journals: Vec<Journal> = Vec::new();
+        let mut journals_bytes: Vec<u8> = Vec::new();
         for (altda_commitment, cert_validity) in &cert_validity_pairs {
             let rlp_bytes = altda_commitment.to_rlp_bytes();
 
+            // compute chain config hash locally and commit to journal. If the journal is different from
+            // the one commited within zkVM, the verification would fail.
+            // The library to determine chain spec comes from reth. And by checking the equality, only
+            // the sp1-cc updating to the correct fork version can produce a correct output. Or downgrade
+            // or patch the reth library such that produces an older fork.
             let chain_config_hash_derive = derive_chain_config_hash(
                 cert_validity.l1_chain_id,
                 cert_validity.l1_head_block_timestamp,
@@ -100,11 +105,9 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 l1ChainId: cert_validity.l1_chain_id,
                 chainConfigHash: chain_config_hash_derive,
             };
-
-            journals.push(journal);
+            journals_bytes.extend_from_slice(&journal.abi_encode_packed());
         }
-
-        bincode::serialize(&journals).expect("should be able to serialize")
+        journals_bytes
     }
 }
 

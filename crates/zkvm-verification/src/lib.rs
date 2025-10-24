@@ -23,7 +23,7 @@ use alloc::sync::Arc;
 // The function takes an oracle at whole, and assume what is inside the oracle will be or already been verified
 // by kona or upstream secure integration.
 // The functions also relies on the header corresponding to l1_head from BootInfo. It is critical for the security
-// that the oracle that provides the header has already been verified, or evetually verified without mutation.
+// that the oracle that provides the header has already been verified, or eventually verified without mutation.
 #[allow(clippy::type_complexity)]
 pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
@@ -50,7 +50,9 @@ where
     // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM
     // force canoe verifier to use l1 chain id from rollup config.
     // it assumes the l1_chain_id from boot_info is trusted or verifiable at early or later stage
-    // it assumes the header from oracle is trusted or verifiable at early or later stage
+    // it assumes the header from oracle is trusted or verifiable at early or later stage.
+    // For kailua, the check is at https://github.com/boundless-xyz/kailua/blob/2414297a5f9feb98365ef6d88634bcd181a1934b/crates/kona/src/client/stateless.rs#L61
+    // For op-succinct, the check is at https://github.com/succinctlabs/op-succinct/blob/b0f190e634ab5b03a3028d4ef88e207186b48337/programs/range/eigenda/src/main.rs#L32
     witness
         .validities
         .iter_mut()
