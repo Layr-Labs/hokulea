@@ -5,7 +5,6 @@ extern crate alloc;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloy_primitives::B256;
-use alloy_sol_types::SolValue;
 use eigenda_cert::AltDACommitment;
 
 use risc0_zkvm::Receipt;
@@ -68,22 +67,24 @@ impl CanoeVerifier for CanoeSteelVerifier {
         &self,
         cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>,
     ) -> Vec<u8> {
-        let mut journals_bytes: Vec<u8> = Vec::new();
+        let mut journals: Vec<Journal> = Vec::new();
         for (altda_commitment, cert_validity) in &cert_validity_pairs {
             let rlp_bytes = altda_commitment.to_rlp_bytes();
 
             let journal = Journal {
+                blockNumber: cert_validity.l1_head_block_number,
                 certVerifierAddress: cert_validity.verifier_address,
                 input: rlp_bytes.into(),
                 blockhash: cert_validity.l1_head_block_hash,
                 output: cert_validity.claimed_validity,
                 l1ChainId: cert_validity.l1_chain_id,
                 chainConfigHash: B256::default(),
+                chainSpecHash: B256::default(),
             };
 
-            journals_bytes.extend_from_slice(&journal.abi_encode_packed());
+            journals.push(journal);
         }
 
-        journals_bytes
+        bincode::serialize(&journals).expect("should be able to serialize")
     }
 }

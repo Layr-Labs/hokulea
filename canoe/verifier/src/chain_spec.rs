@@ -1,11 +1,11 @@
 use alloy_genesis::Genesis;
+use alloy_primitives::B256;
 use reth_chainspec::{Chain, ChainSpec, ChainSpecBuilder, MAINNET, SEPOLIA};
 use reth_evm::spec_by_timestamp_and_block_number;
 use revm_primitives::hardfork::SpecId;
 
-/// derive_chain_config_hash locates the active fork first, then compute the chain
-/// config hash.
-pub fn derive_chain_config_hash(
+/// derive_chain_spec_id by locating the active fork with timestamp and block number
+pub fn derive_chain_spec_id(
     l1_chain_id: u64,
     l1_head_block_timestamp: u64,
     l1_head_block_number: u64,
@@ -31,6 +31,22 @@ pub fn derive_chain_config_hash(
                 l1_head_block_timestamp,
                 l1_head_block_number,
             )
+        }
+        _ => panic!("unsupported chain id"),
+    }
+}
+
+/// derive_chain_spec locates spec by chain id
+pub fn derive_chain_spec_genesis_hash(l1_chain_id: u64) -> B256 {
+    match l1_chain_id {
+        // mainnet
+        1 => MAINNET.genesis_hash(),
+        // sepolia
+        11155111 => SEPOLIA.genesis_hash(),
+        // kurtosis devnet
+        3151908 => {
+            let chain_spec = create_kurtosis_chain_spec();
+            chain_spec.genesis_hash()
         }
         _ => panic!("unsupported chain id"),
     }
@@ -63,6 +79,7 @@ mod tests {
     #[test]
     fn test_create_kurtosis_chain_spec() {
         let chain_spec = create_kurtosis_chain_spec();
+        println!("SEPOLIA {:?}", SEPOLIA.genesis());
         let spec_id = spec_by_timestamp_and_block_number(&chain_spec, 100, 100);
         assert_eq!(spec_id, SpecId::PRAGUE);
     }

@@ -2442,10 +2442,12 @@ version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.4.0",
  "alloy-sol-types",
+ "bincode",
  "canoe-bindings",
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=reth-1.8.2)",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
  "sp1-lib",
@@ -2493,7 +2495,7 @@ name = "canoe-steel-verifier"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.4.0",
- "alloy-sol-types",
+ "bincode",
  "canoe-bindings",
  "canoe-steel-methods",
  "canoe-verifier",

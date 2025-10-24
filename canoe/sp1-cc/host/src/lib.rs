@@ -3,7 +3,7 @@ use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::{sol_data::Bool, SolType};
 use anyhow::Result;
 use async_trait::async_trait;
-use canoe_bindings::StatusCode;
+use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
@@ -16,7 +16,7 @@ use std::{
     str::FromStr,
     time::{Duration, Instant},
 };
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 use url::Url;
 
 use rsp_primitives::genesis::genesis_from_json;
@@ -272,6 +272,11 @@ async fn get_sp1_cc_proof(
 
         proof
     };
+
+    debug!(
+        "sp1cc proof {:?}",
+        bincode::deserialize::<Vec<Journal>>(proof.public_values.as_slice())
+    );
 
     let elapsed = start.elapsed();
     info!(

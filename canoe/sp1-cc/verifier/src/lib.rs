@@ -1,5 +1,4 @@
 //! implement [CanoeVerifier] with sp1-cc
-#![no_std]
 extern crate alloc;
 
 use alloc::{
@@ -11,6 +10,7 @@ use alloy_sol_types::SolValue;
 use canoe_bindings::Journal;
 use canoe_verifier::{chain_spec, CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use eigenda_cert::AltDACommitment;
+use rsp_primitives::genesis::Genesis;
 use sp1_cc_client_executor::ChainConfig;
 
 use tracing::{info, warn};
@@ -34,7 +34,7 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    68762863, 632313373, 71926260, 984825429, 497550479, 1252562262, 591368209, 1620507202,
+    1754106394, 684473713, 1582925105, 653827562, 1186559704, 577420062, 1728605567, 1019804169,
 ];
 
 #[derive(Clone)]
@@ -53,13 +53,13 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
 
         assert!(!cert_validity_pair.is_empty());
 
-        // while transforming to journal bytes, it verifies if chain config hash is correctly set
-        let journals_bytes = self.to_journals_bytes(cert_validity_pair);
-
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
+
+                // while transforming to journal bytes, it verifies if chain config hash is correctly set
+                let journals_bytes = self.to_journals_bytes(cert_validity_pair);
 
                 // if not in dev mode, the receipt should be empty
                 if canoe_proof_bytes.is_some() {
@@ -82,7 +82,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         &self,
         cert_validity_pairs: Vec<(AltDACommitment, CertValidity)>,
     ) -> Vec<u8> {
-        let mut journals_bytes: Vec<u8> = Vec::new();
+        let mut journals: Vec<Journal> = Vec::new();
         for (altda_commitment, cert_validity) in &cert_validity_pairs {
             let rlp_bytes = altda_commitment.to_rlp_bytes();
 
@@ -97,17 +97,22 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 cert_validity.l1_head_block_number,
             );
 
+            // genesis hash
+            let rsp_genesis_hash = rsp_genesis_hash(cert_validity.l1_chain_id);
+
             let journal = Journal {
                 certVerifierAddress: cert_validity.verifier_address,
                 input: rlp_bytes.into(),
                 blockhash: cert_validity.l1_head_block_hash,
                 output: cert_validity.claimed_validity,
                 l1ChainId: cert_validity.l1_chain_id,
+                blockNumber: cert_validity.l1_head_block_number,
+                chainSpecHash: rsp_genesis_hash,
                 chainConfigHash: chain_config_hash_derive,
             };
-            journals_bytes.extend_from_slice(&journal.abi_encode_packed());
+            journals.push(journal);
         }
-        journals_bytes
+        bincode::serialize(&journals).expect("should be able to serialize")
     }
 }
 
@@ -118,7 +123,7 @@ fn derive_chain_config_hash(
     l1_head_block_timestamp: u64,
     l1_head_block_number: u64,
 ) -> B256 {
-    let spec_id = chain_spec::derive_chain_config_hash(
+    let spec_id = chain_spec::derive_chain_spec_id(
         l1_chain_id,
         l1_head_block_timestamp,
         l1_head_block_number,
@@ -136,4 +141,20 @@ fn hash_chain_config(chain_id: u64, active_fork_name: String) -> B256 {
     };
 
     keccak256(chain_config.abi_encode_packed())
+}
+
+// compute digest of rsp genesis used by the EVM sketch. Rsp genesis does not recognize custom chain using the try_from
+// function. If an adversary fakes the chain id, the hash of genesis would review the difference, because the regular genesis
+// is enum without data field. Whereas the hash would include chain config from custom genesis.
+// Resulting different genesis hash.
+// https://github.com/succinctlabs/rsp/blob/c14b4005ea9257e4d434a080b6900411c17f781b/crates/primitives/src/genesis.rs#L19
+fn rsp_genesis_hash(chain_id: u64) -> B256 {
+    match Genesis::try_from(chain_id) {
+        Ok(genesis) => {
+            let rsp_genesis_bytes =
+                bincode::serialize(&genesis).expect("should be able to serialize rsp genesis");
+            keccak256(rsp_genesis_bytes)
+        }
+        Err(e) => panic!("rsp does not recognize genesis {e}"),
+    }
 }

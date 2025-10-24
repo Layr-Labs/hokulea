@@ -24,7 +24,6 @@ use risc0_zkvm::guest::env;
 use canoe_bindings::{
     Journal, StatusCode
 };
-use alloy_sol_types::SolValue;
 use canoe_provider::{CanoeInput, CertVerifierCall};
 use alloy_primitives::B256;
 
@@ -58,9 +57,10 @@ fn main() {
 
     assert_eq!(l1_head_block_number, env.header().number);
 
-    // Those journals are pushed into a byte array which can be committed by the zkVM.
-    // The journal are not meant to be deserialized
-    let mut journal_bytes: Vec<u8> = vec![];
+    // Those journals are pushed into a vector and later serialized in a byte array which can be committed
+    // by the zkVM. To verify if zkVM has produced the proof for the exact serialized journals, canoe verifier
+    // verifies the zkVM proof against the commited journals.
+    let mut journals: Vec<Journal> = vec![];
     for canoe_input in canoe_inputs.iter() {
         // Prepare the function call and call the function
         let is_valid = match CertVerifierCall::build(&canoe_input.altda_commitment) {
@@ -77,15 +77,18 @@ fn main() {
 
         // Commit the block hash and number used when deriving `view_call_env` to the journal.
         let journal = Journal {
+            blockNumber: l1_head_block_number,
             certVerifierAddress: canoe_input.verifier_address,
             input: rlp_bytes.into(),
             blockhash: l1_head_block_hash,
             output: is_valid,
             l1ChainId: l1_chain_id,
-            chainConfigHash: B256::default(), // steel does not have the problem to pin chain Config
+            chainConfigHash: B256::default(),
+            chainSpecHash:  B256::default(), // steel does not have the problem to pin chain Config
         };
-        journal_bytes.extend_from_slice(&journal.abi_encode_packed());
+        journals.push(journal);
     }
 
-    env::commit_slice(&journal_bytes);
+    let journals_bytes = bincode::serialize(&journals).expect("should be able to serialize");
+    env::commit_slice(&journals_bytes);
 }

@@ -1,8 +1,8 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use alloy_primitives::Address;
-use alloy_sol_types::{sol_data::Bool, SolType, SolValue};
+use alloy_primitives::{keccak256, Address};
+use alloy_sol_types::{sol_data::Bool, SolType};
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CertVerifierCall};
 use sp1_cc_client_executor::{io::EvmSketchInput, AnchorType, ClientExecutor, ContractInput};
@@ -30,6 +30,11 @@ pub fn main() {
         assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
 
+    // generate digest of rsp genesis from state sketch
+    let rsp_genesis_bytes =
+        bincode::serialize(&state_sketch.genesis).expect("should be able to serialize rsp genesis");
+    let rsp_genesis_hash = keccak256(rsp_genesis_bytes);
+
     // Initialize the client executor with the state sketch.
     // This step also validates all of the storage against state root provided by the host
     let executor =
@@ -43,12 +48,13 @@ pub fn main() {
     let l1_chain_id = executor.chain_spec.chain().id();
     assert!(l1_chain_id_from_canoe_input == l1_chain_id);
 
-    // Those journals are pushed into a byte array which can be committed by the zkVM.
-    // The journal are not meant to be deserialized
-    let mut journals_bytes: Vec<u8> = vec![];
+    // Those journals are pushed into a vector and later serialized in a byte array which can be committed
+    // by the zkVM. To verify if zkVM has produced the proof for the exact serialized journals, canoe verifier
+    // verifies the zkVM proof against the commited journals.
+    let mut journals: Vec<Journal> = vec![];
     // executes all calls, then combines and commits all journals
     for canoe_input in canoe_inputs.iter() {
-        let (returns, anchor_hash, chain_config_hash, anchor_type) =
+        let (returns, anchor_hash, anchor_type, chain_config_hash) =
             match CertVerifierCall::build(&canoe_input.altda_commitment) {
                 CertVerifierCall::LegacyV2Interface(call) => {
                     let call = ContractInput::new_call(
@@ -67,8 +73,8 @@ pub fn main() {
                     (
                         validity,
                         public_vals.anchorHash,
-                        public_vals.chainConfigHash,
                         public_vals.anchorType,
+                        public_vals.chainConfigHash,
                     )
                 }
                 CertVerifierCall::ABIEncodeInterface(call) => {
@@ -88,8 +94,8 @@ pub fn main() {
                             (
                                 validity,
                                 public_vals.anchorHash,
-                                public_vals.chainConfigHash,
                                 public_vals.anchorType,
+                                public_vals.chainConfigHash,
                             )
                         }
                         Err(_) => {
@@ -101,8 +107,8 @@ pub fn main() {
                             (
                                 false,
                                 public_vals.anchorHash,
-                                public_vals.chainConfigHash,
                                 public_vals.anchorType,
+                                public_vals.chainConfigHash,
                             )
                         }
                     }
@@ -119,15 +125,23 @@ pub fn main() {
         assert!(anchor_hash == l1_head_block_hash);
 
         let journal = Journal {
+            blockNumber: l1_head_block_number,
             certVerifierAddress: canoe_input.verifier_address,
             input: rlp_bytes.into(),
             blockhash: anchor_hash,
             output: returns,
             l1ChainId: l1_chain_id,
+            chainSpecHash: rsp_genesis_hash,
             chainConfigHash: chain_config_hash,
         };
-        journals_bytes.extend_from_slice(&journal.abi_encode_packed());
+        journals.push(journal);
     }
+
+    // use bincode to serialize, such that it can be deserialized to parse the commited content. All the
+    // material are vector, and said to be deterministic.
+    // bincode is also used in op-succinct aggregate program
+    // https://github.com/succinctlabs/op-succinct/blob/c30c5a083fdc7e2da99ece249ca2fffb7d2498e5/programs/aggregation/src/main.rs#L43
+    let journals_bytes = bincode::serialize(&journals).expect("should be able to serialize");
 
     // Commit journals altogether
     sp1_zkvm::io::commit_slice(&journals_bytes);
