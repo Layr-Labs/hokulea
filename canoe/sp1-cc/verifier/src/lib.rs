@@ -1,4 +1,5 @@
 //! implement [CanoeVerifier] with sp1-cc
+#![no_std]
 extern crate alloc;
 
 use alloc::{
