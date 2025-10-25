@@ -308,14 +308,19 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
     source {{run_env_file}}
   set a+
 
-  echo "ROLLUP_CONFIG_PATH $ROLLUP_CONFIG_PATH"
-  echo "ROLLUP_CONFIG_PATH $L1_CONFIG_PATH"
-
   L2_CHAIN_ID=$(cast chain-id --rpc-url $L2_RPC)
   if [ -z "$ROLLUP_CONFIG_PATH" ]; then
     CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--l2-chain-id $L2_CHAIN_ID"
   else
+    echo "ROLLUP_CONFIG_PATH $ROLLUP_CONFIG_PATH"
     CHAIN_ID_OR_ROLLUP_CONFIG_ARG="--rollup-config-path $(realpath $ROLLUP_CONFIG_PATH)"
+  fi
+
+  if [ -z "${L1_CONFIG_PATH:-}" ]; then
+    CHAIN_ID_OR_L1_CONFIG_PATH=""
+  else
+    echo "L1_CONFIG_PATH $L1_CONFIG_PATH"
+    CHAIN_ID_OR_L1_CONFIG_PATH="--l1-config-path $(realpath $L1_CONFIG_PATH)"
   fi
 
   # Move to the workspace root
@@ -338,7 +343,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --native \
       --data-dir ./data \
-      --l1-config-path $L1_CONFIG_PATH \
+      $CHAIN_ID_OR_L1_CONFIG_PATH \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
   elif [ "{{native_or_asterisc}}" = "asterisc" ]; then
