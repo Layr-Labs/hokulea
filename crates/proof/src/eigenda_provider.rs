@@ -128,14 +128,11 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
         let blob_length_fe = altda_commitment.get_num_field_element();
 
         // data_length measurs in field element, multiply to get num bytes
-        let mut encoded_payload: Vec<u8> = vec![0; blob_length_fe * BYTES_PER_FIELD_ELEMENT];
+        let mut encoded_payload: Vec<u8> =
+            vec![0; (blob_length_fe as usize) * BYTES_PER_FIELD_ELEMENT];
         let field_element_key = altda_commitment.digest_template();
-        self.fetch_encoded_payload(
-            field_element_key,
-            blob_length_fe as u64,
-            &mut encoded_payload,
-        )
-        .await?;
+        self.fetch_encoded_payload(field_element_key, blob_length_fe, &mut encoded_payload)
+            .await?;
 
         Ok(EncodedPayload {
             encoded_payload: encoded_payload.into(),

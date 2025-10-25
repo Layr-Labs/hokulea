@@ -278,7 +278,7 @@ async fn store_encoded_payload(
     let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
-    for i in 0..blob_length_fe as u64 {
+    for i in 0..blob_length_fe {
         field_element_key[72..].copy_from_slice(i.to_be_bytes().as_ref());
         let encoded_payload_key_hash = keccak256(field_element_key.as_ref());
 
