@@ -91,6 +91,8 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             // The library to determine chain spec comes from reth. And by checking the equality, only
             // the sp1-cc updating to the correct fork version can produce a correct output. Or downgrade
             // or patch the reth library such that produces an older fork.
+            // By forcing the sp1-cc to match latest reth_evm fork, we can detect the problem early on
+            // testnet, and provide fix before mainnet
             let chain_config_hash_derive = derive_chain_config_hash(
                 cert_validity.l1_chain_id,
                 cert_validity.l1_head_block_timestamp,
