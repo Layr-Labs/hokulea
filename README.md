@@ -78,6 +78,7 @@ cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > sepolia.rollu
 # Before running the client, it will download the needed g1.point SRS file
 # and the rollup.json config file. Temporary env variables are stored at
 # .sepolia.env and .run.sepolia.env
+# No need to fill L1_CONFIG_PATH as sepolia can be inferred from l2 rollup config
 just run-client-against-sepolia 'native'
 ```
 
