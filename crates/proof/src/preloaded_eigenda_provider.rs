@@ -71,6 +71,14 @@ impl PreloadedEigenDAPreimageProvider {
         // check all altda commitment validity are supported by zk validity proof
         let mut validity_entries = vec![];
 
+        // check all encoded payload having correct number of field elements compared to the number from altda commitment
+        for (altda_commitment, encoded_payload, _) in &value.encoded_payloads {
+            assert_eq!(
+                encoded_payload.num_field_element(),
+                altda_commitment.get_num_field_element()
+            );
+        }
+
         // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
         // da cert is valid or not. Otherwise, skip the verification
         if !value.validities.is_empty() {
