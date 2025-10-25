@@ -119,21 +119,21 @@ impl AltDACommitment {
     }
 
     /// get number of field element for a cert
-    pub fn get_num_field_element(&self) -> usize {
+    pub fn get_num_field_element(&self) -> u64 {
         match &self.versioned_cert {
             EigenDAVersionedCert::V2(c) => {
                 c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
-                    .length as usize
+                    .length as u64
             }
             EigenDAVersionedCert::V3(c) => {
                 c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
                     .commitment
-                    .length as usize
+                    .length as u64
             }
         }
     }
