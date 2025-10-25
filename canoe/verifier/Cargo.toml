@@ -9,3 +9,8 @@ eigenda-cert.workspace = true
 alloy-primitives = { workspace = true }
 serde.workspace = true
 thiserror.workspace = true
+
+revm-primitives = { workspace = true }
+reth-chainspec = { workspace = true }
+reth-evm = { workspace = true }
+alloy-genesis = { workspace = true }

@@ -2,7 +2,6 @@
 use std::str::FromStr;
 use std::time::Instant;
 
-use alloy_primitives::B256;
 use canoe_bindings::StatusCode;
 
 use risc0_steel::{
@@ -37,8 +36,7 @@ pub struct CanoeSteelProvider {
 #[async_trait]
 impl CanoeProvider for CanoeSteelProvider {
     /// The receipt can be used for both mock proof and verification within zkVM
-    type Proof = risc0_zkvm::Receipt;
-    type Receipt = Self::Proof;
+    type Receipt = risc0_zkvm::Receipt;
 
     async fn create_certs_validity_proof(
         &self,
@@ -49,15 +47,6 @@ impl CanoeProvider for CanoeSteelProvider {
         }
 
         Some(get_steel_proof(canoe_inputs, &self.eth_rpc_url).await)
-    }
-
-    // steel does not require config hash to pin l1 chain config
-    fn get_config_hash(&self, _receipt: &Self::Receipt) -> Option<B256> {
-        None
-    }
-
-    fn get_recursive_proof(&self, receipt: &Self::Receipt) -> Option<Self::Proof> {
-        Some(receipt.clone())
     }
 }
 

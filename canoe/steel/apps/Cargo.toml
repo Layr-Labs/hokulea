@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 url = {workspace = true }
-alloy-primitives = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 canoe-steel-methods = { workspace = true }

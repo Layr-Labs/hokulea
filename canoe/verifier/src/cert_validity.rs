@@ -13,6 +13,10 @@ pub struct CertValidity {
     pub claimed_validity: bool,
     /// block hash where view call anchored at, l1_head comes from kona_cfg    
     pub l1_head_block_hash: B256,
+    // l1_head_block_number for l1_head_block_hash
+    pub l1_head_block_number: u64,
+    // l1_head_block_timestamp for l1_head_block_hash
+    pub l1_head_block_timestamp: u64,
     /// l1 chain id specifies the chain which implicitly along with l1_head_block_number
     /// indicates the current EVM version due to hardfork. Although the block number
     /// is not available in this struct, we take assumptions that no two block number
@@ -20,7 +24,6 @@ pub struct CertValidity {
     pub l1_chain_id: u64,
     /// chain config hash that not only includes l1_chain_id but other information like
     /// fork activation time
-    pub chain_config_hash: Option<B256>,
     /// verfier address
     pub verifier_address: Address,
 }

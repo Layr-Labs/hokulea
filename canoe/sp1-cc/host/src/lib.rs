@@ -1,4 +1,4 @@
-use alloy_primitives::{Address, B256};
+use alloy_primitives::Address;
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::{sol_data::Bool, SolType};
 use anyhow::Result;
@@ -16,7 +16,7 @@ use std::{
     str::FromStr,
     time::{Duration, Instant},
 };
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 use url::Url;
 
 use rsp_primitives::genesis::genesis_from_json;
@@ -66,7 +66,6 @@ pub struct CanoeSp1CCProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCProvider {
-    type Proof = sp1_sdk::SP1ProofWithPublicValues;
     type Receipt = sp1_sdk::SP1ProofWithPublicValues;
 
     async fn create_certs_validity_proof(
@@ -79,21 +78,6 @@ impl CanoeProvider for CanoeSp1CCProvider {
         }
 
         Some(get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await)
-    }
-
-    fn get_config_hash(&self, receipt: &Self::Receipt) -> Option<B256> {
-        let journals: Vec<Journal> = bincode::deserialize(receipt.public_values.as_slice())
-            .expect("should be able to deserialize to journals");
-        assert!(!journals.is_empty());
-        let chain_config_hash = journals[0].chainConfigHash;
-        for journal in journals {
-            assert_eq!(chain_config_hash, journal.chainConfigHash);
-        }
-        Some(chain_config_hash)
-    }
-
-    fn get_recursive_proof(&self, receipt: &Self::Receipt) -> Option<Self::Proof> {
-        Some(receipt.clone())
     }
 }
 
@@ -112,8 +96,7 @@ pub struct CanoeSp1CCReducedProofProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCReducedProofProvider {
-    type Proof = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
-    type Receipt = (Self::Proof, Vec<u8>);
+    type Receipt = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
 
     async fn create_certs_validity_proof(
         &self,
@@ -126,30 +109,13 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
 
         match get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await {
             Ok(proof) => {
-                let journals_bytes = proof.public_values.to_vec();
                 let SP1Proof::Compressed(proof) = proof.proof else {
                     panic!("cannot get Sp1ReducedProof")
                 };
-                Some(Ok((*proof, journals_bytes)))
+                Some(Ok(*proof))
             }
             Err(e) => Some(Err(e)),
         }
-    }
-
-    fn get_config_hash(&self, receipt: &Self::Receipt) -> Option<B256> {
-        let journals: Vec<Journal> = bincode::deserialize(receipt.1.as_slice())
-            .expect("should be able to deserialize to journals");
-        assert!(!journals.is_empty());
-        let chain_config_hash = journals[0].chainConfigHash;
-        // all chainConfigHash must be identical
-        for journal in journals {
-            assert_eq!(chain_config_hash, journal.chainConfigHash);
-        }
-        Some(chain_config_hash)
-    }
-
-    fn get_recursive_proof(&self, receipt: &Self::Receipt) -> Option<Self::Proof> {
-        Some(receipt.0.clone())
     }
 }
 
@@ -306,6 +272,11 @@ async fn get_sp1_cc_proof(
 
         proof
     };
+
+    debug!(
+        "sp1cc proof {:?}",
+        bincode::deserialize::<Vec<Journal>>(proof.public_values.as_slice())
+    );
 
     let elapsed = start.elapsed();
     info!(

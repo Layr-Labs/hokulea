@@ -1,13 +1,17 @@
 //! implement [CanoeVerifier] with sp1-cc
-#![no_std]
 extern crate alloc;
 
-use alloc::vec::Vec;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
+use alloy_primitives::{keccak256, B256, U256};
+use alloy_sol_types::SolValue;
 use canoe_bindings::Journal;
-use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
+use canoe_verifier::{chain_spec, CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use eigenda_cert::AltDACommitment;
-use revm_primitives::hardfork::SpecId;
-use sp1_cc_client_executor::verifiy_chain_config_eth;
+use rsp_primitives::genesis::Genesis;
+use sp1_cc_client_executor::ChainConfig;
 
 use tracing::{info, warn};
 
@@ -30,13 +34,8 @@ use tracing::{info, warn};
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    1643941578, 715951059, 1788838312, 1249088288, 1765888335, 45618231, 776381573, 1059800200,
+    1754106394, 684473713, 1582925105, 653827562, 1186559704, 577420062, 1728605567, 1019804169,
 ];
-
-/// Determine the active fork in L1 chain. It must match the active fork version used by sp1-cc for that specific
-/// L1 block height. If there is more active L1 fork, but the verions of sp1-cc used is not up to date. The L1_ACTIVE_FORK
-/// must be kept identical to sp1-cc, but it is best to update sp1-cc version.
-pub const L1_ACTIVE_FORK: SpecId = SpecId::PRAGUE;
 
 #[derive(Clone)]
 pub struct CanoeSp1CCVerifier {}
@@ -54,13 +53,13 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
 
         assert!(!cert_validity_pair.is_empty());
 
-        // while transforming to journal bytes, it verifies if chain config hash is correctly set
-        let journals_bytes = self.to_journals_bytes(cert_validity_pair);
-
         cfg_if::cfg_if! {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
+
+                // while transforming to journal bytes, it verifies if chain config hash is correctly set
+                let journals_bytes = self.to_journals_bytes(cert_validity_pair);
 
                 // if not in dev mode, the receipt should be empty
                 if canoe_proof_bytes.is_some() {
@@ -87,14 +86,21 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         for (altda_commitment, cert_validity) in &cert_validity_pairs {
             let rlp_bytes = altda_commitment.to_rlp_bytes();
 
-            let chain_config_hash = cert_validity
-                .chain_config_hash
-                .expect("sp1cc verifier expects l1 chain config hash");
+            // compute chain config hash locally and commit to journal. If the journal is different from
+            // the one commited within zkVM, the verification would fail.
+            // The library to determine chain spec comes from reth. And by checking the equality, only
+            // the sp1-cc updating to the correct fork version can produce a correct output. Or downgrade
+            // or patch the reth library such that produces an older fork.
+            // By forcing the sp1-cc to match latest reth_evm fork, we can detect the problem early on
+            // testnet, and provide fix before mainnet
+            let chain_config_hash_derive = derive_chain_config_hash(
+                cert_validity.l1_chain_id,
+                cert_validity.l1_head_block_timestamp,
+                cert_validity.l1_head_block_number,
+            );
 
-            // check chain_config_hash supplied by the host is indeed correct with respect to l1 chain id
-            // and active fork
-            verifiy_chain_config_eth(chain_config_hash, cert_validity.l1_chain_id, L1_ACTIVE_FORK)
-                .expect("sp1cc canoe verifies chain config should have succeeded");
+            // genesis hash
+            let rsp_genesis_hash = rsp_genesis_hash(cert_validity.l1_chain_id);
 
             let journal = Journal {
                 certVerifierAddress: cert_validity.verifier_address,
@@ -102,12 +108,55 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 blockhash: cert_validity.l1_head_block_hash,
                 output: cert_validity.claimed_validity,
                 l1ChainId: cert_validity.l1_chain_id,
-                chainConfigHash: chain_config_hash,
+                blockNumber: cert_validity.l1_head_block_number,
+                chainSpecHash: rsp_genesis_hash,
+                chainConfigHash: chain_config_hash_derive,
             };
-
             journals.push(journal);
         }
-
         bincode::serialize(&journals).expect("should be able to serialize")
+    }
+}
+
+/// derive_chain_config_hash locates the active fork first, then compute the chain
+/// config hash.
+fn derive_chain_config_hash(
+    l1_chain_id: u64,
+    l1_head_block_timestamp: u64,
+    l1_head_block_number: u64,
+) -> B256 {
+    let spec_id = chain_spec::derive_chain_spec_id(
+        l1_chain_id,
+        l1_head_block_timestamp,
+        l1_head_block_number,
+    );
+    hash_chain_config(l1_chain_id, spec_id.to_string())
+}
+
+/// hash_chain_config implements the method which sp1-cc uses to commit chain spec
+/// and active fork. See
+/// <https://github.com/succinctlabs/sp1-contract-call/blob/9d9a45c550d3373dbf9bd7fb1f4907356f657722/crates/client-executor/src/lib.rs#L340>
+fn hash_chain_config(chain_id: u64, active_fork_name: String) -> B256 {
+    let chain_config = ChainConfig {
+        chainId: U256::from(chain_id),
+        activeForkName: active_fork_name,
+    };
+
+    keccak256(chain_config.abi_encode_packed())
+}
+
+// compute digest of rsp genesis used by the EVM sketch. Rsp genesis does not recognize custom chain using the try_from
+// function. If an adversary fakes the chain id, the hash of genesis would review the difference, because the regular genesis
+// is enum without data field. Whereas the hash would include chain config from custom genesis.
+// Resulting different genesis hash.
+// https://github.com/succinctlabs/rsp/blob/c14b4005ea9257e4d434a080b6900411c17f781b/crates/primitives/src/genesis.rs#L19
+fn rsp_genesis_hash(chain_id: u64) -> B256 {
+    match Genesis::try_from(chain_id) {
+        Ok(genesis) => {
+            let rsp_genesis_bytes =
+                bincode::serialize(&genesis).expect("should be able to serialize rsp genesis");
+            keccak256(rsp_genesis_bytes)
+        }
+        Err(e) => panic!("rsp does not recognize genesis {e}"),
     }
 }

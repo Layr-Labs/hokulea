@@ -26,7 +26,6 @@ use canoe_bindings::{
 };
 use canoe_provider::{CanoeInput, CertVerifierCall};
 use alloy_primitives::B256;
-use bincode;
 
 risc0_zkvm::guest::entry!(main);
 
@@ -78,17 +77,18 @@ fn main() {
 
         // Commit the block hash and number used when deriving `view_call_env` to the journal.
         let journal = Journal {
+            blockNumber: l1_head_block_number,
             certVerifierAddress: canoe_input.verifier_address,
             input: rlp_bytes.into(),
             blockhash: l1_head_block_hash,
             output: is_valid,
             l1ChainId: l1_chain_id,
-            chainConfigHash: B256::default(), // steel does not have the problem to pin chain Config
+            chainConfigHash: B256::default(),
+            chainSpecHash:  B256::default(), // steel does not have the problem to pin chain Config
         };
         journals.push(journal);
     }
 
-    let journal_bytes = bincode::serialize(&journals).expect("should be able to serialize");
-
-    env::commit_slice(&journal_bytes);
+    let journals_bytes = bincode::serialize(&journals).expect("should be able to serialize");
+    env::commit_slice(&journals_bytes);
 }

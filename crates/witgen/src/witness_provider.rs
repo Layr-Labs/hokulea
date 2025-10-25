@@ -64,7 +64,8 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
                     l1_head_block_hash: B256::ZERO,
                     l1_chain_id: 0,
                     verifier_address: Address::default(),
-                    chain_config_hash: None,
+                    l1_head_block_number: 0,
+                    l1_head_block_timestamp: 0,
                 };
 
                 witness

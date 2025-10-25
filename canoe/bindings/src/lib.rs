@@ -30,14 +30,18 @@ sol! {
     /// After comparing the supplied output by the host, and the
     /// output from the journal, the client can safely consumes the
     /// DA certificate.
-    #[derive(serde::Serialize, serde::Deserialize, Default)]
+    #[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
     struct Journal {
+        uint64 blockNumber;
         bytes32 blockhash;
         address certVerifierAddress;
         bytes input;
         bool output;
         uint64 l1ChainId;
+        // hash of data indicating the current active fork
         bytes32 chainConfigHash;
+        // hash of chain spec containing genesis and hardforks rule
+        bytes32 chainSpecHash;
     }
 }
 

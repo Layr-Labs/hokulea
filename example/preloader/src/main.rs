@@ -200,26 +200,10 @@ where
     // For Steel, use CanoeSteelProvider to generate such proof
     // For verification in non zkVM context, the proof can be passed as part of serialized bytes
     if let Some(proof) = canoe_proof {
-        // chain_config_hash will be verified later within zkVM
-        match canoe_provider.get_config_hash(&proof) {
-            // for sp1-cc that requires verification of chain config hash
-            Some(chain_config_hash) => wit
-                .validities
-                .iter_mut()
-                .for_each(|j| j.1.chain_config_hash = Some(chain_config_hash)),
-            // for steel that does not requires verification of chain config hash
-            None => wit
-                .validities
-                .iter_mut()
-                .for_each(|j| j.1.chain_config_hash = None),
-        };
-        match canoe_provider.get_recursive_proof(&proof) {
-            Some(recursive_proof) => {
-                wit.canoe_proof_bytes =
-                    Some(serde_json::to_vec(&recursive_proof).expect("serde error"))
-            }
-            None => wit.canoe_proof_bytes = None,
-        }
+        // feel free to use any tools to serialize and deserialize the proof. In this example, serde_json
+        // is used for convenience. For verifying the recursive proof, the proof is typically deserialized
+        // first, then feed to zkVM directly via write_proof as opposed to deserialized within zkVM.
+        wit.canoe_proof_bytes = Some(serde_json::to_vec(&proof).expect("serde error"))
     }
 
     Ok(wit)

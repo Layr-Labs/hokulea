@@ -1,7 +1,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use alloy_primitives::Address;
+use alloy_primitives::{keccak256, Address};
 use alloy_sol_types::{sol_data::Bool, SolType};
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CertVerifierCall};
@@ -30,6 +30,11 @@ pub fn main() {
         assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
 
+    // generate digest of rsp genesis from state sketch
+    let rsp_genesis_bytes =
+        bincode::serialize(&state_sketch.genesis).expect("should be able to serialize rsp genesis");
+    let rsp_genesis_hash = keccak256(rsp_genesis_bytes);
+
     // Initialize the client executor with the state sketch.
     // This step also validates all of the storage against state root provided by the host
     let executor =
@@ -49,7 +54,7 @@ pub fn main() {
     let mut journals: Vec<Journal> = vec![];
     // executes all calls, then combines and commits all journals
     for canoe_input in canoe_inputs.iter() {
-        let (returns, anchor_hash, chain_config_hash, anchor_type) =
+        let (returns, anchor_hash, anchor_type, chain_config_hash) =
             match CertVerifierCall::build(&canoe_input.altda_commitment) {
                 CertVerifierCall::LegacyV2Interface(call) => {
                     let call = ContractInput::new_call(
@@ -68,8 +73,8 @@ pub fn main() {
                     (
                         validity,
                         public_vals.anchorHash,
-                        public_vals.chainConfigHash,
                         public_vals.anchorType,
+                        public_vals.chainConfigHash,
                     )
                 }
                 CertVerifierCall::ABIEncodeInterface(call) => {
@@ -89,8 +94,8 @@ pub fn main() {
                             (
                                 validity,
                                 public_vals.anchorHash,
-                                public_vals.chainConfigHash,
                                 public_vals.anchorType,
+                                public_vals.chainConfigHash,
                             )
                         }
                         Err(_) => {
@@ -102,8 +107,8 @@ pub fn main() {
                             (
                                 false,
                                 public_vals.anchorHash,
-                                public_vals.chainConfigHash,
                                 public_vals.anchorType,
+                                public_vals.chainConfigHash,
                             )
                         }
                     }
@@ -120,11 +125,13 @@ pub fn main() {
         assert!(anchor_hash == l1_head_block_hash);
 
         let journal = Journal {
+            blockNumber: l1_head_block_number,
             certVerifierAddress: canoe_input.verifier_address,
             input: rlp_bytes.into(),
             blockhash: anchor_hash,
             output: returns,
             l1ChainId: l1_chain_id,
+            chainSpecHash: rsp_genesis_hash,
             chainConfigHash: chain_config_hash,
         };
         journals.push(journal);
