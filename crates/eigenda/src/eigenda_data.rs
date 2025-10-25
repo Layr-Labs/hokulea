@@ -36,7 +36,7 @@ impl EncodedPayload {
         &self.encoded_payload
     }
 
-    /// Returns the number of symbols in the encoded payload
+    /// Returns the number of field elements in the encoded payload
     pub fn num_field_element(&self) -> u64 {
         (self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64
     }
