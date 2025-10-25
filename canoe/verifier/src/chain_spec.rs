@@ -79,7 +79,6 @@ mod tests {
     #[test]
     fn test_create_kurtosis_chain_spec() {
         let chain_spec = create_kurtosis_chain_spec();
-        println!("SEPOLIA {:?}", SEPOLIA.genesis());
         let spec_id = spec_by_timestamp_and_block_number(&chain_spec, 100, 100);
         assert_eq!(spec_id, SpecId::PRAGUE);
     }
