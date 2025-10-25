@@ -8,7 +8,6 @@ name = "cert_verification"
 path = "src/bin/cert_verification.rs"
 
 [workspace]
-
 [dependencies]
 alloy-primitives = { version = "1.3.1", default-features = false }
 risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }

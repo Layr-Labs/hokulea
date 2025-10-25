@@ -2501,6 +2501,8 @@ dependencies = [
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
+ "revm-primitives",
+ "risc0-steel",
  "risc0-zkvm",
  "serde_json",
  "tracing",

@@ -2,17 +2,37 @@
 #![no_std]
 extern crate alloc;
 
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
+use alloc::vec;
 use alloc::vec::Vec;
 use alloy_primitives::B256;
 use eigenda_cert::AltDACommitment;
 
+use revm_primitives::keccak256;
 use risc0_zkvm::Receipt;
 
 use canoe_bindings::Journal;
 use canoe_steel_methods::CERT_VERIFICATION_ID;
-use canoe_verifier::{CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
-use tracing::info;
+use canoe_verifier::{chain_spec, CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
+use risc0_steel::ethereum::{ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC};
+use tracing::{info, warn};
+
+use revm_primitives::hardfork::SpecId;
+
+// steel library can use a chain spec older than the spec by thecurrent L1. The following allowed forks
+// guard the steel from running a stale EVM version. Although not all upgrades touche the EVM execution,
+// updating timely ensures consistency and removing possibility of doubts
+fn get_allowed_steel_spec_id(chain_id: u64) -> Vec<String> {
+    match chain_id {
+        // mainnet
+        1 => vec![SpecId::PRAGUE.to_string(), SpecId::OSAKA.to_string()],
+        // sepolia
+        11155111 => vec![SpecId::PRAGUE.to_string(), SpecId::OSAKA.to_string()],
+        // kurtosis devnet
+        3151908 => vec![SpecId::PRAGUE.to_string(), SpecId::OSAKA.to_string()],
+        _ => panic!("unsupported chain id"),
+    }
+}
 
 #[derive(Clone)]
 pub struct CanoeSteelVerifier {}
@@ -70,6 +90,18 @@ impl CanoeVerifier for CanoeSteelVerifier {
         let mut journals: Vec<Journal> = Vec::new();
         for (altda_commitment, cert_validity) in &cert_validity_pairs {
             let rlp_bytes = altda_commitment.to_rlp_bytes();
+            let chain_id: u64 = cert_validity.l1_chain_id;
+            let timestamp = cert_validity.l1_head_block_timestamp;
+            let block_number = cert_validity.l1_head_block_number;
+
+            let steel_active_fork = get_steel_active_fork(chain_id, timestamp, block_number);
+            let derived_active_fork =
+                chain_spec::derive_chain_spec_id(chain_id, timestamp, block_number).to_string();
+            if steel_active_fork != derived_active_fork {
+                warn!("consider bump steel library version. Based on common block number {block_number} timestamp {timestamp}, the derived active fork from revm {derived_active_fork} is different from steel {steel_active_fork} on chain {chain_id}");
+                // the steel active fork must be contained in the allowed list
+                assert!(get_allowed_steel_spec_id(chain_id).contains(&steel_active_fork));
+            }
 
             let journal = Journal {
                 blockNumber: cert_validity.l1_head_block_number,
@@ -78,7 +110,7 @@ impl CanoeVerifier for CanoeSteelVerifier {
                 blockhash: cert_validity.l1_head_block_hash,
                 output: cert_validity.claimed_validity,
                 l1ChainId: cert_validity.l1_chain_id,
-                chainConfigHash: B256::default(),
+                chainConfigHash: keccak256(steel_active_fork),
                 chainSpecHash: B256::default(),
             };
 
@@ -87,4 +119,24 @@ impl CanoeVerifier for CanoeSteelVerifier {
 
         bincode::serialize(&journals).expect("should be able to serialize")
     }
+}
+
+// get spec id from steel library
+fn get_steel_active_fork(chain_id: u64, timestamp: u64, block_number: u64) -> String {
+    let spec_id = match chain_id {
+        // mainnet
+        1 => ETH_MAINNET_CHAIN_SPEC
+            .active_fork(block_number, timestamp)
+            .expect("should be able to get active fork with steel chain spec on mainnet"),
+        // sepolia
+        11155111 => ETH_SEPOLIA_CHAIN_SPEC
+            .active_fork(block_number, timestamp)
+            .expect("should be able to get active fork with steel chain spec on sepolia"),
+        // kurtosis devnet
+        3151908 => ETH_MAINNET_CHAIN_SPEC
+            .active_fork(block_number, timestamp)
+            .expect("should be able to get active fork with steel chain spec on kurtosis"),
+        _ => panic!("unsupported chain id"),
+    };
+    spec_id.to_string()
 }
