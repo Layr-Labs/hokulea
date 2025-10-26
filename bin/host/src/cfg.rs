@@ -16,6 +16,7 @@ use kona_std_fpvm::{FileChannel, FileDescriptor};
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::task::{self, JoinHandle};
+use tracing::warn;
 
 /// The host Eigenda binary CLI application arguments.
 #[derive(Default, Parser, Serialize, Clone, Debug)]
@@ -35,6 +36,14 @@ pub struct SingleChainHostWithEigenDA {
     )]
     pub eigenda_proxy_address: Option<String>,
 
+    /// Recency window determining if an EigenDA certificate
+    /// is stale. It is VERY CRITICAL!!! to ensure the same value
+    /// is used by proxy connecting this host. Currently, the
+    /// only valid value is the seq_window_size in the
+    /// L2 rollup config.
+    #[arg(long, visible_alias = "recency_window", env)]
+    pub recency_window: u64,
+
     /// Verbosity level (-v, -vv, -vvv, etc.)
     /// TODO: think this should be upstreamed to kona_cfg
     #[clap(
@@ -50,6 +59,9 @@ impl SingleChainHostWithEigenDA {
     /// Starts the [SingleChainHostWithEigenDA] application. This is copy from
     /// <https://github.com/op-rs/kona/blob/b3eef14771015f6f7427f4f05cf70e508b641802/bin/host/src/single/cfg.rs#L133-L143>
     pub async fn start(self) -> Result<(), SingleChainHostError> {
+        warn!("please ensure the configured recency window is equal to the recency window on the eigenda proxy. Inconsistent
+                values can lead to halting");
+
         if self.kona_cfg.server {
             let hint = FileChannel::new(FileDescriptor::HintRead, FileDescriptor::HintWrite);
             let preimage =

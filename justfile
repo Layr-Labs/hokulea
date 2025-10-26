@@ -256,6 +256,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
   L1_CONFIG_PATH="$(realpath {{l1_config_path}})"    
+  RECENCY_WINDOW="$(cat rollup.json | jq .seq_window_size)"
 
   echo "L1_RPC=$L1_RPC" > {{env_file}}
   echo "L1_BEACON_RPC=$L1_BEACON_RPC" >> {{env_file}}
@@ -264,6 +265,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   echo "EIGENDA_PROXY_RPC=$EIGENDA_PROXY_RPC" >> {{env_file}}
   echo "ROLLUP_CONFIG_PATH=$ROLLUP_CONFIG_PATH" >> {{env_file}}
   echo "L1_CONFIG_PATH=$L1_CONFIG_PATH" >> {{env_file}}
+  echo "RECENCY_WINDOW=$RECENCY_WINDOW" >> {{env_file}}
 
 
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
@@ -343,6 +345,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --native \
       --data-dir ./data \
+      --recency-window $RECENCY_WINDOW \
       $CHAIN_ID_OR_L1_CONFIG_PATH \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
@@ -377,6 +380,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --l2-chain-id $L2_CHAIN_ID \
       --server \
       --data-dir ./data \
+      --recency-window $RECENCY_WINDOW \
       --l1-config-path $L1_CONFIG_PATH \
       {{verbosity}}      
   else
