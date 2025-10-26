@@ -66,7 +66,8 @@ async fn main() -> anyhow::Result<()> {
             // Particularly, op-succinct integration needs to use write_proof() to supply compressed proof
             // into SP1 zkvm when using hokulea as an ELF.
             use canoe_sp1_cc_host::CanoeSp1CCReducedProofProvider;
-            use canoe_sp1_cc_verifier::CanoeSp1CCVerifier;
+            // use CanoeNoOpVerifier as CanoeSp1CCVerifier is only intended to be run within zkVM
+            use canoe_verifier::CanoeNoOpVerifier;
             use sp1_sdk::{ProverClient, HashableKey};
             use std::env;
 
@@ -86,7 +87,7 @@ async fn main() -> anyhow::Result<()> {
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
                 mock_mode,
             };
-            let canoe_verifier = CanoeSp1CCVerifier{};
+            let canoe_verifier = CanoeNoOpVerifier{};
         } else {
             use canoe_provider::CanoeNoOpProvider;
             use canoe_verifier::CanoeNoOpVerifier;

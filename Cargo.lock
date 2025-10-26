@@ -4346,7 +4346,6 @@ dependencies = [
  "anyhow",
  "canoe-provider",
  "canoe-sp1-cc-host",
- "canoe-sp1-cc-verifier",
  "canoe-steel-apps",
  "canoe-steel-verifier",
  "canoe-verifier",
