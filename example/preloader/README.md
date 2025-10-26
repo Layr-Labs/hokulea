@@ -68,7 +68,7 @@ Let's look the first run in detail. We mentioned briefly about hokulea+kona deri
 In the diagram below, we represent this logic with the name fp_client (fault proof client). A nice feature about kona framework is that kona accepts all 
 types of data source implementations as long as they satisfy the data source trait, in our case, `EigenDAPreimageProvider`. 
 
-Hokulea provides an implementation called `OracleEigenDAWitnessProvider` that is not only used by the fp_client, it can also returns an organized data structure
+Hokulea provides an implementation called `OracleEigenDAPreimageProvider` that is not only used by the fp_client, it can also returns an organized data structure
 containing all the necessary information above. Running the run_fp_client produces two data structure: an key-value oracle containing all the preimage required by kona, and `EigenDAWitness` containing most of information required by EigenDA data derivation.
 
 <div align="center">

@@ -27,10 +27,12 @@ use canoe_verifier_address_fetcher::{
 };
 
 use hokulea_client::fp_client;
+use hokulea_compute_proof::create_kzg_proofs_for_eigenda_preimage;
 use hokulea_proof::{
-    eigenda_provider::OracleEigenDAPreimageProvider, eigenda_witness::EigenDAWitness,
+    eigenda_provider::OracleEigenDAPreimageProvider,
+    eigenda_witness::{EigenDAPreimage, EigenDAWitness},
 };
-use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
+use hokulea_witgen::witness_provider::OracleEigenDAPreimageProviderWithPreimage;
 use std::{
     ops::DerefMut,
     sync::{Arc, Mutex},
@@ -118,7 +120,7 @@ async fn main() -> anyhow::Result<()> {
 
 /// The function uses a variation of kona client function signature
 /// A preloaded client runs derivation twice
-/// The first round runs run_witgen_client only to populate the witness. This produces an artifact
+/// The first round runs run_preimage_client only to populate the witness. This produces an artifact
 /// that contains all the necessary preimage to run the derivation.
 /// The second round uses the populated witness to run against
 #[allow(clippy::type_complexity)]
@@ -177,50 +179,54 @@ where
     <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
 {
     // Run derivation for the first time to populate the witness data
-    let mut wit: EigenDAWitness = run_witgen_client(oracle.clone(), evm_factory.clone()).await?;
+    let eigenda_preimage: EigenDAPreimage =
+        run_preimage_client(oracle.clone(), evm_factory.clone()).await?;
 
     // get l1 header, does not have to come from oracle directly, it is for convenience
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
 
-    // generate one canoe proof for all DA certs
-    let canoe_proof = hokulea_witgen::from_boot_info_to_canoe_proof(
+    let kzg_proofs = create_kzg_proofs_for_eigenda_preimage(&eigenda_preimage);
+
+    // generate one canoe proof for all DA certs. Optional if no validity to prove against
+    let optional_canoe_proof = hokulea_witgen::from_boot_info_to_canoe_proof(
         &boot_info,
-        &wit,
+        &eigenda_preimage,
         oracle.clone(),
         canoe_provider.clone(),
         canoe_address_fetcher,
     )
     .await?;
 
-    // populate canoe proof only if there are validity to be proven against
+    // feel free to use any tools to serialize and deserialize the proof. In this example, serde_json
+    // is used for convenience. For verifying the recursive proof, the proof is typically deserialized
+    // first, then feed to zkVM directly via write_proof as opposed to deserialized within zkVM.
+    let canoe_proof_bytes_option =
+        optional_canoe_proof.map(|proof| serde_json::to_vec(&proof).expect("serde error"));
+
+    // convert preimage into witness and check if all the proofs are provided.
     //
     // for verification within zkVM, canoe_proof should be passed into zkVM via its stdin by a special
     // function depending on zkVM framework. More see CanoeVerifier
     // For Sp1cc, use CanoeSp1CCReducedProofProvider to produce proof that is verifiable within zkVM
     // For Steel, use CanoeSteelProvider to generate such proof
     // For verification in non zkVM context, the proof can be passed as part of serialized bytes
-    if let Some(proof) = canoe_proof {
-        // feel free to use any tools to serialize and deserialize the proof. In this example, serde_json
-        // is used for convenience. For verifying the recursive proof, the proof is typically deserialized
-        // first, then feed to zkVM directly via write_proof as opposed to deserialized within zkVM.
-        wit.canoe_proof_bytes = Some(serde_json::to_vec(&proof).expect("serde error"))
-    }
-
-    Ok(wit)
+    let witness =
+        EigenDAWitness::from_preimage(eigenda_preimage, kzg_proofs, canoe_proof_bytes_option)?;
+    Ok(witness)
 }
 
-/// A run_witgen_client calls [fp_client] function to run kona derivation.
-/// This client uses an [OracleEigenDAWitnessProvider] that wraps around [OracleEigenDAPreimageProvider]
+/// A run_preimage_client calls [fp_client] function to run kona derivation.
+/// This client uses an [OracleEigenDAPreimageProvider] that wraps around [OracleEigenDAPreimageProvider]
 /// It returns the eigenda witness to the caller, those witnesses can be used to prove
 /// used only at the preparation phase. Its usage is contained in the crate hokulea-client-bin
 /// 1. a KZG commitment is consistent to the retrieved encoded payload (i.e. after taking IFFT, the KZG commitment
 ///    with monomial SRS basis yields to the same KZG commitment)
 /// 2. the cert is correct
 #[allow(clippy::type_complexity)]
-pub async fn run_witgen_client<O, Evm>(
+pub async fn run_preimage_client<O, Evm>(
     oracle: Arc<O>,
     evm_factory: Evm,
-) -> Result<EigenDAWitness, FaultProofProgramError>
+) -> Result<EigenDAPreimage, FaultProofProgramError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
@@ -229,21 +235,20 @@ where
     let beacon = OracleBlobProvider::new(oracle.clone());
 
     let eigenda_preimage_provider = OracleEigenDAPreimageProvider::new(oracle.clone());
-    let eigenda_witness = Arc::new(Mutex::new(EigenDAWitness::default()));
+    let eigenda_preimage = Arc::new(Mutex::new(EigenDAPreimage::default()));
 
-    let eigenda_witness_provider = OracleEigenDAWitnessProvider {
+    let eigenda_preimage_provider = OracleEigenDAPreimageProviderWithPreimage {
         provider: eigenda_preimage_provider,
-        witness: eigenda_witness.clone(),
+        preimage: eigenda_preimage.clone(),
     };
 
-    fp_client::run_fp_client(oracle, beacon, eigenda_witness_provider, evm_factory).await?;
+    fp_client::run_fp_client(oracle, beacon, eigenda_preimage_provider, evm_factory).await?;
 
-    let wit = core::mem::take(eigenda_witness.lock().unwrap().deref_mut());
-
-    Ok(wit)
+    let data = core::mem::take(eigenda_preimage.lock().unwrap().deref_mut());
+    Ok(data)
 }
 
-// By this time,both Oracle and EigenDAWitness are generated by some party that runs run_witgen_client.
+// By this time,both Oracle and EigenDAWitness are generated by some party that runs run_preimage_client.
 // This party now needs to send both of them as inputs to ZKVM. So imagine wit and oracle are sent away, and
 // the code region below are some codes that runs inside ZKVM. The ZKVM will convert EigenDAWitness into
 // a preloaded eigenda provider, that implements the trait get_encoded_payload. The run_fp_client are also run inside zkVM

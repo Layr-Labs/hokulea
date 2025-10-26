@@ -10,6 +10,7 @@ hokulea-host-bin.workspace = true
 hokulea-witgen.workspace = true
 hokulea-zkvm-verification.workspace = true
 hokulea-client.workspace = true
+hokulea-compute-proof.workspace = true
 
 # General
 anyhow.workspace = true

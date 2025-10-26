@@ -27,6 +27,7 @@ thiserror.workspace = true
 
 # Canoe
 canoe-verifier = { workspace = true } 
+canoe-verifier-address-fetcher = { workspace = true } 
 
 [dev-dependencies]
 hokulea-compute-proof.workspace = true

@@ -9,7 +9,8 @@ use kona_proof::{
 };
 
 use hokulea_proof::{
-    eigenda_witness::EigenDAWitness, preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
+    eigenda_witness::{EigenDAWitness, EigenDAWitnessWithTrustedData},
+    preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
 };
 
 use canoe_verifier::CanoeVerifier;
@@ -17,25 +18,22 @@ use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 
 use alloc::sync::Arc;
 
-// The function overwrites information from bootInfo into EigenDAWitness, because information inside
-// bootInfo is secured. It uses all the secure information to verify against the canoe proof to ensure the
-// validity of the cert. Then it checks the consistency between kzg commitment from the cert and the encoded payload.
-// The function takes an oracle at whole, and assume what is inside the oracle will be or already been verified
-// by kona or upstream secure integration.
-// The functions also relies on the header corresponding to l1_head from BootInfo. It is critical for the security
-// that the oracle that provides the header has already been verified, or eventually verified without mutation.
+/// The function adds trusted information to [EigenDAWitness] for verifying claimed validity of DA certificate.
+/// All the information comes from the loaded oracle: those includes BootInfo and Header for l1_head from the
+/// bootInfo. Then it converts [EigenDAWitness] into [PreloadedEigenDAPreimageProvider] which contains all the
+/// EigenDA preimage data in order to run the eigenda blob derivation. All the date from
+/// [PreloadedEigenDAPreimageProvider] are considered safe to use.
 #[allow(clippy::type_complexity)]
 pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
-    mut witness: EigenDAWitness,
+    witness: EigenDAWitness,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
 {
     let boot_info = BootInfo::load(oracle.as_ref()).await?;
-    let boot_info_chain_id = boot_info.rollup_config.l1_chain_id;
     let l1_head = boot_info.l1_head;
 
     // fetch timestamp and block number corresponding to l1_head for determining activation fork.
@@ -44,35 +42,23 @@ where
         .header_by_hash(l1_head)
         .await
         .expect("should be able to get header for l1 header using oracle");
-    let l1_header_timestamp = header.timestamp;
-    let l1_header_block_number = header.number;
 
-    // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM
-    // force canoe verifier to use l1 chain id from rollup config.
-    // it assumes the l1_chain_id from boot_info is trusted or verifiable at early or later stage
-    // it assumes the header from oracle is trusted or verifiable at early or later stage.
+    // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM.
+    // All the data from the oracle has been verified, by Kailua and OP-succincts
     // For kailua, the check is at https://github.com/boundless-xyz/kailua/blob/2414297a5f9feb98365ef6d88634bcd181a1934b/crates/kona/src/client/stateless.rs#L61
     // For op-succinct, the check is at https://github.com/succinctlabs/op-succinct/blob/b0f190e634ab5b03a3028d4ef88e207186b48337/programs/range/eigenda/src/main.rs#L32
-    witness
-        .validities
-        .iter_mut()
-        .for_each(|(altda_commitment, cert_validity)| {
-            cert_validity.l1_head_block_hash = boot_info.l1_head;
-            cert_validity.l1_chain_id = boot_info_chain_id;
-            cert_validity.l1_head_block_number = l1_header_block_number;
-            cert_validity.l1_head_block_timestamp = l1_header_timestamp;
-            cert_validity.verifier_address = canoe_address_fetcher
-                .fetch_address(boot_info_chain_id, &altda_commitment.versioned_cert)
-                .expect("should be able to get verifier address");
-        });
-
-    witness
-        .recencies
-        .iter_mut()
-        .for_each(|(_, recency)| *recency = boot_info.rollup_config.seq_window_size);
+    let witness_with_trusted_data = EigenDAWitnessWithTrustedData {
+        recency_window: boot_info.rollup_config.seq_window_size,
+        l1_head_block_hash: l1_head,
+        l1_head_block_number: header.number,
+        l1_head_block_timestamp: header.timestamp,
+        l1_chain_id: boot_info.rollup_config.l1_chain_id,
+        witness,
+    };
 
     Ok(PreloadedEigenDAPreimageProvider::from_witness(
-        witness,
+        witness_with_trusted_data,
         canoe_verifier,
+        canoe_address_fetcher,
     ))
 }

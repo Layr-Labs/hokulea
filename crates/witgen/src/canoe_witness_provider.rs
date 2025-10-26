@@ -3,7 +3,7 @@ use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 use core::fmt::Debug;
-use hokulea_proof::eigenda_witness::EigenDAWitness;
+use hokulea_proof::eigenda_witness::EigenDAPreimage;
 use kona_preimage::{CommsClient, PreimageKey};
 use kona_proof::{BootInfo, FlushableCache};
 use std::sync::Arc;
@@ -16,7 +16,7 @@ use tracing::info;
 /// If no canoe proof is needed, it returns Ok(None)
 pub async fn from_boot_info_to_canoe_proof<A, P, O>(
     boot_info: &BootInfo,
-    witness: &EigenDAWitness,
+    eigenda_primage: &EigenDAPreimage,
     oracle: Arc<O>,
     canoe_provider: P,
     canoe_address_fetcher: A,
@@ -33,25 +33,18 @@ where
         .map_err(|_| anyhow::Error::msg("cannot rlp decode header in canoe proof generation"))?;
     let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
-    let mut wit = witness.clone();
-
-    // generate canoe proof
-    wit.validities.iter_mut().for_each(|(_, cert_validity)| {
-        cert_validity.l1_head_block_hash = boot_info.l1_head;
-    });
-
     let mut canoe_inputs = vec![];
 
-    if wit.validities.is_empty() {
+    if eigenda_primage.validities.is_empty() {
         info!(target: "canoe witness provider", "no DA certs to process, skipping canoe proof generation");
     } else {
-        info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", wit.validities.len());
+        info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", eigenda_primage.validities.len());
     }
 
-    for (altda_commitment, cert_validity) in &mut wit.validities {
+    for (altda_commitment, claimed_validity) in &eigenda_primage.validities {
         let canoe_input = CanoeInput {
             altda_commitment: altda_commitment.clone(),
-            claimed_validity: cert_validity.claimed_validity,
+            claimed_validity: *claimed_validity,
             l1_head_block_hash: boot_info.l1_head,
             l1_head_block_number: l1_head_header.number,
             l1_chain_id,
