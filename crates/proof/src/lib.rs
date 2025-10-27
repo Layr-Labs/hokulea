@@ -10,3 +10,5 @@ pub mod preloaded_eigenda_provider;
 pub mod eigenda_witness;
 
 pub mod errors;
+
+pub mod recency;

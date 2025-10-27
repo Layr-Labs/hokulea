@@ -28,7 +28,9 @@ use canoe_verifier_address_fetcher::{
 
 use hokulea_client::fp_client;
 use hokulea_proof::{
-    eigenda_provider::OracleEigenDAPreimageProvider, eigenda_witness::EigenDAWitness,
+    eigenda_provider::OracleEigenDAPreimageProvider,
+    eigenda_witness::EigenDAWitness,
+    recency::{ConstantRecencyWindowProvider, RecencyWindowProvider},
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
 use std::{
@@ -96,6 +98,10 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let canoe_address_fetcher = CanoeVerifierAddressFetcherDeployedByEigenLabs {};
+    let rollup_config = cfg.kona_cfg.read_rollup_config()?;
+    let recency_window_provider = ConstantRecencyWindowProvider {
+        value: rollup_config.seq_window_size,
+    };
 
     // Spawn the client logic as a concurrent task
     let client_task = task::spawn(run_witgen_and_zk_verification(
@@ -108,6 +114,7 @@ async fn main() -> anyhow::Result<()> {
         canoe_provider,
         canoe_verifier,
         canoe_address_fetcher,
+        recency_window_provider,
     ));
 
     let (_, client_result) = tokio::try_join!(server_task, client_task)?;
@@ -130,6 +137,7 @@ pub async fn run_witgen_and_zk_verification<P, H, Evm>(
     canoe_provider: impl CanoeProvider,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
+    recency_window_provider: impl RecencyWindowProvider,
 ) -> anyhow::Result<()>
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
@@ -158,6 +166,7 @@ where
         evm_factory,
         canoe_verifier,
         canoe_address_fetcher,
+        recency_window_provider,
         wit,
     )
     .await
@@ -253,6 +262,7 @@ pub async fn run_within_zkvm<O, Evm>(
     evm_factory: Evm,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
+    recency_window_provider: impl RecencyWindowProvider,
     witness: EigenDAWitness,
 ) -> anyhow::Result<()>
 where
@@ -267,6 +277,7 @@ where
         oracle.clone(),
         canoe_verifier,
         canoe_address_fetcher,
+        recency_window_provider,
         witness,
     )
     .await?;

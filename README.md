@@ -11,6 +11,18 @@ We use mise to track and manage dependencies. Please first [install mise](https:
 ## SRS points
 Hokulea's proving client currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the proving client to have access to sufficient KZG G1 SRS points. Currently the SRS points are (hardcoded) assumed to be located at `resources/g1.point`. You can download the SRS points to that location by running `just download-srs`, which downloads the `g1.point` file from the [eigenda repo](https://github.com/Layr-Labs/eigenda-proxy/tree/main/resources).
 
+## EigenDA proxy configuration
+Hokulea relies on eigenda proxy for fetching preimage values, including `recency_window`, `cert_validity` and `encoded_payload`. For cert validity and encode payload, the preimage comes from proxy and is verified later, whereas the recency window value is set in hokulea directly. However, the proxy maintains its own recency_window to process the eigenda blob derivation. For all trustless integrations, this number must be kept consistent on every proxy run by `op-node`s.
+
+Currently, each rollup is free to choose the `recency_window` value, and it determines the staleness of AltDA commitments (DA certificates). If a DA Certificate is stale based on the recency value, it is dropped from the derivation pipeline. For more info see our [spec](https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation). We recommend it be set to the `seq_window_size` from the rollup config.
+
+Currently on proxy, the recency window is set to 0 by default, which ignores any recency check entirely. If recency is configured to some other value (like `seq_window_size`), the following components need to share the same value or history of values
+- when starting the hokulea host, by setting `recency_window`
+- and implementing `RecencyWindowProvider` trait
+- ensure all proxy are using the same recency config
+
+To prevent misconfiguration, hokulea has required user to enter the `recency_window` which would be checked against the implementation of `RecencyWindowProvider` trait when creating the hokulea ELF file. If the provided host argument is different from the `RecencyWindowProvider` implementation, the proving system would abort. There is planned work on proxy to expose its public config, such that all proxy users (like hokulea host) can retrieve the `recency window` from the proxy.
+
 ## Local Manual Testing
 
 We use kurtosis to start an [optimism-package](https://github.com/ethpandaops/optimism-package/tree/main) devnet, and run the hokulea host and client against it.

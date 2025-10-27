@@ -129,15 +129,8 @@ async fn store_recency_window(
     // Acquire a lock on the key-value store
     let mut kv_write_lock = kv.write().await;
 
-    let rollup_config = cfg
-        .kona_cfg
-        .read_rollup_config()
-        .map_err(|e| anyhow!("should have been able to read rollup config {e}"))?;
-
-    // We use the sequencer_window as the recency_window.
     // See https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation
-    // for the reasoning behind this choice.
-    let recency = rollup_config.seq_window_size;
+    let recency = cfg.recency_window;
     let recency_be_bytes = recency.to_be_bytes();
     let mut recency_address = altda_commitment.digest_template();
     recency_address[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;

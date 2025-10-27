@@ -10,6 +10,7 @@ use kona_proof::{
 
 use hokulea_proof::{
     eigenda_witness::EigenDAWitness, preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
+    recency::RecencyWindowProvider,
 };
 
 use canoe_verifier::CanoeVerifier;
@@ -29,6 +30,7 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
+    recency_window_provider: impl RecencyWindowProvider,
     mut witness: EigenDAWitness,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
@@ -66,10 +68,19 @@ where
                 .expect("should be able to get verifier address");
         });
 
-    witness
-        .recencies
-        .iter_mut()
-        .for_each(|(_, recency)| *recency = boot_info.rollup_config.seq_window_size);
+    for (_, recency) in witness.recencies.iter_mut() {
+        let derived_recency = recency_window_provider.fetch_recency_window(
+            boot_info_chain_id,
+            l1_header_block_number,
+            l1_header_timestamp,
+        );
+
+        if derived_recency != *recency {
+            panic!("the recency window value {recency} provided by the host is different from the value {derived_recency} \
+                from the implementation of RecencyWindowProvider. {derived_recency} anchors the true recency window \
+                please adjust the host value accordingly.");
+        }
+    }
 
     Ok(PreloadedEigenDAPreimageProvider::from_witness(
         witness,
