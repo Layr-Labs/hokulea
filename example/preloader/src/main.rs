@@ -30,7 +30,7 @@ use hokulea_client::fp_client;
 use hokulea_proof::{
     eigenda_provider::OracleEigenDAPreimageProvider,
     eigenda_witness::EigenDAWitness,
-    recency::{ConnstantRecencyWindowProvider, RecencyWindowProvider},
+    recency::{ConstantRecencyWindowProvider, RecencyWindowProvider},
 };
 use hokulea_witgen::witness_provider::OracleEigenDAWitnessProvider;
 use std::{
@@ -99,7 +99,7 @@ async fn main() -> anyhow::Result<()> {
 
     let canoe_address_fetcher = CanoeVerifierAddressFetcherDeployedByEigenLabs {};
     let rollup_config = cfg.kona_cfg.read_rollup_config()?;
-    let recency_window_provider = ConnstantRecencyWindowProvider {
+    let recency_window_provider = ConstantRecencyWindowProvider {
         value: rollup_config.seq_window_size,
     };
 

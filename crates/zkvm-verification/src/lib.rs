@@ -69,13 +69,11 @@ where
         });
 
     for (_, recency) in witness.recencies.iter_mut() {
-        let derived_recency = recency_window_provider
-            .fetch_recency_window(
-                boot_info_chain_id,
-                l1_header_block_number,
-                l1_header_timestamp,
-            )
-            .expect("should be able to get recency window");
+        let derived_recency = recency_window_provider.fetch_recency_window(
+            boot_info_chain_id,
+            l1_header_block_number,
+            l1_header_timestamp,
+        );
 
         if derived_recency != *recency {
             panic!("the recency window value {recency} provided by the host is different from the value {derived_recency} \
