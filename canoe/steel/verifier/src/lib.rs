@@ -179,7 +179,7 @@ fn get_steel_active_fork(chain_id: u64, timestamp: u64, block_number: u64) -> St
         // holesky
         17000 => ETH_HOLESKY_CHAIN_SPEC
             .active_fork(block_number, timestamp)
-            .expect("should be able to get active fork with steel chain spec on sepolia"),
+            .expect("should be able to get active fork with steel chain spec on holesky"),
         // kurtosis devnet
         3151908 => ETH_MAINNET_CHAIN_SPEC
             .active_fork(block_number, timestamp)
