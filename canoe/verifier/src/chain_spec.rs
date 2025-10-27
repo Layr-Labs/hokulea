@@ -1,6 +1,6 @@
 use alloy_genesis::Genesis;
 use alloy_primitives::B256;
-use reth_chainspec::{Chain, ChainSpec, ChainSpecBuilder, MAINNET, SEPOLIA};
+use reth_chainspec::{Chain, ChainSpec, ChainSpecBuilder, HOLESKY, MAINNET, SEPOLIA};
 use reth_evm::spec_by_timestamp_and_block_number;
 use revm_primitives::hardfork::SpecId;
 
@@ -20,6 +20,12 @@ pub fn derive_chain_spec_id(
         // sepolia
         11155111 => spec_by_timestamp_and_block_number(
             SEPOLIA.as_ref(),
+            l1_head_block_timestamp,
+            l1_head_block_number,
+        ),
+        // holesky
+        17000 => spec_by_timestamp_and_block_number(
+            HOLESKY.as_ref(),
             l1_head_block_timestamp,
             l1_head_block_number,
         ),
@@ -43,6 +49,8 @@ pub fn derive_chain_spec_genesis_hash(l1_chain_id: u64) -> B256 {
         1 => MAINNET.genesis_hash(),
         // sepolia
         11155111 => SEPOLIA.genesis_hash(),
+        // holesky
+        17000 => HOLESKY.genesis_hash(),
         // kurtosis devnet
         3151908 => {
             let chain_spec = create_kurtosis_chain_spec();
