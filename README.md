@@ -19,6 +19,9 @@ We use kurtosis to start an [optimism-package](https://github.com/ethpandaops/op
 just run-kurtosis-devnet-with-eigenlabs-package
 ```
 
+## Supported L1 Chain
+Hokulea now supports Mainnet, Sepolia and Holesky. More in the future. However, chain id `3151908` is explicitly not supported for trustless secure integration. Hokulea uses kurtosis devnet with chain id `3151908` for testing. Proving against `3151908` will generate a ZK proof that cannot be verified by the `CanoeVerifier` implementation in this repo.
+
 ### Running the native client
 
 ```bash
