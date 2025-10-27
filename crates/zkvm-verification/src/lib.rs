@@ -11,6 +11,7 @@ use kona_proof::{
 use hokulea_proof::{
     eigenda_witness::{EigenDAWitness, EigenDAWitnessWithTrustedData},
     preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
+    recency::RecencyWindowProvider,
 };
 
 use canoe_verifier::CanoeVerifier;
@@ -29,6 +30,7 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
     witness: EigenDAWitness,
+    recency_window_provider: impl RecencyWindowProvider,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
@@ -42,6 +44,20 @@ where
         .header_by_hash(l1_head)
         .await
         .expect("should be able to get header for l1 header using oracle");
+
+    for (_, recency) in witness.recencies.iter() {
+        let derived_recency = recency_window_provider.fetch_recency_window(
+            boot_info.rollup_config.l1_chain_id,
+            header.number,
+            header.timestamp,
+        );
+
+        if derived_recency != *recency {
+            panic!("the recency window value {recency} provided by the host is different from the value {derived_recency} \
+                from the implementation of RecencyWindowProvider. {derived_recency} anchors the true recency window \
+                please adjust the host value accordingly.");
+        }
+    }
 
     // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM.
     // All the data from the oracle has been verified, by Kailua and OP-succincts

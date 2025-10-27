@@ -42,6 +42,13 @@ where
             .get_recency_window(&altda_commitment)
             .await
         {
+            // if recency is 0, disable the recency check
+            Ok(0) => warn!(
+                "recency check is disabled in the eigenda blob derivation. \
+                            It is vulnerable to malicious or misbehaving batcher that \
+                            submits DA certificate whose blob has been pruned by the \
+                            DA network"
+            ),
             Ok(recency) => {
                 // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
                 if l1_inclusion_bn > altda_commitment.get_rbn() + recency {
