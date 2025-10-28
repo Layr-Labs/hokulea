@@ -14,7 +14,7 @@ use eigenda_cert::AltDACommitment;
 use rsp_primitives::genesis::Genesis;
 use sp1_cc_client_executor::ChainConfig;
 
-use tracing::{info, warn};
+use tracing::info;
 
 /// Any change to sp1-cc client including new sp1 toolchain produces a new ELF to be executed and proved by zkVM
 /// To generate the new ELF (a newer version than 5.2.1 toolchain tag is also fine)
@@ -72,11 +72,11 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
                 verify_sp1_proof(&V_KEY, &public_values_digest.into());
+                Ok(())
             } else {
-                warn!("Skipping sp1CC proof verification in native mode outside of zkVM, because sp1 cannot take sp1-sdk as dependency which is needed for verification in the native mode");
+                panic!("CanoeSp1CCVerifier should only be used for secure integration whose validation happens in zkVM");
             }
         }
-        Ok(())
     }
 
     fn to_journals_bytes(
