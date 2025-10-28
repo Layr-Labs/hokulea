@@ -51,12 +51,11 @@ async fn main() -> anyhow::Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(feature = "steel")] {
             use canoe_steel_apps::apps::CanoeSteelProvider;
-            use canoe_steel_verifier::CanoeSteelVerifier;
-            //use hokulea_proof::canoe_verifier::steel::CanoeSteelVerifier;
+            use canoe_steel_verifier::CanoeSteelVerifierForDevnetTesting;
             let canoe_provider = CanoeSteelProvider{
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
             };
-            let canoe_verifier = CanoeSteelVerifier{};
+            let canoe_verifier = CanoeSteelVerifierForDevnetTesting{};
         } else if #[cfg(feature = "sp1-cc")] {
             // Note that in order to run hokulea in zkVM with the sp1-cc proof verified within
             // the zkVM, the program input to zkVM (i.e SP1Stdin) must also contain sp1-cc compressed

@@ -15,6 +15,10 @@
 #![allow(unused_doc_comments)]
 #![no_main]
 
+extern crate alloc;
+
+use alloc::string::ToString;
+
 use risc0_steel::{
     ethereum::{EthEvmInput, ETH_SEPOLIA_CHAIN_SPEC, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC},    
     Contract,
@@ -25,7 +29,7 @@ use canoe_bindings::{
     Journal, StatusCode
 };
 use canoe_provider::{CanoeInput, CertVerifierCall};
-use alloy_primitives::B256;
+use alloy_primitives::{keccak256, B256};
 
 risc0_zkvm::guest::entry!(main);
 
@@ -52,11 +56,23 @@ fn main() {
         1 => input.into_env(&ETH_MAINNET_CHAIN_SPEC),
         11155111 => input.into_env(&ETH_SEPOLIA_CHAIN_SPEC),
         17000 => input.into_env(&ETH_HOLESKY_CHAIN_SPEC),
-        _ => input.into_env(&EthChainSpec::new_single(l1_chain_id, Default::default())),
+        3151908 => input.into_env(&EthChainSpec::new_single(l1_chain_id, Default::default())),
+        _ => panic!("unsupported chain id by canoe steel"),
     };
 
-    assert_eq!(l1_head_block_number, env.header().number);
+    // current release of steel does not expose active_fork function, but it is already included in the latest
+    // commit. (ToDo) once release is updated, call the function on env
+    let active_fork_string = match l1_chain_id {
+        1 => ETH_MAINNET_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on mainnet with steel").to_string(),
+        11155111 => ETH_SEPOLIA_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on sepolia with steel").to_string(),
+        17000 => ETH_HOLESKY_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on holesky with steel").to_string(),
+        3151908 => ETH_MAINNET_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on kurtosis with steel").to_string(),
+        _ => panic!("unsupported chain id by canoe steel"),
+    };
 
+    let chain_config_hash = keccak256(active_fork_string);
+
+    assert_eq!(l1_head_block_number, env.header().number);
     // Those journals are pushed into a vector and later serialized in a byte array which can be committed
     // by the zkVM. To verify if zkVM has produced the proof for the exact serialized journals, canoe verifier
     // verifies the zkVM proof against the commited journals.
@@ -83,7 +99,7 @@ fn main() {
             blockhash: l1_head_block_hash,
             output: is_valid,
             l1ChainId: l1_chain_id,
-            chainConfigHash: B256::default(),
+            chainConfigHash: chain_config_hash,
             chainSpecHash:  B256::default(), // steel does not have the problem to pin chain Config
         };
         journals.push(journal);
