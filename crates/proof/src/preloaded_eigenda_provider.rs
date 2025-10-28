@@ -1,4 +1,4 @@
-use crate::eigenda_witness::EigenDAWitness;
+use crate::eigenda_witness::EigenDAWitnessWithTrustedData;
 use crate::errors::HokuleaOracleProviderError;
 use alloy_primitives::FixedBytes;
 use ark_bn254::{Fq, G1Affine};
@@ -13,7 +13,8 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use canoe_verifier::CanoeVerifier;
+use canoe_verifier::{CanoeVerifier, CertValidity};
+use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 
 /// PreloadedEigenDAPreimageProvider converts EigenDAWitness into preimage data
 /// can be used to implement the EigenDAPreimageProvider trait, that contains
@@ -54,25 +55,24 @@ impl PreloadedEigenDAPreimageProvider {
     /// due to unmatched key.
     /// The Canoe proof validates all the validity all at once.
     pub fn from_witness(
-        value: EigenDAWitness,
+        witness_with_trusted_data: EigenDAWitnessWithTrustedData,
         canoe_verifier: impl CanoeVerifier,
+        canoe_verifier_address_fetcher: impl CanoeVerifierAddressFetcher,
     ) -> PreloadedEigenDAPreimageProvider {
+        let eigenda_witness = witness_with_trusted_data.witness;
         // check number of element invariants
-        assert!(value.recencies.len() >= value.validities.len());
-        assert!(value.validities.len() >= value.encoded_payloads.len());
+        assert!(eigenda_witness.recencies.len() >= eigenda_witness.validities.len());
+        assert!(eigenda_witness.validities.len() >= eigenda_witness.encoded_payloads.len());
 
         // recency window is the first check against incoming DA cert from derivation pipeline
         //
         // Important assumption, recency must come from a trusted or validated source
         // currently, recency is set to be identical to sequencing window, which come directly
         // boot info
-        let mut recency_entries = value.recencies.clone();
-
-        // check all altda commitment validity are supported by zk validity proof
-        let mut validity_entries = vec![];
+        let mut recency_entries = eigenda_witness.recencies.clone();
 
         // check all encoded payload having correct number of field elements compared to the number from altda commitment
-        for (altda_commitment, encoded_payload, _) in &value.encoded_payloads {
+        for (altda_commitment, encoded_payload, _) in &eigenda_witness.encoded_payloads {
             assert_eq!(
                 encoded_payload.num_field_element(),
                 altda_commitment.get_num_field_element()
@@ -81,16 +81,41 @@ impl PreloadedEigenDAPreimageProvider {
 
         // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
         // da cert is valid or not. Otherwise, skip the verification
-        if !value.validities.is_empty() {
+        if !eigenda_witness.validities.is_empty() {
+            // construct cert validity
+            let cert_validities = eigenda_witness
+                .validities
+                .iter()
+                .map(|(altda_commitment, claimed_validity)| {
+                    let verifier_address_fetched = canoe_verifier_address_fetcher
+                        .fetch_address(
+                            witness_with_trusted_data.l1_chain_id,
+                            &altda_commitment.versioned_cert,
+                        )
+                        .expect("should be able to get verifier address");
+                    let cert_validity = CertValidity {
+                        l1_head_block_hash: witness_with_trusted_data.l1_head_block_hash,
+                        l1_chain_id: witness_with_trusted_data.l1_chain_id,
+                        l1_head_block_number: witness_with_trusted_data.l1_head_block_number,
+                        l1_head_block_timestamp: witness_with_trusted_data.l1_head_block_timestamp,
+                        verifier_address: verifier_address_fetched,
+                        claimed_validity: *claimed_validity,
+                    };
+                    (altda_commitment.clone(), cert_validity)
+                })
+                .collect();
+
             // check cert validity altogether in one verification
             canoe_verifier
-                .validate_cert_receipt(value.validities.clone(), value.canoe_proof_bytes)
+                .validate_cert_receipt(cert_validities, eigenda_witness.canoe_proof_bytes)
                 .expect("verification should have been passing");
         }
 
-        for (altda_commitment, cert_validity) in &value.validities {
+        // check all altda commitment validity are supported by zk validity proof
+        let mut validity_entries = vec![];
+        for (altda_commitment, claimed_validity) in &eigenda_witness.validities {
             // populate only the mapping <DAcert, boolean> for preimage trait, by this time it has been verified
-            validity_entries.push((altda_commitment.clone(), cert_validity.claimed_validity));
+            validity_entries.push((altda_commitment.clone(), *claimed_validity));
         }
 
         let mut encoded_payload_entries = vec![];
@@ -100,16 +125,16 @@ impl PreloadedEigenDAPreimageProvider {
         let mut proofs = vec![];
         let mut commitments = vec![];
 
-        for (cert, encoded_payload, kzg_proof) in value.encoded_payloads {
+        for (altda_commitment, encoded_payload, kzg_proof) in eigenda_witness.encoded_payloads {
             // populate entries ahead of time, if something is invalid, batch_verify will abort
-            encoded_payload_entries.push((cert.clone(), encoded_payload.clone()));
+            encoded_payload_entries.push((altda_commitment.clone(), encoded_payload.clone()));
 
             // gather kzg commitment and proof for batch verification
             let blob =
                 Blob::new(encoded_payload.serialize()).expect("should be able to construct a blob");
             blobs.push(blob);
             proofs.push(kzg_proof);
-            commitments.push(cert.get_kzg_commitment());
+            commitments.push(altda_commitment.get_kzg_commitment());
         }
 
         assert!(batch_verify(&blobs, &commitments, &proofs));
@@ -214,9 +239,11 @@ pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::eigenda_witness::EigenDAWitness;
     use alloc::vec;
     use alloy_primitives::{hex, Bytes, U256};
-    use canoe_verifier::{CanoeNoOpVerifier, CertValidity};
+    use canoe_verifier::CanoeNoOpVerifier;
+    use canoe_verifier_address_fetcher::CanoeNoOpVerifierAddressFetcher;
     use eigenda_cert::AltDACommitment;
     use num::BigUint;
     use rust_kzg_bn254_primitives::errors::KzgError;
@@ -300,10 +327,6 @@ mod tests {
         let calldata: Bytes = alloy_primitives::hex::decode("0x010002f9047ce5a04c617ac0dcf14f58a1d58e80c9902e2c199474989563dc59566d5bd5ad1b640a838deb8cf901cef901c9f9018180820001f90159f842a02f79ec81c41b992e9dec0c96fe5d970657bd5699560b1eaca902b6d8d95b69d9a014aee8fa5e2bd3a23ce376c537248acce7c29a74962218a4cc19c483d962dcf7f888f842a01c4c0eec183bf264a5b96b2ddc64e400a3f03752fb9d4296f3b4729e237ea40da01303695a7e9cba15f6ecb2e5da94826c94e557d94a491b61b42e2fb577bf5983f842a00c4bb24f65dd9d63401f8fb5aa680c36c3a18c06996511ce14544d77bc3659bba01a201aef9dceb92540f58243194aeae5c4b5953dddf17925c5a56bcb57ec19adf888f842a02a71a11141df9d0a5158602444003491763859afb77b1566a3eabafc162d4617a027bfbe487a7507ab70b6b42433850f8b7be21ab2c268f415cb68608506da9114f842a013002e07d4f2259193d9aa06a01866dc527221d65cc5c49c4c05cfc281d873c1a02d47dba83902698378718ab5c589eb9c7daa5f9641a5ce160f112bc65b40227308a0731bd6915a6ccea1380db7f0695ad67ee03bfbd59ac8c7976ee25f7ec9515037b8414cd74a3034296d0e2d63ce879dbe578e0715c29fd388c9babb38bd99ef45c64d548d60eec508758c6101b4b01ff2b65ff503fa485a8035a54edd1bc71d84430e00c1808080f9027fc401808080f9010ff842a01cd040b326ae7cd372763fafb595470d3613f6fb3d824582bf02edcb735ccb0fa017bbe7ebc3167abad8710ecd335b37a1b63d1f0119569bcf3f84d2125810a294f842a0297ac518058025f67f0c0cc4d735965f242540ddbf998491e5b66a5c9d56c712a00dc76d3bfe805d8ad41c96a5d3696ecd22c44049057fbb2b2f3e0c204f5dd745f8419f9a9a3504786f979f4011c180069d0127599773df85c02f550c8bcd4336d150a02bf5de7c6791a70185eb0eef04661bbf6f3596569843dbd9172eea27ad484249f842a020304749b8c2e65c4a82035cf1c559ea8b8d7ab9a94b6dc7d4b79299be445ae9a02b4d5e4ecb245d94af3d6c279c1a86fb452401355be715ac4887fcdcf7642ce4f888f842a02099209289cdb7e5087d0401996d2fd9b52ce5cae39c547a039f126371a7f9bca026139d9d30188c9d52468ce9dfb48c39d552243611d5b270f5497c2b8692c696f842a02b2dabbf32c0cb551d3ba9159ae5c985ebcd71d79b00fabd26a74d618065bfd6a01bef832bd3efaea9f61c0582fb123bb547546f0c5910a9dda96bcd0063d57a02f888f842a0171e10f7d012c823ceb26e40245a97375804a82ca8f92e0dd49fc5f76c3b093ea028946cc01b7092bb709a72c07184d84821125632337d4c8f9a063afcefdc57c0f842a00df37a0480625fa5ab86d78e4664d2bacfed6c4e7562956bfc95f2b9efd1977ca0121ae7669b68221699c6b4eb057acbf2e58d4fb4b4da7aa5e4deaaac513f6ce0f842a01abcc37d2cbe680d5d6d3ebeddc3f5b09f103e2fa3a20a887c573f2ac5ab6e36a01a23d0ac964f04643eb3206db5a81e678fc484f362d3c7442657735e678298c3c20705c20805c9c3018080c480808080820001").unwrap().into();
         let mut altda_commitment: AltDACommitment = calldata[..].try_into().unwrap();
 
-        let claimed_false_cert_validity = CertValidity::default();
-        let mut claimed_true_cert_validity = claimed_false_cert_validity.clone();
-        claimed_true_cert_validity.claimed_validity = true;
-
         let (_, commitment, proof) =
             compute_kzg_proof_and_commitment(encoded_payload_inner.clone());
         match &mut altda_commitment.versioned_cert {
@@ -325,7 +348,7 @@ mod tests {
 
         EigenDAWitness {
             recencies: vec![(altda_commitment.clone(), 1)],
-            validities: vec![(altda_commitment.clone(), claimed_true_cert_validity.clone())],
+            validities: vec![(altda_commitment.clone(), true)],
             encoded_payloads: vec![(
                 altda_commitment.clone(),
                 EncodedPayload {
@@ -394,8 +417,9 @@ mod tests {
     #[tokio::test]
     async fn test_from_witness_ok_0_preimage() {
         let preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitness::default(),
+            EigenDAWitnessWithTrustedData::default(),
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
         assert_eq!(preimage.encoded_payload_entries.len(), 0);
         assert_eq!(preimage.validity_entries.len(), 0);
@@ -410,8 +434,12 @@ mod tests {
         let altda_commitment = eigenda_witness.recencies[0].0.clone();
 
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
         assert_eq!(
             preimage
@@ -422,7 +450,7 @@ mod tests {
         );
         assert_eq!(
             preimage.get_validity(&altda_commitment).await.unwrap(),
-            eigenda_witness.validities[0].1.claimed_validity
+            eigenda_witness.validities[0].1
         );
         assert_eq!(
             preimage
@@ -442,8 +470,12 @@ mod tests {
         let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
         let _ = preimage.get_recency_window(&altda_commitment).await;
     }
@@ -456,8 +488,12 @@ mod tests {
         let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
         let _ = preimage.get_validity(&altda_commitment).await;
     }
@@ -470,8 +506,12 @@ mod tests {
         let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
         let _ = preimage.get_encoded_payload(&altda_commitment).await;
     }
@@ -485,8 +525,12 @@ mod tests {
             .validities
             .extend(eigenda_witness.validities.clone());
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
     }
 
@@ -499,8 +543,12 @@ mod tests {
             .encoded_payloads
             .extend(eigenda_witness.encoded_payloads.clone());
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
     }
 
@@ -510,8 +558,12 @@ mod tests {
     async fn test_from_witness_not_field_element() {
         let eigenda_witness = prepare_data_with_invalid_encoded_payload();
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            eigenda_witness.clone(),
+            EigenDAWitnessWithTrustedData {
+                witness: eigenda_witness.clone(),
+                ..Default::default()
+            },
             CanoeNoOpVerifier {},
+            CanoeNoOpVerifierAddressFetcher {},
         );
     }
 }

@@ -5,18 +5,15 @@ edition = "2021"
 
 
 [dependencies]
-alloy-primitives.workspace = true
 alloy-consensus.workspace = true
 alloy-rlp = { workspace = true }
 
 kona-proof.workspace = true
 kona-preimage.workspace = true
 hokulea-proof.workspace = true
-hokulea-compute-proof.workspace = true
 hokulea-eigenda.workspace = true
 eigenda-cert.workspace = true
 canoe-provider.workspace = true
-canoe-verifier.workspace = true
 canoe-verifier-address-fetcher.workspace = true
 
 async-trait.workspace = true

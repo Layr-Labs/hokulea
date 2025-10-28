@@ -56,6 +56,6 @@ impl CanoeProvider for CanoeNoOpProvider {
         &self,
         _canoe_inputs: Vec<CanoeInput>,
     ) -> Option<Result<Self::Receipt>> {
-        None
+        Some(Ok(()))
     }
 }
