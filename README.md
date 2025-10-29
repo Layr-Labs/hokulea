@@ -11,6 +11,22 @@ We use mise to track and manage dependencies. Please first [install mise](https:
 ## SRS points
 Hokulea's proving client currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the proving client to have access to sufficient KZG G1 SRS points. Currently the SRS points are (hardcoded) assumed to be located at `resources/g1.point`. You can download the SRS points to that location by running `just download-srs`, which downloads the `g1.point` file from the [eigenda repo](https://github.com/Layr-Labs/eigenda-proxy/tree/main/resources).
 
+## Integrating with Hokulea
+
+A complete overview of the integration pipeline can be found in the [documentation](./docs/README.md). For zkVM integration details, refer to the following sections:
+- [Overview on data transformation for secure integration with zkVM](./docs/README.md#overview-on-data-transformation-for-secure-integration-with-zkvm)
+- [Three implementation of EigenDAPreimageProvider trait and their differences](./docs/README.md#three-implementation-of-eigendapreimageprovider-trait-and-their-differences)
+
+For a practical example of how the library can be integrated with a zkVM, see `example/preloader/main.rs`. (Note: this example includes mock elements for demonstration purposes.)
+For real-world implementations, both Op-succinct and Kailua integrate Hokulea in their zkVM workflows:
+
+- [Op-succinct client](https://github.com/succinctlabs/op-succinct/tree/main/programs/range/eigenda)
+- [Op-succinct host](https://github.com/succinctlabs/op-succinct/tree/main/utils/eigenda/host)
+- [Kailua client](https://github.com/boundless-xyz/kailua/tree/main/crates/hokulea/src)
+- [Kailua host](https://github.com/boundless-xyz/kailua/tree/main/crates/prover/src/hokulea)
+
+[documentation](./docs/README.md) is also applicable for other integrations, and pay special attention on the trust assumption on certain data structure.
+
 ## EigenDA proxy configuration
 Hokulea relies on eigenda proxy for fetching preimage values, including `recency_window`, `cert_validity` and `encoded_payload`. For cert validity and encode payload, the preimage comes from proxy and is verified later, whereas the recency window value is set in hokulea directly. However, the proxy maintains its own recency_window to process the eigenda blob derivation. For all trustless integrations, this number must be kept consistent on every proxy run by `op-node`s.
 

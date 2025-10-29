@@ -119,7 +119,11 @@ impl EigenDAWitness {
 /// trusted input data source. Those are either already verified or will be verified without
 /// modification. In practice, all of data can be found in verified oracle BootInfo, or Header
 /// corresponding to the l1_head from BootInfo.
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+/// zkVM crate provides an example method `eigenda_witness_to_preloaded_provider` to convert a
+/// [EigenDAWitness] to [EigenDAWitnessWithTrustedData] using a trusted oracle, which has been
+/// populated the trusted l1_head_block_hash and its corresponding header used to populate all
+/// the fields
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDAWitnessWithTrustedData {
     // recency window that has to be consistent with setup with proxy
     pub recency_window: u64,
