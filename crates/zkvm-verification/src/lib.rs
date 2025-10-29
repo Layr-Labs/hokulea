@@ -29,8 +29,8 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
-    witness: EigenDAWitness,
     recency_window_provider: impl RecencyWindowProvider,
+    witness: EigenDAWitness,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
