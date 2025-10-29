@@ -58,6 +58,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
             if #[cfg(target_os = "zkvm")] {
                 use sha2::{Digest, Sha256};
                 use sp1_lib::verify::verify_sp1_proof;
+                use tracing::warn;
 
                 // while transforming to journal bytes, it verifies if chain config hash is correctly set
                 let journals_bytes = self.to_journals_bytes(cert_validity_pair);
