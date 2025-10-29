@@ -15,7 +15,7 @@ use canoe_bindings::Journal;
 use canoe_steel_methods::CERT_VERIFICATION_ID;
 use canoe_verifier::{chain_spec, CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use risc0_steel::ethereum::{
-    ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC,EthChainSpec, 
+    EthChainSpec, ETH_HOLESKY_CHAIN_SPEC, ETH_MAINNET_CHAIN_SPEC, ETH_SEPOLIA_CHAIN_SPEC,
 };
 use tracing::{info, warn};
 
@@ -183,7 +183,8 @@ fn get_steel_active_fork(chain_id: u64, timestamp: u64, block_number: u64) -> St
         // kurtosis devnet
         3151908 => &EthChainSpec::new_single(3151908, Default::default())
             .active_fork(block_number, timestamp)
-            .expect("should be able to get active fork with steel chain spec on kurtosis").clone(),
+            .expect("should be able to get active fork with steel chain spec on kurtosis")
+            .clone(),
         _ => panic!("unsupported chain id"),
     };
     spec_id.to_string()
