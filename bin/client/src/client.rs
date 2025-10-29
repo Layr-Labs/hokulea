@@ -11,8 +11,10 @@ use hokulea_client::fp_client;
 use hokulea_proof::eigenda_provider::OracleEigenDAPreimageProvider;
 
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use alloy_op_evm::block::OpTxEnv;
 use op_alloy_consensus::OpTxEnvelope;
 use op_revm::OpSpecId;
+use revm::context::BlockEnv;
 
 /// The function uses the identical function signature as the kona client
 /// This is the basic hokulea client containing the minimal layer between kona client and hokulea host
@@ -26,15 +28,13 @@ pub async fn run_direct_client<P, H, Evm>(
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
-    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = revm::context::BlockEnv>
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv>
         + Send
         + Sync
         + Debug
         + Clone
         + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope>
-        + FromRecoveredTx<OpTxEnvelope>
-        + alloy_op_evm::block::OpTxEnv,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
 
