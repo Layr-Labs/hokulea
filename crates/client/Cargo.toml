@@ -8,7 +8,9 @@ edition = "2021"
 alloy-consensus.workspace = true
 alloy-evm.workspace = true
 
+alloy-op-evm.workspace = true
 op-alloy-consensus.workspace = true
+revm.workspace = true
 op-revm.workspace = true
 
 kona-client.workspace = true

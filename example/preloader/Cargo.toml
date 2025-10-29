@@ -26,6 +26,8 @@ kona-proof.workspace = true
 
 # Execution
 alloy-evm.workspace = true
+alloy-op-evm.workspace = true
+revm.workspace = true
 op-revm.workspace = true
 op-alloy-consensus.workspace = true
 
