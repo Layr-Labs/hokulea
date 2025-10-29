@@ -100,7 +100,8 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 cert_validity.l1_head_block_number,
             );
 
-            // genesis hash
+            // genesis hash, not if the chain id is 3151908, which is used for kurtosis devnet, the system
+            // would panic as expected.
             let rsp_genesis_hash = rsp_genesis_hash(cert_validity.l1_chain_id);
 
             let journal = Journal {
