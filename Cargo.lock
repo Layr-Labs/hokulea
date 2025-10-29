@@ -2410,7 +2410,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
- "sp1-cc-client-executor",
+ "sp1-cc-client-executor 0.1.0 (git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c)",
  "sp1-zkvm",
 ]
 
@@ -2427,7 +2427,7 @@ dependencies = [
  "canoe-bindings",
  "canoe-provider",
  "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
- "sp1-cc-client-executor",
+ "sp1-cc-client-executor 0.1.0 (git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c)",
  "sp1-cc-host-executor",
  "sp1-core-executor",
  "sp1-prover",
@@ -2449,7 +2449,7 @@ dependencies = [
  "eigenda-cert",
  "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
  "sha2 0.10.9",
- "sp1-cc-client-executor",
+ "sp1-cc-client-executor 0.1.0 (git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c)",
  "sp1-lib",
  "tracing",
 ]
@@ -3617,30 +3617,6 @@ dependencies = [
 [[package]]
 name = "ethereum-consensus"
 version = "0.1.1"
-source = "git+https://github.com/succinctlabs/ethereum-consensus?branch=dev#b5ad46a41ba1866992c9d7dc068f18dc00fdb251"
-dependencies = [
- "blst",
- "bs58",
- "c-kzg",
- "enr",
- "hex",
- "integer-sqrt",
- "multiaddr",
- "multihash",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "serde_yaml",
- "sha2 0.10.9",
- "ssz_rs 0.9.0 (git+https://github.com/succinctlabs/ssz-rs?branch=dev)",
- "thiserror 1.0.69",
- "tokio",
- "tokio-stream",
-]
-
-[[package]]
-name = "ethereum-consensus"
-version = "0.1.1"
 source = "git+https://github.com/ralexstokes/ethereum-consensus.git?rev=ade5ce6c4a19107c1059e5338d8f18855bd2d931#ade5ce6c4a19107c1059e5338d8f18855bd2d931"
 dependencies = [
  "blst",
@@ -3656,7 +3632,31 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha2 0.10.9",
- "ssz_rs 0.9.0 (git+https://github.com/ralexstokes/ssz-rs?rev=84ef2b71aa004f6767420badb42c902ad56b8b72)",
+ "ssz_rs",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
+name = "ethereum-consensus"
+version = "0.1.1"
+source = "git+https://github.com/ralexstokes/ethereum-consensus?rev=ba43147eb71b07e21e156e2904549405f87bc9a6#ba43147eb71b07e21e156e2904549405f87bc9a6"
+dependencies = [
+ "blst",
+ "bs58",
+ "c-kzg",
+ "enr",
+ "hex",
+ "integer-sqrt",
+ "multiaddr",
+ "multihash",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2 0.10.9",
+ "ssz_rs",
  "thiserror 1.0.69",
  "tokio",
  "tokio-stream",
@@ -4649,7 +4649,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.0",
+ "socket2 0.5.10",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -5554,7 +5554,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.53.4",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -7252,7 +7252,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash 2.1.1",
  "rustls 0.23.32",
- "socket2 0.6.0",
+ "socket2 0.5.10",
  "thiserror 2.0.17",
  "tokio",
  "tracing",
@@ -7289,7 +7289,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.6.0",
+ "socket2 0.5.10",
  "tracing",
  "windows-sys 0.60.2",
 ]
@@ -8570,6 +8570,38 @@ dependencies = [
 [[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+dependencies = [
+ "alloy-consensus",
+ "alloy-evm 0.21.2",
+ "alloy-network",
+ "alloy-primitives 1.4.0",
+ "alloy-rpc-types",
+ "itertools 0.13.0",
+ "reth-chainspec",
+ "reth-consensus",
+ "reth-consensus-common",
+ "reth-errors",
+ "reth-ethereum-consensus",
+ "reth-ethereum-primitives",
+ "reth-evm",
+ "reth-evm-ethereum",
+ "reth-execution-types",
+ "reth-primitives-traits",
+ "reth-trie",
+ "revm",
+ "revm-primitives",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "rsp-client-executor"
+version = "0.1.0"
 source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
 dependencies = [
  "alloy-consensus",
@@ -8591,11 +8623,26 @@ dependencies = [
  "reth-trie",
  "revm",
  "revm-primitives",
- "rsp-mpt",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "serde",
  "serde_json",
  "serde_with",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "rsp-mpt"
+version = "0.1.0"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+dependencies = [
+ "alloy-primitives 1.4.0",
+ "alloy-rlp",
+ "alloy-rpc-types",
+ "alloy-rpc-types-debug",
+ "reth-trie",
+ "rlp",
+ "serde",
  "thiserror 1.0.69",
 ]
 
@@ -8655,7 +8702,7 @@ dependencies = [
 [[package]]
 name = "rsp-rpc-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
 dependencies = [
  "alloy-consensus",
  "alloy-primitives 1.4.0",
@@ -8669,11 +8716,24 @@ dependencies = [
  "revm-database-interface",
  "revm-primitives",
  "revm-state",
- "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "rsp-witness-db"
+version = "0.1.0"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+dependencies = [
+ "alloy-primitives 1.4.0",
+ "reth-storage-errors",
+ "revm-database-interface",
+ "revm-primitives",
+ "revm-state",
+ "serde",
 ]
 
 [[package]]
@@ -9583,6 +9643,40 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2#24462b15c9da843e27a80164c9d5316a1e2f9a35"
+dependencies = [
+ "alloy-consensus",
+ "alloy-eips",
+ "alloy-evm 0.21.2",
+ "alloy-primitives 1.4.0",
+ "alloy-rpc-types",
+ "alloy-rpc-types-eth",
+ "alloy-serde",
+ "alloy-sol-types",
+ "alloy-trie 0.9.1",
+ "eyre",
+ "reth-chainspec",
+ "reth-consensus",
+ "reth-ethereum-consensus",
+ "reth-evm",
+ "reth-evm-ethereum",
+ "reth-primitives",
+ "revm",
+ "revm-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-witness-db 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "serde",
+ "serde_with",
+ "sha2 0.10.9",
+ "sp1-zkvm",
+ "thiserror 2.0.17",
+]
+
+[[package]]
+name = "sp1-cc-client-executor"
+version = "0.1.0"
 source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c#3932df71d880cfb58a4689af6832a068c2c82b82"
 dependencies = [
  "alloy-consensus",
@@ -9603,10 +9697,10 @@ dependencies = [
  "reth-primitives",
  "revm",
  "revm-primitives",
- "rsp-client-executor",
- "rsp-mpt",
+ "rsp-client-executor 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
- "rsp-witness-db",
+ "rsp-witness-db 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "serde",
  "serde_with",
  "sha2 0.10.9",
@@ -9617,7 +9711,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c#3932df71d880cfb58a4689af6832a068c2c82b82"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2#24462b15c9da843e27a80164c9d5316a1e2f9a35"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -9629,20 +9723,20 @@ dependencies = [
  "alloy-sol-types",
  "alloy-transport",
  "async-trait",
- "ethereum-consensus 0.1.1 (git+https://github.com/succinctlabs/ethereum-consensus?branch=dev)",
+ "ethereum-consensus 0.1.1 (git+https://github.com/ralexstokes/ethereum-consensus?rev=ba43147eb71b07e21e156e2904549405f87bc9a6)",
  "eyre",
  "reqwest",
  "reth-chainspec",
  "reth-primitives",
  "revm",
  "revm-primitives",
- "rsp-client-executor",
- "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
+ "rsp-client-executor 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
  "rsp-rpc-db",
  "serde",
  "serde_json",
- "sp1-cc-client-executor",
+ "sp1-cc-client-executor 0.1.0 (git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2)",
  "thiserror 2.0.17",
  "tokio",
  "tracing",
@@ -10167,35 +10261,13 @@ dependencies = [
 [[package]]
 name = "ssz_rs"
 version = "0.9.0"
-source = "git+https://github.com/succinctlabs/ssz-rs?branch=dev#f7266620b524389bd92c4e6be875e2a884eb6ac0"
-dependencies = [
- "alloy-primitives 1.4.0",
- "bitvec",
- "serde",
- "sha2 0.9.9",
- "ssz_rs_derive 0.9.0 (git+https://github.com/succinctlabs/ssz-rs?branch=dev)",
-]
-
-[[package]]
-name = "ssz_rs"
-version = "0.9.0"
 source = "git+https://github.com/ralexstokes/ssz-rs?rev=84ef2b71aa004f6767420badb42c902ad56b8b72#84ef2b71aa004f6767420badb42c902ad56b8b72"
 dependencies = [
  "alloy-primitives 0.7.7",
  "bitvec",
  "serde",
  "sha2 0.9.9",
- "ssz_rs_derive 0.9.0 (git+https://github.com/ralexstokes/ssz-rs?rev=84ef2b71aa004f6767420badb42c902ad56b8b72)",
-]
-
-[[package]]
-name = "ssz_rs_derive"
-version = "0.9.0"
-source = "git+https://github.com/succinctlabs/ssz-rs?branch=dev#f7266620b524389bd92c4e6be875e2a884eb6ac0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
+ "ssz_rs_derive",
 ]
 
 [[package]]
