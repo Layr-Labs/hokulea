@@ -2426,7 +2426,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",
  "sp1-core-executor",
@@ -2447,7 +2447,7 @@ dependencies = [
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
  "sp1-lib",
@@ -8570,7 +8570,7 @@ dependencies = [
 [[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
 dependencies = [
  "alloy-consensus",
  "alloy-evm 0.21.2",
@@ -8592,7 +8592,7 @@ dependencies = [
  "revm",
  "revm-primitives",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "serde",
  "serde_json",
  "serde_with",
@@ -8602,7 +8602,7 @@ dependencies = [
 [[package]]
 name = "rsp-mpt"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
 dependencies = [
  "alloy-primitives 1.4.0",
  "alloy-rlp",
@@ -8636,7 +8636,7 @@ dependencies = [
 [[package]]
 name = "rsp-primitives"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?rev=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
 dependencies = [
  "alloy-eips",
  "alloy-genesis",
@@ -8655,7 +8655,7 @@ dependencies = [
 [[package]]
 name = "rsp-rpc-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
 dependencies = [
  "alloy-consensus",
  "alloy-primitives 1.4.0",
@@ -8670,7 +8670,7 @@ dependencies = [
  "revm-primitives",
  "revm-state",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
@@ -8679,7 +8679,7 @@ dependencies = [
 [[package]]
 name = "rsp-witness-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2#e39d5fea281ed5e22dd5d572e02b650699af97ec"
+source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b#805ca49639c23b0ed345db9b1fa50349cb3c92b6"
 dependencies = [
  "alloy-primitives 1.4.0",
  "reth-storage-errors",
@@ -9583,7 +9583,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2b#9d9a45c550d3373dbf9bd7fb1f4907356f657722"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c#3932df71d880cfb58a4689af6832a068c2c82b82"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -9605,7 +9605,7 @@ dependencies = [
  "revm-primitives",
  "rsp-client-executor",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "rsp-witness-db",
  "serde",
  "serde_with",
@@ -9617,7 +9617,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2b#9d9a45c550d3373dbf9bd7fb1f4907356f657722"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.8.2c#3932df71d880cfb58a4689af6832a068c2c82b82"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -9638,7 +9638,7 @@ dependencies = [
  "revm-primitives",
  "rsp-client-executor",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.8.2b)",
  "rsp-rpc-db",
  "serde",
  "serde_json",
