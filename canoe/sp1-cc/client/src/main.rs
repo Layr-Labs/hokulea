@@ -122,6 +122,9 @@ pub fn main() {
 
         let rlp_bytes = canoe_input.altda_commitment.to_rlp_bytes();
 
+        // check the claimed validity equals to the evaluation result from sp1-cc
+        assert!(canoe_input.claimed_validity == returns);
+
         assert!(anchor_hash == l1_head_block_hash);
 
         let journal = Journal {
