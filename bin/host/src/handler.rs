@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::HokuleaPreimageError;
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, ENCODED_PAYLOAD_HEADER_LEN_BYTES,
+    BYTES_PER_FIELD_ELEMENT_32, ENCODED_PAYLOAD_HEADER_LEN_BYTES,
     RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
     RESERVED_EIGENDA_API_BYTE_INDEX,
 };
@@ -253,7 +253,7 @@ async fn store_encoded_payload(
     // Validate field elements (keeping existing field element validation for compatibility)
     let encoded_payload_body = &encoded_payload[ENCODED_PAYLOAD_HEADER_LEN_BYTES..];
     // verify there is an empty byte for every 31 bytes. This is a harder constraint than field element range check.
-    for chunk in encoded_payload_body.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
+    for chunk in encoded_payload_body.chunks_exact(BYTES_PER_FIELD_ELEMENT_32) {
         // very conservative check on Field element range. It allows us to detect
         // misbehaving at the host side when providing the field element. So we can stop early.
         // the field element of on bn254 curve is some number less than 2^254
@@ -268,7 +268,7 @@ async fn store_encoded_payload(
         }
     }
 
-    let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64;
+    let fetch_num_element = (encoded_payload.len() / BYTES_PER_FIELD_ELEMENT_32) as u64;
     // Store each field element
     let mut field_element_key = altda_commitment.digest_template();
     for i in 0..blob_length_fe {

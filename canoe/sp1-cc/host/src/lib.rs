@@ -128,9 +128,11 @@ async fn get_sp1_cc_proof(
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
 
     let l1_head_block_number = canoe_inputs[0].l1_head_block_number;
+    let l1_head_block_hash = canoe_inputs[0].l1_head_block_hash;
     for canoe_input in canoe_inputs.iter() {
         assert!(canoe_input.l1_chain_id == l1_chain_id);
         assert!(canoe_input.l1_head_block_number == l1_head_block_number);
+        assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
     let start = Instant::now();
     info!(
@@ -173,6 +175,9 @@ async fn get_sp1_cc_proof(
                 .expect("evm sketch builder")
         }
     };
+
+    let derived_l1_header_hash = sketch.anchor.header().hash_slow();
+    assert!(l1_head_block_hash == derived_l1_header_hash);
 
     // pre populate the state
     for canoe_input in canoe_inputs.iter() {

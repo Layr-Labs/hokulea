@@ -57,9 +57,11 @@ async fn get_steel_proof(
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
     let l1_head_block_number = canoe_inputs[0].l1_head_block_number;
+    let l1_head_block_hash = canoe_inputs[0].l1_head_block_hash;
     for canoe_input in canoe_inputs.iter() {
         assert!(canoe_input.l1_chain_id == l1_chain_id);
         assert!(canoe_input.l1_head_block_number == l1_head_block_number);
+        assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
     let start = Instant::now();
     info!(
@@ -87,6 +89,9 @@ async fn get_steel_proof(
         .block_number_or_tag(BlockNumberOrTag::Number(l1_head_block_number))
         .build()
         .await?;
+
+    let derived_l1_head_block_hash = env.header().seal();
+    assert!(derived_l1_head_block_hash == l1_head_block_hash);
 
     for canoe_input in canoe_inputs.iter() {
         // Preflight the call to prepare the input that is required to execute the function in

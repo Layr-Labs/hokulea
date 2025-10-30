@@ -165,7 +165,12 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<u64, Self::Error> {
-        let (stored_altda_commitment, recency) = self.recency_entries.pop().unwrap();
+        let (stored_altda_commitment, recency) = self.recency_entries.pop().unwrap_or_else(|| {
+            panic!(
+                "no recency window available for {:?} in preloaded preiamge provider",
+                altda_commitment
+            )
+        });
         if stored_altda_commitment == *altda_commitment {
             Ok(recency)
         } else {
@@ -179,7 +184,13 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
-        let (stored_altda_commitment, validity) = self.validity_entries.pop().unwrap();
+        let (stored_altda_commitment, validity) =
+            self.validity_entries.pop().unwrap_or_else(|| {
+                panic!(
+                    "no validity available for {:?} in preloaded preiamge provider",
+                    altda_commitment
+                )
+            });
         if stored_altda_commitment == *altda_commitment {
             Ok(validity)
         } else {
@@ -194,7 +205,12 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
         altda_commitment: &AltDACommitment,
     ) -> Result<EncodedPayload, Self::Error> {
         let (stored_altda_commitment, encoded_payload) =
-            self.encoded_payload_entries.pop().unwrap();
+            self.encoded_payload_entries.pop().unwrap_or_else(|| {
+                panic!(
+                    "no encoded payload available for {:?} in preloaded preiamge provider",
+                    altda_commitment
+                )
+            });
         if stored_altda_commitment == *altda_commitment {
             Ok(encoded_payload)
         } else {
