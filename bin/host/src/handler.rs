@@ -5,9 +5,8 @@ use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::{BYTES_PER_FIELD_ELEMENT_32, HokuleaPreimageError};
 use hokulea_eigenda::{
-    RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
+    HokuleaPreimageError, BYTES_PER_FIELD_ELEMENT_32, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
     RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
