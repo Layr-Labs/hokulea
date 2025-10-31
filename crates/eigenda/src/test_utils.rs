@@ -12,9 +12,6 @@ use async_trait::async_trait;
 /// Custom hokulea preimage error
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum TestHokuleaProviderError {
-    /// Preimage returned something, but the returned value is invalid
-    #[error("Invalid Cert query response")]
-    InvalidHokuleaPreimageQueryResponse,
     /// Preimage Oracle error from kona
     /// <https://github.com/op-rs/kona/blob/174b2ac5ad3756d4469553c7777b04056f9d151c/crates/proof/proof/src/errors.rs#L18>
     #[error("Preimage oracle error")]
@@ -24,9 +21,6 @@ pub enum TestHokuleaProviderError {
 impl From<TestHokuleaProviderError> for HokuleaErrorKind {
     fn from(val: TestHokuleaProviderError) -> Self {
         match val {
-            TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse => {
-                HokuleaErrorKind::Critical("Invalid hokulea preimage response".to_string())
-            }
             // in kona, all Preimage error are grouped into backend error <https://github.com/op-rs/kona/blob/4ef01882824b84d078ead9f834f4f78213dd6ef3/crates/protocol/derive/src/sources/blobs.rs#L136>
             // which is considered a temp issue
             TestHokuleaProviderError::Preimage => {
@@ -44,8 +38,6 @@ pub(crate) struct TestEigenDAPreimageProvider {
     pub encoded_payloads: HashMap<B256, Result<EncodedPayload, TestHokuleaProviderError>>,
     // a backend error propogated to the client
     pub should_preimage_err: bool,
-    // an invalid response error
-    pub should_response_err: bool,
 }
 
 impl TestEigenDAPreimageProvider {
@@ -87,9 +79,6 @@ impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
         if self.should_preimage_err {
             return Err(TestHokuleaProviderError::Preimage);
         }
-        if self.should_response_err {
-            return Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse);
-        }
 
         self.recencies
             .get(&altda_commitment.to_digest())
@@ -104,9 +93,6 @@ impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
         if self.should_preimage_err {
             return Err(TestHokuleaProviderError::Preimage);
         }
-        if self.should_response_err {
-            return Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse);
-        }
 
         self.validities
             .get(&altda_commitment.to_digest())
@@ -120,9 +106,6 @@ impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
     ) -> Result<EncodedPayload, Self::Error> {
         if self.should_preimage_err {
             return Err(TestHokuleaProviderError::Preimage);
-        }
-        if self.should_response_err {
-            return Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse);
         }
 
         self.encoded_payloads

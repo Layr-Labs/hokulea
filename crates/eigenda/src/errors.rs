@@ -9,9 +9,6 @@ pub enum HokuleaErrorKind {
     /// for cert that has violated the rules in hokulea derivation
     #[error("Discard {0}")]
     Discard(String),
-    /// for provider violating eigenda properties, invalid field element
-    #[error("Critical {0}")]
-    Critical(String),
     /// for temporary issue like provider unable to provide data
     #[error("Temporary {0}")]
     Temporary(String),
