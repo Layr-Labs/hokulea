@@ -66,7 +66,7 @@ fn main() {
         1 => ETH_MAINNET_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on mainnet with steel").to_string(),
         11155111 => ETH_SEPOLIA_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on sepolia with steel").to_string(),
         17000 => ETH_HOLESKY_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on holesky with steel").to_string(),
-        3151908 => ETH_MAINNET_CHAIN_SPEC.active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on kurtosis with steel").to_string(),
+        3151908 => EthChainSpec::new_single(l1_chain_id, Default::default()).active_fork(l1_head_block_number, env.header().timestamp).expect("should be able to get active fork on kurtosis with steel").to_string(),
         _ => panic!("unsupported chain id by canoe steel"),
     };
 
