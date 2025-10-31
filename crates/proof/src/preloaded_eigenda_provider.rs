@@ -36,11 +36,11 @@ pub struct PreloadedEigenDAPreimageProvider {
     /// The tuple contains a mapping from DAcert to recency window size
     /// Although currently, recency window does not change across EigenDACertV2
     /// But to be future compatible, we anchor recency window size by rbn from EigenDACertV2
-    pub recency_entries: Vec<(AltDACommitment, u64)>,
+    recency_entries: Vec<(AltDACommitment, u64)>,
     /// The tuple contains a mapping from DAcert to cert validity
-    pub validity_entries: Vec<(AltDACommitment, bool)>,
+    validity_entries: Vec<(AltDACommitment, bool)>,
     /// The tuple contains a mapping from DAcert to Eigenda encoded payload
-    pub encoded_payload_entries: Vec<(AltDACommitment, EncodedPayload)>,
+    encoded_payload_entries: Vec<(AltDACommitment, EncodedPayload)>,
 }
 
 impl PreloadedEigenDAPreimageProvider {
@@ -414,10 +414,23 @@ mod tests {
         assert!(!batch_verify(&blobs[..1], &commitments[..1], &proofs[..1]));
     }
 
+    fn construct_template_witness_with_trusted_data(
+        witness: EigenDAWitness,
+    ) -> EigenDAWitnessWithTrustedData {
+        EigenDAWitnessWithTrustedData {
+            recency_window: Default::default(),
+            l1_chain_id: Default::default(),
+            l1_head_block_hash: Default::default(),
+            l1_head_block_number: Default::default(),
+            l1_head_block_timestamp: Default::default(),
+            witness,
+        }
+    }
+
     #[tokio::test]
     async fn test_from_witness_ok_0_preimage() {
         let preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData::default(),
+            construct_template_witness_with_trusted_data(Default::default()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -434,10 +447,7 @@ mod tests {
         let altda_commitment = eigenda_witness.recencies[0].0.clone();
 
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -470,10 +480,7 @@ mod tests {
         let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -488,10 +495,7 @@ mod tests {
         let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -506,10 +510,7 @@ mod tests {
         let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -525,10 +526,7 @@ mod tests {
             .validities
             .extend(eigenda_witness.validities.clone());
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -543,10 +541,7 @@ mod tests {
             .encoded_payloads
             .extend(eigenda_witness.encoded_payloads.clone());
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
@@ -558,10 +553,7 @@ mod tests {
     async fn test_from_witness_not_field_element() {
         let eigenda_witness = prepare_data_with_invalid_encoded_payload();
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            EigenDAWitnessWithTrustedData {
-                witness: eigenda_witness.clone(),
-                ..Default::default()
-            },
+            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );

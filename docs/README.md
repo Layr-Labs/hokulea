@@ -133,3 +133,35 @@ point as opposed to the entire blob.
 Because the above scheme retrieve field element one by one, the player can open a kzg proof onchain to populate the onchain preimage oracle
 when it happens to be the last decision point, and therefore resolves the game.
 Similarly onchain preimage can be populated to support `certificate validity` and `recency window request`.
+
+## Overview on data transformation for secure integration with zkVM
+![](../assets/data-transformation-with-zkvm.png)
+
+The derivation pipeline is run exactly twice. Once in the host, once in the zkVM. Both execution runs `eigenda blob derivation` as described in the [integration spec](https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html). The second execution is special because the derivation logics is compiled into a ELF file to be run within the zkVM.
+
+1. the zkVM host process uses `EigenDAPreimageProviderWithPreimage` to produce `EigenDAPreimage` struct after completing the first run. This struct contains all preimage-related information, including `encoded_payload`, `validity`, and `recency_window`.
+2. The host then computes the KZG proof locally and invokes the `CanoeProvider` to generate a zk-proof attesting to the validity of DA certificates (using Steel or SP1cc). Both proofs, along with the `EigenDAPreimage`, are merged into an `EigenDAWitness` and passed into the zkVM.
+3. Regular data are feed into zkVM via its standard input, however, the canoe proof is a STARK proof that needs be recursively verified within zkVM. To achieve that, the canoe proof are feeded into zkVM via a special function. See the `example/preloader` for more details.
+4. Within the zkVM, the system augments the `EigenDAWitness` into an `EigenDAWitnessWithTrustedData`, which includes trusted context such as the L1 chain ID and the L1 head block hash corresponding to that chain. These values must be authenticated beforehand, as they are critical for verifying the Canoe STARK proof. Incorrect trusted data could cause the proof system to accept invalid DA certificates or reject valid ones.
+5. the zkVM validates the `EigenDAWitnessWithTrustedData`, producing a verified `EigenDAPreimage` that can be safely consumed by the second EigenDA blob derivation from the ELF.
+
+## Three implementation of EigenDAPreimageProvider trait and their differences
+
+`EigenDAPreimageProvider` offers three functions, each corresponding to a preimage request for the `eigenda blob derivation` described in the [integration spec](https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html)
+- OracleEigenDAPreimageProvider
+- OracleEigenDAPreimageProviderWithPreimage
+- PreloadedEigenDAPreimageProvider
+
+#### OracleEigenDAPreimageProvider
+`OracleEigenDAPreimageProvider` is a shim layer between the `eigenda blob derivation` and the hokulea host which enables preimage retrieval over the network. It implements the [fault-proof communication spec](https://specs.optimism.io/fault-proof/index.html) using address space defined [above](#reserved-addresses-for-da-certificates). The user of the struct can fetch preimage through an `AltDACommitment`.
+
+#### OracleEigenDAPreimageProviderWithPreimage
+`OracleEigenDAPreimageProviderWithPreimage` wraps around the `OracleEigenDAPreimageProvider`, adding the ability to locally store delivered preimages. In Hokulea, zkVM hosts use this provider to collect all required preimages before gathering KZG and Canoe proofs to assemble an
+
+#### PreloadedEigenDAPreimageProvider
+`PreloadedEigenDAPreimageProvider` mirrors the behavior of OracleEigenDAPreimageProvider but serves preimages from preloaded, verified data, requiring no network communication. All preloaded data must be validated against the rollup specification — for example, blobs bound to KZG commitments and certificates valid under the EigenDA spec.
+
+
+# Leveraging Steel and Sp1-cc proving validity of cert
+
+Please refer to [canoe documentation](./canoe.md)
