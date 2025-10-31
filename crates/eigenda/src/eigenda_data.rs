@@ -3,7 +3,7 @@
 
 use crate::{
     errors::{EncodedPayloadDecodingError, HokuleaStatelessError},
-    BYTES_PER_FIELD_ELEMENT,
+    BYTES_PER_FIELD_ELEMENT_32,
 };
 use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
 use alloy_primitives::Bytes;
@@ -38,7 +38,7 @@ impl EncodedPayload {
 
     /// Returns the number of field elements in the encoded payload
     pub fn num_field_element(&self) -> u64 {
-        (self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64
+        (self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT_32) as u64
     }
 
     /// Checks whether the encoded payload satisfies its length invariant.
@@ -57,7 +57,7 @@ impl EncodedPayload {
             .into());
         }
 
-        if self.encoded_payload.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+        if self.encoded_payload.len() % BYTES_PER_FIELD_ELEMENT_32 != 0 {
             return Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(
                 self.encoded_payload.len() as u64,
             )
@@ -65,7 +65,7 @@ impl EncodedPayload {
         }
 
         // Check encoded payload has a power of two number of field elements
-        let num_field_elements = self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT;
+        let num_field_elements = self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT_32;
         if !is_power_of_two(num_field_elements) {
             return Err(
                 EncodedPayloadDecodingError::InvalidPowerOfTwoLength(num_field_elements).into(),
@@ -165,13 +165,15 @@ mod tests {
     /// [EncodedPayload] contains a header of 32 bytes and a transformation of input data
     /// The 0 index byte of header is always 0, to comply to bn254 field element constraint
     /// The 1 index byte of header is proxy encoding version.
-    /// The 2-4 indices of header are storing the length of the input rollup data in big endien
+    /// The 2-5(inclusive) indices of header are storing the length of the input rollup data in big endien
     /// The payload is prepared by padding an empty byte for every 31 bytes from the rollup data
     /// This matches exactly the eigenda proxy implementation, whose logic is in
     /// <https://github.com/Layr-Labs/eigenda/blob/master/encoding/utils/codec/codec.go#L12>
     ///
     /// The length of (header + payload) by the encode function is always multiple of 32
     /// The eigenda proxy does not take such constraint.
+    /// See also spec <https://layr-labs.github.io/eigenda/integration/spec/3-data-structs.html#encoding-payload-version-0x0>
+    /// for the exact encoding methods.
     fn encode(rollup_data: &[u8], payload_encoding_version: u8) -> EncodedPayload {
         let rollup_data_size = rollup_data.len() as u32;
 
@@ -180,10 +182,10 @@ mod tests {
         let min_blob_payload_size = padded_rollup_data.len();
 
         // the first field element contains the header
-        let blob_size = min_blob_payload_size + BYTES_PER_FIELD_ELEMENT;
+        let blob_size = min_blob_payload_size + BYTES_PER_FIELD_ELEMENT_32;
 
         // round up to the closest multiple of 32
-        let blob_size = blob_size.div_ceil(BYTES_PER_FIELD_ELEMENT) * BYTES_PER_FIELD_ELEMENT;
+        let blob_size = blob_size.div_ceil(BYTES_PER_FIELD_ELEMENT_32) * BYTES_PER_FIELD_ELEMENT_32;
 
         let mut encoded_payload = vec![0u8; blob_size as usize];
 
@@ -191,8 +193,8 @@ mod tests {
         // encode length as uint32
         encoded_payload[2..6].copy_from_slice(&rollup_data_size.to_be_bytes());
 
-        encoded_payload
-            [BYTES_PER_FIELD_ELEMENT..(BYTES_PER_FIELD_ELEMENT + min_blob_payload_size as usize)]
+        encoded_payload[BYTES_PER_FIELD_ELEMENT_32
+            ..(BYTES_PER_FIELD_ELEMENT_32 + min_blob_payload_size as usize)]
             .copy_from_slice(&padded_rollup_data);
 
         EncodedPayload {
@@ -205,7 +207,7 @@ mod tests {
         let rollup_data = vec![1, 2, 3, 4];
         let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
-        assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0 && data_len != 0);
+        assert!(data_len % BYTES_PER_FIELD_ELEMENT_32 == 0 && data_len != 0);
 
         let result = encoded_payload.decode();
         assert!(result.is_ok());
@@ -267,7 +269,7 @@ mod tests {
             Case {
                 input: vec![0; 96],
                 result: Err(EncodedPayloadDecodingError::InvalidPowerOfTwoLength(
-                    96 / BYTES_PER_FIELD_ELEMENT,
+                    96 / BYTES_PER_FIELD_ELEMENT_32,
                 )
                 .into()),
             },
