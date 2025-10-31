@@ -17,8 +17,10 @@ cfg-if.workspace = true
 
 # Execution
 op-alloy-consensus.workspace = true
+revm.workspace = true
 op-revm.workspace = true
 alloy-evm.workspace = true
+alloy-op-evm.workspace = true
 
 [package.metadata.cargo-machete]
 # cfg-if is used by the `client_entry` macro in kona-client
