@@ -5,11 +5,9 @@ use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
-use hokulea_eigenda::HokuleaPreimageError;
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT_32, ENCODED_PAYLOAD_HEADER_LEN_BYTES,
-    RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
-    RESERVED_EIGENDA_API_BYTE_INDEX,
+    HokuleaPreimageError, BYTES_PER_FIELD_ELEMENT_32, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
+    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
@@ -250,10 +248,8 @@ async fn store_encoded_payload(
     assert!(encoded_payload.len() % 32 == 0 && !encoded_payload.is_empty());
 
     // Preliminary defense check against malicious eigenda proxy host
-    // Validate field elements (keeping existing field element validation for compatibility)
-    let encoded_payload_body = &encoded_payload[ENCODED_PAYLOAD_HEADER_LEN_BYTES..];
     // verify there is an empty byte for every 31 bytes. This is a harder constraint than field element range check.
-    for chunk in encoded_payload_body.chunks_exact(BYTES_PER_FIELD_ELEMENT_32) {
+    for chunk in encoded_payload.chunks_exact(BYTES_PER_FIELD_ELEMENT_32) {
         // very conservative check on Field element range. It allows us to detect
         // misbehaving at the host side when providing the field element. So we can stop early.
         // the field element of on bn254 curve is some number less than 2^254

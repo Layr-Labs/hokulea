@@ -4,6 +4,7 @@ use alloc::vec::Vec;
 use eigenda_cert::AltDACommitment;
 
 use alloc::string::String;
+use tracing::warn;
 
 /// List of errors for verification of canoe proof using hokulea framework
 /// Currently, all errors are specific to steel implementation except those marked with Sp1.
@@ -48,6 +49,7 @@ impl CanoeVerifier for CanoeNoOpVerifier {
         _cert_validity_pair: Vec<(AltDACommitment, CertValidity)>,
         _canoe_proof: Option<Vec<u8>>,
     ) -> Result<(), HokuleaCanoeVerificationError> {
+        warn!("CanoeNoOpVerifier is unsafe for integration, and should only be used for testing purpose. It returns OK for everything and performs no checks.");
         Ok(())
     }
 

@@ -2520,6 +2520,7 @@ dependencies = [
  "revm-primitives",
  "serde",
  "thiserror 2.0.17",
+ "tracing",
 ]
 
 [[package]]

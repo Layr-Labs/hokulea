@@ -91,6 +91,9 @@ fn main() {
 
         assert!(env.header().seal() == l1_head_block_hash);
 
+        // check the claimed validity equals to the evaluation result from steel
+        assert!(canoe_input.claimed_validity == is_valid);
+
         // Commit the block hash and number used when deriving `view_call_env` to the journal.
         let journal = Journal {
             blockNumber: l1_head_block_number,

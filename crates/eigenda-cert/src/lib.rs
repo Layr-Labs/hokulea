@@ -32,22 +32,25 @@ impl G1Point {
     }
 }
 
+#[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
+pub struct Fp2(pub U256, pub U256);
+
 // G2Point represents a point on the BN254 G2 curve
 #[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
 pub struct G2Point {
-    pub x: Vec<U256>,
-    pub y: Vec<U256>,
+    pub x: Fp2,
+    pub y: Fp2,
 }
 
 impl G2Point {
     pub fn to_sol(&self) -> sol_struct::G2Point {
         let mut x = [U256::default(); 2];
-        x[0] = self.x[0];
-        x[1] = self.x[1];
+        x[0] = self.x.0;
+        x[1] = self.x.1;
 
         let mut y = [U256::default(); 2];
-        y[0] = self.y[0];
-        y[1] = self.y[1];
+        y[0] = self.y.0;
+        y[1] = self.y.1;
 
         sol_struct::G2Point { X: x, Y: y }
     }

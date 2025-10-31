@@ -5,7 +5,7 @@ use crate::{
     errors::{EncodedPayloadDecodingError, HokuleaStatelessError},
     BYTES_PER_FIELD_ELEMENT_32,
 };
-use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
+use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES_32, PAYLOAD_ENCODING_VERSION_0};
 use alloy_primitives::Bytes;
 use rust_kzg_bn254_primitives::helpers;
 use serde::{Deserialize, Serialize};
@@ -49,9 +49,9 @@ impl EncodedPayload {
     /// the 32 byte chunks are valid bn254 elements.
     fn check_len_invariant(&self) -> Result<(), HokuleaStatelessError> {
         // this check is redundant since 0 is not a valid power of 32, but we keep it for clarity.
-        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES {
+        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES_32 {
             return Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
-                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES,
+                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES_32,
                 actual: self.encoded_payload.len(),
             }
             .into());
@@ -77,9 +77,9 @@ impl EncodedPayload {
     /// Validates the header (first field element = 32 bytes) of the encoded payload,
     /// and returns the claimed length of the payload if the header is valid.
     fn decode_header(&self) -> Result<u32, HokuleaStatelessError> {
-        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES {
+        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES_32 {
             return Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
-                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES,
+                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES_32,
                 actual: self.encoded_payload.len(),
             }
             .into());
@@ -109,7 +109,7 @@ impl EncodedPayload {
     fn decode_payload(&self, payload_len: u32) -> Result<Payload, HokuleaStatelessError> {
         let body = self
             .encoded_payload
-            .slice(ENCODED_PAYLOAD_HEADER_LEN_BYTES..);
+            .slice(ENCODED_PAYLOAD_HEADER_LEN_BYTES_32..);
 
         // Decode the body by removing internal 0 byte padding (0x00 initial byte for every 32 byte chunk)
         // The decodedBody should contain the payload bytes + potentially some external padding bytes.
@@ -122,7 +122,7 @@ impl EncodedPayload {
 
         // data length is checked when constructing an encoded payload. If this error is encountered, that means there
         // must be a flaw in the logic at construction time (or someone was bad and didn't use the proper construction methods)
-        if (decoded_body.len() as u32) < payload_len {
+        if decoded_body.len() < payload_len as usize {
             return Err(EncodedPayloadDecodingError::UnpaddedDataTooShort {
                 actual: decoded_body.len(),
                 claimed: payload_len,
