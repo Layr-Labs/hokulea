@@ -9,7 +9,6 @@ eigenda-cert.workspace = true
 alloy-primitives = { workspace = true}
 tracing.workspace = true
 async-trait.workspace = true
-rust-kzg-bn254-primitives.workspace = true
 kona-protocol.workspace = true
 thiserror.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -21,6 +20,7 @@ kona-genesis = { workspace = true }
 alloy-consensus = { workspace = true}
 alloy-primitives = { workspace = true}
 alloy-rlp = { workspace = true }
+rust-kzg-bn254-primitives.workspace = true
 
 [features]
 serde = [
