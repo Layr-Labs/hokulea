@@ -77,6 +77,9 @@ pub enum EncodedPayloadDecodingError {
         /// Claimed length from header
         claimed: u32,
     },
+    /// every multiple 32 bytes for storing a field element requires the first byte to be zero
+    #[error("non-zero byte encountered in the first byte of multiples of 32 bytes")]
+    InvalidFirstBytePadding,
 }
 
 /// The [HokuleaPreimageError] contains application errors, that is directly relates

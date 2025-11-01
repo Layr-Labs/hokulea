@@ -6,8 +6,8 @@ use crate::{
     BYTES_PER_FIELD_ELEMENT,
 };
 use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
+use alloc::vec;
 use alloy_primitives::Bytes;
-use rust_kzg_bn254_primitives::helpers;
 use serde::{Deserialize, Serialize};
 
 /// Represents raw payload bytes, alias
@@ -84,6 +84,7 @@ impl EncodedPayload {
             }
             .into());
         }
+        // this ensures the header 32 bytes is a valid field element
         if self.encoded_payload[0] != 0x00 {
             return Err(EncodedPayloadDecodingError::InvalidHeaderFirstByte(
                 self.encoded_payload[0],
@@ -112,13 +113,8 @@ impl EncodedPayload {
             .slice(ENCODED_PAYLOAD_HEADER_LEN_BYTES..);
 
         // Decode the body by removing internal 0 byte padding (0x00 initial byte for every 32 byte chunk)
-        // The decodedBody should contain the payload bytes + potentially some external padding bytes.
-        let decoded_body = helpers::remove_internal_padding(body.as_ref()).map_err(|_| {
-            EncodedPayloadDecodingError::InvalidLengthEncodedPayload(
-                self.encoded_payload.len() as u64
-            )
-        })?;
-        let decoded_body: Bytes = decoded_body.into();
+        // this ensures every 32 bytes is a valid field element
+        let decoded_body = EncodedPayload::check_and_remove_zero_padding(&body)?;
 
         // data length is checked when constructing an encoded payload. If this error is encountered, that means there
         // must be a flaw in the logic at construction time (or someone was bad and didn't use the proper construction methods)
@@ -148,6 +144,29 @@ impl EncodedPayload {
         // Decode payload using the helper method
         self.decode_payload(payload_len_in_header)
     }
+
+    /// check_and_remove_padding checks if the first byte of every mulitple of 32 bytes is 0x00, it enforces the
+    /// spec in <https://layr-labs.github.io/eigenda/integration/spec/3-data-structs.html#encoding-payload-version-0x0>
+    /// then the function returns bytes with the zero-padding bytes removed.
+    /// this ensures every multiple of 32 bytes is a valid field element
+    fn check_and_remove_zero_padding(encoded_body: &[u8]) -> Result<Bytes, HokuleaStatelessError> {
+        if encoded_body.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+            return Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(
+                encoded_body.len() as u64,
+            )
+            .into());
+        }
+
+        let num_field_elements = encoded_body.len() / BYTES_PER_FIELD_ELEMENT;
+        let mut decoded_body = vec::Vec::with_capacity(num_field_elements * 31);
+        for chunk in encoded_body.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
+            if chunk[0] != 0x00 {
+                return Err(EncodedPayloadDecodingError::InvalidFirstBytePadding.into());
+            }
+            decoded_body.extend_from_slice(&chunk[1..32]);
+        }
+        Ok(Bytes::from(decoded_body))
+    }
 }
 
 /// Utility function to check if a number is a power of two
@@ -160,6 +179,7 @@ mod tests {
     use super::*;
     use alloc::vec;
     use alloy_primitives::Bytes;
+    use rust_kzg_bn254_primitives::helpers;
 
     /// The encode function accepts an input of opaque rollup data array into an [EncodedPayload].
     /// [EncodedPayload] contains a header of 32 bytes and a transformation of input data
@@ -345,7 +365,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decode_payload() {
+    fn test_check_and_remove_zero_padding() {
         struct Case {
             input: vec::Vec<u8>,
             result: Result<Bytes, HokuleaStatelessError>,
@@ -359,6 +379,76 @@ mod tests {
                     2, 2, 2, 2, 2, 2, 2,
                 ],
                 result: Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(33).into()),
+            },
+            Case {
+                // 64 bytes first byte violation
+                input: vec![
+                    1, 0, 0, 0, 0, 128, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                ],
+                result: Err(EncodedPayloadDecodingError::InvalidFirstBytePadding.into()),
+            },
+            Case {
+                // 64 bytes 32-th byte violation
+                input: vec![
+                    0, 0, 0, 0, 0, 128, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                ],
+                result: Err(EncodedPayloadDecodingError::InvalidFirstBytePadding.into()),
+            },
+            Case {
+                // 32 bytes
+                input: vec![
+                    0, 0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2,
+                ],
+                result: Ok(vec![
+                    0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2,
+                ]
+                .into()),
+            },
+            Case {
+                // 64 bytes
+                input: vec![
+                    0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                ],
+                result: Ok(vec![
+                    0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                ]
+                .into()),
+            },
+        ];
+
+        for case in cases {
+            match EncodedPayload::check_and_remove_zero_padding(&case.input) {
+                Ok(decoded_body) => assert_eq!(Ok(decoded_body), case.result),
+                Err(e) => assert_eq!(Err(e), case.result),
+            }
+        }
+    }
+
+    #[test]
+    fn test_decode_payload() {
+        struct Case {
+            input: vec::Vec<u8>,
+            result: Result<Bytes, HokuleaStatelessError>,
+        }
+        let cases = [
+            // invalid length not divide 32 byte, which is size of field element
+            Case {
+                // 33 bytes
+                input: vec![
+                    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 2,
+                ],
+                result: Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(1).into()),
             },
             Case {
                 // 64 bytes
