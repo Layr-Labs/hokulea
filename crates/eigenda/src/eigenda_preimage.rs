@@ -30,16 +30,14 @@ where
     /// Fetches the preimages from the source for calldata.
     pub async fn next(
         &mut self,
-        calldata: &Bytes,
+        altda_commitment: &AltDACommitment,
         l1_inclusion_bn: u64,
     ) -> Result<EncodedPayload, HokuleaErrorKind> {
-        let altda_commitment = self.parse(calldata)?;
-
         info!(target: "eigenda_preimage_source", "parsed an altda commitment of version {}", altda_commitment.cert_version_str());
         // get recency window size, discard the old cert if necessary
         match self
             .eigenda_fetcher
-            .get_recency_window(&altda_commitment)
+            .get_recency_window(altda_commitment)
             .await
         {
             // if recency is 0, disable the recency check
@@ -65,7 +63,7 @@ where
         };
 
         // get cert validty via preimage oracle, discard cert if invalid
-        match self.eigenda_fetcher.get_validity(&altda_commitment).await {
+        match self.eigenda_fetcher.get_validity(altda_commitment).await {
             Ok(true) => (),
             Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
             Err(e) => return Err(e.into()),
@@ -73,12 +71,13 @@ where
 
         // get encoded payload via preimage oracle
         self.eigenda_fetcher
-            .get_encoded_payload(&altda_commitment)
+            .get_encoded_payload(altda_commitment)
             .await
             .map_err(|e| e.into())
     }
 
-    fn parse(&mut self, data: &Bytes) -> Result<AltDACommitment, HokuleaStatelessError> {
+    /// parse calldata into altda commitment
+    pub fn parse(&mut self, data: &Bytes) -> Result<AltDACommitment, HokuleaStatelessError> {
         if data.len() <= 2 {
             // recurse if data is mailformed
             warn!(target: "preimage_source", "Failed to decode altda commitment, skipping");
@@ -198,18 +197,6 @@ mod tests {
                     encoded_payload: encoded_payload.clone(),
                 }),
             },
-            // recency preimage has a critical problem
-            Case {
-                recency: Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse),
-                // below are ignored
-                validity: Ok(false),
-                encoded_payload: Ok(EncodedPayload {
-                    encoded_payload: encoded_payload.clone(),
-                }),
-                result: Err(HokuleaErrorKind::Critical(
-                    "Invalid hokulea preimage response".to_string(),
-                )),
-            },
             // recency preimage has a temporary problem
             Case {
                 recency: Err(TestHokuleaProviderError::Preimage),
@@ -222,18 +209,6 @@ mod tests {
                     "Preimage temporary error".to_string(),
                 )),
             },
-            // validity preimage has a critical problem
-            Case {
-                recency: Ok(200),
-                validity: Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse),
-                // below are ignored
-                encoded_payload: Ok(EncodedPayload {
-                    encoded_payload: encoded_payload.clone(),
-                }),
-                result: Err(HokuleaErrorKind::Critical(
-                    "Invalid hokulea preimage response".to_string(),
-                )),
-            },
             // recency preimage has a temporary problem
             Case {
                 recency: Ok(200),
@@ -244,15 +219,6 @@ mod tests {
                 }),
                 result: Err(HokuleaErrorKind::Temporary(
                     "Preimage temporary error".to_string(),
-                )),
-            },
-            // encoded payload preimage has a critical problem
-            Case {
-                recency: Ok(200),
-                validity: Ok(true),
-                encoded_payload: Err(TestHokuleaProviderError::InvalidHokuleaPreimageQueryResponse),
-                result: Err(HokuleaErrorKind::Critical(
-                    "Invalid hokulea preimage response".to_string(),
                 )),
             },
             // encoded payload preimage has a temporary problem
@@ -278,7 +244,10 @@ mod tests {
                 .eigenda_fetcher
                 .insert_encoded_payload(&altda_commitment, case.encoded_payload);
 
-            match preimage_source.next(&calldata, l1_inclusion_number).await {
+            match preimage_source
+                .next(&altda_commitment, l1_inclusion_number)
+                .await
+            {
                 Ok(encoded_payload) => assert_eq!(encoded_payload, case.result.unwrap()),
                 Err(e) => assert_eq!(Err(e), case.result),
             }

@@ -63,7 +63,7 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
 
         // recency is 8 bytes
         if recency_bytes.is_empty() || recency_bytes.len() != 8 {
-            return Err(HokuleaOracleProviderError::InvalidHokuleaPreimageQueryResponse);
+            panic!("Preimage returned something, but the returned value is not formatted correctly for recency_bytes");
         }
 
         let mut buf: [u8; 8] = [0; 8];
@@ -102,13 +102,13 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
 
         // validity is expected as a boolean
         if validity.is_empty() || validity.len() != 1 {
-            return Err(HokuleaOracleProviderError::InvalidHokuleaPreimageQueryResponse);
+            panic!("Preimage returned something, but the returned value is not formatted correctly for validity");
         }
 
         match validity[0] {
             0 => Ok(false),
             1 => Ok(true),
-            _ => Err(HokuleaOracleProviderError::InvalidHokuleaPreimageQueryResponse),
+            _ => panic!("validity can only be 0 or 1"),
         }
     }
 
