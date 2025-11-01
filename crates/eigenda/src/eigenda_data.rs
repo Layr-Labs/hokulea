@@ -3,9 +3,9 @@
 
 use crate::{
     errors::{EncodedPayloadDecodingError, HokuleaStatelessError},
-    BYTES_PER_FIELD_ELEMENT_32,
+    BYTES_PER_FIELD_ELEMENT,
 };
-use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES_32, PAYLOAD_ENCODING_VERSION_0};
+use crate::{ENCODED_PAYLOAD_HEADER_LEN_BYTES, PAYLOAD_ENCODING_VERSION_0};
 use alloy_primitives::Bytes;
 use rust_kzg_bn254_primitives::helpers;
 use serde::{Deserialize, Serialize};
@@ -38,7 +38,7 @@ impl EncodedPayload {
 
     /// Returns the number of field elements in the encoded payload
     pub fn num_field_element(&self) -> u64 {
-        (self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT_32) as u64
+        (self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT) as u64
     }
 
     /// Checks whether the encoded payload satisfies its length invariant.
@@ -49,15 +49,15 @@ impl EncodedPayload {
     /// the 32 byte chunks are valid bn254 elements.
     fn check_len_invariant(&self) -> Result<(), HokuleaStatelessError> {
         // this check is redundant since 0 is not a valid power of 32, but we keep it for clarity.
-        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES_32 {
+        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES {
             return Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
-                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES_32,
+                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES,
                 actual: self.encoded_payload.len(),
             }
             .into());
         }
 
-        if self.encoded_payload.len() % BYTES_PER_FIELD_ELEMENT_32 != 0 {
+        if self.encoded_payload.len() % BYTES_PER_FIELD_ELEMENT != 0 {
             return Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(
                 self.encoded_payload.len() as u64,
             )
@@ -65,7 +65,7 @@ impl EncodedPayload {
         }
 
         // Check encoded payload has a power of two number of field elements
-        let num_field_elements = self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT_32;
+        let num_field_elements = self.encoded_payload.len() / BYTES_PER_FIELD_ELEMENT;
         if !is_power_of_two(num_field_elements) {
             return Err(
                 EncodedPayloadDecodingError::InvalidPowerOfTwoLength(num_field_elements).into(),
@@ -77,9 +77,9 @@ impl EncodedPayload {
     /// Validates the header (first field element = 32 bytes) of the encoded payload,
     /// and returns the claimed length of the payload if the header is valid.
     fn decode_header(&self) -> Result<u32, HokuleaStatelessError> {
-        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES_32 {
+        if self.encoded_payload.len() < ENCODED_PAYLOAD_HEADER_LEN_BYTES {
             return Err(EncodedPayloadDecodingError::PayloadTooShortForHeader {
-                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES_32,
+                expected: ENCODED_PAYLOAD_HEADER_LEN_BYTES,
                 actual: self.encoded_payload.len(),
             }
             .into());
@@ -109,7 +109,7 @@ impl EncodedPayload {
     fn decode_payload(&self, payload_len: u32) -> Result<Payload, HokuleaStatelessError> {
         let body = self
             .encoded_payload
-            .slice(ENCODED_PAYLOAD_HEADER_LEN_BYTES_32..);
+            .slice(ENCODED_PAYLOAD_HEADER_LEN_BYTES..);
 
         // Decode the body by removing internal 0 byte padding (0x00 initial byte for every 32 byte chunk)
         // The decodedBody should contain the payload bytes + potentially some external padding bytes.
@@ -182,10 +182,10 @@ mod tests {
         let min_blob_payload_size = padded_rollup_data.len();
 
         // the first field element contains the header
-        let blob_size = min_blob_payload_size + BYTES_PER_FIELD_ELEMENT_32;
+        let blob_size = min_blob_payload_size + BYTES_PER_FIELD_ELEMENT;
 
         // round up to the closest multiple of 32
-        let blob_size = blob_size.div_ceil(BYTES_PER_FIELD_ELEMENT_32) * BYTES_PER_FIELD_ELEMENT_32;
+        let blob_size = blob_size.div_ceil(BYTES_PER_FIELD_ELEMENT) * BYTES_PER_FIELD_ELEMENT;
 
         let mut encoded_payload = vec![0u8; blob_size as usize];
 
@@ -193,8 +193,8 @@ mod tests {
         // encode length as uint32
         encoded_payload[2..6].copy_from_slice(&rollup_data_size.to_be_bytes());
 
-        encoded_payload[BYTES_PER_FIELD_ELEMENT_32
-            ..(BYTES_PER_FIELD_ELEMENT_32 + min_blob_payload_size as usize)]
+        encoded_payload
+            [BYTES_PER_FIELD_ELEMENT..(BYTES_PER_FIELD_ELEMENT + min_blob_payload_size as usize)]
             .copy_from_slice(&padded_rollup_data);
 
         EncodedPayload {
@@ -207,7 +207,7 @@ mod tests {
         let rollup_data = vec![1, 2, 3, 4];
         let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
-        assert!(data_len % BYTES_PER_FIELD_ELEMENT_32 == 0 && data_len != 0);
+        assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0 && data_len != 0);
 
         let result = encoded_payload.decode();
         assert!(result.is_ok());
@@ -269,7 +269,7 @@ mod tests {
             Case {
                 input: vec![0; 96],
                 result: Err(EncodedPayloadDecodingError::InvalidPowerOfTwoLength(
-                    96 / BYTES_PER_FIELD_ELEMENT_32,
+                    96 / BYTES_PER_FIELD_ELEMENT,
                 )
                 .into()),
             },
