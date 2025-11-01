@@ -71,12 +71,21 @@ pub enum EncodedPayloadDecodingError {
     UnknownEncodingVersion(u8),
     /// length of unpadded data is less than claimed in header
     #[error("length of unpadded data {actual} is less than length claimed in encoded payload header {claimed}")]
-    UnpaddedDataTooShort {
-        /// Actual unpadded data length
+    DecodedPayloadBodyTooShort {
+        /// Actual decoded body length that potentially has padding
         actual: usize,
         /// Claimed length from header
         claimed: u32,
     },
+    /// every multiple 32 bytes for storing a field element requires the first byte to be zero
+    #[error("non-zero byte encountered in the first byte of multiples of 32 bytes: {0}")]
+    InvalidFirstByteFieldElementPadding(u8),
+    /// padding are applied to the encoded payload body to ensure encoded length is power of 2, padding must be 0
+    #[error("non-zero padding byte encountered in the encoded payload body: {0}")]
+    InvalidEncodedPayloadBodyPadding(u8),
+    /// padding are applied to the encoded payload header to ensure the header takes 32 bytes, padding must be 0
+    #[error("non-zero padding byte encountered in the encoded payload header: {0}")]
+    InvalidEncodedPayloadHeaderPadding(u8),
 }
 
 /// The [HokuleaPreimageError] contains application errors, that is directly relates
