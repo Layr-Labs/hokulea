@@ -4,7 +4,7 @@ use alloy_primitives::keccak256;
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
-    EigenDAPreimageProvider, EncodedPayload, BYTES_PER_FIELD_ELEMENT_32,
+    EigenDAPreimageProvider, EncodedPayload, BYTES_PER_FIELD_ELEMENT,
     RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
     RESERVED_EIGENDA_API_BYTE_INDEX,
 };
@@ -129,7 +129,7 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
 
         // data_length measurs in field element, multiply to get num bytes
         let mut encoded_payload: Vec<u8> =
-            vec![0; (blob_length_fe as usize) * BYTES_PER_FIELD_ELEMENT_32];
+            vec![0; (blob_length_fe as usize) * BYTES_PER_FIELD_ELEMENT];
         let field_element_key = altda_commitment.digest_template();
         self.fetch_encoded_payload(field_element_key, blob_length_fe, &mut encoded_payload)
             .await?;
