@@ -165,3 +165,32 @@ The derivation pipeline is run exactly twice. Once in the host, once in the zkVM
 # Leveraging Steel and Sp1-cc proving validity of cert
 
 Please refer to [canoe documentation](./canoe.md)
+
+## Update ELF file for Verification Key for Sp1cc
+
+The `sp1-cc client` program defines the execution logic for verifying DA certificates in Rust. It is compiled into an ELF file, which is then executed by the zkVM to generate a public output and its corresponding proof. The `canoe verifier` program recursively verifies the proof produced by sp1-cc. Therefore, it must use the verification key derived from the exact ELF binary. The `canoe verifier` client will only accept proofs generated from this specific ELF and its embedded logic. As a result, any change to the sp1-cc client — including updates to the SP1 toolchain — requires regenerating the ELF and its corresponding verification key.
+
+### Building the ELF
+Before generating the ELF file, ensure that the SP1 toolchain is installed as described in the repository’s main README. Then run the following commands:
+```bash
+cd canoe/sp1-cc/client
+cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
+```
+> Note: Using a specific Docker tag (e.g., v5.2.1) ensures deterministic builds.
+
+### Generating the Verification Key
+The verification key derived from the ELF must be hardcoded into the V_KEY variable in `canoe/sp1-cc/verifier/src/lib.rs`. You can generate this key using one of the following methods:
+
+Option 1 assuming ELF is already generated
+
+```bash
+just get-sp1cc-elf-and-vkey
+```
+
+Option 2: Use the Kurtosis Devnet
+
+If you already have the Kurtosis devnet running, the V_KEY will be printed to your terminal after executing:
+``` bash
+cd example/preloader
+just run-preloader .devnet.env sp1-cc
+```
