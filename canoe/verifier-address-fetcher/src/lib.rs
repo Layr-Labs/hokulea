@@ -95,3 +95,13 @@ fn cert_verifier_address_abi_encode_interface(
         }
     }
 }
+
+impl CanoeVerifierAddressFetcher for Address {
+    fn fetch_address(
+        &self,
+        _chain_id: u64,
+        _versioned_cert: &EigenDAVersionedCert,
+    ) -> Result<Address, CanoeVerifierAddressFetcherError> {
+        Ok(*self)
+    }
+}

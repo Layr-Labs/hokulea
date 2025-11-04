@@ -3,12 +3,12 @@ resolver = "2"
 members = [
     "bin/*",
     "crates/*",
-    "example/preloader",    
+    "example/preloader",
     "canoe/bindings",
     "canoe/provider",
     "canoe/steel/apps",
     "canoe/steel/methods",
-    "canoe/steel/verifier", 
+    "canoe/steel/verifier",
     "canoe/sp1-cc/host",
     "canoe/sp1-cc/client",
     "canoe/sp1-cc/vkey-bin",
@@ -55,12 +55,12 @@ hokulea-zkvm-verification = { path = "crates/zkvm-verification", version = "0.1.
 eigenda-cert = { path = "crates/eigenda-cert" }
 
 # Alloy (Network)
-alloy-rlp = { version = "0.3.12", default-features = false }
-alloy-provider = { version = "1.0.38", default-features = false }
 alloy-consensus = { version = "1.0.38", default-features = false }
-alloy-rpc-types = { version = "1.0.38", default-features = false }
 alloy-genesis = { version = "1.0.38", default-features = false }
 alloy-primitives = { version = "1.3.1", default-features = false }
+alloy-provider = { version = "1.0.38", default-features = false }
+alloy-rlp = { version = "0.3.12", default-features = false }
+alloy-rpc-types = { version = "1.0.38", default-features = false }
 alloy-sol-types = { version = "1.3.1", default-features = false }
 
 # Execution
@@ -137,7 +137,7 @@ sp1-core-executor = "5.2.1"
 sp1-prover = "5.2.1"
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1" }
 sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1" }
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1" } 
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1" }
 
 # ZKVM deps
 hex = "0.4"
