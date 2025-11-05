@@ -203,7 +203,6 @@ async fn get_sp1_cc_proof(
                     .await
                     .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-                info!("returns_bytes {}", returns_bytes);
                 let returns = <StatusCode as SolType>::abi_decode(&returns_bytes)
                     .expect("deserialize returns_bytes");
                 let is_valid = returns == StatusCode::SUCCESS;
