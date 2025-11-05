@@ -69,7 +69,7 @@ op-revm = { version = "10.1.0", default-features = false }
 revm-primitives = { version = "20.2.1", default-features = false }
 
 # OP Alloy
-op-alloy-consensus = { version = "0.20.0", default-features = false }
+op-alloy-consensus = { version = "0.22.0", default-features = false }
 
 # Reth
 reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
