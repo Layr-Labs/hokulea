@@ -256,7 +256,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
   L1_CONFIG_PATH="$(realpath {{l1_config_path}})"    
-  RECENCY_WINDOW="$(cat rollup.json | jq .seq_window_size)"
+  RECENCY_WINDOW=0 # disable recency check in devnet, to enable it use "$(cat rollup.json | jq .seq_window_size)"
 
   echo "L1_RPC=$L1_RPC" > {{env_file}}
   echo "L1_BEACON_RPC=$L1_BEACON_RPC" >> {{env_file}}

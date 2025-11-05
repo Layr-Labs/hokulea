@@ -129,7 +129,7 @@ where
                     // altda commitment is discarded and try next one
                     // EigenLabs branch https://github.com/Layr-Labs/optimism/blob/34e5ce8416de529b8a57b0c55e1635ebe89805dc/op-node/rollup/derive/altda_data_source.go#L103
                     warn!(
-                        "Hokulea derivation discards due to recency or validity {}",
+                        "Hokulea derivation discards due to recency or validity: {}",
                         e
                     );
                     self.altda_commitment = None;

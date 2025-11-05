@@ -31,6 +31,9 @@ pub enum HokuleaStatelessError {
     /// encoded payload decoding error, inbox sender has violated the encoding rule
     #[error("cannot decode an encoded payload")]
     DecodingError(#[from] EncodedPayloadDecodingError),
+    /// recency check validates recency parameters and decides if a cert is recent enough
+    #[error("cannot pass recency check")]
+    RecencyCheckError(#[from] HokuleaRecencyCheckError),
 }
 
 /// define conversion error
@@ -42,6 +45,7 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
             }
             HokuleaStatelessError::ParseError(e) => HokuleaErrorKind::Discard(e.to_string()),
             HokuleaStatelessError::DecodingError(e) => HokuleaErrorKind::Discard(e.to_string()),
+            HokuleaStatelessError::RecencyCheckError(e) => HokuleaErrorKind::Discard(e.to_string()),
         }
     }
 }
@@ -88,6 +92,23 @@ pub enum EncodedPayloadDecodingError {
     InvalidEncodedPayloadHeaderPadding(u8),
 }
 
+#[derive(Debug, thiserror::Error, PartialEq)]
+#[error(transparent)]
+pub enum HokuleaRecencyCheckError {
+    /// EigenDA cert is not recent
+    #[error("da cert is not recent enough")]
+    NotRecentCert,
+    /// EigenDA operators must use an existing l1 reference block number(rbn), therefore the
+    /// block has been mined, no further transaction can be added to that block. The l1
+    /// block inclusion number for the da cert, must be greater than the rbn. It is possible
+    /// only if DA operators chose to use a L1 block number yet to be mined.
+    #[error("da protocol violation l1 inclusion number must be greater than reference block number from the cert")]
+    InconsistentL1InclusionAndReferencedNumber,
+    /// block zero is the genesis block, all l1 blocks must have greater value
+    #[error("the reference block number cannot be zero")]
+    InvalidZeroReferenceBlockNumber,
+}
+
 /// The [HokuleaPreimageError] contains application errors, that is directly relates
 /// to the preimage returned by the preimage provider. There is no error for
 /// EncodedPayload which is also a preimage, because EncodedPayload is only a vector
@@ -99,9 +120,6 @@ pub enum HokuleaPreimageError {
     /// EigenDA cert is invalid
     #[error("da cert is invalid")]
     InvalidCert,
-    /// EigenDA cert is not recent
-    #[error("da cert is not recent enough")]
-    NotRecentCert,
 }
 
 /// define conversion error
@@ -110,9 +128,6 @@ impl From<HokuleaPreimageError> for HokuleaErrorKind {
         match e {
             HokuleaPreimageError::InvalidCert => {
                 HokuleaErrorKind::Discard("da cert is invalid".to_string())
-            }
-            HokuleaPreimageError::NotRecentCert => {
-                HokuleaErrorKind::Discard("da cert is not recent enough".to_string())
             }
         }
     }

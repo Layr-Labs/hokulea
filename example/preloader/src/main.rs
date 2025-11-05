@@ -31,7 +31,7 @@ use hokulea_compute_proof::create_kzg_proofs_for_eigenda_preimage;
 use hokulea_proof::{
     eigenda_provider::OracleEigenDAPreimageProvider,
     eigenda_witness::{EigenDAPreimage, EigenDAWitness},
-    recency::{ConstantRecencyWindowProvider, RecencyWindowProvider},
+    recency::{DisabledZeroRecencyWindowProvider, RecencyWindowProvider},
 };
 use hokulea_witgen::witness_provider::OracleEigenDAPreimageProviderWithPreimage;
 use std::{
@@ -99,10 +99,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let canoe_address_fetcher = CanoeVerifierAddressFetcherDeployedByEigenLabs {};
-    let rollup_config = cfg.kona_cfg.read_rollup_config()?;
-    let recency_window_provider = ConstantRecencyWindowProvider {
-        value: rollup_config.seq_window_size,
-    };
+    let recency_window_provider = DisabledZeroRecencyWindowProvider {};
 
     // Spawn the client logic as a concurrent task
     let client_task = task::spawn(run_witgen_and_zk_verification(
