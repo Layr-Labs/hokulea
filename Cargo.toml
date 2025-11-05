@@ -64,7 +64,7 @@ alloy-primitives = { version = "1.3.1", default-features = false }
 alloy-sol-types = { version = "1.3.1", default-features = false }
 
 # Execution
-alloy-evm = { version = "0.21.0", default-features = false }
+alloy-evm = { version = "0.21.3", default-features = false }
 op-revm = { version = "10.1.0", default-features = false }
 revm-primitives = { version = "20.2.1", default-features = false }
 
@@ -72,9 +72,9 @@ revm-primitives = { version = "20.2.1", default-features = false }
 op-alloy-consensus = { version = "0.20.0", default-features = false }
 
 # Reth
-reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.2", default-features = false }
-reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.2", default-features = false }
-reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.2", default-features = false }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
+reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
+reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
 
 # General
 spin = "0.10.0"
@@ -133,10 +133,9 @@ sp1-zkvm = "5.2.1"
 sp1-lib = "5.2.1"
 sp1-core-executor = "5.2.1"
 sp1-prover = "5.2.1"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.2c" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.2c" }
-# reth-1.8.2 is also used by reth-1.8.2c
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.8.2" } 
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.3" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.3" }
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.8.3" } 
 
 # ZKVM deps
 hex = "0.4"
