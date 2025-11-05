@@ -90,6 +90,12 @@ where
                 // see handling in go implementation
                 // OP develop branch https://github.com/ethereum-optimism/optimism/blob/4317c093fbe951c57c0e36037a9aa281e8e0795c/op-node/rollup/derive/altda_data_source.go#L56
                 // EigenLabs  branch https://github.com/Layr-Labs/optimism/blob/34e5ce8416de529b8a57b0c55e1635ebe89805dc/op-node/rollup/derive/altda_data_source.go#L58
+                //
+                // Note Temporary NotEnoughData causes the local_data skipped the derivation logic. Then when the
+                // kona driver retries this next function, ethereum source produces a new local_data. The previously
+                // skipped local_data is effectively discarded. Conceptually, recursively calling this next function has
+                // the same effect. But to maximize the similarity between golang and this implemenet, NotEnoughData
+                // is chosen.
                 return Err(PipelineErrorKind::Temporary(PipelineError::NotEnoughData));
             }
 
@@ -103,6 +109,12 @@ where
                 Ok(altda_commitment) => self.altda_commitment = Some(altda_commitment),
                 // OP develop branch https://github.com/ethereum-optimism/optimism/blob/4317c093fbe951c57c0e36037a9aa281e8e0795c/op-node/rollup/derive/altda_data_source.go#L69
                 // EigenLabs  branch https://github.com/Layr-Labs/optimism/blob/34e5ce8416de529b8a57b0c55e1635ebe89805dc/op-node/rollup/derive/altda_data_source.go#L72
+                //
+                // Note Temporary NotEnoughData causes the local_data skipped the derivation logic. Then when the
+                // kona driver retries this next function, ethereum source produces a new local_data. The previously
+                // skipped local_data is effectively discarded. Conceptually, recursively calling this next function has
+                // the same effect. But to maximize the similarity between golang and this implemenet, NotEnoughData
+                // is chosen.
                 Err(_) => return Err(PipelineErrorKind::Temporary(PipelineError::NotEnoughData)),
             }
         }
