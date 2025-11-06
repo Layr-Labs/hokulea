@@ -4,7 +4,7 @@ use crate::eigenda_data::EncodedPayload;
 use crate::traits::EigenDAPreimageProvider;
 use crate::HokuleaPreimageError;
 
-use crate::errors::{HokuleaErrorKind, HokuleaStatelessError};
+use crate::errors::{HokuleaErrorKind, HokuleaRecencyCheckError, HokuleaStatelessError};
 use alloy_primitives::Bytes;
 use eigenda_cert::AltDACommitment;
 
@@ -40,24 +40,8 @@ where
             .get_recency_window(altda_commitment)
             .await
         {
-            // if recency is 0, disable the recency check
-            Ok(0) => warn!(
-                "recency check is disabled in the eigenda blob derivation. \
-                            It is vulnerable to malicious or misbehaving batcher that \
-                            submits DA certificate whose blob has been pruned by the \
-                            DA network"
-            ),
-            Ok(recency) => {
-                // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
-                if l1_inclusion_bn > altda_commitment.get_rbn() + recency {
-                    warn!(
-                        "da cert is not recent enough l1_inclusion_bn:{} rbn:{} recency:{}",
-                        l1_inclusion_bn,
-                        altda_commitment.get_rbn(),
-                        recency
-                    );
-                    return Err(HokuleaPreimageError::NotRecentCert.into());
-                }
+            Ok(recency_window) => {
+                recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency_window)?;
             }
             Err(e) => return Err(e.into()),
         };
@@ -92,6 +76,33 @@ where
         };
         Ok(altda_commitment)
     }
+}
+
+fn recency_check(
+    l1_inclusion_bn: u64,
+    rbn: u64,
+    recency_window: u64,
+) -> Result<(), HokuleaStatelessError> {
+    // unlike the go implementation, it skips check when l1_inclusion_bn is 0. Go implementation needs this because
+    // this number is passed from the op-node to the golang proxy. To handle older op-node that does not pass the
+    // value, l1_inclusion_bn = 0 is treated as the default. For hokulea, l1_inclusion_bn is derived directly, hence
+    // it is impossible for l1_inclusion_bn to be zero.
+    // https://github.com/Layr-Labs/eigenda/blob/cd5c80ad88e966844a4e77795bda07c73dd772ba/api/proxy/store/generated_key/v2/eigenda.go#L319
+    if recency_window == 0 {
+        warn!(
+            "recency check is disabled in the eigenda blob derivation. \
+                It is vulnerable to malicious or misbehaving batcher that \
+                submits DA certificate whose blob has been pruned by the \
+                DA network"
+        );
+        return Ok(());
+    }
+
+    // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
+    if l1_inclusion_bn > rbn + recency_window {
+        return Err(HokuleaRecencyCheckError::NotRecentCert.into());
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -146,6 +157,47 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_recency_check() {
+        struct Case {
+            recency_window: u64,
+            l1_inclusion_bn: u64,
+            rbn: u64,
+            result: Result<(), HokuleaStatelessError>,
+        }
+        let cases = [
+            // to pass recency, l1_inclusion_bn <= rbn + recency_window
+            Case {
+                recency_window: 10,
+                l1_inclusion_bn: 5,
+                rbn: 3,
+                result: Ok(()),
+            },
+            // Although l1_inclusion_bn <= rbn + recency_window does not pass, since recency = 0, the check is skipped
+            Case {
+                recency_window: 0,
+                l1_inclusion_bn: 5,
+                rbn: 0,
+                result: Ok(()),
+            },
+            // simply the inequality does not check out, l1_inclusion_bn <= rbn + recency_window
+            Case {
+                recency_window: 100,
+                l1_inclusion_bn: 100,
+                rbn: 5,
+                result: Err(HokuleaStatelessError::RecencyCheckError(
+                    HokuleaRecencyCheckError::NotRecentCert,
+                )),
+            },
+        ];
+
+        for case in cases {
+            if let Err(e) = recency_check(case.l1_inclusion_bn, case.rbn, case.recency_window) {
+                assert_eq!(Err(e), case.result)
+            }
+        }
+    }
+
     #[tokio::test]
     async fn test_next() {
         let calldata = hex::decode(CALLDATA_HEX).unwrap().into();
@@ -175,7 +227,10 @@ mod tests {
                 // below are ignored
                 validity: Ok(false),
                 encoded_payload: Ok(EncodedPayload::default()),
-                result: Err(HokuleaPreimageError::NotRecentCert.into()),
+                result: Err(HokuleaStatelessError::RecencyCheckError(
+                    HokuleaRecencyCheckError::NotRecentCert,
+                )
+                .into()),
             },
             // not valid
             Case {

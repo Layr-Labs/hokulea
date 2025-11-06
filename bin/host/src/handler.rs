@@ -79,11 +79,11 @@ pub async fn fetch_eigenda_hint(
     // Fetch preimage data and process response
     let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
-    // If cert is not recent, log and return early
-    if !derivation_stage.is_recent_cert {
+    // If cert does not pass recency check, discard it
+    if !derivation_stage.pass_recency_check {
         info!(
             target = "hokulea-host",
-            "discard a cert for not being recent {}",
+            "discard a cert for not passing recency test {}",
             altda_commitment.to_digest(),
         );
         return Ok(());
@@ -146,8 +146,8 @@ async fn store_recency_window(
 /// data and return early.  
 #[derive(Debug, Clone)]
 pub struct ProxyDerivationStage {
-    // proxy derivation determines cert is recent
-    pub is_recent_cert: bool,
+    // proxy derivation determines recency test is passed
+    pub pass_recency_check: bool,
     // proxy derivation determines cert is valid
     pub is_valid_cert: bool,
     // encoded_payload
@@ -167,7 +167,7 @@ async fn fetch_data_from_proxy(
         .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
 
     let mut is_valid_cert = true;
-    let mut is_recent_cert = true;
+    let mut pass_recency_check = true;
     let mut encoded_payload = vec![];
 
     // Handle response based on status code
@@ -191,8 +191,8 @@ async fn fetch_data_from_proxy(
         match status_code.into() {
             HostHandlerError::HokuleaPreimageError(c) => match c {
                 HokuleaPreimageError::InvalidCert => is_valid_cert = false,
-                HokuleaPreimageError::NotRecentCert => is_recent_cert = false,
             },
+            HostHandlerError::HokuleaRecencyCheckError => pass_recency_check = false,
             HostHandlerError::HokuleaEncodedPayloadDecodingError(e)
             | HostHandlerError::IllogicalStatusCodeError(e)
             | HostHandlerError::UndefinedStatusCodeError(e) => {
@@ -209,7 +209,7 @@ async fn fetch_data_from_proxy(
     }
 
     Ok(ProxyDerivationStage {
-        is_recent_cert,
+        pass_recency_check,
         is_valid_cert,
         encoded_payload,
     })

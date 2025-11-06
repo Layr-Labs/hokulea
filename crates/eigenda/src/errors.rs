@@ -31,6 +31,9 @@ pub enum HokuleaStatelessError {
     /// encoded payload decoding error, inbox sender has violated the encoding rule
     #[error("cannot decode an encoded payload")]
     DecodingError(#[from] EncodedPayloadDecodingError),
+    /// recency check validates recency parameters and decides if a cert is recent enough
+    #[error("cannot pass recency check")]
+    RecencyCheckError(#[from] HokuleaRecencyCheckError),
 }
 
 /// define conversion error
@@ -42,6 +45,7 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
             }
             HokuleaStatelessError::ParseError(e) => HokuleaErrorKind::Discard(e.to_string()),
             HokuleaStatelessError::DecodingError(e) => HokuleaErrorKind::Discard(e.to_string()),
+            HokuleaStatelessError::RecencyCheckError(e) => HokuleaErrorKind::Discard(e.to_string()),
         }
     }
 }
@@ -88,6 +92,14 @@ pub enum EncodedPayloadDecodingError {
     InvalidEncodedPayloadHeaderPadding(u8),
 }
 
+#[derive(Debug, thiserror::Error, PartialEq)]
+#[error(transparent)]
+pub enum HokuleaRecencyCheckError {
+    /// EigenDA cert is not recent
+    #[error("da cert is not recent enough")]
+    NotRecentCert,
+}
+
 /// The [HokuleaPreimageError] contains application errors, that is directly relates
 /// to the preimage returned by the preimage provider. There is no error for
 /// EncodedPayload which is also a preimage, because EncodedPayload is only a vector
@@ -99,9 +111,6 @@ pub enum HokuleaPreimageError {
     /// EigenDA cert is invalid
     #[error("da cert is invalid")]
     InvalidCert,
-    /// EigenDA cert is not recent
-    #[error("da cert is not recent enough")]
-    NotRecentCert,
 }
 
 /// define conversion error
@@ -110,9 +119,6 @@ impl From<HokuleaPreimageError> for HokuleaErrorKind {
         match e {
             HokuleaPreimageError::InvalidCert => {
                 HokuleaErrorKind::Discard("da cert is invalid".to_string())
-            }
-            HokuleaPreimageError::NotRecentCert => {
-                HokuleaErrorKind::Discard("da cert is not recent enough".to_string())
             }
         }
     }

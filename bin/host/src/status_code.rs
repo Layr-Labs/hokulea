@@ -29,6 +29,9 @@ pub enum HostHandlerError {
     #[error("hokulea client preimage error {0}")]
     HokuleaPreimageError(#[from] HokuleaPreimageError),
     // error which hokulea client uses to discard cert
+    #[error("hokulea client recency check error")]
+    HokuleaRecencyCheckError,
+    // error which hokulea client uses to discard cert
     // but the decoding only happens if proxy is queried to return the decoded
     // payload, which is only used by op-node. For hokulea, the proxy returns
     // the encoded payload therefore, we shall not see any Decoding Error.
@@ -48,9 +51,7 @@ impl From<DerivationError> for HostHandlerError {
             STATUS_CODE_INVALID_CERT_ERROR => {
                 HostHandlerError::HokuleaPreimageError(HokuleaPreimageError::InvalidCert)
             }
-            STATUS_CODE_RECENCY_ERROR => {
-                HostHandlerError::HokuleaPreimageError(HokuleaPreimageError::NotRecentCert)
-            }
+            STATUS_CODE_RECENCY_ERROR => HostHandlerError::HokuleaRecencyCheckError,
             // the hokulea client should have already handled the case
             STATUS_CODE_CERT_PARSE_ERROR => {
                 HostHandlerError::IllogicalStatusCodeError(status.status_code)
