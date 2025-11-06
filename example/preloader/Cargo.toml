@@ -28,6 +28,8 @@ kona-proof.workspace = true
 alloy-evm.workspace = true
 op-revm.workspace = true
 op-alloy-consensus.workspace = true
+alloy-op-evm.workspace = true
+revm.workspace = true
 
 canoe-provider = { workspace = true }
 canoe-verifier = { workspace = true }

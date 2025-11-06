@@ -20,15 +20,17 @@ use kona_proof::{
 use kona_derive::EthereumDataSource;
 
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use alloy_op_evm::block::OpTxEnv;
 use op_alloy_consensus::OpTxEnvelope;
 use op_revm::OpSpecId;
+use revm::context::BlockEnv;
 
 // The core client takes both beacon and eigenda struct, this is
 pub async fn run_fp_client<
     O: CommsClient + FlushableCache + Send + Sync + Debug,
     B: BlobProvider + Send + Sync + Debug + Clone,
     E: EigenDAPreimageProvider + Send + Sync + Debug + Clone,
-    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
 >(
     oracle: Arc<O>,
     beacon: B,
@@ -38,7 +40,8 @@ pub async fn run_fp_client<
 where
     <B as BlobProvider>::Error: Debug,
     <E as EigenDAPreimageProvider>::Error: Debug,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
+    <Evm as EvmFactory>::Tx:
+        FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
 {
     ////////////////////////////////////////////////////////////////
     //                          PROLOGUE                          //
