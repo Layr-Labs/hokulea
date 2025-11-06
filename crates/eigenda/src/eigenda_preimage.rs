@@ -86,7 +86,7 @@ fn recency_check(
     // unlike the go implementation, it skips check when l1_inclusion_bn is 0. Go implementation needs this because
     // this number is passed from the op-node to the golang proxy. To handle older op-node that does not pass the
     // value, l1_inclusion_bn = 0 is treated as the default. For hokulea, l1_inclusion_bn is derived directlu, hence
-    // there is no chance, l1_inclusion_bn can be zero.
+    // it is impossible for l1_inclusion_bn to be zero.
     // https://github.com/Layr-Labs/eigenda/blob/cd5c80ad88e966844a4e77795bda07c73dd772ba/api/proxy/store/generated_key/v2/eigenda.go#L319
     if recency_window == 0 {
         warn!(

@@ -79,8 +79,8 @@ pub async fn fetch_eigenda_hint(
     // Fetch preimage data and process response
     let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
-    // If cert does not pass recency check, log and return early
-    if !derivation_stage.pass_recent_check {
+    // If cert does not pass recency check, discard it
+    if !derivation_stage.pass_recency_check {
         info!(
             target = "hokulea-host",
             "discard a cert for not passing recency test {}",
