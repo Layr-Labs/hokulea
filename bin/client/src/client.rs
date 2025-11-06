@@ -26,8 +26,15 @@ pub async fn run_direct_client<P, H, Evm>(
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
-    Evm: EvmFactory<Spec = OpSpecId> + Send + Sync + Debug + Clone + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope>,
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = revm::context::BlockEnv>
+        + Send
+        + Sync
+        + Debug
+        + Clone
+        + 'static,
+    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope>
+        + FromRecoveredTx<OpTxEnvelope>
+        + alloy_op_evm::block::OpTxEnv,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
 

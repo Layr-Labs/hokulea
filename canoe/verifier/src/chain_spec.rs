@@ -82,7 +82,6 @@ pub fn create_kurtosis_chain_spec() -> ChainSpec {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use revm_primitives::hardfork::SpecId;
 
     #[test]
     fn test_create_kurtosis_chain_spec() {
