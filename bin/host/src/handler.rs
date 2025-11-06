@@ -147,7 +147,7 @@ async fn store_recency_window(
 #[derive(Debug, Clone)]
 pub struct ProxyDerivationStage {
     // proxy derivation determines recency test is passed
-    pub pass_recent_check: bool,
+    pub pass_recency_check: bool,
     // proxy derivation determines cert is valid
     pub is_valid_cert: bool,
     // encoded_payload
@@ -167,7 +167,7 @@ async fn fetch_data_from_proxy(
         .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
 
     let mut is_valid_cert = true;
-    let mut pass_recent_check = true;
+    let mut pass_recency_check = true;
     let mut encoded_payload = vec![];
 
     // Handle response based on status code
@@ -192,7 +192,7 @@ async fn fetch_data_from_proxy(
             HostHandlerError::HokuleaPreimageError(c) => match c {
                 HokuleaPreimageError::InvalidCert => is_valid_cert = false,
             },
-            HostHandlerError::HokuleaRecencyCheckError => pass_recent_check = false,
+            HostHandlerError::HokuleaRecencyCheckError => pass_recency_check = false,
             HostHandlerError::HokuleaEncodedPayloadDecodingError(e)
             | HostHandlerError::IllogicalStatusCodeError(e)
             | HostHandlerError::UndefinedStatusCodeError(e) => {
@@ -209,7 +209,7 @@ async fn fetch_data_from_proxy(
     }
 
     Ok(ProxyDerivationStage {
-        pass_recent_check,
+        pass_recency_check,
         is_valid_cert,
         encoded_payload,
     })

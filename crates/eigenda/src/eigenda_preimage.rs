@@ -40,8 +40,8 @@ where
             .get_recency_window(altda_commitment)
             .await
         {
-            Ok(recency) => {
-                recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency)?;
+            Ok(recency_window) => {
+                recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency_window)?;
             }
             Err(e) => return Err(e.into()),
         };
@@ -98,25 +98,8 @@ fn recency_check(
         return Ok(());
     }
 
-    // operator is not allowed to use the genesis block, because there is no operators stake
-    if rbn == 0 {
-        return Err(HokuleaRecencyCheckError::InvalidZeroReferenceBlockNumber.into());
-    }
-
-    if l1_inclusion_bn <= rbn {
-        warn!(
-            "l1_inclusion_bn {} is not greater than rbn from altda_commitment {}",
-            l1_inclusion_bn, rbn,
-        );
-        return Err(HokuleaRecencyCheckError::InconsistentL1InclusionAndReferencedNumber.into());
-    }
-
     // see spec <https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation>
     if l1_inclusion_bn > rbn + recency_window {
-        warn!(
-            "da cert is not recent enough l1_inclusion_bn:{} rbn:{} recency:{}",
-            l1_inclusion_bn, rbn, recency_window,
-        );
         return Err(HokuleaRecencyCheckError::NotRecentCert.into());
     }
     Ok(())
@@ -196,24 +179,6 @@ mod tests {
                 l1_inclusion_bn: 5,
                 rbn: 0,
                 result: Ok(()),
-            },
-            // if rbn is 0, even the check passed, we returns error
-            Case {
-                recency_window: 100,
-                l1_inclusion_bn: 5,
-                rbn: 0,
-                result: Err(HokuleaStatelessError::RecencyCheckError(
-                    HokuleaRecencyCheckError::InvalidZeroReferenceBlockNumber,
-                )),
-            },
-            // Although l1_inclusion_bn <= rbn + recency_window pass, but l1_inclusion_number must be greater than rbn
-            Case {
-                recency_window: 100,
-                l1_inclusion_bn: 6,
-                rbn: 6,
-                result: Err(HokuleaStatelessError::RecencyCheckError(
-                    HokuleaRecencyCheckError::InconsistentL1InclusionAndReferencedNumber,
-                )),
             },
             // simply the inequality does not check out, l1_inclusion_bn <= rbn + recency_window
             Case {

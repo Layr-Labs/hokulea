@@ -98,15 +98,6 @@ pub enum HokuleaRecencyCheckError {
     /// EigenDA cert is not recent
     #[error("da cert is not recent enough")]
     NotRecentCert,
-    /// EigenDA operators must use an existing l1 reference block number(rbn), therefore the
-    /// block has been mined, no further transaction can be added to that block. The l1
-    /// block inclusion number for the da cert, must be greater than the rbn. It is possible
-    /// only if DA operators chose to use a L1 block number yet to be mined.
-    #[error("da protocol violation l1 inclusion number must be greater than reference block number from the cert")]
-    InconsistentL1InclusionAndReferencedNumber,
-    /// block zero is the genesis block, all l1 blocks must have greater value
-    #[error("the reference block number cannot be zero")]
-    InvalidZeroReferenceBlockNumber,
 }
 
 /// The [HokuleaPreimageError] contains application errors, that is directly relates

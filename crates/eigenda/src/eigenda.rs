@@ -122,7 +122,7 @@ where
         {
             Err(e) => match e {
                 HokuleaErrorKind::Temporary(e) => {
-                    warn!("Hokulea derivation encounters temporary issue, retrying the derivation step {}", e);
+                    warn!("Hokulea derivation encounters temporary issue, retrying the derivation step: {}", e);
                     Err(PipelineError::Provider(e).temp())
                 }
                 HokuleaErrorKind::Discard(e) => {
@@ -146,7 +146,7 @@ where
                     Err(e) => {
                         // encoded payload cannot be decoded, data is discarded and try next one
                         // EigenLabs branch https://github.com/Layr-Labs/optimism/blob/34e5ce8416de529b8a57b0c55e1635ebe89805dc/op-node/rollup/derive/altda_data_source.go#L103
-                        warn!("Hokulea derivation discards due to decoding error {}", e);
+                        warn!("Hokulea derivation discards due to decoding error: {}", e);
                         self.altda_commitment = None;
                         return self.next(block_ref, batcher_addr).await;
                     }
