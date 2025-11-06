@@ -63,7 +63,8 @@ fn cert_verifier_address(
     versioned_cert: &EigenDAVersionedCert,
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
     match &versioned_cert {
-        EigenDAVersionedCert::V2(_) => cert_verifier_legacy_v2_interface(chain_id),
+        // route both v2 and v3 with the abi encode interface
+        EigenDAVersionedCert::V2(_) => cert_verifier_address_abi_encode_interface(chain_id),
         EigenDAVersionedCert::V3(_) => cert_verifier_address_abi_encode_interface(chain_id),
     }
 }
@@ -91,31 +92,6 @@ fn cert_verifier_address_abi_encode_interface(
         3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),
         chain_id => {
             Err(CanoeVerifierAddressFetcherError::UnknownChainIDForABIEncodeInterface(chain_id))
-        }
-    }
-}
-
-/// legacy interface
-/// <https://github.com/Layr-Labs/eigenda/blob/bf714cb07fc2dee8b8c8ad7fb6043f9a030f7550/contracts/src/integrations/cert/legacy/IEigenDACertVerifierLegacy.sol#L62>
-fn cert_verifier_legacy_v2_interface(
-    chain_id: u64,
-) -> Result<Address, CanoeVerifierAddressFetcherError> {
-    // this is kurtosis devnet
-    match chain_id {
-        1 => Ok(address!("0xE1Ae45810A738F13e70Ac8966354d7D0feCF7BD6")),
-        // Sepolia V2 cert verifier address
-        11155111 => Ok(address!("0x73818fed0743085c4557a736a7630447fb57c662")),
-        // holesky V2 cert verifier address
-        17000 => Ok(address!("0xFe52fE1940858DCb6e12153E2104aD0fDFbE1162")),
-        // kurtosis l1 chain id => mock contract address
-        // This is the cert verifier that canoe provider and verifier are run against.
-        // In hokulea repo, there is a mock contract under canoe directory, which can be
-        // deployed to generate the address and test functionality.
-        // if user uses a different private key, or nonce for deployment are different from
-        // the default, the address below would change
-        3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),
-        chain_id => {
-            Err(CanoeVerifierAddressFetcherError::UnknownChainIDForLegacyInterface(chain_id))
         }
     }
 }

@@ -2,7 +2,7 @@
 sp1_zkvm::entrypoint!(main);
 
 use alloy_primitives::{keccak256, Address};
-use alloy_sol_types::{sol_data::Bool, SolType};
+use alloy_sol_types::SolType;
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CertVerifierCall};
 use sp1_cc_client_executor::{io::EvmSketchInput, AnchorType, ClientExecutor, ContractInput};
@@ -56,27 +56,6 @@ pub fn main() {
     for canoe_input in canoe_inputs.iter() {
         let (returns, anchor_hash, anchor_type, chain_config_hash) =
             match CertVerifierCall::build(&canoe_input.altda_commitment) {
-                CertVerifierCall::LegacyV2Interface(call) => {
-                    let call = ContractInput::new_call(
-                        canoe_input.verifier_address,
-                        Address::default(),
-                        call,
-                    );
-
-                    let public_vals = executor
-                        .execute(call)
-                        .expect("executor should be able to execute call");
-
-                    // empricially if the function reverts, the output is empty, the guest code abort when evm revert takes place
-                    let validity = Bool::abi_decode(&public_vals.contractOutput)
-                        .expect("should be able to deserialize returns");
-                    (
-                        validity,
-                        public_vals.anchorHash,
-                        public_vals.anchorType,
-                        public_vals.chainConfigHash,
-                    )
-                }
                 CertVerifierCall::ABIEncodeInterface(call) => {
                     let call = ContractInput::new_call(
                         canoe_input.verifier_address,
