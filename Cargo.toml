@@ -28,18 +28,18 @@ codegen-units = 1
 lto = "fat"
 
 [workspace.dependencies]
-kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-derive = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-driver = { version = "0.4.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-executor = { version = "0.4.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-genesis = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-protocol = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
-kona-cli = { version = "0.3.2", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.6", default-features = false }
+kona-client = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-host = { git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-derive = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-driver = { version = "0.4.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-executor = { version = "0.4.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-preimage = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-proof = { version = "0.3.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-std-fpvm = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-std-fpvm-proc = { version = "0.2.0", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-genesis = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-protocol = { version = "0.4.5", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
+kona-cli = { version = "0.3.2", git = "https://github.com/op-rs/kona", tag = "kona-client/v1.1.7", default-features = false }
 
 # Workspace
 hokulea-host-bin = { path = "bin/host", version = "0.1.0", default-features = false }
@@ -64,17 +64,19 @@ alloy-primitives = { version = "1.3.1", default-features = false }
 alloy-sol-types = { version = "1.3.1", default-features = false }
 
 # Execution
-alloy-evm = { version = "0.21.3", default-features = false }
-op-revm = { version = "10.1.0", default-features = false }
-revm-primitives = { version = "20.2.1", default-features = false }
+alloy-evm = { version = "0.23.1", default-features = false }
+alloy-op-evm = { version = "0.23.1", default-features = false }
+revm = { version = "31.0.0", default-features = false }
+op-revm = { version = "12.0.0", default-features = false }
+revm-primitives = { version = "21.0.1", default-features = false }
 
 # OP Alloy
-op-alloy-consensus = { version = "0.20.0", default-features = false }
+op-alloy-consensus = { version = "0.22.0", default-features = false }
 
 # Reth
-reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
-reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
-reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.8.3", default-features = false }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.0", default-features = false }
+reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.0", default-features = false }
+reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.0", default-features = false }
 
 # General
 spin = "0.10.0"
@@ -133,9 +135,9 @@ sp1-zkvm = "5.2.1"
 sp1-lib = "5.2.1"
 sp1-core-executor = "5.2.1"
 sp1-prover = "5.2.1"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.3" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.8.3" }
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.8.3" } 
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.0" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.0" }
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.0" } 
 
 # ZKVM deps
 hex = "0.4"

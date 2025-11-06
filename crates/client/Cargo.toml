@@ -10,6 +10,8 @@ alloy-evm.workspace = true
 
 op-alloy-consensus.workspace = true
 op-revm.workspace = true
+alloy-op-evm.workspace = true
+revm.workspace = true
 
 kona-client.workspace = true
 kona-preimage.workspace = true
