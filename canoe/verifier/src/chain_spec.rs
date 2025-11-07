@@ -1,5 +1,4 @@
 use alloy_genesis::Genesis;
-use alloy_primitives::B256;
 use reth_chainspec::{Chain, ChainSpec, ChainSpecBuilder, HOLESKY, MAINNET, SEPOLIA};
 use reth_evm::spec_by_timestamp_and_block_number;
 use revm_primitives::hardfork::SpecId;
