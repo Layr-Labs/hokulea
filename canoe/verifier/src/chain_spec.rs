@@ -42,24 +42,6 @@ pub fn derive_chain_spec_id(
     }
 }
 
-/// derive_chain_spec locates spec by chain id
-pub fn derive_chain_spec_genesis_hash(l1_chain_id: u64) -> B256 {
-    match l1_chain_id {
-        // mainnet
-        1 => MAINNET.genesis_hash(),
-        // sepolia
-        11155111 => SEPOLIA.genesis_hash(),
-        // holesky
-        17000 => HOLESKY.genesis_hash(),
-        // kurtosis devnet
-        3151908 => {
-            let chain_spec = create_kurtosis_chain_spec();
-            chain_spec.genesis_hash()
-        }
-        _ => panic!("unsupported chain id"),
-    }
-}
-
 /// create_kurtosis_chain_spec provides a testing utility for kurtosis devnet.
 /// the latest active fork is prague
 pub fn create_kurtosis_chain_spec() -> ChainSpec {
