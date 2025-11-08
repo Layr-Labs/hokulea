@@ -47,7 +47,7 @@ pub struct AltDACommitment {
 impl TryFrom<&[u8]> for AltDACommitment {
     type Error = AltDACommitmentParseError;
     fn try_from(value: &[u8]) -> Result<AltDACommitment, Self::Error> {
-        // at least 3 bytes to indicate the type
+        // at least 4 bytes to indicate the type
         if value.len() < 4 {
             return Err(AltDACommitmentParseError::InsufficientData);
         }
