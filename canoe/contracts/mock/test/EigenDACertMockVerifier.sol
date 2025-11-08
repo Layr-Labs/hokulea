@@ -16,7 +16,6 @@ contract AlwaysTrueTest is Test {
         BlobInclusionInfo memory bi;
         NonSignerStakesAndSignature memory nss;
         bytes memory quorums;
-        assertEq(at.verifyDACertV2ForZKProof(bh, bi, nss, quorums), true);
         assertEq(at.checkDACert(quorums), 1);
     }
 }

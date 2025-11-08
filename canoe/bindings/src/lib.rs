@@ -124,15 +124,6 @@ sol! {
         INTERNAL_ERROR,
     }
 
-    interface IEigenDACertVerifier {
-        function verifyDACertV2ForZKProof(
-            BatchHeaderV2 calldata batchHeader,
-            BlobInclusionInfo calldata blobInclusionInfo,
-            NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
-            bytes signedQuorumNumbers
-        ) external view returns (bool);
-    }
-
     interface IEigenDACertVerifierBase {
         function checkDACert(bytes calldata abiEncodedCert) external view returns (uint8 status);
     }
