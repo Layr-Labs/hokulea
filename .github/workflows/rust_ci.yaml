@@ -75,7 +75,7 @@ jobs:
           sudo chown -R $(id -u):$(id -g) ./target
   cargo-doc:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
