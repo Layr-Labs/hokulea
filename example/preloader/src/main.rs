@@ -100,6 +100,7 @@ async fn main() -> anyhow::Result<()> {
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
                 mock_mode,
                 custom_chain_config,
+                custom_canoe_client_elf: None,
             };
             let canoe_verifier = CanoeNoOpVerifier{};
         } else {

@@ -1,3 +1,5 @@
+use core::str::FromStr;
+
 use alloy_genesis::Genesis;
 use alloy_primitives::B256;
 use reth_chainspec::{Chain, ChainSpec, ChainSpecBuilder, HOLESKY, MAINNET, SEPOLIA};
@@ -10,6 +12,10 @@ pub fn derive_chain_spec_id(
     l1_head_block_timestamp: u64,
     l1_head_block_number: u64,
 ) -> SpecId {
+    if let Some(s) = option_env!("CUSTOM_CHAIN_SPEC") {
+        return SpecId::from_str(s).expect("CUSTOM_CHAIN_SPEC should be a valid hard fork name");
+    }
+
     match l1_chain_id {
         // mainnet
         1 => spec_by_timestamp_and_block_number(

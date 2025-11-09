@@ -21,7 +21,7 @@ use std::{
 use tracing::{debug, info, warn};
 use url::Url;
 
-/// The ELF we want to execute inside the zkVM.
+/// The default ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 const DEFAULT_NETWORK_PRIVATE_KEY: &str =
@@ -64,6 +64,8 @@ pub struct CanoeSp1CCProvider {
     pub mock_mode: bool,
     /// optional custom chain configuration for genesis block
     pub custom_chain_config: Option<ChainConfig>,
+    /// optional custom ELF bytes for the SP1 zkVM client. If None, uses default ELF
+    pub custom_canoe_client_elf: Option<Vec<u8>>,
 }
 
 #[async_trait]
@@ -85,6 +87,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
                 &self.eth_rpc_url,
                 self.mock_mode,
                 self.custom_chain_config.clone(),
+                self.custom_canoe_client_elf.as_deref(),
             )
             .await,
         )
@@ -104,6 +107,8 @@ pub struct CanoeSp1CCReducedProofProvider {
     pub mock_mode: bool,
     /// optional custom chain configuration for genesis block
     pub custom_chain_config: Option<ChainConfig>,
+    /// optional custom ELF bytes for the SP1 zkVM client. If None, uses default ELF
+    pub custom_canoe_client_elf: Option<Vec<u8>>,
 }
 
 #[async_trait]
@@ -124,6 +129,7 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             &self.eth_rpc_url,
             self.mock_mode,
             self.custom_chain_config.clone(),
+            self.custom_canoe_client_elf.as_deref(),
         )
         .await
         {
@@ -143,6 +149,7 @@ async fn get_sp1_cc_proof(
     eth_rpc_url: &str,
     mock_mode: bool,
     custom_chain_config: Option<ChainConfig>,
+    custom_canoe_client_elf: Option<&[u8]>,
 ) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
@@ -233,12 +240,13 @@ async fn get_sp1_cc_proof(
         .network()
         .private_key(&network_private_key)
         .build();
-    let (pk, _vk) = client.setup(ELF);
+    let elf_bytes = custom_canoe_client_elf.unwrap_or(ELF);
+    let (pk, _vk) = client.setup(elf_bytes);
 
     let proof = if mock_mode {
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
         let (public_values, report) = client
-            .execute(ELF, &stdin)
+            .execute(elf_bytes, &stdin)
             .run()
             .expect("sp1-cc should have executed the ELF");
         info!(
