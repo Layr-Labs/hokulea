@@ -79,7 +79,7 @@ _kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
 
 [group('local-env')]
 get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
-  #!/usr/bin/env bash  
+  #!/usr/bin/env bash
   L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
   L2_BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
   if [ $L2_BLOCK_NUMBER -eq 0 ]; then
@@ -87,7 +87,7 @@ get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
     echo "You can run the following command to check the latest finalized block."
     echo "cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d"
     exit 1
-  fi 
+  fi
   echo $L2_BLOCK_NUMBER
 
 
@@ -115,11 +115,11 @@ run-client-against-devnet native_or_asterisc='native' verbosity='' env_file='.de
 run-client-against-sepolia native_or_asterisc='native' verbosity='' env_file='.sepolia.env' block_number='': (download-srs)
   #!/usr/bin/env bash
   RUN_ENV_FILE=".run{{env_file}}"
-  
+
   set a-
     source {{env_file}}
   set a+
-  
+
   L2_BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
 
   just save-run-env $RUN_ENV_FILE $L2_BLOCK_NUMBER $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC
@@ -234,13 +234,13 @@ test-docs:
 save-all-env env_file run_env_file block_number rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
-  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true  
+  export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
   just save-chain-env {{env_file}} {{rollup_config_path}} {{enclave}} {{chain_id}}
   set a-
     source {{env_file}}
   set a+
   just save-run-env {{run_env_file}} {{block_number}} $L1_RPC $L1_BEACON_RPC $L2_RPC $ROLLUP_NODE_RPC
-  
+
 
 # save rpc variable in to .devnet.env
 [group('local-env')]
@@ -255,7 +255,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
   ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
-  L1_CONFIG_PATH="$(realpath {{l1_config_path}})"    
+  L1_CONFIG_PATH="$(realpath {{l1_config_path}})"
   RECENCY_WINDOW="$(cat rollup.json | jq .seq_window_size)"
 
   echo "L1_RPC=$L1_RPC" > {{env_file}}
@@ -277,7 +277,7 @@ save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet
 ## L2  =============================================================== ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ##
 [group('local-env')]
-save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc:  
+save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_rpc:
   #!/usr/bin/env bash
   L2_CHAIN_ID=$(cast chain-id --rpc-url {{l2_rpc}})
 
@@ -295,11 +295,11 @@ save-run-env run_env_file block_number l1_rpc l1_beacon_rpc l2_rpc rollup_node_r
   L1_HEAD=$(cast block --rpc-url {{l1_rpc}} $((L1_ORIGIN_NUM + 30)) --json | jq -r .hash)
 
   echo "L1_HEAD=$L1_HEAD" > {{run_env_file}}
-  echo "L1_ORIGIN_NUM=$L1_ORIGIN_NUM" >> {{run_env_file}}  
+  echo "L1_ORIGIN_NUM=$L1_ORIGIN_NUM" >> {{run_env_file}}
   echo "CLAIMED_L2_BLOCK_NUMBER=$CLAIMED_L2_BLOCK_NUMBER" >> {{run_env_file}}
   echo "CLAIMED_L2_OUTPUT_ROOT=$CLAIMED_L2_OUTPUT_ROOT" >> {{run_env_file}}
   echo "AGREED_L2_OUTPUT_ROOT=$AGREED_L2_OUTPUT_ROOT" >> {{run_env_file}}
-  echo "AGREED_L2_HEAD_HASH=$AGREED_L2_HEAD_HASH" >> {{run_env_file}}  
+  echo "AGREED_L2_HEAD_HASH=$AGREED_L2_HEAD_HASH" >> {{run_env_file}}
 
 ############################## RUN CLIENT #################################
 run-client env_file run_env_file native_or_asterisc='native' verbosity='':
@@ -350,7 +350,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
   elif [ "{{native_or_asterisc}}" = "asterisc" ]; then
-    HOST_BIN_PATH="./target/release/hokulea-host-bin"    
+    HOST_BIN_PATH="./target/release/hokulea-host-bin"
     CLIENT_BIN_PATH="./target/riscv64imac-unknown-none-elf/release-client-lto/hokulea-client-bin"
     STATE_PATH="./state.bin.gz"
 
@@ -367,7 +367,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --proof-at never \
       --input $STATE_PATH \
       -- \
-      $HOST_BIN_PATH \                              
+      $HOST_BIN_PATH \
       --l1-head $L1_HEAD \
       --agreed-l2-head-hash $AGREED_L2_HEAD_HASH \
       --claimed-l2-output-root $CLAIMED_L2_OUTPUT_ROOT \
@@ -382,7 +382,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --data-dir ./data \
       --recency-window $RECENCY_WINDOW \
       --l1-config-path $L1_CONFIG_PATH \
-      {{verbosity}}      
+      {{verbosity}}
   else
     echo "Unknown value for NATIVE_OR_ASTERISC: "{{native_or_asterisc}}""
     exit 1
@@ -391,10 +391,10 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
 ############################### Utils ###############################
 [group('utils')]
 get-sp1cc-elf-and-vkey sp1_tag='v5.2.1':
-  #!/usr/bin/env bash  
+  #!/usr/bin/env bash
   pushd canoe/sp1-cc/client/
       cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag {{sp1_tag}}
   popd
   echo "Finished building elf with sp1 {{sp1_tag}}"
-  cargo run --bin canoe-sp1-cc-vkey-bin --release
-  echo "This vKey must match the V_KEY variable inside crates/proof/src/canoe_verifier/sp1_cc.rs"
+  cargo run --bin canoe-sp1-cc-vkey-bin --release -- canoe/sp1-cc/elf/canoe-sp1-cc-client
+  echo "This vKey must match the V_KEY variable inside canoe/sp1-cc/verifier/src/lib.rs"

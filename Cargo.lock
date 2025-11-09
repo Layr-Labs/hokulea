@@ -2481,7 +2481,8 @@ dependencies = [
 name = "canoe-sp1-cc-vkey-bin"
 version = "0.1.0"
 dependencies = [
- "canoe-sp1-cc-host",
+ "alloy-primitives 1.4.1",
+ "clap",
  "sp1-sdk",
 ]
 
