@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+alloy-primitives.workspace = true
+clap = { workspace = true, features = ["derive"] }
 sp1-sdk.workspace = true
-canoe-sp1-cc-host = { workspace = true}
