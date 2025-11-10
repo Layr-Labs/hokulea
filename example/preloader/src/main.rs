@@ -15,8 +15,10 @@ use tokio::task;
 use core::fmt::Debug;
 
 use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use alloy_op_evm::block::OpTxEnv;
 use op_alloy_consensus::OpTxEnvelope;
 use op_revm::OpSpecId;
+use revm::context::BlockEnv;
 
 use kona_proof::{l1::OracleBlobProvider, BootInfo, FlushableCache};
 
@@ -143,15 +145,9 @@ pub async fn run_witgen_and_zk_verification<P, H, Evm>(
 where
     P: PreimageOracleClient + Send + Sync + Debug + Clone,
     H: HintWriterClient + Send + Sync + Debug + Clone,
-    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = revm::context::BlockEnv>
-        + Send
-        + Sync
-        + Debug
-        + Clone
-        + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope>
-        + FromRecoveredTx<OpTxEnvelope>
-        + alloy_op_evm::block::OpTxEnv,
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx:
+        FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
 
@@ -196,15 +192,9 @@ pub async fn prepare_witness<O, Evm>(
 ) -> anyhow::Result<EigenDAWitness>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
-    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = revm::context::BlockEnv>
-        + Send
-        + Sync
-        + Debug
-        + Clone
-        + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope>
-        + FromRecoveredTx<OpTxEnvelope>
-        + alloy_op_evm::block::OpTxEnv,
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx:
+        FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
 {
     // Run derivation for the first time to populate the witness data
     let eigenda_preimage: EigenDAPreimage =
@@ -251,15 +241,9 @@ pub async fn run_preimage_client<O, Evm>(
 ) -> Result<EigenDAPreimage, FaultProofProgramError>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
-    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = revm::context::BlockEnv>
-        + Send
-        + Sync
-        + Debug
-        + Clone
-        + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope>
-        + FromRecoveredTx<OpTxEnvelope>
-        + alloy_op_evm::block::OpTxEnv,
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx:
+        FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
 {
     let beacon = OracleBlobProvider::new(oracle.clone());
 
@@ -293,15 +277,9 @@ pub async fn run_within_zkvm_assume_oracle_verified<O, Evm>(
 ) -> anyhow::Result<()>
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
-    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = revm::context::BlockEnv>
-        + Send
-        + Sync
-        + Debug
-        + Clone
-        + 'static,
-    <Evm as EvmFactory>::Tx: FromTxWithEncoded<OpTxEnvelope>
-        + FromRecoveredTx<OpTxEnvelope>
-        + alloy_op_evm::block::OpTxEnv,
+    Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
+    <Evm as EvmFactory>::Tx:
+        FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
 {
     info!("start the code supposed to run inside zkVM");
 
