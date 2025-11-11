@@ -306,13 +306,14 @@ dependencies = [
 
 [[package]]
 name = "alloy-evm"
-version = "0.23.1"
+version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "428b58c17ab5f9f71765dc5f116acb6580f599ce243b8ce391de3ba859670c61"
+checksum = "6223235f0b785a83dd10dc1599b7f3763c65e4f98b4e9e4e10e576bbbdf7dfa2"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
  "alloy-hardforks 0.4.4",
+ "alloy-op-hardforks",
  "alloy-primitives 1.4.1",
  "alloy-rpc-types-engine",
  "alloy-rpc-types-eth",
@@ -448,6 +449,24 @@ dependencies = [
  "op-alloy-consensus 0.22.0",
  "op-revm 11.3.0",
  "revm 30.2.0",
+ "thiserror 2.0.17",
+]
+
+[[package]]
+name = "alloy-op-evm"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ad8f3a679eb44ee21481edabd628d191c9a42d182ed29923b4d43a27a0f2cc8"
+dependencies = [
+ "alloy-consensus",
+ "alloy-eips",
+ "alloy-evm 0.23.2",
+ "alloy-op-hardforks",
+ "alloy-primitives 1.4.1",
+ "auto_impl",
+ "op-alloy-consensus 0.22.0",
+ "op-revm 12.0.0",
+ "revm 31.0.2",
  "thiserror 2.0.17",
 ]
 
@@ -4336,7 +4355,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-consensus",
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.23.2",
  "hokulea-eigenda",
  "kona-client",
  "kona-derive",
@@ -4355,7 +4374,7 @@ name = "hokulea-client-bin"
 version = "0.1.0"
 dependencies = [
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.23.2",
  "cfg-if",
  "hokulea-client",
  "hokulea-proof",
@@ -4406,7 +4425,7 @@ name = "hokulea-example-preloader"
 version = "0.1.0"
 dependencies = [
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.23.2",
  "anyhow",
  "canoe-provider",
  "canoe-sp1-cc-host",
@@ -5139,7 +5158,7 @@ dependencies = [
  "alloy-consensus",
  "alloy-eips",
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.22.6",
  "alloy-primitives 1.4.1",
  "alloy-rlp",
  "alloy-rpc-types-engine",
@@ -5222,7 +5241,7 @@ dependencies = [
  "alloy-consensus",
  "alloy-eips",
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.22.6",
  "alloy-op-hardforks",
  "alloy-primitives 1.4.1",
  "alloy-rlp",
@@ -5276,7 +5295,7 @@ source = "git+https://github.com/op-rs/kona?tag=kona-client%2Fv1.2.2#daa3535ab31
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
- "alloy-op-evm",
+ "alloy-op-evm 0.22.6",
  "alloy-primitives 1.4.1",
  "alloy-provider",
  "alloy-rlp",
@@ -5377,7 +5396,7 @@ dependencies = [
  "alloy-consensus",
  "alloy-eips",
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.22.6",
  "alloy-primitives 1.4.1",
  "alloy-rlp",
  "alloy-trie 0.9.1",
@@ -5413,7 +5432,7 @@ dependencies = [
  "alloy-consensus",
  "alloy-eips",
  "alloy-evm 0.22.6",
- "alloy-op-evm",
+ "alloy-op-evm 0.22.6",
  "alloy-primitives 1.4.1",
  "alloy-rlp",
  "alloy-rpc-types-engine",
@@ -7728,7 +7747,7 @@ dependencies = [
  "alloy-chains",
  "alloy-consensus",
  "alloy-eips",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-genesis",
  "alloy-primitives 1.4.1",
  "alloy-trie 0.9.1",
@@ -7870,7 +7889,7 @@ source = "git+https://github.com/paradigmxyz/reth?tag=v1.9.1#3afe69a5738459a7cb5
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-primitives 1.4.1",
  "auto_impl",
  "derive_more 2.0.1",
@@ -7891,7 +7910,7 @@ source = "git+https://github.com/paradigmxyz/reth?tag=v1.9.1#3afe69a5738459a7cb5
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-primitives 1.4.1",
  "alloy-rpc-types-engine",
  "derive_more 2.0.1",
@@ -7910,7 +7929,7 @@ name = "reth-execution-errors"
 version = "1.9.1"
 source = "git+https://github.com/paradigmxyz/reth?tag=v1.9.1#3afe69a5738459a7cb5f46c598c7f541a1510f32"
 dependencies = [
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-primitives 1.4.1",
  "alloy-rlp",
  "nybbles 0.4.6",
@@ -7925,7 +7944,7 @@ source = "git+https://github.com/paradigmxyz/reth?tag=v1.9.1#3afe69a5738459a7cb5
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-primitives 1.4.1",
  "derive_more 2.0.1",
  "reth-ethereum-primitives",
@@ -9008,7 +9027,7 @@ version = "0.1.0"
 source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.9.1#545ae85f21ba274b97ee8cb68b86acc5c3dd6b4a"
 dependencies = [
  "alloy-consensus",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-network",
  "alloy-primitives 1.4.1",
  "alloy-rpc-types",
@@ -10001,7 +10020,7 @@ source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.9
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-primitives 1.4.1",
  "alloy-rpc-types",
  "alloy-rpc-types-eth",
@@ -10035,7 +10054,7 @@ source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.9
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
- "alloy-evm 0.23.1",
+ "alloy-evm 0.23.2",
  "alloy-primitives 1.4.1",
  "alloy-provider",
  "alloy-rpc-types",
