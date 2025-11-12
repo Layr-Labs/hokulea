@@ -68,15 +68,15 @@ alloy-evm = { version = "0.23.1", default-features = false }
 alloy-op-evm = { version = "0.23.1", default-features = false }
 revm = { version = "31.0.0", default-features = false }
 op-revm = { version = "12.0.0", default-features = false }
-revm-primitives = { version = "21.0.1", default-features = false }
+revm-primitives = { version = "21.0.2", default-features = false }
 
 # OP Alloy
 op-alloy-consensus = { version = "0.22.0", default-features = false }
 
 # Reth
-reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.0", default-features = false }
-reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.0", default-features = false }
-reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.0", default-features = false }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
+reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
+reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
 
 # General
 spin = "0.10.0"
@@ -135,9 +135,9 @@ sp1-zkvm = "5.2.1"
 sp1-lib = "5.2.1"
 sp1-core-executor = "5.2.1"
 sp1-prover = "5.2.1"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.0" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.0" }
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.0" } 
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1b" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1b" }
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1b" }
 
 # ZKVM deps
 hex = "0.4"
