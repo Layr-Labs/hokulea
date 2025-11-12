@@ -5,21 +5,21 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
+use rsp_primitives::genesis::genesis_from_json;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{
     network::FulfillmentStrategy, Prover, ProverClient, SP1Proof, SP1ProofMode,
     SP1ProofWithPublicValues, SP1Stdin, SP1_CIRCUIT_VERSION,
 };
+use tracing::{debug, info, warn};
+use url::Url;
+
 use std::{
     env,
     str::FromStr,
     time::{Duration, Instant},
 };
-use tracing::{debug, info, warn};
-use url::Url;
-
-use rsp_primitives::genesis::genesis_from_json;
 
 /// The ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
@@ -147,34 +147,23 @@ async fn get_sp1_cc_proof(
 
     let rpc_url = Url::from_str(eth_rpc_url).unwrap();
 
-    let sketch = match Genesis::try_from(l1_chain_id) {
-        Ok(genesis) => {
-            EvmSketch::builder()
-                .at_block(block_number)
-                .with_genesis(genesis)
-                .el_rpc_url(rpc_url)
-                .build()
-                .await?
-        }
-        // if genesis is not available in the sp1-cc library, the code uses custom genesis config
-        Err(_) => {
-            let chain_config = match l1_chain_id {
-                17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
-                3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
-                _ => panic!("chain id {l1_chain_id} is not supported by canoe sp1 cc"),
-            };
-
-            let genesis = Genesis::Custom(chain_config.config);
-
-            EvmSketch::builder()
-                .at_block(block_number)
-                .with_genesis(genesis)
-                .el_rpc_url(rpc_url)
-                .build()
-                .await
-                .expect("evm sketch builder")
-        }
+    let genesis = if let Ok(genesis) = Genesis::try_from(l1_chain_id) {
+        genesis
+    } else {
+        let chain_config = match l1_chain_id {
+            17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
+            3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
+            _ => panic!("chain id {l1_chain_id} is not supported by canoe sp1 cc"),
+        };
+        Genesis::Custom(chain_config.config)
     };
+
+    let sketch = EvmSketch::builder()
+        .at_block(block_number)
+        .with_genesis(genesis)
+        .el_rpc_url(rpc_url)
+        .build()
+        .await?;
 
     let derived_l1_header_hash = sketch.anchor.header().hash_slow();
     assert!(l1_head_block_hash == derived_l1_header_hash);

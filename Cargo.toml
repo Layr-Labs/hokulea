@@ -2,19 +2,19 @@
 resolver = "2"
 members = [
     "bin/*",
-    "crates/*",
-    "example/preloader",    
     "canoe/bindings",
     "canoe/provider",
+    "canoe/sp1-cc/client",
+    "canoe/sp1-cc/host",
+    "canoe/sp1-cc/verifier",
+    "canoe/sp1-cc/vkey-bin",
     "canoe/steel/apps",
     "canoe/steel/methods",
-    "canoe/steel/verifier", 
-    "canoe/sp1-cc/host",
-    "canoe/sp1-cc/client",
-    "canoe/sp1-cc/vkey-bin",
-    "canoe/sp1-cc/verifier",
-    "canoe/verifier",
+    "canoe/steel/verifier",
     "canoe/verifier-address-fetcher",
+    "canoe/verifier",
+    "crates/*",
+    "example/preloader",
 ]
 
 [profile.dev-client]
@@ -55,91 +55,89 @@ hokulea-zkvm-verification = { path = "crates/zkvm-verification", version = "0.1.
 eigenda-cert = { path = "crates/eigenda-cert" }
 
 # Alloy (Network)
-alloy-rlp = { version = "0.3.12", default-features = false }
-alloy-provider = { version = "1.0.38", default-features = false }
 alloy-consensus = { version = "1.0.38", default-features = false }
-alloy-rpc-types = { version = "1.0.38", default-features = false }
 alloy-genesis = { version = "1.0.38", default-features = false }
 alloy-primitives = { version = "1.3.1", default-features = false }
+alloy-provider = { version = "1.0.38", default-features = false }
+alloy-rlp = { version = "0.3.12", default-features = false }
+alloy-rpc-types = { version = "1.0.38", default-features = false }
 alloy-sol-types = { version = "1.3.1", default-features = false }
 
 # Execution
 alloy-evm = { version = "0.22.6", default-features = false }
 alloy-op-evm = { version = "0.22.6", default-features = false }
-revm = { version = "30.2.0", default-features = false }
 op-revm = { version = "11.3.0", default-features = false }
+revm = { version = "30.2.0", default-features = false }
 revm-primitives = { version = "21.0.2", default-features = false }
 
 # OP Alloy
 op-alloy-consensus = { version = "0.22.0", default-features = false }
 
 # Reth
-reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
 reth-chainspec = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
 reth-evm = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v1.9.1", default-features = false }
 
 # General
-spin = "0.10.0"
-clap = "4.5.39"
-tokio = "1.45.1"
-cfg-if = "1.0.0"
-reqwest = "0.12.19"
 async-trait = "0.1.88"
+cfg-if = "1.0.0"
+clap = "4.5.39"
 num = "0.4"
+reqwest = "0.12.19"
+spin = "0.10.0"
+tokio = "1.45.1"
 
 # General
+anyhow = { version = "1.0.98", default-features = false }
 sha2 = { version = "0.10.9", default-features = false }
 thiserror = { version = "2.0.12", default-features = false }
-anyhow = { version = "1.0.98", default-features = false }
 
 rust-kzg-bn254-primitives = { version = "0.1.2", git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", rev = "4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d", default-features = false }
-rust-kzg-bn254-verifier = { version = "0.1.2", git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", rev = "4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d", default-features = false }
 rust-kzg-bn254-prover = { version = "0.1.1", git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", rev = "4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d", default-features = false }
+rust-kzg-bn254-verifier = { version = "0.1.2", git = "https://github.com/Layr-Labs/rust-kzg-bn254.git", rev = "4d1d6a84910a3fc1e5e8927f694e4fc10ac5dd9d", default-features = false }
 
 ark-bn254 = { version = "0.5.0", default-features = false }
 ark-ff = { version = "0.5.0", default-features = false }
 
 # Tracing
-tracing-subscriber = { version = "0.3.20", default-features = false }
 tracing = { version = "0.1.41", default-features = false }
-
+tracing-subscriber = { version = "0.3.20", default-features = false }
 
 # Serialization
 serde = { version = "1.0.219", default-features = false }
 serde_json = { version = "1.0.140", default-features = false }
 
-
-canoe-provider = { path = "./canoe/provider", default-features = false  }
-canoe-bindings = { path = "./canoe/bindings", default-features = false  }
-canoe-verifier = { path = "./canoe/verifier", default-features = false  }
-canoe-verifier-address-fetcher = { path = "./canoe/verifier-address-fetcher", default-features = false  }
+canoe-bindings = { path = "./canoe/bindings", default-features = false }
+canoe-provider = { path = "./canoe/provider", default-features = false }
+canoe-verifier = { path = "./canoe/verifier", default-features = false }
+canoe-verifier-address-fetcher = { path = "./canoe/verifier-address-fetcher", default-features = false }
 
 # Steel
-canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false  }
-canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false  }
-canoe-steel-verifier = { path = "./canoe/steel/verifier", default-features = false  }
+canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false }
+canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false }
+canoe-steel-verifier = { path = "./canoe/steel/verifier", default-features = false }
 
-risc0-zkvm = { version = "3.0.3" }
-risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }
-risc0-build-ethereum = { version = "3.0" }
 risc0-build = { version = "3.0", features = ["docker"] }
+risc0-build-ethereum = { version = "3.0" }
+risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }
+risc0-zkvm = { version = "3.0.3" }
 
 # Sp1-contract-call
-canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false  }
-canoe-sp1-cc-client  = { path = "./canoe/sp1-cc/client", default-features = false  }
-canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false  }
+canoe-sp1-cc-client = { path = "./canoe/sp1-cc/client", default-features = false }
+canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
+canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
 
-sp1-sdk = "5.2.1"
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1b" }
 sp1-build = "5.2.1"
-sp1-zkvm = "5.2.1"
-sp1-lib = "5.2.1"
-sp1-core-executor = "5.2.1"
-sp1-prover = "5.2.1"
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1b" }
 sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1b" }
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1b" }
+sp1-core-executor = "5.2.1"
+sp1-lib = "5.2.1"
+sp1-prover = "5.2.1"
+sp1-sdk = "5.2.1"
+sp1-zkvm = "5.2.1"
 
 # ZKVM deps
+bincode = "1.3.3"
 hex = "0.4"
 url = { version = "2.5.4" }
-bincode = "1.3.3"

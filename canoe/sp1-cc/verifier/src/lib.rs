@@ -38,7 +38,7 @@ pub const V_KEY: [u32; 8] = [
     172466936, 724562174, 1557159139, 1421788462, 501370159, 544998102, 524542311, 605749438,
 ];
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct CanoeSp1CCVerifier {}
 
 impl CanoeVerifier for CanoeSp1CCVerifier {
