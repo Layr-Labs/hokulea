@@ -2,6 +2,8 @@
 #![no_std]
 extern crate alloc;
 
+use core::str::FromStr;
+
 use alloc::{
     string::{String, ToString},
     vec::Vec,
@@ -39,7 +41,21 @@ pub const V_KEY: [u32; 8] = [
 ];
 
 #[derive(Clone)]
-pub struct CanoeSp1CCVerifier {}
+pub struct CanoeSp1CCVerifier {
+    v_key: [u32; 8],
+}
+
+impl CanoeSp1CCVerifier {
+    pub fn new(v_key: [u32; 8]) -> Self {
+        Self { v_key }
+    }
+}
+
+impl Default for CanoeSp1CCVerifier {
+    fn default() -> Self {
+        Self::new(V_KEY)
+    }
+}
 
 impl CanoeVerifier for CanoeSp1CCVerifier {
     // some variable is unused, because when sp1-cc verifier is not configured in zkVM mode, all tests
@@ -50,7 +66,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
         cert_validity_pair: Vec<(AltDACommitment, CertValidity)>,
         canoe_proof_bytes: Option<Vec<u8>>,
     ) -> Result<(), HokuleaCanoeVerificationError> {
-        info!("using CanoeSp1CCVerifier with v_key {:?}", V_KEY);
+        info!("using CanoeSp1CCVerifier with v_key {:?}", &self.v_key);
 
         assert!(!cert_validity_pair.is_empty());
 
@@ -72,7 +88,7 @@ impl CanoeVerifier for CanoeSp1CCVerifier {
                 let public_values_digest = Sha256::digest(journals_bytes);
                 // the function will panic if the proof is incorrect
                 // https://github.com/succinctlabs/sp1/blob/011d2c64808301878e6f0375c3596b3e22e53949/crates/zkvm/lib/src/verify.rs#L3
-                verify_sp1_proof(&V_KEY, &public_values_digest.into());
+                verify_sp1_proof(&self.v_key, &public_values_digest.into());
                 Ok(())
             } else {
                 panic!("CanoeSp1CCVerifier should only be used for secure integration whose validation happens in zkVM");
@@ -154,6 +170,10 @@ fn hash_chain_config(chain_id: u64, active_fork_name: String) -> B256 {
 // Resulting different genesis hash.
 // https://github.com/succinctlabs/rsp/blob/c14b4005ea9257e4d434a080b6900411c17f781b/crates/primitives/src/genesis.rs#L19
 fn rsp_genesis_hash(chain_id: u64) -> B256 {
+    if let Some(s) = option_env!("CUSTOM_RSP_GENESIS_HASH") {
+        return B256::from_str(s).expect("CUSTOM_RSP_GENESIS_HASH should be a valid hex string");
+    }
+
     match Genesis::try_from(chain_id) {
         Ok(genesis) => {
             let rsp_genesis_bytes =

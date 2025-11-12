@@ -2463,6 +2463,7 @@ dependencies = [
 name = "canoe-sp1-cc-host"
 version = "0.1.0"
 dependencies = [
+ "alloy-genesis",
  "alloy-primitives 1.4.1",
  "alloy-rpc-types",
  "alloy-sol-types",
@@ -4406,6 +4407,7 @@ name = "hokulea-example-preloader"
 version = "0.1.0"
 dependencies = [
  "alloy-evm 0.22.6",
+ "alloy-genesis",
  "alloy-op-evm",
  "anyhow",
  "canoe-provider",

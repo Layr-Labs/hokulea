@@ -87,9 +87,20 @@ async fn main() -> anyhow::Result<()> {
                 .and_then(|v| v.parse::<bool>().ok())
                 .unwrap_or(false);
 
-            let canoe_provider = CanoeSp1CCReducedProofProvider{
+            let custom_chain_config = if let Some(path) = cfg.kona_cfg.l1_config_path {
+                let json = std::fs::read_to_string(&path)
+                    .with_context(|| format!("failed to read genesis file at {}", path.display()))?;
+                let genesis = serde_json::from_str::<alloy_genesis::Genesis>(&json)
+                    .with_context(|| format!("failed to parse L1 genesis from {}", path.display()))?;
+                Some(genesis.config)
+            } else {
+                None
+            };
+            let canoe_provider = CanoeSp1CCReducedProofProvider {
                 eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
                 mock_mode,
+                custom_chain_config,
+                custom_canoe_client_elf: None,
             };
             let canoe_verifier = CanoeNoOpVerifier{};
         } else {

@@ -1,3 +1,4 @@
+use alloy_genesis::ChainConfig;
 use alloy_primitives::Address;
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::SolType;
@@ -5,6 +6,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
+use rsp_primitives::genesis::genesis_from_json;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{
@@ -19,9 +21,7 @@ use std::{
 use tracing::{debug, info, warn};
 use url::Url;
 
-use rsp_primitives::genesis::genesis_from_json;
-
-/// The ELF we want to execute inside the zkVM.
+/// The default ELF we want to execute inside the zkVM.
 pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 const DEFAULT_NETWORK_PRIVATE_KEY: &str =
@@ -62,6 +62,10 @@ pub struct CanoeSp1CCProvider {
     pub eth_rpc_url: String,
     /// if true, execute and return a mock proof
     pub mock_mode: bool,
+    /// optional custom chain configuration for genesis block
+    pub custom_chain_config: Option<ChainConfig>,
+    /// optional custom ELF bytes for the SP1 zkVM client. If None, uses default ELF
+    pub custom_canoe_client_elf: Option<Vec<u8>>,
 }
 
 #[async_trait]
@@ -77,7 +81,16 @@ impl CanoeProvider for CanoeSp1CCProvider {
             return None;
         }
 
-        Some(get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await)
+        Some(
+            get_sp1_cc_proof(
+                canoe_inputs,
+                &self.eth_rpc_url,
+                self.mock_mode,
+                self.custom_chain_config.clone(),
+                self.custom_canoe_client_elf.as_deref(),
+            )
+            .await,
+        )
     }
 }
 
@@ -92,6 +105,10 @@ pub struct CanoeSp1CCReducedProofProvider {
     pub eth_rpc_url: String,
     /// if true, execute and return a mock proof
     pub mock_mode: bool,
+    /// optional custom chain configuration for genesis block
+    pub custom_chain_config: Option<ChainConfig>,
+    /// optional custom ELF bytes for the SP1 zkVM client. If None, uses default ELF
+    pub custom_canoe_client_elf: Option<Vec<u8>>,
 }
 
 #[async_trait]
@@ -107,7 +124,15 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             return None;
         }
 
-        match get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await {
+        match get_sp1_cc_proof(
+            canoe_inputs,
+            &self.eth_rpc_url,
+            self.mock_mode,
+            self.custom_chain_config.clone(),
+            self.custom_canoe_client_elf.as_deref(),
+        )
+        .await
+        {
             Ok(proof) => {
                 let SP1Proof::Compressed(proof) = proof.proof else {
                     panic!("cannot get Sp1ReducedProof")
@@ -123,6 +148,8 @@ async fn get_sp1_cc_proof(
     canoe_inputs: Vec<CanoeInput>,
     eth_rpc_url: &str,
     mock_mode: bool,
+    custom_chain_config: Option<ChainConfig>,
+    custom_canoe_client_elf: Option<&[u8]>,
 ) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
@@ -147,34 +174,25 @@ async fn get_sp1_cc_proof(
 
     let rpc_url = Url::from_str(eth_rpc_url).unwrap();
 
-    let sketch = match Genesis::try_from(l1_chain_id) {
-        Ok(genesis) => {
-            EvmSketch::builder()
-                .at_block(block_number)
-                .with_genesis(genesis)
-                .el_rpc_url(rpc_url)
-                .build()
-                .await?
-        }
-        // if genesis is not available in the sp1-cc library, the code uses custom genesis config
-        Err(_) => {
-            let chain_config = match l1_chain_id {
-                17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
-                3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
-                _ => panic!("chain id {l1_chain_id} is not supported by canoe sp1 cc"),
-            };
-
-            let genesis = Genesis::Custom(chain_config.config);
-
-            EvmSketch::builder()
-                .at_block(block_number)
-                .with_genesis(genesis)
-                .el_rpc_url(rpc_url)
-                .build()
-                .await
-                .expect("evm sketch builder")
-        }
+    let genesis = if let Some(chain_config) = custom_chain_config {
+        Genesis::Custom(chain_config)
+    } else if let Ok(genesis) = Genesis::try_from(l1_chain_id) {
+        genesis
+    } else {
+        let chain_config = match l1_chain_id {
+            17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
+            3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
+            _ => panic!("chain id {l1_chain_id} is not supported by canoe sp1 cc"),
+        };
+        Genesis::Custom(chain_config.config)
     };
+
+    let sketch = EvmSketch::builder()
+        .at_block(block_number)
+        .with_genesis(genesis)
+        .el_rpc_url(rpc_url)
+        .build()
+        .await?;
 
     let derived_l1_header_hash = sketch.anchor.header().hash_slow();
     assert!(l1_head_block_hash == derived_l1_header_hash);
@@ -222,12 +240,13 @@ async fn get_sp1_cc_proof(
         .network()
         .private_key(&network_private_key)
         .build();
-    let (pk, _vk) = client.setup(ELF);
+    let elf_bytes = custom_canoe_client_elf.unwrap_or(ELF);
+    let (pk, _vk) = client.setup(elf_bytes);
 
     let proof = if mock_mode {
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
         let (public_values, report) = client
-            .execute(ELF, &stdin)
+            .execute(elf_bytes, &stdin)
             .run()
             .expect("sp1-cc should have executed the ELF");
         info!(
