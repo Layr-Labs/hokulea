@@ -122,7 +122,9 @@ where
         {
             Err(e) => match e {
                 HokuleaErrorKind::Temporary(e) => {
-                    warn!("Hokulea derivation encounters temporary issue, retrying the derivation step: {}", e);
+                    warn!("Hokulea derivation may encounter temporary errors caused by either the preimage provider
+                        or the communication channel between preimage providers. All temporary errors will result in
+                        retrying the same derivation step: {}", e);
                     Err(PipelineError::Provider(e).temp())
                 }
                 HokuleaErrorKind::Discard(e) => {
