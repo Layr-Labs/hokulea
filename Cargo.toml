@@ -137,7 +137,7 @@ sp1-core-executor = "5.2.1"
 sp1-prover = "5.2.1"
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1b" }
 sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.1b" }
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1b" } 
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.1b" }
 
 # ZKVM deps
 hex = "0.4"
