@@ -5,20 +5,20 @@ edition = "2021"
 
 
 [dependencies]
-hokulea-proof.workspace = true
-hokulea-host-bin.workspace = true
-hokulea-witgen.workspace = true
-hokulea-zkvm-verification.workspace = true
 hokulea-client.workspace = true
 hokulea-compute-proof.workspace = true
+hokulea-host-bin.workspace = true
+hokulea-proof.workspace = true
+hokulea-witgen.workspace = true
+hokulea-zkvm-verification.workspace = true
 
 # General
 anyhow.workspace = true
-tokio = { workspace = true, features = ["full"] }
+cfg-if.workspace = true
 clap = { workspace = true, features = ["derive", "env"] }
-cfg-if = { workspace = true }
-tracing = { workspace = true }
 serde_json.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tracing.workspace = true
 
 kona-client.workspace = true
 kona-preimage.workspace = true
@@ -26,21 +26,21 @@ kona-proof.workspace = true
 
 # Execution
 alloy-evm.workspace = true
-op-revm.workspace = true
-op-alloy-consensus.workspace = true
 alloy-op-evm.workspace = true
+op-alloy-consensus.workspace = true
+op-revm.workspace = true
 revm.workspace = true
 
-canoe-provider = { workspace = true }
-canoe-verifier = { workspace = true }
-canoe-verifier-address-fetcher = { workspace = true }
+canoe-provider.workspace = true
+canoe-sp1-cc-host = { workspace = true, optional = true }
 canoe-steel-apps = { workspace = true, optional = true }
 canoe-steel-verifier = { workspace = true, optional = true }
-canoe-sp1-cc-host = { workspace = true, optional = true }
+canoe-verifier-address-fetcher.workspace = true
+canoe-verifier.workspace = true
 
 sp1-sdk = {workspace = true}
 
 [features]
-steel = ["canoe-steel-apps", "canoe-steel-verifier"]
 sp1-cc = ["canoe-sp1-cc-host"]
+steel = ["canoe-steel-apps", "canoe-steel-verifier"]
 
