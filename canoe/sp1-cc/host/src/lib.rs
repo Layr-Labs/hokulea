@@ -26,28 +26,6 @@ pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
 
 const DEFAULT_NETWORK_PRIVATE_KEY: &str =
     "0x0000000000000000000000000000000000000000000000000000000000000001";
-const SP1_CC_PROOF_STRATEGY_ENV: &str = "SP1_CC_PROOF_STRATEGY";
-
-/// Get the fulfillment strategy from the environment variable
-fn env_fulfillment_strategy(var_name: &str) -> FulfillmentStrategy {
-    match env::var(var_name) {
-        Ok(value) => {
-            let value_lower = value.to_ascii_lowercase();
-            match value_lower.as_str() {
-                "hosted" => FulfillmentStrategy::Hosted,
-                "reserved" => FulfillmentStrategy::Reserved,
-                _ => {
-                    warn!(
-                        "Unknown `{}` value `{}`; defaulting to reserved fulfillment strategy",
-                        var_name, value_lower
-                    );
-                    FulfillmentStrategy::Reserved
-                }
-            }
-        }
-        Err(_) => FulfillmentStrategy::Reserved,
-    }
-}
 
 pub const KURTOSIS_DEVNET_GENESIS: &str = include_str!("./kurtosis_devnet_genesis.json");
 pub const HOLESKY_GENESIS: &str = include_str!("./holesky_genesis.json");
@@ -246,7 +224,14 @@ async fn get_sp1_cc_proof(
             SP1_CIRCUIT_VERSION,
         )
     } else {
-        let sp1_cc_proof_strategy = env_fulfillment_strategy(SP1_CC_PROOF_STRATEGY_ENV);
+        let sp1_cc_proof_strategy = match env::var("SP1_CC_PROOF_STRATEGY") {
+            Ok(raw) => FulfillmentStrategy::from_str_name(&raw.to_uppercase())
+                .ok_or_else(|| anyhow::anyhow!("Invalid FulfillmentStrategy: {raw}"))?,
+            Err(_) => {
+                warn!("SP1_CC_PROOF_STRATEGY not set; using Reserved as the default strategy");
+                FulfillmentStrategy::Reserved
+            }
+        };
 
         // Generate the proof for the given program and input.
         let proof = client
