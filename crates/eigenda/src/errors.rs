@@ -109,16 +109,18 @@ pub enum HokuleaRecencyCheckError {
 #[error(transparent)]
 pub enum HokuleaPreimageError {
     /// EigenDA cert is invalid
-    #[error("da cert is invalid")]
-    InvalidCert,
+    #[error("da cert is invalid or offchain code version inside the Cert is different from recorded onchain")]
+    InvalidCertOrInconsistentOffchainCodeVersion,
 }
 
 /// define conversion error
 impl From<HokuleaPreimageError> for HokuleaErrorKind {
     fn from(e: HokuleaPreimageError) -> Self {
         match e {
-            HokuleaPreimageError::InvalidCert => {
-                HokuleaErrorKind::Discard("da cert is invalid".to_string())
+            HokuleaPreimageError::InvalidCertOrInconsistentOffchainCodeVersion => {
+                HokuleaErrorKind::Discard(
+                    "da cert is invalid or inconsistent offchain code version".to_string(),
+                )
             }
         }
     }

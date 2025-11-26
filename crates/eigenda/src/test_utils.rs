@@ -72,21 +72,7 @@ impl TestEigenDAPreimageProvider {
 impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
     type Error = TestHokuleaProviderError;
 
-    async fn get_recency_window(
-        &mut self,
-        altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error> {
-        if self.should_preimage_err {
-            return Err(TestHokuleaProviderError::Preimage);
-        }
-
-        self.recencies
-            .get(&altda_commitment.to_digest())
-            .unwrap()
-            .clone()
-    }
-
-    async fn get_validity(
+    async fn check_validity_and_offchain_code_version(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {

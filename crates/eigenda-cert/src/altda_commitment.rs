@@ -1,4 +1,4 @@
-use crate::{EigenDACertV2, EigenDACertV3, G1Point};
+use crate::{EigenDACertV2, EigenDACertV3, EigenDACertV4, G1Point};
 use alloc::vec::Vec;
 use alloy_primitives::keccak256;
 use alloy_primitives::B256;
@@ -15,6 +15,8 @@ pub enum EigenDAVersionedCert {
     V2(EigenDACertV2),
     /// V3
     V3(EigenDACertV3),
+    /// V4
+    V4(EigenDACertV4),
 }
 
 #[derive(Debug, thiserror::Error, Clone, Copy, PartialEq, Eq)]
@@ -78,6 +80,12 @@ impl TryFrom<&[u8]> for AltDACommitment {
                     EigenDACertV3::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
                 EigenDAVersionedCert::V3(v3_cert)
             }
+            // V4 cert
+            3 => {
+                let v4_cert =
+                    EigenDACertV4::decode(&mut &value[3..]).map_err(Self::Error::InvalidRlpCert)?;
+                EigenDAVersionedCert::V4(v4_cert)
+            }
             _ => {
                 // also filter out non v2 cert since no logics have been implemented
                 return Err(AltDACommitmentParseError::UnsupportedCertVersionType(
@@ -135,6 +143,13 @@ impl AltDACommitment {
                     .commitment
                     .length as u64
             }
+            EigenDAVersionedCert::V4(c) => {
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .length as u64
+            }
         }
     }
 
@@ -143,6 +158,7 @@ impl AltDACommitment {
         match &self.versioned_cert {
             EigenDAVersionedCert::V2(c) => c.batch_header_v2.reference_block_number as u64,
             EigenDAVersionedCert::V3(c) => c.batch_header_v2.reference_block_number as u64,
+            EigenDAVersionedCert::V4(c) => c.batch_header_v2.reference_block_number as u64,
         }
     }
 
@@ -164,6 +180,20 @@ impl AltDACommitment {
                     .y,
             },
             EigenDAVersionedCert::V3(c) => G1Point {
+                x: c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment
+                    .x,
+                y: c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment
+                    .y,
+            },
+            EigenDAVersionedCert::V4(c) => G1Point {
                 x: c.blob_inclusion_info
                     .blob_certificate
                     .blob_header
@@ -199,6 +229,11 @@ impl AltDACommitment {
                 bytes.push(2);
                 c.encode(&mut cert_rlp_bytes);
             }
+            EigenDAVersionedCert::V4(c) => {
+                // V4 cert has version byte 3
+                bytes.push(3);
+                c.encode(&mut cert_rlp_bytes);
+            }
         }
         bytes.extend_from_slice(&cert_rlp_bytes);
         bytes
@@ -215,6 +250,7 @@ impl AltDACommitment {
         match self.versioned_cert {
             EigenDAVersionedCert::V2(_) => "V2",
             EigenDAVersionedCert::V3(_) => "V3",
+            EigenDAVersionedCert::V4(_) => "V4",
         }
     }
 }

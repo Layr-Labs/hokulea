@@ -17,8 +17,8 @@ extern crate tracing;
 
 mod traits;
 pub use traits::{
-    EigenDAPreimageProvider, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
-    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
+    EigenDAPreimageProvider, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 
 mod eigenda;

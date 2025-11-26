@@ -11,7 +11,6 @@ use kona_proof::{
 use hokulea_proof::{
     eigenda_witness::{EigenDAWitness, EigenDAWitnessWithTrustedData},
     preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
-    recency::RecencyWindowProvider,
 };
 
 use canoe_verifier::CanoeVerifier;
@@ -29,7 +28,6 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
-    recency_window_provider: impl RecencyWindowProvider,
     witness: EigenDAWitness,
 ) -> Result<PreloadedEigenDAPreimageProvider, OracleProviderError>
 where
@@ -45,26 +43,11 @@ where
         .await
         .expect("should be able to get header for l1 header using oracle");
 
-    for (_, recency) in witness.recencies.iter() {
-        let derived_recency = recency_window_provider.fetch_recency_window(
-            boot_info.rollup_config.l1_chain_id,
-            header.number,
-            header.timestamp,
-        );
-
-        if derived_recency != *recency {
-            panic!("the recency window value {recency} provided by the host is different from the value {derived_recency} \
-                from the implementation of RecencyWindowProvider. {derived_recency} anchors the true recency window \
-                please adjust the host value accordingly.");
-        }
-    }
-
     // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM.
     // All the data from the oracle has been verified, by Kailua and OP-succincts
     // For kailua, the check is at https://github.com/boundless-xyz/kailua/blob/2414297a5f9feb98365ef6d88634bcd181a1934b/crates/kona/src/client/stateless.rs#L61
     // For op-succinct, the check is at https://github.com/succinctlabs/op-succinct/blob/b0f190e634ab5b03a3028d4ef88e207186b48337/programs/range/eigenda/src/main.rs#L32
     let witness_with_trusted_data = EigenDAWitnessWithTrustedData {
-        recency_window: boot_info.rollup_config.seq_window_size,
         l1_head_block_hash: l1_head,
         l1_head_block_number: header.number,
         l1_head_block_timestamp: header.timestamp,

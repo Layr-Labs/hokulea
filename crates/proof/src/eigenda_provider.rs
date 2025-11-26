@@ -5,8 +5,7 @@ use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
     EigenDAPreimageProvider, EncodedPayload, BYTES_PER_FIELD_ELEMENT,
-    RESERVED_EIGENDA_API_BYTE_FOR_RECENCY, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
-    RESERVED_EIGENDA_API_BYTE_INDEX,
+    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use kona_preimage::{CommsClient, PreimageKey, PreimageKeyType};
 
@@ -34,47 +33,8 @@ impl<T: CommsClient> OracleEigenDAPreimageProvider<T> {
 impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPreimageProvider<T> {
     type Error = HokuleaOracleProviderError;
 
-    /// Fetch preimage about the recency window
-    async fn get_recency_window(
-        &mut self,
-        altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error> {
-        let altda_commitment_bytes = altda_commitment.to_rlp_bytes();
-        // hint the host about a new altda commitment. If it is the first time the host receiving it, the
-        // host then prepares all the necessary preimage; if not, the host simply returns data from its cache
-        self.oracle
-            .write(&ExtendedHintType::EigenDACert.encode_with(&[&altda_commitment_bytes]))
-            .await
-            .map_err(HokuleaOracleProviderError::Preimage)?;
-
-        let mut address_template = altda_commitment.digest_template();
-
-        // make the call about recency of a altda commitment
-        address_template[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
-
-        let recency_bytes = self
-            .oracle
-            .get(PreimageKey::new(
-                *keccak256(address_template),
-                PreimageKeyType::GlobalGeneric,
-            ))
-            .await
-            .map_err(HokuleaOracleProviderError::Preimage)?;
-
-        // recency is 8 bytes
-        if recency_bytes.is_empty() || recency_bytes.len() != 8 {
-            panic!("Preimage returned something, but the returned value is not formatted correctly for recency_bytes");
-        }
-
-        let mut buf: [u8; 8] = [0; 8];
-        buf.copy_from_slice(&recency_bytes);
-
-        // use BigEndian
-        Ok(u64::from_be_bytes(buf))
-    }
-
     /// Query preimage about the validity of a DA cert
-    async fn get_validity(
+    async fn check_validity_and_offchain_code_version(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {

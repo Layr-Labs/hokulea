@@ -48,9 +48,9 @@ pub enum HostHandlerError {
 impl From<DerivationError> for HostHandlerError {
     fn from(status: DerivationError) -> Self {
         match status.status_code {
-            STATUS_CODE_INVALID_CERT_ERROR => {
-                HostHandlerError::HokuleaPreimageError(HokuleaPreimageError::InvalidCert)
-            }
+            STATUS_CODE_INVALID_CERT_ERROR => HostHandlerError::HokuleaPreimageError(
+                HokuleaPreimageError::InvalidCertOrInconsistentOffchainCodeVersion,
+            ),
             STATUS_CODE_RECENCY_ERROR => HostHandlerError::HokuleaRecencyCheckError,
             // the hokulea client should have already handled the case
             STATUS_CODE_CERT_PARSE_ERROR => {

@@ -6,7 +6,7 @@ use crate::HokuleaPreimageError;
 
 use crate::errors::{HokuleaErrorKind, HokuleaRecencyCheckError, HokuleaStatelessError};
 use alloy_primitives::Bytes;
-use eigenda_cert::AltDACommitment;
+use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
 
 /// A data iterator that reads from a preimage.
 #[derive(Debug, Clone)]
@@ -34,24 +34,31 @@ where
         l1_inclusion_bn: u64,
     ) -> Result<EncodedPayload, HokuleaErrorKind> {
         info!(target: "eigenda_preimage_source", "parsed an altda commitment of version {}", altda_commitment.cert_version_str());
-        // get recency window size, discard the old cert if necessary
+        // get cert validty via preimage oracle, discard cert if invalid
         match self
             .eigenda_fetcher
-            .get_recency_window(altda_commitment)
+            .check_validity_and_offchain_code_version(altda_commitment)
             .await
         {
-            Ok(recency_window) => {
-                recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency_window)?;
+            Ok(true) => (),
+            Ok(false) => {
+                return Err(
+                    HokuleaPreimageError::InvalidCertOrInconsistentOffchainCodeVersion.into(),
+                )
             }
             Err(e) => return Err(e.into()),
-        };
-
-        // get cert validty via preimage oracle, discard cert if invalid
-        match self.eigenda_fetcher.get_validity(altda_commitment).await {
-            Ok(true) => (),
-            Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
-            Err(e) => return Err(e.into()),
         }
+
+        // recency window is determined by offchain code version in the unit of L1 block
+        // V2 and V3 cert automatically maps to recency_window 0
+        // V4 cert contains 48 hours recency window where 14400 = 48*60*60(second) / 12 (second/L1block)
+        let recency_window: u64 = match &altda_commitment.versioned_cert {
+            EigenDAVersionedCert::V2(_) => 0,
+            EigenDAVersionedCert::V3(_) => 0,
+            EigenDAVersionedCert::V4(_) => 14400,
+        };
+        // get recency window size, discard the old cert if necessary
+        recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency_window)?;
 
         // get encoded payload via preimage oracle
         self.eigenda_fetcher
@@ -239,7 +246,9 @@ mod tests {
                 validity: Ok(false),
                 // below are ignored
                 encoded_payload: Ok(EncodedPayload::default()),
-                result: Err(HokuleaPreimageError::InvalidCert.into()),
+                result: Err(
+                    HokuleaPreimageError::InvalidCertOrInconsistentOffchainCodeVersion.into(),
+                ),
             },
             // working
             Case {

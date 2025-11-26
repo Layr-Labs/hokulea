@@ -23,8 +23,6 @@ pub enum EigenDAWitnessError {
 /// executing the eigenda blob derivation. It is [EigenDAWitness] without any proofs
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDAPreimage {
-    /// u64 containing the recency_window
-    pub recencies: Vec<(AltDACommitment, u64)>,
     /// validity of a da cert
     pub validities: Vec<(AltDACommitment, bool)>,
     /// encoded_payload corresponds to a da cert and its kzg proof
@@ -67,8 +65,6 @@ pub struct EigenDAPreimage {
 /// for more information
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDAWitness {
-    /// u64 containing the recency_window
-    pub recencies: Vec<(AltDACommitment, u64)>,
     /// validity of a da cert
     pub validities: Vec<(AltDACommitment, bool)>,
     /// encoded_payload corresponds to a da cert and its kzg proof
@@ -106,7 +102,6 @@ impl EigenDAWitness {
         }
 
         let witness = EigenDAWitness {
-            recencies: preimage.recencies,
             validities: preimage.validities,
             encoded_payloads: encoded_payloads_with_kzg_proof,
             canoe_proof_bytes: canoe_proof,
@@ -125,8 +120,6 @@ impl EigenDAWitness {
 /// the fields
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EigenDAWitnessWithTrustedData {
-    // recency window that has to be consistent with setup with proxy
-    pub recency_window: u64,
     /// block hash where view call anchored at, it must be part of l1 canonical chain
     /// where l1_head from kona_cfg is also a part of
     pub l1_head_block_hash: B256,

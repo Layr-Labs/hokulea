@@ -11,5 +11,3 @@ pub mod eigenda_witness;
 pub use eigenda_witness::EigenDAPreimage;
 
 pub mod errors;
-
-pub mod recency;
