@@ -138,10 +138,7 @@ where
                     return self.next(block_ref, batcher_addr).await;
                 }
                 HokuleaErrorKind::Critical(e) => {
-                    error!(
-                        "Hokulea derivation critical due to client host bidirectional channel: {}",
-                        e
-                    );
+                    error!("Hokulea derivation critical: {}", e);
                     Err(PipelineError::Provider(e).crit())
                 }
             },

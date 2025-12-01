@@ -12,7 +12,7 @@ pub enum HokuleaErrorKind {
     /// for temporary issue like provider unable to provide data
     #[error("Temporary {0}")]
     Temporary(String),
-    /// for critical issue, the bidirectional IO between clent and host is broken
+    /// for critical issue, such as the bidirectional IO channel between client and host is closed
     #[error("Critical {0}")]
     Critical(String),
 }
