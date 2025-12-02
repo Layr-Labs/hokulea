@@ -33,6 +33,12 @@ impl CertVerifierCall {
                     abiEncodedCert: v3_soltype_cert.abi_encode().into(),
                 })
             }
+            EigenDAVersionedCert::V4(cert) => {
+                let v4_soltype_cert = cert.to_sol();
+                CertVerifierCall::ABIEncodeInterface(IEigenDACertVerifierBase::checkDACertCall {
+                    abiEncodedCert: v4_soltype_cert.abi_encode().into(),
+                })
+            }
         }
     }
 }

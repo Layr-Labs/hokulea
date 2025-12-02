@@ -108,6 +108,16 @@ sol! {
         bytes signedQuorumNumbers;
     }
 
+    // v4 cert extends the v3 cert with an offchain derivation version
+    struct EigenDACertV4 {
+        BatchHeaderV2 batchHeaderV2;
+        BlobInclusionInfo blobInclusionInfo;
+        NonSignerStakesAndSignature nonSignerStakesAndSignature;
+        // signed quorum numbers contains all the quorum signed in a batch by the eigenda network
+        bytes signedQuorumNumbers;
+        uint16 offchainDerivationVersion;
+    }
+
     // see contract status code
     // the enumuration must be a superset of what is returned by the smart contract in all historical versions.
     // Otherwise, the decode function of status code will not be able to parse the solidity returned error.

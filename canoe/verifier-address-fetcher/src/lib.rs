@@ -63,9 +63,10 @@ fn cert_verifier_address(
     versioned_cert: &EigenDAVersionedCert,
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
     match &versioned_cert {
-        // route both v2 and v3 with the abi encode interface
+        // route both v2 v3 and v4 with the abi encode interface
         EigenDAVersionedCert::V2(_) => cert_verifier_address_abi_encode_interface(chain_id),
         EigenDAVersionedCert::V3(_) => cert_verifier_address_abi_encode_interface(chain_id),
+        EigenDAVersionedCert::V4(_) => cert_verifier_address_abi_encode_interface(chain_id),
     }
 }
 
