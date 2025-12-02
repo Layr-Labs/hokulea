@@ -1,4 +1,3 @@
-use alloc::string::ToString;
 use hokulea_eigenda::HokuleaErrorKind;
 use kona_preimage::errors::PreimageOracleError;
 
@@ -13,10 +12,18 @@ pub enum HokuleaOracleProviderError {
 
 impl From<HokuleaOracleProviderError> for HokuleaErrorKind {
     fn from(val: HokuleaOracleProviderError) -> Self {
-        match val {
+        let HokuleaOracleProviderError::Preimage(err) = val;
+        match err {
+            // since the bidirectional channel already closed, the system must restart to recover
+            // therefore return critical. We make a special case for PreimageOracleError
+            PreimageOracleError::IOError(e) => HokuleaErrorKind::Critical(alloc::format!(
+                "HokuleaOracleProviderError::PreimageOracleError::IOError {e}"
+            )),
             // in kona, all Preimage error are grouped into backend error <https://github.com/op-rs/kona/blob/4ef01882824b84d078ead9f834f4f78213dd6ef3/crates/protocol/derive/src/sources/blobs.rs#L136>
             // which is considered a temp issue
-            HokuleaOracleProviderError::Preimage(e) => HokuleaErrorKind::Temporary(e.to_string()),
+            _ => HokuleaErrorKind::Temporary(alloc::format!(
+                "HokuleaOracleProviderError::Preimage: {err}"
+            )),
         }
     }
 }

@@ -12,6 +12,9 @@ pub enum HokuleaErrorKind {
     /// for temporary issue like provider unable to provide data
     #[error("Temporary {0}")]
     Temporary(String),
+    /// for critical issue, such as the bidirectional IO channel between client and host is closed
+    #[error("Critical {0}")]
+    Critical(String),
 }
 
 /// Both [HokuleaStatelessError] and [HokuleaPreimageError] defined at the bottom

@@ -13,7 +13,7 @@ use kona_derive::{
     PipelineResult,
 };
 use kona_protocol::BlockInfo;
-use tracing::warn;
+use tracing::{error, warn};
 
 /// A factory for creating an EigenDADataSource iterator. The internal behavior is that
 /// data is fetched from eigenda or stays as it is if Eth calldata is desired. Those data
@@ -136,6 +136,10 @@ where
                     );
                     self.altda_commitment = None;
                     return self.next(block_ref, batcher_addr).await;
+                }
+                HokuleaErrorKind::Critical(e) => {
+                    error!("Hokulea derivation critical: {}", e);
+                    Err(PipelineError::Provider(e).crit())
                 }
             },
             Ok(encoded_payload) => {

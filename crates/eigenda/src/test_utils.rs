@@ -16,6 +16,9 @@ pub enum TestHokuleaProviderError {
     /// <https://github.com/op-rs/kona/blob/174b2ac5ad3756d4469553c7777b04056f9d151c/crates/proof/proof/src/errors.rs#L18>
     #[error("Preimage oracle error")]
     Preimage,
+    /// Critical Oracle error
+    #[error("Critical error")]
+    Critical,
 }
 
 impl From<TestHokuleaProviderError> for HokuleaErrorKind {
@@ -25,6 +28,9 @@ impl From<TestHokuleaProviderError> for HokuleaErrorKind {
             // which is considered a temp issue
             TestHokuleaProviderError::Preimage => {
                 HokuleaErrorKind::Temporary("Preimage temporary error".to_string())
+            }
+            TestHokuleaProviderError::Critical => {
+                HokuleaErrorKind::Critical("Critical error".to_string())
             }
         }
     }
