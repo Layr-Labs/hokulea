@@ -108,7 +108,7 @@ sol! {
         bytes signedQuorumNumbers;
     }
 
-    // v4 cert adds offchain derivation version on top of v3 cert
+    // v4 cert extends the v3 cert with an offchain derivation version
     struct EigenDACertV4 {
         BatchHeaderV2 batchHeaderV2;
         BlobInclusionInfo blobInclusionInfo;

@@ -32,7 +32,7 @@ impl EigenDACertV4 {
             blobInclusionInfo: self.blob_inclusion_info.to_sol(),
             nonSignerStakesAndSignature: self.nonsigner_stake_and_signature.to_sol(),
             // solidity translate of bytes is alloy-primitives::Bytes
-            signedQuorumNumbers: self.signed_quorum_numbers.clone(),
+            signedQuorumNumbers: Bytes::clone(&self.signed_quorum_numbers),
             offchainDerivationVersion: self.offchain_derivation_version,
         }
     }
