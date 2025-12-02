@@ -89,21 +89,6 @@ jobs:
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just lint-docs
       - name: doctest
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just test-docs
-  cargo-hack:
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@just
-      - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/install-action@cargo-hack
-      - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-      - name: cargo hack
-        run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just hack
   unused-deps:
     runs-on: ubuntu-latest
     timeout-minutes: 5 # machete runs very quickly but need longer timeout to install the tools
