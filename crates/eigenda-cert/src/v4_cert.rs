@@ -16,7 +16,7 @@ pub struct EigenDACertV4 {
     pub blob_inclusion_info: BlobInclusionInfo,
     pub nonsigner_stake_and_signature: NonSignerStakesAndSignature,
     pub signed_quorum_numbers: Bytes,
-    pub offchain_derivation_version: u8,
+    pub offchain_derivation_version: u16,
 }
 
 impl EigenDACertV4 {

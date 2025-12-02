@@ -115,7 +115,7 @@ sol! {
         NonSignerStakesAndSignature nonSignerStakesAndSignature;
         // signed quorum numbers contains all the quorum signed in a batch by the eigenda network
         bytes signedQuorumNumbers;
-        uint8 offchainDerivationVersion;
+        uint16 offchainDerivationVersion;
     }
 
     // see contract status code
