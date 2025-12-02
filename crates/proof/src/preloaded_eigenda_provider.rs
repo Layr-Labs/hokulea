@@ -361,6 +361,13 @@ mod tests {
                     .commitment
                     .commitment = commitment;
             }
+            eigenda_cert::EigenDAVersionedCert::V4(c) => {
+                c.blob_inclusion_info
+                    .blob_certificate
+                    .blob_header
+                    .commitment
+                    .commitment = commitment;
+            }
         };
 
         EigenDAWitness {

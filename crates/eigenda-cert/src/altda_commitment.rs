@@ -305,8 +305,8 @@ mod tests {
                 result: Err(AltDACommitmentParseError::UnsupportedDaLayerType),
             },
             Case {
-                input: alloy_primitives::hex::decode("0x010003f9").unwrap().into(),
-                result: Err(AltDACommitmentParseError::UnsupportedCertVersionType(3)),
+                input: alloy_primitives::hex::decode("0x010004f9").unwrap().into(),
+                result: Err(AltDACommitmentParseError::UnsupportedCertVersionType(4)),
             },
             Case {
                 input: alloy_primitives::hex::decode("0x010002f9").unwrap().into(),
