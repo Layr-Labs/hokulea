@@ -285,6 +285,13 @@ mod tests {
                     "Preimage temporary error".to_string(),
                 )),
             },
+            // encoded payload preimage has a critical problem
+            Case {
+                recency: Ok(200),
+                validity: Ok(true),
+                encoded_payload: Err(TestHokuleaProviderError::Critical),
+                result: Err(HokuleaErrorKind::Critical("Critical error".to_string())),
+            },
         ];
 
         for case in cases {
