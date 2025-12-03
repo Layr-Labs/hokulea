@@ -352,17 +352,12 @@ mod tests {
             TestEigenDAPreimageProvider,
         >,
         altda_commitments: Vec<AltDACommitment>,
-        recencies: Vec<Result<u64, TestHokuleaProviderError>>,
         validities: Vec<Result<bool, TestHokuleaProviderError>>,
         encoded_payloads: Vec<Result<EncodedPayload, TestHokuleaProviderError>>,
     ) {
         let len = altda_commitments.len();
         for i in 0..len {
             // artificially maps altda commitment to provided preimage
-            source
-                .eigenda_source
-                .eigenda_fetcher
-                .insert_recency(&altda_commitments[i], recencies[i].clone());
             source
                 .eigenda_source
                 .eigenda_fetcher
@@ -504,7 +499,6 @@ mod tests {
         set_eigenda_preimage_provider_value(
             &mut source,
             altda_commitments,
-            vec![Ok(PASSING_RECENCY_WINDOW)],
             vec![Ok(true)],
             vec![Ok(encoded_payloads[0].clone())],
         );
@@ -533,7 +527,6 @@ mod tests {
         set_eigenda_preimage_provider_value(
             &mut source,
             altda_commitments,
-            vec![Ok(PASSING_RECENCY_WINDOW)],
             vec![Ok(true)],
             vec![Ok(encoded_payloads[0].clone())],
         );
@@ -673,7 +666,6 @@ mod tests {
         set_eigenda_preimage_provider_value(
             &mut source,
             altda_commitments,
-            vec![Ok(PASSING_RECENCY_WINDOW); 2],
             vec![Ok(true); 2],
             encoded_payloads.into_iter().map(Ok).collect(),
         );
@@ -717,7 +709,6 @@ mod tests {
 
         struct Case {
             altda_commitment: AltDACommitment,
-            recency: Result<u64, TestHokuleaProviderError>,
             validity: Result<bool, TestHokuleaProviderError>,
             encoded_payload: Result<EncodedPayload, TestHokuleaProviderError>,
         }
@@ -725,19 +716,11 @@ mod tests {
         let cases = vec![
             Case {
                 altda_commitment: altda_commitments[0].clone(),
-                recency: Err(TestHokuleaProviderError::Preimage),
-                validity: Ok(true),
-                encoded_payload: Ok(encoded_payloads[0].clone()),
-            },
-            Case {
-                altda_commitment: altda_commitments[0].clone(),
-                recency: Ok(PASSING_RECENCY_WINDOW),
                 validity: Err(TestHokuleaProviderError::Preimage),
                 encoded_payload: Ok(encoded_payloads[0].clone()),
             },
             Case {
                 altda_commitment: altda_commitments[0].clone(),
-                recency: Ok(PASSING_RECENCY_WINDOW),
                 validity: Ok(true),
                 encoded_payload: Err(TestHokuleaProviderError::Preimage),
             },
@@ -749,7 +732,6 @@ mod tests {
             set_eigenda_preimage_provider_value(
                 &mut source,
                 vec![case.altda_commitment],
-                vec![case.recency],
                 vec![case.validity],
                 vec![case.encoded_payload],
             );
@@ -769,11 +751,10 @@ mod tests {
         let mut source = default_test_eigenda_data_source();
         let block_info = BLOCK_INFO;
         let (_, altda_commitments, encoded_payloads) =
-            configure_chain_provider_with_txs(&mut source, 3, &block_info);
+            configure_chain_provider_with_txs(&mut source, 2, &block_info);
 
         struct Case {
             altda_commitment: AltDACommitment,
-            recency: Result<u64, TestHokuleaProviderError>,
             validity: Result<bool, TestHokuleaProviderError>,
             encoded_payload: Result<EncodedPayload, TestHokuleaProviderError>,
         }
@@ -781,19 +762,11 @@ mod tests {
         let cases = vec![
             Case {
                 altda_commitment: altda_commitments[0].clone(),
-                recency: Ok(NOT_PASSING_RECENCY_WINDOW),
-                validity: Ok(true),
+                validity: Ok(false),
                 encoded_payload: Ok(encoded_payloads[0].clone()),
             },
             Case {
                 altda_commitment: altda_commitments[1].clone(),
-                recency: Ok(PASSING_RECENCY_WINDOW),
-                validity: Ok(false),
-                encoded_payload: Ok(encoded_payloads[1].clone()),
-            },
-            Case {
-                altda_commitment: altda_commitments[2].clone(),
-                recency: Ok(PASSING_RECENCY_WINDOW),
                 validity: Ok(true),
                 encoded_payload: Ok(NOT_DECODABLE_ENCODED_PAYLOAD),
             },
@@ -805,7 +778,6 @@ mod tests {
             set_eigenda_preimage_provider_value(
                 &mut source,
                 vec![case.altda_commitment],
-                vec![case.recency],
                 vec![case.validity],
                 vec![case.encoded_payload],
             );
@@ -833,7 +805,6 @@ mod tests {
 
         struct Case {
             altda_commitment: AltDACommitment,
-            recency: Result<u64, TestHokuleaProviderError>,
             validity: Result<bool, TestHokuleaProviderError>,
             encoded_payload: Result<EncodedPayload, TestHokuleaProviderError>,
         }
@@ -851,19 +822,16 @@ mod tests {
                 cases: vec![
                     Case {
                         altda_commitment: altda_commitments[0].clone(),
-                        recency: Ok(NOT_PASSING_RECENCY_WINDOW),
-                        validity: Ok(true),
+                        validity: Ok(false),
                         encoded_payload: Ok(encoded_payloads[0].clone()),
                     },
                     Case {
                         altda_commitment: altda_commitments[1].clone(),
-                        recency: Ok(PASSING_RECENCY_WINDOW),
                         validity: Ok(true),
                         encoded_payload: Ok(NOT_DECODABLE_ENCODED_PAYLOAD),
                     },
                     Case {
                         altda_commitment: altda_commitments[2].clone(),
-                        recency: Ok(PASSING_RECENCY_WINDOW),
                         validity: Ok(true),
                         encoded_payload: Ok(encoded_payloads[2].clone()),
                     },
@@ -879,19 +847,16 @@ mod tests {
                 cases: vec![
                     Case {
                         altda_commitment: altda_commitments[0].clone(),
-                        recency: Ok(PASSING_RECENCY_WINDOW),
                         validity: Ok(true),
                         encoded_payload: Ok(encoded_payloads[0].clone()),
                     },
                     Case {
                         altda_commitment: altda_commitments[1].clone(),
-                        recency: Ok(PASSING_RECENCY_WINDOW),
                         validity: Err(TestHokuleaProviderError::Preimage),
                         encoded_payload: Ok(encoded_payloads[1].clone()),
                     },
                     Case {
                         altda_commitment: altda_commitments[2].clone(),
-                        recency: Ok(0),
                         validity: Ok(true),
                         encoded_payload: Ok(encoded_payloads[2].clone()),
                     },
@@ -911,19 +876,16 @@ mod tests {
                 cases: vec![
                     Case {
                         altda_commitment: altda_commitments[0].clone(),
-                        recency: Ok(NOT_PASSING_RECENCY_WINDOW),
-                        validity: Ok(true),
+                        validity: Ok(false),
                         encoded_payload: Ok(encoded_payloads[0].clone()),
                     },
                     Case {
                         altda_commitment: altda_commitments[1].clone(),
-                        recency: Err(TestHokuleaProviderError::Preimage),
-                        validity: Ok(true),
+                        validity: Err(TestHokuleaProviderError::Preimage),
                         encoded_payload: Ok(encoded_payloads[1].clone()),
                     },
                     Case {
                         altda_commitment: altda_commitments[2].clone(),
-                        recency: Ok(PASSING_RECENCY_WINDOW),
                         validity: Ok(true),
                         encoded_payload: Ok(NOT_DECODABLE_ENCODED_PAYLOAD),
                     },
@@ -943,7 +905,6 @@ mod tests {
                 set_eigenda_preimage_provider_value(
                     &mut source,
                     vec![case.altda_commitment],
-                    vec![case.recency],
                     vec![case.validity],
                     vec![case.encoded_payload],
                 );
@@ -986,19 +947,16 @@ mod tests {
             cases: vec![
                 Case {
                     altda_commitment: altda_commitments[0].clone(),
-                    recency: Err(TestHokuleaProviderError::Preimage),
-                    validity: Ok(true),
+                    validity: Err(TestHokuleaProviderError::Preimage),
                     encoded_payload: Ok(encoded_payloads[0].clone()),
                 },
                 Case {
                     altda_commitment: altda_commitments[1].clone(),
-                    recency: Err(TestHokuleaProviderError::Preimage),
-                    validity: Ok(true),
+                    validity: Err(TestHokuleaProviderError::Preimage),
                     encoded_payload: Ok(encoded_payloads[1].clone()),
                 },
                 Case {
                     altda_commitment: altda_commitments[2].clone(),
-                    recency: Ok(PASSING_RECENCY_WINDOW),
                     validity: Ok(false),
                     encoded_payload: Ok(NOT_DECODABLE_ENCODED_PAYLOAD),
                 },
@@ -1024,7 +982,6 @@ mod tests {
             set_eigenda_preimage_provider_value(
                 &mut source,
                 vec![case.altda_commitment],
-                vec![case.recency],
                 vec![case.validity],
                 vec![case.encoded_payload],
             );
