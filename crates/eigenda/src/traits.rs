@@ -13,6 +13,7 @@ pub trait EigenDAPreimageProvider {
 
     /// Fetch primage about the recency window. To be future compatible when recency window can be a function
     /// of reference block number stored inside AltDACommitment.
+    /// (ToDo) remove this interface from the trait
     async fn get_recency_window(
         &mut self,
         altda_commitment: &AltDACommitment,
@@ -20,7 +21,7 @@ pub trait EigenDAPreimageProvider {
 
     /// Fetch preimage about the validity of a DA cert. Return generic preimage error. Return false when
     /// DA cert is invalid. True if it is valid.
-    async fn get_validity(
+    async fn check_validity_and_offchain_derivation_version(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error>;
@@ -38,10 +39,8 @@ pub trait EigenDAPreimageProvider {
 /// More see <https://github.com/Layr-Labs/hokulea/tree/master/docs#reserved-addresses-for-da-certificates>
 pub const RESERVED_EIGENDA_API_BYTE_INDEX: usize = 32;
 
-/// In the address space of preimage oracle, which interface type a validity query is addressed at
+/// In the address space of preimage oracle, the validity corresponds to both 1. the validity of da cert
+/// and 2. the validity of consistent derivation version being used in DA cert and in the certVerifier
+/// routed according to the reference block number
 /// More see <https://github.com/Layr-Labs/hokulea/tree/master/docs#reserved-addresses-for-da-certificates>
 pub const RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY: u8 = 1;
-
-/// In the address space of preimage oracle, which interface type a recency query is addressed at
-/// More see <https://github.com/Layr-Labs/hokulea/tree/master/docs#reserved-addresses-for-da-certificates>
-pub const RESERVED_EIGENDA_API_BYTE_FOR_RECENCY: u8 = 2;

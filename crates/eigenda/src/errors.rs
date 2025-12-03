@@ -37,6 +37,12 @@ pub enum HokuleaStatelessError {
     /// recency check validates recency parameters and decides if a cert is recent enough
     #[error("cannot pass recency check")]
     RecencyCheckError(#[from] HokuleaRecencyCheckError),
+    /// encounter an unsupported offchain derivation version. To reach this error,
+    /// the certVerifier should have already verified that the offchain derivation version is
+    /// consistent to the one stored onchain. So either an older version of the hokulea is used,
+    /// or there is a mistake when upgrading the certVerifier.
+    #[error("cannot support offchain derivation version{0}.")]
+    UnsupportedOffchainDerivationVersion(u16),
 }
 
 /// define conversion error
@@ -49,6 +55,11 @@ impl From<HokuleaStatelessError> for HokuleaErrorKind {
             HokuleaStatelessError::ParseError(e) => HokuleaErrorKind::Discard(e.to_string()),
             HokuleaStatelessError::DecodingError(e) => HokuleaErrorKind::Discard(e.to_string()),
             HokuleaStatelessError::RecencyCheckError(e) => HokuleaErrorKind::Discard(e.to_string()),
+            HokuleaStatelessError::UnsupportedOffchainDerivationVersion(e) => {
+                HokuleaErrorKind::Critical(
+                    "cannot support offchain derivation version".to_string() + &e.to_string(),
+                )
+            }
         }
     }
 }
@@ -111,17 +122,19 @@ pub enum HokuleaRecencyCheckError {
 #[derive(Debug, thiserror::Error, PartialEq)]
 #[error(transparent)]
 pub enum HokuleaPreimageError {
-    /// EigenDA cert is invalid
-    #[error("da cert is invalid")]
-    InvalidCert,
+    /// EigenDA cert is invalid or inconsistent offchain derivation version
+    #[error("da cert is invalid or offchain derivation version inside the cert is different from the one recorded onchain")]
+    InvalidCertOrInconsistentOffchainDerivationVersion,
 }
 
 /// define conversion error
 impl From<HokuleaPreimageError> for HokuleaErrorKind {
     fn from(e: HokuleaPreimageError) -> Self {
         match e {
-            HokuleaPreimageError::InvalidCert => {
-                HokuleaErrorKind::Discard("da cert is invalid".to_string())
+            HokuleaPreimageError::InvalidCertOrInconsistentOffchainDerivationVersion => {
+                HokuleaErrorKind::Discard(
+                    "da cert is invalid or inconsistent offchain code version".to_string(),
+                )
             }
         }
     }

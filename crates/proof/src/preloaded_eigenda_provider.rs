@@ -18,8 +18,7 @@ use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 
 /// PreloadedEigenDAPreimageProvider converts EigenDAWitness into preimage data
 /// can be used to implement the EigenDAPreimageProvider trait, that contains
-///   get_recency_window
-///   get_validity
+///   check_validity_and_offchain_code_version
 ///   get_encoded_payload
 ///
 /// For each function above, internally PreloadedEigenDAPreimageProvider maintain a separate
@@ -33,10 +32,6 @@ use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 /// due to possible invalid cert, that does not require preimage to populate a encoded payload
 #[derive(Clone, Debug, Default)]
 pub struct PreloadedEigenDAPreimageProvider {
-    /// The tuple contains a mapping from DAcert to recency window size
-    /// Although currently, recency window does not change across EigenDACertV2
-    /// But to be future compatible, we anchor recency window size by rbn from EigenDACertV2
-    recency_entries: Vec<(AltDACommitment, u64)>,
     /// The tuple contains a mapping from DAcert to cert validity
     validity_entries: Vec<(AltDACommitment, bool)>,
     /// The tuple contains a mapping from DAcert to Eigenda encoded payload
@@ -61,15 +56,7 @@ impl PreloadedEigenDAPreimageProvider {
     ) -> PreloadedEigenDAPreimageProvider {
         let eigenda_witness = witness_with_trusted_data.witness;
         // check number of element invariants
-        assert!(eigenda_witness.recencies.len() >= eigenda_witness.validities.len());
         assert!(eigenda_witness.validities.len() >= eigenda_witness.encoded_payloads.len());
-
-        // recency window is the first check against incoming DA cert from derivation pipeline
-        //
-        // Important assumption, recency must come from a trusted or validated source
-        // currently, recency is set to be identical to sequencing window, which come directly
-        // boot info
-        let mut recency_entries = eigenda_witness.recencies.clone();
 
         // check all encoded payload having correct number of field elements compared to the number from altda commitment
         for (altda_commitment, encoded_payload, _) in &eigenda_witness.encoded_payloads {
@@ -139,17 +126,14 @@ impl PreloadedEigenDAPreimageProvider {
 
         assert!(batch_verify(&blobs, &commitments, &proofs));
         // invariant check
-        assert!(recency_entries.len() >= validity_entries.len());
         assert!(validity_entries.len() >= encoded_payload_entries.len());
 
         // The pop methods is used by the Preloaded provider when getting the next data
         // reverse there, so that what is being popped is the early data
         validity_entries.reverse();
         encoded_payload_entries.reverse();
-        recency_entries.reverse();
 
         PreloadedEigenDAPreimageProvider {
-            recency_entries,
             validity_entries,
             encoded_payload_entries,
         }
@@ -163,24 +147,12 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
 
     async fn get_recency_window(
         &mut self,
-        altda_commitment: &AltDACommitment,
+        _altda_commitment: &AltDACommitment,
     ) -> Result<u64, Self::Error> {
-        let (stored_altda_commitment, recency) = self.recency_entries.pop().unwrap_or_else(|| {
-            panic!(
-                "no recency window available for {:?} in preloaded preiamge provider",
-                altda_commitment
-            )
-        });
-        if stored_altda_commitment == *altda_commitment {
-            Ok(recency)
-        } else {
-            // It is safe to abort here, because zkVM is not given the correct preimage to start with, stop early
-            panic!("preloaded eigenda preimage provider does not match altda commitment requested from derivation pipeline
-                requested altda commitment is {:?}, stored is {:?}", altda_commitment.to_digest(), stored_altda_commitment.to_digest());
-        }
+        unimplemented!();
     }
 
-    async fn get_validity(
+    async fn check_validity_and_offchain_derivation_version(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
@@ -371,7 +343,6 @@ mod tests {
         };
 
         EigenDAWitness {
-            recencies: vec![(altda_commitment.clone(), 1)],
             validities: vec![(altda_commitment.clone(), true)],
             encoded_payloads: vec![(
                 altda_commitment.clone(),
@@ -442,7 +413,6 @@ mod tests {
         witness: EigenDAWitness,
     ) -> EigenDAWitnessWithTrustedData {
         EigenDAWitnessWithTrustedData {
-            recency_window: Default::default(),
             l1_chain_id: Default::default(),
             l1_head_block_hash: Default::default(),
             l1_head_block_number: Default::default(),
@@ -460,7 +430,6 @@ mod tests {
         );
         assert_eq!(preimage.encoded_payload_entries.len(), 0);
         assert_eq!(preimage.validity_entries.len(), 0);
-        assert_eq!(preimage.recency_entries.len(), 0);
     }
 
     // no more preimage available
@@ -468,7 +437,7 @@ mod tests {
     #[should_panic]
     async fn test_from_witness_ok_and_preimage_provider() {
         let eigenda_witness = prepare_ok_data();
-        let altda_commitment = eigenda_witness.recencies[0].0.clone();
+        let altda_commitment = eigenda_witness.validities[0].0.clone();
 
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
@@ -477,13 +446,9 @@ mod tests {
         );
         assert_eq!(
             preimage
-                .get_recency_window(&altda_commitment)
+                .check_validity_and_offchain_derivation_version(&altda_commitment)
                 .await
                 .unwrap(),
-            eigenda_witness.recencies[0].1
-        );
-        assert_eq!(
-            preimage.get_validity(&altda_commitment).await.unwrap(),
             eigenda_witness.validities[0].1
         );
         assert_eq!(
@@ -501,7 +466,7 @@ mod tests {
     #[should_panic]
     async fn test_from_witness_panic_unknown_key_recency() {
         let eigenda_witness = prepare_ok_data();
-        let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
+        let mut altda_commitment = eigenda_witness.validities[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
@@ -516,14 +481,16 @@ mod tests {
     #[should_panic]
     async fn test_from_witness_panic_unknown_key_validity() {
         let eigenda_witness = prepare_ok_data();
-        let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
+        let mut altda_commitment = eigenda_witness.validities[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
-        let _ = preimage.get_validity(&altda_commitment).await;
+        let _ = preimage
+            .check_validity_and_offchain_derivation_version(&altda_commitment)
+            .await;
     }
 
     // unknown key
@@ -531,7 +498,7 @@ mod tests {
     #[should_panic]
     async fn test_from_witness_panic_unknown_key_encoded_payload() {
         let eigenda_witness = prepare_ok_data();
-        let mut altda_commitment = eigenda_witness.recencies[0].0.clone();
+        let mut altda_commitment = eigenda_witness.validities[0].0.clone();
         altda_commitment.da_layer_byte = 255;
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),

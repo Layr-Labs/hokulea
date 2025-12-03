@@ -92,7 +92,7 @@ impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
             .clone()
     }
 
-    async fn get_validity(
+    async fn check_validity_and_offchain_derivation_version(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
