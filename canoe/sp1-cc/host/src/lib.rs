@@ -252,14 +252,23 @@ async fn get_sp1_cc_proof(
             _ => 4 * 60 * 60,
         };
 
-        let proof = client
+        let mut proof_builder = client
             .prove(&pk, &stdin)
             .compressed()
             .strategy(sp1_cc_proof_strategy)
-            .skip_simulation(true)
-            .cycle_limit(cycle_limit)
-            .gas_limit(gas_limit)
-            .timeout(Duration::from_secs(timeout_seconds))
+            .timeout(Duration::from_secs(timeout_seconds));
+
+        if cycle_limit > 0 && gas_limit > 0 {
+            proof_builder = proof_builder
+                .skip_simulation(true)
+                .cycle_limit(cycle_limit)
+                .gas_limit(gas_limit);
+        } else {
+            assert!(cycle_limit == 0 && gas_limit == 0, "cycle_limit and gas_limit must both be zero or both be non-zero");
+            proof_builder = proof_builder.skip_simulation(false);
+        }
+
+        let proof = proof_builder
             .run()
             .expect("sp1-cc should have produced a compressed proof");
 
