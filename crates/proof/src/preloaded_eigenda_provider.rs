@@ -42,11 +42,12 @@ impl PreloadedEigenDAPreimageProvider {
     /// Convert EigenDAWitness into the PreloadedEigenDAPreimageProvider
     /// This function is only responsible for checking if the provided preimage is correct.
     /// It does not perform the filtering operation taking place in eigenda blob derivation.
-    /// It implies that an adversarial prover can supply a stale altda commitment, then supply
-    /// canoe proof for proving the cert is valid or invalid. However, during the eigenda blob derivation
-    /// that only the recency preimage corresponding to the altda commitment is popped, and
-    /// the vailidity corresponding to it stil remains in the vec. If it is the last altda commitment
-    /// the validity is left unused. If it is not the last, the next altda commitment will panic
+    /// It implies that an adversarial prover can supply a stale but valud altda commitment, then supply
+    /// encoded payload regardless. However, during the eigenda blob derivation
+    /// first the altda commitment is consumed by the derivation pipeline because it is valid. Then it will not
+    /// pass recency check, it will be dropped. The encoded payload can still remain in the vec.
+    /// If it is the last altda commitment,
+    /// the encoded payload is left unused. If it is not the last, the next altda commitment/encoded payload will panic
     /// due to unmatched key.
     /// The Canoe proof validates all the validity all at once.
     pub fn from_witness(
@@ -144,13 +145,6 @@ impl PreloadedEigenDAPreimageProvider {
 impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
     // The error is a place holder, we intentionally abort everything
     type Error = HokuleaOracleProviderError;
-
-    async fn get_recency_window(
-        &mut self,
-        _altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error> {
-        unimplemented!();
-    }
 
     async fn check_validity_and_offchain_derivation_version(
         &mut self,
@@ -464,21 +458,6 @@ mod tests {
     // unknown key
     #[tokio::test]
     #[should_panic]
-    async fn test_from_witness_panic_unknown_key_recency() {
-        let eigenda_witness = prepare_ok_data();
-        let mut altda_commitment = eigenda_witness.validities[0].0.clone();
-        altda_commitment.da_layer_byte = 255;
-        let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
-            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
-            CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
-        );
-        let _ = preimage.get_recency_window(&altda_commitment).await;
-    }
-
-    // unknown key
-    #[tokio::test]
-    #[should_panic]
     async fn test_from_witness_panic_unknown_key_validity() {
         let eigenda_witness = prepare_ok_data();
         let mut altda_commitment = eigenda_witness.validities[0].0.clone();
@@ -508,22 +487,7 @@ mod tests {
         let _ = preimage.get_encoded_payload(&altda_commitment).await;
     }
 
-    // length violation validity = 2 recency = 1
-    #[tokio::test]
-    #[should_panic]
-    async fn test_from_witness_length_violation_recency_validity() {
-        let mut eigenda_witness = prepare_ok_data();
-        eigenda_witness
-            .validities
-            .extend(eigenda_witness.validities.clone());
-        let _ = PreloadedEigenDAPreimageProvider::from_witness(
-            construct_template_witness_with_trusted_data(eigenda_witness.clone()),
-            CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
-        );
-    }
-
-    // length violation validity = 1 recency = 1 encoded_payload = 2
+    // length violation validity = 1 encoded_payload = 2
     #[tokio::test]
     #[should_panic]
     async fn test_from_witness_length_violation_validity_encoded_payload() {

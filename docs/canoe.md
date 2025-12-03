@@ -112,7 +112,7 @@ For `N` DA certs, protocols can aggregate them together into a single aggregated
 
 ### 7.3 Acquiring validity of a DA certificate Inside a zkVM
 
-For rollups with EigenDA, the [eigenda blob derivation](https://layr-labs.github.io/eigenda/) is embedded into the OP derivation pipeline for secure integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. The ELF binary requires information about the validity for every DA cert to produce correct results. The validity information (among recency, encoded payload) is provided by preimage oracle which is a verifiable key value map. A canoe proof cryptographically attests the cert validity for each DA cert.
+For rollups with EigenDA, the [eigenda blob derivation](https://layr-labs.github.io/eigenda/) is embedded into the OP derivation pipeline for secure integration. The Hokulea client itself is compiled into a ELF binary that runs inside the zkVM. The ELF binary requires information about the validity for every DA cert to produce correct results. The validity information is provided by preimage oracle which is a verifiable key value map. A canoe proof cryptographically attests the cert validity for each DA cert.
 
 While executing, the client validates each canoe certificate by:
 

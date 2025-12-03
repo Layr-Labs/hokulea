@@ -111,35 +111,34 @@ To avoid collision with field element mentioned above, we use the immediate byte
 | ------------------------------ | ------------------------ | ----------------- | ---------------------------- | ------------------------- | 
 |       ..                       | 0x00                     |       0x0..0      |       ..                     |  Field element addresses | 
 |       ..                       | 0x01                     |       0x0..0      |       0x0000000000000000     | certificate validity interface address |
-|       ..                       | 0x02                     |       0x0..0      |       0x0000000000000000     | recency window request interface address |
 
-Every AltCommitment (which corresponds to a DA cert) has its unique interface to call certificate validity and to request recency window.
+Every AltCommitment (which corresponds to a DA cert) has its unique interface to call certificate validity.
 
 ### Hint system with respect to Preimage communication
 
 Before querying about some preimage about an AltDACommitment, the client sends to host a hint which is a serialized AltDACommitment. The host prepares
-all the necessary information including recency, validity and eigenda blob, then populate them into its local cache. Next time when the client
+all the necessary information including validity and eigenda blob, then populate them into its local cache. Next time when the client
 actually query about the preimage, the host can directly respond from its local map. Hokulea takes existing hint implementation from Kona, and
 include its own hint type called EigenDACert. The sending part of the hint deviates from OP Spec, that it does not include length, and the
 receiving side follows the OP spec. Hint system does not affect the secure integration, since all hints are [noop](https://specs.optimism.io/fault-proof/index.html#hinting) on L1 VM.
 
 ## Adaptable to both zkVM and interactive fault proof VM
 
-While it is possible for a host to return a data struct that deserialize bytes into (blob, validity, recency window) in one communication round, 
+While it is possible for a host to return a data struct that deserialize bytes into (blob, validity) in one communication round, 
 but using the address scheme above, Hokulea keeps the possibility to support the original OP interactive Fault proof. For an interactive game,
 players interactively narrow down to a challenge which can be an eigenda field element.
 EigenDA currently supports 16MiB blob, and potentially higher in the future. For future compatibility, it is more feasible to challenge one
 point as opposed to the entire blob.
 Because the above scheme retrieve field element one by one, the player can open a kzg proof onchain to populate the onchain preimage oracle
 when it happens to be the last decision point, and therefore resolves the game.
-Similarly onchain preimage can be populated to support `certificate validity` and `recency window request`.
+Similarly onchain preimage can be populated to support `certificate validity`.
 
 ## Overview on data transformation for secure integration with zkVM
 ![](../assets/data-transformation-with-zkvm.png)
 
 The derivation pipeline is run exactly twice. Once in the host, once in the zkVM. Both execution runs `eigenda blob derivation` as described in the [integration spec](https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html). The second execution is special because the derivation logics is compiled into a ELF file to be run within the zkVM.
 
-1. the zkVM host process uses `EigenDAPreimageProviderWithPreimage` to produce `EigenDAPreimage` struct after completing the first run. This struct contains all preimage-related information, including `encoded_payload`, `validity`, and `recency_window`.
+1. the zkVM host process uses `EigenDAPreimageProviderWithPreimage` to produce `EigenDAPreimage` struct after completing the first run. This struct contains all preimage-related information, including `encoded_payload` and `validity`.
 2. The host then computes the KZG proof locally and invokes the `CanoeProvider` to generate a zk-proof attesting to the validity of DA certificates (using Steel or SP1cc). Both proofs, along with the `EigenDAPreimage`, are merged into an `EigenDAWitness` and passed into the zkVM.
 3. Regular data are feed into zkVM via its standard input, however, the canoe proof is a STARK proof that needs be recursively verified within zkVM. To achieve that, the canoe proof are feeded into zkVM via a special function. See the `example/preloader` for more details.
 4. Within the zkVM, the system augments the `EigenDAWitness` into an `EigenDAWitnessWithTrustedData`, which includes trusted context such as the L1 chain ID and the L1 head block hash corresponding to that chain. These values must be authenticated beforehand, as they are critical for verifying the Canoe STARK proof. Incorrect trusted data could cause the proof system to accept invalid DA certificates or reject valid ones.

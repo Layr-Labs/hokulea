@@ -34,7 +34,7 @@ pub enum AltDACommitmentParseError {
 }
 
 /// AltDACommitment contains EigenDA cert, and is used as a part of key to uniquely
-/// address the preimage data including: cert validity, field elements, recency window
+/// address the preimage data including: cert validity, field elements
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct AltDACommitment {
     /// <https://specs.optimism.io/experimental/alt-da.html#input-commitment-submission>

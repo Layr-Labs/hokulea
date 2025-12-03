@@ -33,14 +33,6 @@ impl<T: CommsClient> OracleEigenDAPreimageProvider<T> {
 impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPreimageProvider<T> {
     type Error = HokuleaOracleProviderError;
 
-    /// Fetch preimage about the recency window
-    async fn get_recency_window(
-        &mut self,
-        _altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error> {
-        unimplemented!()
-    }
-
     /// Query preimage about the validity of a DA cert
     async fn check_validity_and_offchain_derivation_version(
         &mut self,

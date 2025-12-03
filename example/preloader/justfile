@@ -59,5 +59,4 @@ run-preloader env_file features='empty' mock_mode='true' enclave='eigenda-devnet
     --data-dir ./data \
     --rollup-config-path $(realpath $ROLLUP_CONFIG_PATH) \
     --l1-config-path $(realpath $L1_CONFIG_PATH) \
-    --recency-window $RECENCY_WINDOW \
     {{verbosity}}

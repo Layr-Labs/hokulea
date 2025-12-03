@@ -28,14 +28,6 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
 {
     type Error = T::Error;
 
-    /// Fetch primage about the recency window
-    async fn get_recency_window(
-        &mut self,
-        _altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error> {
-        unimplemented!()
-    }
-
     async fn check_validity_and_offchain_derivation_version(
         &mut self,
         altda_commitment: &AltDACommitment,

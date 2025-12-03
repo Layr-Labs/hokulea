@@ -11,14 +11,6 @@ pub trait EigenDAPreimageProvider {
     /// The error type for the [EigenDAPreimageProvider].
     type Error: Display + ToString + Into<HokuleaErrorKind>;
 
-    /// Fetch primage about the recency window. To be future compatible when recency window can be a function
-    /// of reference block number stored inside AltDACommitment.
-    /// (ToDo) remove this interface from the trait
-    async fn get_recency_window(
-        &mut self,
-        altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error>;
-
     /// Fetch preimage about the validity of a DA cert. Return generic preimage error. Return false when
     /// DA cert is invalid. True if it is valid.
     async fn check_validity_and_offchain_derivation_version(

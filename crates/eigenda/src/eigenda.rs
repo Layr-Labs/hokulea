@@ -203,8 +203,6 @@ mod tests {
     const ALTDA_COMMITMENT_BYTES_3: &str = "0x010002f903eee5a098eb692e5d190ff4458583187f335be454e47df2912152fe1200c9c3505ac4208391631bf901cef901c9f9018180820001f90159f842a00b24de07075954f38be4b14a6321d98cbbc07fc19737263774c763fb900cc7e4a01a76894605331379abaf50fdff37828c6cbe638ebe5376eaa4c250e053328fa2f888f842a009f7e88880c8e646cd234a162fc07dd5dd298092a714e9b5c8f2f473ca1afa56a0176c98504ed52e2dbc8fec1d1cd2c19f1f7d4c4a0d5584e479ce1034a571305df842a018135e9b7e4a1821ad2607a3cdc801b2a4cb1c9d641767428e8bc96f4a9c77bea00eba497b2195b825b817876f24c08d11ae30f6712c9d19255ec8d2a10b970c68f888f842a008e8f0db2324bdfef9af18c94a7aab5d68e5a485728281a5276b6519b5e99e83a00d1d6a357bb7baa967608929c192da0e15086b44e8557c672bd0f82763d0a43af842a002c20947d2e8628096d5ac30f0a48200f43960789064fe2f5c7c0b0e0c867a64a022b1240ea86dec625bb4a6db9c31769b7d7a894c4d2db565d5f215afaa8de11008a05f5f8a015a8ea873f35b68b5c829b2d8cb966785e50fb77b89da4dc177008f68b8419dadf3f532d1ed8a986d5091476945242710d9ee38ed6aa91472ad8c37170d8820fb9b0d59b3ee08b1a5a9ed8c3c4728b5a9dbf74104cec747e7ff43ae42be8600c1808080f901f1c28001f887f8419f9a9a3504786f979f4011c180069d0127599773df85c02f550c8bcd4336d150a02bf5de7c6791a70185eb0eef04661bbf6f3596569843dbd9172eea27ad484249f842a02b1528a6792412f62e605d184a86c5831f5eb62fe8b8a55ab734379af46ecd10a01c99445cf70539613357bf7770d2e9780abf080531bfdc8cc1e74171f7c43eb5f888f842a02099209289cdb7e5087d0401996d2fd9b52ce5cae39c547a039f126371a7f9bca026139d9d30188c9d52468ce9dfb48c39d552243611d5b270f5497c2b8692c696f842a02b2dabbf32c0cb551d3ba9159ae5c985ebcd71d79b00fabd26a74d618065bfd6a01bef832bd3efaea9f61c0582fb123bb547546f0c5910a9dda96bcd0063d57a02f888f842a021a96430d1ee4b86b3dd912911a5a0128793f5d17242b49af0963126281656b2a02c138443b35d1038b341db4d3e3883efa7b335c91768c2796b852d3e747a2f3ff842a02517000c28dda7a87164dccc0cd1829bdd6014f5a020297f3cbed3993ce2107ca022591d582daa491dba1642862e37218d71d3492fa9ba22fec5347f22d72ae389f842a0102d793353afc14a8c4faf4df2d013db0c8c03d0f00028a5f142182b8b13359ca029bb1669d1a25dbbd48b5de886200d3e8e01d40c1405c51f79d952f9cb540833c20705c20805c6c28001c28080820001";
     const ENCODED_PAYLOAD_3: &str = "00000000009d00000000000000000000000000000000000000000000000000000000507e76bda9280c0c5571a765a841e93b000000000085011b6901f83f14d800c6b493fad51647317c089e5d748df8fb056c31e9b3bae60933979fbbbfa2270079d4cef288030b6e1e51e4615b54cb5a4041c05f7e128071b6208854d03600000214d4017e83865a24ac735f375282ca4b51dbe044c0a6cdca01125223b4b2007573b0e5fb49d62b85df33fcef32d1ebd576d29ba2094d0167191834945c3900040100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
-    const PASSING_RECENCY_WINDOW: u64 = 1000000000;
-    const NOT_PASSING_RECENCY_WINDOW: u64 = 1; // 0 recency triggers the ignore case
     const BLOCK_INFO: BlockInfo = BlockInfo {
         // used by all recency related test
         hash: B256::new([0u8; 32]),
@@ -728,7 +726,6 @@ mod tests {
 
         assert!(source.altda_commitment.is_none());
         for case in cases {
-            // temporarily does not have recency
             set_eigenda_preimage_provider_value(
                 &mut source,
                 vec![case.altda_commitment],
@@ -774,7 +771,6 @@ mod tests {
 
         assert!(source.altda_commitment.is_none());
         for case in cases {
-            // temporarily does not have recency
             set_eigenda_preimage_provider_value(
                 &mut source,
                 vec![case.altda_commitment],
@@ -921,10 +917,6 @@ mod tests {
 
                 // automatically remove any preimage error, translate it into drop
                 if source.altda_commitment.is_some() {
-                    source.eigenda_source.eigenda_fetcher.insert_recency(
-                        &source.altda_commitment.clone().unwrap(),
-                        Ok(NOT_PASSING_RECENCY_WINDOW),
-                    );
                     source
                         .eigenda_source
                         .eigenda_fetcher
@@ -997,12 +989,8 @@ mod tests {
             );
 
             // automatically remove any preimage error, translate it into drop
-            // we take a short cut that only set retry on recency and validity, but not on payload
+            // we take a short cut that only set retry on validity, but not on payload
             if source.altda_commitment.is_some() {
-                source.eigenda_source.eigenda_fetcher.insert_recency(
-                    &source.altda_commitment.clone().unwrap(),
-                    Ok(PASSING_RECENCY_WINDOW),
-                );
                 source
                     .eigenda_source
                     .eigenda_fetcher
@@ -1010,4 +998,6 @@ mod tests {
             }
         }
     }
+
+    // (ToDo) add V4 cert to test e2e integration, so that some altda commitment can fail due to recency issue
 }

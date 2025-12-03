@@ -39,7 +39,6 @@ impl From<TestHokuleaProviderError> for HokuleaErrorKind {
 // a mock object implements the EigenDAPreimageProvider trait
 #[derive(Debug, Clone, Default)]
 pub(crate) struct TestEigenDAPreimageProvider {
-    pub recencies: HashMap<B256, Result<u64, TestHokuleaProviderError>>,
     pub validities: HashMap<B256, Result<bool, TestHokuleaProviderError>>,
     pub encoded_payloads: HashMap<B256, Result<EncodedPayload, TestHokuleaProviderError>>,
     // a backend error propogated to the client
@@ -47,14 +46,6 @@ pub(crate) struct TestEigenDAPreimageProvider {
 }
 
 impl TestEigenDAPreimageProvider {
-    pub(crate) fn insert_recency(
-        &mut self,
-        altda_commitment: &AltDACommitment,
-        recency: Result<u64, TestHokuleaProviderError>,
-    ) {
-        self.recencies.insert(altda_commitment.to_digest(), recency);
-    }
-
     pub(crate) fn insert_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
@@ -77,13 +68,6 @@ impl TestEigenDAPreimageProvider {
 #[async_trait]
 impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
     type Error = TestHokuleaProviderError;
-
-    async fn get_recency_window(
-        &mut self,
-        _altda_commitment: &AltDACommitment,
-    ) -> Result<u64, Self::Error> {
-        unimplemented!()
-    }
 
     async fn check_validity_and_offchain_derivation_version(
         &mut self,
