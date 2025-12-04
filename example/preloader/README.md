@@ -16,22 +16,21 @@ just run-preloader .devnet.env
 
 ### Run preloader with smart contract and Canoe
 
-Steel Preloader, generate zk proof with steel backend against a smart contract call. More see [Canoe](../../canoe) By default, a mock steel proof (which is cheap to generate) is created and verified by the guest. First we need deploy the contract
+Steel Preloader generates zk proof with steel backend against a smart contract call. For more, see [Canoe](../../canoe) By default, a mock steel proof (which is cheap to generate) is created and verified by the guest. First we need to deploy the contract:
 
 ```bash
 just deploy-mock-contract
 ```
 
-Then copy the deployed contract address <MOCK_ADDRESS> to a rust constant called <VERIFIER_ADDRESS> under the filepath `canoe/verifier-address-fetcher/lib.rs` and update the value of mapping from chain id `3151908`. Then let' run against steel. Note houklea and kona uses a lagged `l1_head` to trigger the derivation. It is possible that immediately after deploying the mock contract, the
-`l1_head` still hasn't reached to the block when the mock contract is deployed. When it happens, wait a few minutes for `l1_head` to catch up, or 
-manuall changed the justfile to use the latest L1 block head as l1_head, see [justfile](../../justfile).
+Then copy the deployed contract address <MOCK_ADDRESS> to a rust constant called <VERIFIER_ADDRESS> under the filepath `canoe/verifier-address-fetcher/lib.rs` and update the value of mapping from chain id `3151908`. Then let's run against Steel. Note: Hokulea and Kona use a lagged `l1_head` to trigger the derivation. It is possible that immediately after deploying the mock contract, the `l1_head` still hasn't reached the block when the mock contract is deployed. When it happens, wait a few minutes for `l1_head` to catch up, or manually change the justfile to use the latest L1 block head as l1_head, see [justfile](../../justfile).
 
 ```bash
 just run-preloader .devnet.env steel
 ```
 Compiling rust code to zkVM bytecode requires installing Risc0 toolchain, see [rzup](https://dev.risczero.com/api/zkvm/install).
 
-Sp1 contract call Preloader, generate zk proof with sp1-cc backend, but in mock mode, no actual proof generated
+The SP1 contract-call preloader generates a zk proof with sp1-cc backend, but in mock mode, no actual proof is generated.
+
 ```bash
 just run-preloader .devnet.env sp1-cc
 ```
@@ -48,10 +47,11 @@ You can also configure the proving step using these environment variables:
 * `SP1_CC_GAS_LIMIT` (default: 1,000,000,000,000): gas limit
 * `SP1_CC_TIMEOUT_SECONDS` (default: 14,400): timeout duration
 
+If both `SP1_CC_CYCLE_LIMIT` and `SP1_CC_GAS_LIMIT` are set to 0, the simulation runs locally and the limits are automatically updated to the actual cycles and gas used.
+
 Compiling rust code to zkVM bytecode requires installing Sp1 toolchain, see [sp1up](https://docs.succinct.xyz/docs/sp1/getting-started/install).
 
-
-You can turn off the mock mode when creating a Steel proof. Currently local proof generation requries a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware). 
+You can turn off the mock mode when creating a Steel proof. Currently local proof generation requires a machine with x86 architecture, see [here](https://dev.risczero.com/api/generating-proofs/local-proving#proving-hardware).
 
 ```bash
 # Before running the client, it will download the needed g1.point SRS file
