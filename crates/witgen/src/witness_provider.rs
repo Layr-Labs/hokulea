@@ -28,16 +28,12 @@ impl<T: EigenDAPreimageProvider + Send> EigenDAPreimageProvider
 {
     type Error = T::Error;
 
-    async fn check_validity_and_offchain_derivation_version(
+    async fn get_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
         // get cert validity
-        match self
-            .provider
-            .check_validity_and_offchain_derivation_version(altda_commitment)
-            .await
-        {
+        match self.provider.get_validity(altda_commitment).await {
             Ok(validity) => {
                 let mut preimage = self.preimage.lock().unwrap();
 

@@ -12,8 +12,9 @@ pub trait EigenDAPreimageProvider {
     type Error: Display + ToString + Into<HokuleaErrorKind>;
 
     /// Fetch preimage about the validity of a DA cert. Return generic preimage error. Return false when
-    /// DA cert is invalid. True if it is valid.
-    async fn check_validity_and_offchain_derivation_version(
+    /// DA cert is valid if the DA network attestation is correct and offchain derivation version is
+    /// consistent to the one stored on L1 contract
+    async fn get_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error>;

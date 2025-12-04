@@ -35,17 +35,9 @@ where
     ) -> Result<EncodedPayload, HokuleaErrorKind> {
         info!(target: "eigenda_preimage_source", "parsed an altda commitment of version {}", altda_commitment.cert_version_str());
         // get cert validty via preimage oracle, discard cert if invalid
-        match self
-            .eigenda_fetcher
-            .check_validity_and_offchain_derivation_version(altda_commitment)
-            .await
-        {
+        match self.eigenda_fetcher.get_validity(altda_commitment).await {
             Ok(true) => (),
-            Ok(false) => {
-                return Err(
-                    HokuleaPreimageError::InvalidCertOrInconsistentOffchainDerivationVersion.into(),
-                )
-            }
+            Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
             Err(e) => return Err(e.into()),
         }
 
@@ -252,9 +244,7 @@ mod tests {
                 validity: Ok(false),
                 // below are ignored
                 encoded_payload: Ok(EncodedPayload::default()),
-                result: Err(
-                    HokuleaPreimageError::InvalidCertOrInconsistentOffchainDerivationVersion.into(),
-                ),
+                result: Err(HokuleaPreimageError::InvalidCert.into()),
             },
             // working
             Case {

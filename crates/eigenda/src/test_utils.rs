@@ -69,7 +69,7 @@ impl TestEigenDAPreimageProvider {
 impl EigenDAPreimageProvider for TestEigenDAPreimageProvider {
     type Error = TestHokuleaProviderError;
 
-    async fn check_validity_and_offchain_derivation_version(
+    async fn get_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {

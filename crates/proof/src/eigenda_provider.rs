@@ -34,7 +34,7 @@ impl<T: CommsClient + Sync + Send> EigenDAPreimageProvider for OracleEigenDAPrei
     type Error = HokuleaOracleProviderError;
 
     /// Query preimage about the validity of a DA cert
-    async fn check_validity_and_offchain_derivation_version(
+    async fn get_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {

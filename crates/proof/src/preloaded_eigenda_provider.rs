@@ -18,7 +18,7 @@ use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 
 /// PreloadedEigenDAPreimageProvider converts EigenDAWitness into preimage data
 /// can be used to implement the EigenDAPreimageProvider trait, that contains
-///   check_validity_and_offchain_code_version
+///   get_validity
 ///   get_encoded_payload
 ///
 /// For each function above, internally PreloadedEigenDAPreimageProvider maintain a separate
@@ -146,7 +146,7 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
     // The error is a place holder, we intentionally abort everything
     type Error = HokuleaOracleProviderError;
 
-    async fn check_validity_and_offchain_derivation_version(
+    async fn get_validity(
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<bool, Self::Error> {
@@ -439,10 +439,7 @@ mod tests {
             CanoeNoOpVerifierAddressFetcher {},
         );
         assert_eq!(
-            preimage
-                .check_validity_and_offchain_derivation_version(&altda_commitment)
-                .await
-                .unwrap(),
+            preimage.get_validity(&altda_commitment).await.unwrap(),
             eigenda_witness.validities[0].1
         );
         assert_eq!(
@@ -467,9 +464,7 @@ mod tests {
             CanoeNoOpVerifier {},
             CanoeNoOpVerifierAddressFetcher {},
         );
-        let _ = preimage
-            .check_validity_and_offchain_derivation_version(&altda_commitment)
-            .await;
+        let _ = preimage.get_validity(&altda_commitment).await;
     }
 
     // unknown key

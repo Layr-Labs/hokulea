@@ -80,12 +80,12 @@ pub async fn fetch_eigenda_hint(
     store_cert_validity_with_correct_offchain_derivation_version(
         kv.clone(),
         &altda_commitment,
-        derivation_stage.is_valid_cert_and_correct_offchain_derivation_version,
+        derivation_stage.is_valid_cert,
     )
     .await?;
 
-    // If cert or offcahin version is invalid, log and return early
-    if !derivation_stage.is_valid_cert_and_correct_offchain_derivation_version {
+    // If cert or offchain version is invalid, log and return early
+    if !derivation_stage.is_valid_cert {
         info!(
             target = "hokulea-host",
             "discarding due to invalid cert or inconsistent offchain derivation version {}",
@@ -95,7 +95,7 @@ pub async fn fetch_eigenda_hint(
     }
 
     // If cert does not pass recency check, discard it
-    // for the reason reason, the hokulea client would not request anything further
+    // the hokulea client would not request anything further
     if !derivation_stage.pass_recency_check {
         info!(
             target = "hokulea-host",
@@ -121,10 +121,10 @@ pub async fn fetch_eigenda_hint(
 /// data and return early.  
 #[derive(Debug, Clone)]
 pub struct ProxyDerivationStage {
-    // proxy derivation determines recency test is passed
+    // if cert has been attested by DA network and offchain derivation version is correct
+    pub is_valid_cert: bool,
+    // if recency test is passed
     pub pass_recency_check: bool,
-    // proxy derivation determines cert is valid
-    pub is_valid_cert_and_correct_offchain_derivation_version: bool,
     // encoded_payload
     pub encoded_payload: Vec<u8>,
 }
@@ -141,7 +141,7 @@ async fn fetch_data_from_proxy(
         .await
         .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
 
-    let mut is_valid_cert_and_correct_offchain_derivation_version = true;
+    let mut is_valid_cert = true;
     let mut pass_recency_check = true;
     let mut encoded_payload = vec![];
 
@@ -165,9 +165,7 @@ async fn fetch_data_from_proxy(
 
         match status_code.into() {
             HostHandlerError::HokuleaPreimageError(c) => match c {
-                HokuleaPreimageError::InvalidCertOrInconsistentOffchainDerivationVersion => {
-                    is_valid_cert_and_correct_offchain_derivation_version = false
-                }
+                HokuleaPreimageError::InvalidCert => is_valid_cert = false,
             },
             HostHandlerError::HokuleaRecencyCheckError => pass_recency_check = false,
             HostHandlerError::HokuleaEncodedPayloadDecodingError(e)
@@ -187,7 +185,7 @@ async fn fetch_data_from_proxy(
 
     Ok(ProxyDerivationStage {
         pass_recency_check,
-        is_valid_cert_and_correct_offchain_derivation_version,
+        is_valid_cert,
         encoded_payload,
     })
 }

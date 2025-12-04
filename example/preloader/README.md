@@ -111,8 +111,6 @@ The internal of the PreloadedEigenDAPreimageProvider are made of queues of preim
 Hokulea defines a transformation function to convert `EigenDAWitness` into `PreloadedEigenDAPreimageProvider`, and the transformation contains all the 
 necessary checks. It is crucial that the transformation itself is executed within the zkVM.
 
-(ToDo)
-
 ## Acknowledge
 
 This approach is learned from the Kailua repo.
