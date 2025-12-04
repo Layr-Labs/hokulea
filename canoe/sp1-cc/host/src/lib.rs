@@ -264,7 +264,10 @@ async fn get_sp1_cc_proof(
                 .cycle_limit(cycle_limit)
                 .gas_limit(gas_limit);
         } else {
-            assert!(cycle_limit == 0 && gas_limit == 0, "cycle_limit and gas_limit must both be zero or both be non-zero");
+            assert!(
+                cycle_limit == 0 && gas_limit == 0,
+                "cycle_limit and gas_limit must both be zero or both be non-zero"
+            );
             proof_builder = proof_builder.skip_simulation(false);
         }
 
