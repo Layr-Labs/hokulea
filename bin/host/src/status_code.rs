@@ -7,7 +7,7 @@ pub const HTTP_RESPONSE_STATUS_CODE_TEAPOT: u16 = 418;
 // https://github.com/Layr-Labs/eigenda/blob/4fa89635da76a0dbde6ad48f4de15c6059c7f11a/api/clients/v2/coretypes/derivation_errors.go#L67
 pub const STATUS_CODE_CERT_PARSE_ERROR: u8 = 1;
 pub const STATUS_CODE_RECENCY_ERROR: u8 = 2;
-pub const STATUS_CODE_INVALID_CERT_ERROR: u8 = 3;
+pub const STATUS_CODE_INVALID_CERT: u8 = 3;
 pub const STATUS_CODE_BLOB_DECODING_ERROR: u8 = 4;
 
 // When proxy returns a derivation error, the error is returned inside a HTTP TEAPOT json message on 418 error. See also proxy
@@ -48,7 +48,7 @@ pub enum HostHandlerError {
 impl From<DerivationError> for HostHandlerError {
     fn from(status: DerivationError) -> Self {
         match status.status_code {
-            STATUS_CODE_INVALID_CERT_ERROR => {
+            STATUS_CODE_INVALID_CERT => {
                 HostHandlerError::HokuleaPreimageError(HokuleaPreimageError::InvalidCert)
             }
             STATUS_CODE_RECENCY_ERROR => HostHandlerError::HokuleaRecencyCheckError,

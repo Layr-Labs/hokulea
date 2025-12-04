@@ -28,16 +28,9 @@ For real-world implementations, both Op-succinct and Kailua integrate Hokulea in
 [documentation](./docs/README.md) is also applicable for other integrations, and pay special attention on the trust assumption on certain data structure.
 
 ## EigenDA proxy configuration
-Hokulea relies on eigenda proxy for fetching preimage values, including `recency_window`, `cert_validity` and `encoded_payload`. For cert validity and encode payload, the preimage comes from proxy and is verified later, whereas the recency window value is set in hokulea directly. However, the proxy maintains its own recency_window to process the eigenda blob derivation. For all trustless integrations, this number must be kept consistent on every proxy run by `op-node`s.
+Hokulea relies on eigenda proxy for fetching preimage values, including `cert_validity` and `encoded_payload`. For cert validity and encode payload, the preimage comes from proxy and is verified later, whereas the recency window value is derived from hokulea directly.
 
-Currently, each rollup is free to choose the `recency_window` value, and it determines the staleness of AltDA commitments (DA certificates). If a DA Certificate is stale based on the recency value, it is dropped from the derivation pipeline. For more info see our [spec](https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation). We recommend it be set to the `seq_window_size` from the rollup config.
-
-Currently on proxy, the recency window is set to 0 by default, which ignores any recency check entirely. If recency is configured to some other value (like `seq_window_size`), the following components need to share the same value or history of values
-- when starting the hokulea host, by setting `recency_window`
-- and implementing `RecencyWindowProvider` trait
-- ensure all proxy are using the same recency config
-
-To prevent misconfiguration, hokulea has required user to enter the `recency_window` which would be checked against the implementation of `RecencyWindowProvider` trait when creating the hokulea ELF file. If the provided host argument is different from the `RecencyWindowProvider` implementation, the proving system would abort. There is planned work on proxy to expose its public config, such that all proxy users (like hokulea host) can retrieve the `recency window` from the proxy.
+In hokulea both V2 and V3 have set recency window default to 0. For V4, if the `offchain_derivation_version` is `0`, the recency window is 48hours.
 
 ## Local Manual Testing
 

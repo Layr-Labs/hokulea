@@ -6,7 +6,7 @@ use crate::HokuleaPreimageError;
 
 use crate::errors::{HokuleaErrorKind, HokuleaRecencyCheckError, HokuleaStatelessError};
 use alloy_primitives::Bytes;
-use eigenda_cert::AltDACommitment;
+use eigenda_cert::{AltDACommitment, EigenDAVersionedCert};
 
 /// A data iterator that reads from a preimage.
 #[derive(Debug, Clone)]
@@ -34,24 +34,23 @@ where
         l1_inclusion_bn: u64,
     ) -> Result<EncodedPayload, HokuleaErrorKind> {
         info!(target: "eigenda_preimage_source", "parsed an altda commitment of version {}", altda_commitment.cert_version_str());
-        // get recency window size, discard the old cert if necessary
-        match self
-            .eigenda_fetcher
-            .get_recency_window(altda_commitment)
-            .await
-        {
-            Ok(recency_window) => {
-                recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency_window)?;
-            }
-            Err(e) => return Err(e.into()),
-        };
-
         // get cert validty via preimage oracle, discard cert if invalid
         match self.eigenda_fetcher.get_validity(altda_commitment).await {
             Ok(true) => (),
             Ok(false) => return Err(HokuleaPreimageError::InvalidCert.into()),
             Err(e) => return Err(e.into()),
         }
+
+        // recency window is determined by offchain code version in the unit of L1 block
+        // V2 and V3 cert automatically maps to recency_window 0
+        // V4 cert derives recency_window from offchain_derivation_version
+        let recency_window: u64 = match &altda_commitment.versioned_cert {
+            EigenDAVersionedCert::V2(_) => 0,
+            EigenDAVersionedCert::V3(_) => 0,
+            EigenDAVersionedCert::V4(cert) => get_recency_window(cert.offchain_derivation_version)?,
+        };
+        // get recency window size, discard the old cert if necessary
+        recency_check(l1_inclusion_bn, altda_commitment.get_rbn(), recency_window)?;
 
         // get encoded payload via preimage oracle
         self.eigenda_fetcher
@@ -75,6 +74,16 @@ where
             }
         };
         Ok(altda_commitment)
+    }
+}
+
+// version 0 has 48 hours recency window where 14400 = 48*60*60(second) / 12 (second/L1block)
+fn get_recency_window(offchain_derivation_version: u16) -> Result<u64, HokuleaStatelessError> {
+    match offchain_derivation_version {
+        0 => Ok(14400),
+        _ => Err(HokuleaStatelessError::UnsupportedOffchainDerivationVersion(
+            offchain_derivation_version,
+        )),
     }
 }
 
@@ -158,6 +167,17 @@ mod tests {
     }
 
     #[test]
+    fn get_recency_window_test() {
+        assert_eq!(get_recency_window(0), Ok(14400));
+        assert_eq!(
+            get_recency_window(1),
+            Err(HokuleaStatelessError::UnsupportedOffchainDerivationVersion(
+                1
+            ))
+        );
+    }
+
+    #[test]
     fn test_recency_check() {
         struct Case {
             recency_window: u64,
@@ -213,29 +233,14 @@ mod tests {
         .into();
 
         struct Case {
-            recency: Result<u64, TestHokuleaProviderError>,
             validity: Result<bool, TestHokuleaProviderError>,
             encoded_payload: Result<EncodedPayload, TestHokuleaProviderError>,
             result: Result<EncodedPayload, HokuleaErrorKind>,
         }
 
         let cases = [
-            // not recent enough
-            Case {
-                // l1_inclusion_number = rbn + 100 > rbn + 10
-                recency: Ok(10),
-                // below are ignored
-                validity: Ok(false),
-                encoded_payload: Ok(EncodedPayload::default()),
-                result: Err(HokuleaStatelessError::RecencyCheckError(
-                    HokuleaRecencyCheckError::NotRecentCert,
-                )
-                .into()),
-            },
             // not valid
             Case {
-                // l1_inclusion_number = rbn + 100 < rbn + 200
-                recency: Ok(200),
                 validity: Ok(false),
                 // below are ignored
                 encoded_payload: Ok(EncodedPayload::default()),
@@ -243,7 +248,6 @@ mod tests {
             },
             // working
             Case {
-                recency: Ok(200),
                 validity: Ok(true),
                 encoded_payload: Ok(EncodedPayload {
                     encoded_payload: encoded_payload.clone(),
@@ -252,21 +256,8 @@ mod tests {
                     encoded_payload: encoded_payload.clone(),
                 }),
             },
-            // recency preimage has a temporary problem
+            // validity preimage has a temporary problem
             Case {
-                recency: Err(TestHokuleaProviderError::Preimage),
-                // below are ignored
-                validity: Ok(false),
-                encoded_payload: Ok(EncodedPayload {
-                    encoded_payload: encoded_payload.clone(),
-                }),
-                result: Err(HokuleaErrorKind::Temporary(
-                    "Preimage temporary error".to_string(),
-                )),
-            },
-            // recency preimage has a temporary problem
-            Case {
-                recency: Ok(200),
                 validity: Err(TestHokuleaProviderError::Preimage),
                 // below are ignored
                 encoded_payload: Ok(EncodedPayload {
@@ -278,7 +269,6 @@ mod tests {
             },
             // encoded payload preimage has a temporary problem
             Case {
-                recency: Ok(200),
                 validity: Ok(true),
                 encoded_payload: Err(TestHokuleaProviderError::Preimage),
                 result: Err(HokuleaErrorKind::Temporary(
@@ -287,18 +277,15 @@ mod tests {
             },
             // encoded payload preimage has a critical problem
             Case {
-                recency: Ok(200),
                 validity: Ok(true),
                 encoded_payload: Err(TestHokuleaProviderError::Critical),
                 result: Err(HokuleaErrorKind::Critical("Critical error".to_string())),
             },
         ];
 
+        // test against V3 cert, no recency is checked
         for case in cases {
             // set up preimage
-            preimage_source
-                .eigenda_fetcher
-                .insert_recency(&altda_commitment, case.recency);
             preimage_source
                 .eigenda_fetcher
                 .insert_validity(&altda_commitment, case.validity);

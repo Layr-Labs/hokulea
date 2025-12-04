@@ -6,8 +6,8 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
-    HokuleaPreimageError, BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_RECENCY,
-    RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX,
+    HokuleaPreimageError, BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
@@ -34,7 +34,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
         // route the hint to the right fetcher based on the hint type.
         match hint.ty {
             ExtendedHintType::EigenDACert => {
-                fetch_eigenda_hint(hint, cfg, providers, kv).await?;
+                fetch_eigenda_hint(hint, providers, kv).await?;
             }
             ExtendedHintType::Original(ty) => {
                 let hint_original = Hint {
@@ -55,12 +55,11 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 }
 
 /// Fetch the preimages for the given hint and insert then into the key-value store.
-/// We insert the recency_window, cert_validity, and encoded_payload_data.
+/// We insert the cert_validity, and encoded_payload_data.
 /// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
 /// <https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135>
 pub async fn fetch_eigenda_hint(
     hint: Hint<<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::HintType>,
-    cfg: &SingleChainHostWithEigenDA,
     providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
     kv: SharedKeyValueStore,
 ) -> Result<()> {
@@ -74,22 +73,10 @@ pub async fn fetch_eigenda_hint(
         .try_into()
         .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
-    store_recency_window(kv.clone(), &altda_commitment, cfg).await?;
-
     // Fetch preimage data and process response
     let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
-    // If cert does not pass recency check, discard it
-    if !derivation_stage.pass_recency_check {
-        info!(
-            target = "hokulea-host",
-            "discard a cert for not passing recency test {}",
-            altda_commitment.to_digest(),
-        );
-        return Ok(());
-    }
-
-    // Write validity status to key-value store
+    // Write validity and correct offchain code version to key-value store
     store_cert_validity(
         kv.clone(),
         &altda_commitment,
@@ -97,11 +84,22 @@ pub async fn fetch_eigenda_hint(
     )
     .await?;
 
-    // If cert is invalid, log and return early
+    // If cert or offchain version is invalid, log and return early
     if !derivation_stage.is_valid_cert {
         info!(
             target = "hokulea-host",
-            "discard an invalid cert {}",
+            "discarding due to invalid cert or inconsistent offchain derivation version {}",
+            altda_commitment.to_digest(),
+        );
+        return Ok(());
+    }
+
+    // If cert does not pass recency check, discard it
+    // the hokulea client would not request anything further
+    if !derivation_stage.pass_recency_check {
+        info!(
+            target = "hokulea-host",
+            "discard a cert for not passing recency test {}",
             altda_commitment.to_digest(),
         );
         return Ok(());
@@ -118,38 +116,15 @@ pub async fn fetch_eigenda_hint(
     Ok(())
 }
 
-/// Store recency window size in key-value store
-async fn store_recency_window(
-    kv: SharedKeyValueStore,
-    altda_commitment: &AltDACommitment,
-    cfg: &SingleChainHostWithEigenDA,
-) -> Result<()> {
-    // Acquire a lock on the key-value store
-    let mut kv_write_lock = kv.write().await;
-
-    // See https://layr-labs.github.io/eigenda/integration/spec/6-secure-integration.html#1-rbn-recency-validation
-    let recency = cfg.recency_window;
-    let recency_be_bytes = recency.to_be_bytes();
-    let mut recency_address = altda_commitment.digest_template();
-    recency_address[RESERVED_EIGENDA_API_BYTE_INDEX] = RESERVED_EIGENDA_API_BYTE_FOR_RECENCY;
-
-    kv_write_lock.set(
-        PreimageKey::new(*keccak256(recency_address), PreimageKeyType::GlobalGeneric).into(),
-        recency_be_bytes.to_vec(),
-    )?;
-
-    Ok(())
-}
-
 /// Currently Hokulea hosts relies on Eigenda-proxy for preimage retrieval.
 /// It relies on the [DerivationError] status code returned by the proxy to decide when to stop retrieving
 /// data and return early.  
 #[derive(Debug, Clone)]
 pub struct ProxyDerivationStage {
-    // proxy derivation determines recency test is passed
-    pub pass_recency_check: bool,
-    // proxy derivation determines cert is valid
+    // if cert has been attested by DA network and offchain derivation version is correct
     pub is_valid_cert: bool,
+    // if recency test is passed
+    pub pass_recency_check: bool,
     // encoded_payload
     pub encoded_payload: Vec<u8>,
 }
