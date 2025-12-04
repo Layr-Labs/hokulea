@@ -102,7 +102,7 @@ Note we deviate from OP spec, which requires sender address to be included in th
 ## Reserved Addresses for DA certificates
 
 Eigenda secure integration requires additional primitives exposed by the preimage oracle, including
-- `certificate validity` that accepts an AltDACommitment and return a boolean indicating if the certificate is valid subject to onchain smart contract [logic](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation)
+- `certificate validity` that accepts an AltDACommitment and return a boolean indicating if the certificate is valid subject to onchain smart contract [logic](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#2-cert-validation) and the offchain derivation version from the certificate is equal to the one stored in the onchain smart contract. 
 - `recency window request` that takes an AltDACommitment and returns an u64 integer for recency window, more see [spec](https://github.com/Layr-Labs/eigenda/blob/master/docs/spec/src/integration/spec/6-secure-integration.md#1-rbn-recency-validation)
 
 

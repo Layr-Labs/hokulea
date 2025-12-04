@@ -28,7 +28,7 @@ For real-world implementations, both Op-succinct and Kailua integrate Hokulea in
 [documentation](./docs/README.md) is also applicable for other integrations, and pay special attention on the trust assumption on certain data structure.
 
 ## EigenDA proxy configuration
-Hokulea relies on eigenda proxy for fetching preimage values, including `validity` and `encoded_payload`. For cert validity and encode payload, the preimage comes from proxy and is verified later, whereas the recency window value is derived from hokulea directly.
+Hokulea relies on eigenda proxy for fetching preimage values, including `cert_validity` and `encoded_payload`. For cert validity and encode payload, the preimage comes from proxy and is verified later, whereas the recency window value is derived from hokulea directly.
 
 In hokulea both V2 and V3 have set recency window default to 0. For V4, if the `offchain_derivation_version` is `0`, the recency window is 48hours.
 

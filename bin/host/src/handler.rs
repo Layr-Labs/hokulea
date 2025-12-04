@@ -55,7 +55,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 }
 
 /// Fetch the preimages for the given hint and insert then into the key-value store.
-/// We insert the validity, and encoded_payload_data.
+/// We insert the cert_validity, and encoded_payload_data.
 /// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
 /// <https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135>
 pub async fn fetch_eigenda_hint(
@@ -77,7 +77,7 @@ pub async fn fetch_eigenda_hint(
     let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
 
     // Write validity and correct offchain code version to key-value store
-    store_cert_validity_with_correct_offchain_derivation_version(
+    store_cert_validity(
         kv.clone(),
         &altda_commitment,
         derivation_stage.is_valid_cert,
@@ -191,7 +191,7 @@ async fn fetch_data_from_proxy(
 }
 
 /// Store certificate validity in key-value store
-async fn store_cert_validity_with_correct_offchain_derivation_version(
+async fn store_cert_validity(
     kv: SharedKeyValueStore,
     altda_commitment: &AltDACommitment,
     is_valid: bool,
