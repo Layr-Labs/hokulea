@@ -9997,7 +9997,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.9.1b#d02b69e487a7dd25a2487a2f600d32ac2e03fd82"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.9.1c#1da960ddc81e009400db3087245edcc36bafd534"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -10031,13 +10031,14 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.9.1b#d02b69e487a7dd25a2487a2f600d32ac2e03fd82"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-1.9.1c#1da960ddc81e009400db3087245edcc36bafd534"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
  "alloy-evm 0.23.1",
  "alloy-primitives 1.4.1",
  "alloy-provider",
+ "alloy-rpc-client",
  "alloy-rpc-types",
  "alloy-sol-macro",
  "alloy-sol-types",
