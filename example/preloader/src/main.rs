@@ -87,7 +87,9 @@ async fn main() -> anyhow::Result<()> {
                 .unwrap_or(false);
 
             let canoe_provider = CanoeSp1CCReducedProofProvider{
-                eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
+                eth_rpc_client: RpcClient::new_http(
+                    cfg.kona_cfg.l1_node_address.unwrap().parse(),
+                ),
                 mock_mode,
             };
             let canoe_verifier = CanoeNoOpVerifier{};
