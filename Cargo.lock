@@ -2479,7 +2479,6 @@ dependencies = [
  "sp1-prover",
  "sp1-sdk",
  "tracing",
- "url",
 ]
 
 [[package]]
