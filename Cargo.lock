@@ -4407,6 +4407,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-evm 0.22.6",
  "alloy-op-evm",
+ "alloy-rpc-client",
  "anyhow",
  "canoe-provider",
  "canoe-sp1-cc-host",
