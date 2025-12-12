@@ -70,15 +70,16 @@ async fn main() -> anyhow::Result<()> {
             // into SP1 zkvm when using hokulea as an ELF.
             use canoe_sp1_cc_host::CanoeSp1CCReducedProofProvider;
             // use CanoeNoOpVerifier as CanoeSp1CCVerifier is only intended to be run within zkVM
+            use alloy_rpc_client::RpcClient;
             use canoe_verifier::CanoeNoOpVerifier;
-            use sp1_sdk::{ProverClient, HashableKey};
+            use sp1_sdk::{HashableKey, ProverClient};
             use std::env;
 
             const CANOE_SP1CC_ELF: &[u8] = canoe_sp1_cc_host::ELF;
             let client = ProverClient::from_env();
             let (_pk, canoe_vk) = client.setup(CANOE_SP1CC_ELF);
 
-            println!("canoe sp1cc v_key {:?}", canoe_vk.vk.hash_u32() );
+            println!("canoe sp1cc v_key {:?}", canoe_vk.vk.hash_u32());
 
             let mock_mode = env::var("OP_SUCCINCT_MOCK")
                 .map(|v| v.to_ascii_lowercase())
@@ -86,11 +87,17 @@ async fn main() -> anyhow::Result<()> {
                 .and_then(|v| v.parse::<bool>().ok())
                 .unwrap_or(false);
 
-            let canoe_provider = CanoeSp1CCReducedProofProvider{
-                eth_rpc_url: cfg.kona_cfg.l1_node_address.clone().unwrap(),
+            let canoe_provider = CanoeSp1CCReducedProofProvider {
+                eth_rpc_client: RpcClient::new_http(
+                    cfg.kona_cfg
+                        .l1_node_address
+                        .unwrap()
+                        .parse()
+                        .expect("should be able to parse l1 node address to url"),
+                ),
                 mock_mode,
             };
-            let canoe_verifier = CanoeNoOpVerifier{};
+            let canoe_verifier = CanoeNoOpVerifier {};
         } else {
             use canoe_provider::CanoeNoOpProvider;
             use canoe_verifier::CanoeNoOpVerifier;

@@ -1,4 +1,5 @@
 use alloy_primitives::Address;
+use alloy_rpc_client::RpcClient;
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_types::SolType;
 use anyhow::Result;
@@ -14,11 +15,9 @@ use sp1_sdk::{
     SP1_CIRCUIT_VERSION,
 };
 use tracing::{debug, info, warn};
-use url::Url;
 
 use std::{
     env,
-    str::FromStr,
     time::{Duration, Instant},
 };
 
@@ -38,7 +37,7 @@ pub const HOLESKY_GENESIS: &str = include_str!("./holesky_genesis.json");
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCProvider {
     /// rpc to l1 geth node
-    pub eth_rpc_url: String,
+    pub eth_rpc_client: RpcClient,
     /// if true, execute and return a mock proof
     pub mock_mode: bool,
 }
@@ -56,7 +55,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
             return None;
         }
 
-        Some(get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await)
+        Some(get_sp1_cc_proof(canoe_inputs, self.eth_rpc_client.clone(), self.mock_mode).await)
     }
 }
 
@@ -68,7 +67,7 @@ impl CanoeProvider for CanoeSp1CCProvider {
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCReducedProofProvider {
     /// rpc to l1 geth node
-    pub eth_rpc_url: String,
+    pub eth_rpc_client: RpcClient,
     /// if true, execute and return a mock proof
     pub mock_mode: bool,
 }
@@ -86,7 +85,7 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             return None;
         }
 
-        match get_sp1_cc_proof(canoe_inputs, &self.eth_rpc_url, self.mock_mode).await {
+        match get_sp1_cc_proof(canoe_inputs, self.eth_rpc_client.clone(), self.mock_mode).await {
             Ok(proof) => {
                 let SP1Proof::Compressed(proof) = proof.proof else {
                     panic!("cannot get Sp1ReducedProof")
@@ -100,7 +99,7 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
 
 async fn get_sp1_cc_proof(
     canoe_inputs: Vec<CanoeInput>,
-    eth_rpc_url: &str,
+    eth_rpc_client: RpcClient,
     mock_mode: bool,
 ) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
     // ensure chain id and l1 block number across all DAcerts are identical
@@ -124,8 +123,6 @@ async fn get_sp1_cc_proof(
     // Which block VerifyDACert eth-calls are executed against.
     let block_number = BlockNumberOrTag::Number(l1_head_block_number);
 
-    let rpc_url = Url::from_str(eth_rpc_url).unwrap();
-
     let genesis = if let Ok(genesis) = Genesis::try_from(l1_chain_id) {
         genesis
     } else {
@@ -140,7 +137,7 @@ async fn get_sp1_cc_proof(
     let sketch = EvmSketch::builder()
         .at_block(block_number)
         .with_genesis(genesis)
-        .el_rpc_url(rpc_url)
+        .el_rpc_client(eth_rpc_client)
         .build()
         .await?;
 

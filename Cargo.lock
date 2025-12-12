@@ -2464,6 +2464,7 @@ name = "canoe-sp1-cc-host"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives 1.4.1",
+ "alloy-rpc-client",
  "alloy-rpc-types",
  "alloy-sol-types",
  "anyhow",
@@ -2478,7 +2479,6 @@ dependencies = [
  "sp1-prover",
  "sp1-sdk",
  "tracing",
- "url",
 ]
 
 [[package]]
@@ -4407,6 +4407,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-evm 0.22.6",
  "alloy-op-evm",
+ "alloy-rpc-client",
  "anyhow",
  "canoe-provider",
  "canoe-sp1-cc-host",
