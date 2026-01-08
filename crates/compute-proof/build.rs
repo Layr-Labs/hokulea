@@ -4,12 +4,14 @@
 //! by reading the g1.point file and creating a static G1Affine point array that can be
 //! embedded directly in the binary at compile time
 use std::path::Path;
-use std::{env, fs, mem};
+use std::{env, fs};
 
-use ark_bn254::G1Affine;
+use ark_serialize::CanonicalSerialize;
 use rust_kzg_bn254_prover::srs::SRS;
 
 const POINTS_TO_LOAD: u32 = 16 * 1024 * 1024 / 32;
+// total number of srs points elligible to use
+const SRS_ORDER: u32 = 268435456;
 
 fn main() {
     let workspace_root = env::var("CARGO_MANIFEST_DIR")
@@ -27,27 +29,24 @@ fn main() {
 
     println!("cargo:rerun-if-changed={path_str}");
 
-    let order = POINTS_TO_LOAD * 32;
-    let srs = SRS::new(path_str, order, POINTS_TO_LOAD).expect("Failed to create SRS");
+    let srs = SRS::new(path_str, SRS_ORDER, POINTS_TO_LOAD).expect("Failed to create SRS");
     assert_eq!(srs.g1.len(), POINTS_TO_LOAD as usize);
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_path = Path::new(&out_dir);
 
     let g1_slice = &srs.g1[..];
-    // SAFETY: Converting G1Affine slice to byte slice for serialization.
-    // - g1_slice is a valid reference to G1Affine elements with known lifetime
-    // - G1Affine has a well-defined memory layout from ark-bn254
-    // - size_of_val() ensures the byte slice doesn't exceed source data bounds
-    // - The resulting byte slice lifetime is bounded by the original slice
-    let g1_bytes = unsafe {
-        std::slice::from_raw_parts(g1_slice.as_ptr() as *const u8, size_of_val(g1_slice))
-    };
+    // Serialize G1Affine points using arkworks' canonical serialization.
+    // This ensures stable, well-defined binary format across compiler versions.
+    let mut g1_bytes = Vec::new();
+    g1_slice
+        .serialize_uncompressed(&mut g1_bytes)
+        .expect("Failed to serialize G1 points");
 
     let g1_path = out_path.join("srs_points.bin");
-    fs::write(&g1_path, g1_bytes).expect("Failed to write G1 points");
+    fs::write(&g1_path, &g1_bytes).expect("Failed to write G1 points");
 
-    let byte_size = POINTS_TO_LOAD as usize * mem::size_of::<G1Affine>();
+    let byte_size = g1_bytes.len();
 
     macro_rules! generate_constants {
         ($points:expr, $byte_size:expr) => {

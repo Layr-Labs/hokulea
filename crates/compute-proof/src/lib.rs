@@ -12,6 +12,7 @@
 pub mod kzg_proof;
 use alloy_primitives::FixedBytes;
 use ark_bn254::G1Affine;
+use ark_serialize::CanonicalDeserialize;
 use hokulea_proof::EigenDAPreimage;
 pub use kzg_proof::{
     compute_kzg_proof, compute_kzg_proof_with_srs, convert_biguint_to_be_32_bytes,
@@ -24,27 +25,30 @@ use tracing::info;
 
 include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 
-// SAFETY: Transmuting compile-time embedded binary data to typed G1Affine array.
-// - Binary data originates from the same G1Affine structures in build.rs
-// - BYTE_SIZE constant ensures exact size match: POINTS_TO_LOAD * size_of::<G1Affine>()
-// - G1Affine has stable, well-defined memory representation from ark-bn254
-// - Both source and target arrays have identical size and alignment requirements
-// - Static lifetime is appropriate for compile-time embedded data
-static SRS_POINTS: &[G1Affine; POINTS_TO_LOAD] = unsafe {
-    &core::mem::transmute::<[u8; BYTE_SIZE], [G1Affine; POINTS_TO_LOAD]>(*include_bytes!(concat!(
-        env!("OUT_DIR"),
-        "/srs_points.bin"
-    )))
-};
-
 /// Globally accessible SRS (Structured Reference String) for KZG operations.
 ///
 /// This static contains precomputed G1 curve points loaded from embedded binary data.
 /// The SRS is lazily initialized on first access and provides the cryptographic
 /// parameters needed for KZG polynomial commitments and proofs.
-pub static G1_SRS: LazyLock<SRS<'static>> = LazyLock::new(|| SRS {
-    g1: Cow::Borrowed(SRS_POINTS),
-    order: (POINTS_TO_LOAD * 32) as u32,
+///
+/// Uses arkworks' canonical deserialization to safely convert the embedded binary
+/// data into G1Affine points, ensuring stable format across compiler versions.
+pub static G1_SRS: LazyLock<SRS<'static>> = LazyLock::new(|| {
+    const SRS_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/srs_points.bin"));
+
+    let g1_points = Vec::<G1Affine>::deserialize_uncompressed(SRS_BYTES)
+        .expect("Failed to deserialize SRS points");
+
+    assert_eq!(
+        g1_points.len(),
+        POINTS_TO_LOAD,
+        "Deserialized point count mismatch"
+    );
+
+    SRS {
+        g1: Cow::Owned(g1_points),
+        order: (POINTS_TO_LOAD * 32) as u32,
+    }
 });
 
 /// creates kzg proof for all encoded payloads within the eigenda preimage.
