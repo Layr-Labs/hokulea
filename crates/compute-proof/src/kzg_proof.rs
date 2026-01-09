@@ -1,23 +1,15 @@
 //! This is a crate for generating a kzg proof for an eigenda blob. In the future,
 //! such proof is carried inside the blob header. Then it can be removed. This crate access filesystem,
 //! cannot be used in any fault proof or zk vm.
+use crate::G1_SRS;
 use alloy_primitives::Bytes;
 use num::BigUint;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_primitives::errors::KzgError;
 use rust_kzg_bn254_prover::kzg::KZG;
 use rust_kzg_bn254_prover::srs::SRS;
-use spin::Lazy;
 
-/// load srs points
-pub static G1_SRS: Lazy<SRS<'static>> = Lazy::new(load_g1_srs);
-
-fn load_g1_srs() -> SRS<'static> {
-    let srs_file_path = "resources/g1.point";
-    // In the future, it might make sense to let the proxy to return kzg proof, instead of local computation
-    SRS::new(srs_file_path, 268435456, 524288)
-        .unwrap_or_else(|err| panic!("Failed to load SRS file {srs_file_path}: {err}"))
-}
+include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 
 /// This function computes a KZG proof for a eigenDA blob
 /// nitro code <https://github.com/Layr-Labs/nitro/blob/14f09745b74321f91d1f702c3e7bb5eb7d0e49ce/arbitrator/prover/src/kzgbn254.rs#L141>
