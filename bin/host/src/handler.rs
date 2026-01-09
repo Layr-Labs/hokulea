@@ -1,13 +1,11 @@
-use alloy_primitives::{keccak256, Bytes};
+use alloy_primitives::keccak256;
 
 use crate::cfg::SingleChainHostWithEigenDA;
-use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS_CODE_TEAPOT};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
-    HokuleaPreimageError, BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
-    RESERVED_EIGENDA_API_BYTE_INDEX,
+    BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX
 };
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
@@ -74,7 +72,10 @@ pub async fn fetch_eigenda_hint(
         .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
     // Fetch preimage data and process response
-    let derivation_stage = fetch_data_from_proxy(providers, &altda_commitment_bytes).await?;
+    let derivation_stage = providers
+        .eigenda_preimage_provider
+        .fetch_data_from_proxy(&altda_commitment_bytes)
+        .await?;
 
     // Write validity and correct offchain code version to key-value store
     store_cert_validity(
@@ -116,79 +117,6 @@ pub async fn fetch_eigenda_hint(
     Ok(())
 }
 
-/// Currently Hokulea hosts relies on Eigenda-proxy for preimage retrieval.
-/// It relies on the [DerivationError] status code returned by the proxy to decide when to stop retrieving
-/// data and return early.  
-#[derive(Debug, Clone)]
-pub struct ProxyDerivationStage {
-    // if cert has been attested by DA network and offchain derivation version is correct
-    pub is_valid_cert: bool,
-    // if recency test is passed
-    pub pass_recency_check: bool,
-    // encoded_payload
-    pub encoded_payload: Vec<u8>,
-}
-
-/// Process response from eigenda network
-async fn fetch_data_from_proxy(
-    providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
-    altda_commitment_bytes: &Bytes,
-) -> Result<ProxyDerivationStage> {
-    // Fetch the encoded payload from the eigenda network
-    let response = providers
-        .eigenda_preimage_provider
-        .fetch_eigenda_encoded_payload(altda_commitment_bytes)
-        .await
-        .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
-
-    let mut is_valid_cert = true;
-    let mut pass_recency_check = true;
-    let mut encoded_payload = vec![];
-
-    // Handle response based on status code
-    if !response.status().is_success() {
-        // Handle non-success response
-        if response.status().as_u16() != HTTP_RESPONSE_STATUS_CODE_TEAPOT {
-            // The error is handled by host library in kona, currently this triggers an infinite retry loop.
-            // https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135
-            return Err(anyhow!(
-                "failed to fetch eigenda encoded payload, status {:?}",
-                response.error_for_status()
-            ));
-        }
-
-        // Handle teapot (418) status code with DerivationError
-        let status_code: DerivationError = response
-            .json()
-            .await
-            .map_err(|e| anyhow!("failed to deserialize 418 body: {e}"))?;
-
-        match status_code.into() {
-            HostHandlerError::HokuleaPreimageError(c) => match c {
-                HokuleaPreimageError::InvalidCert => is_valid_cert = false,
-            },
-            HostHandlerError::HokuleaRecencyCheckError => pass_recency_check = false,
-            HostHandlerError::HokuleaEncodedPayloadDecodingError(e)
-            | HostHandlerError::IllogicalStatusCodeError(e)
-            | HostHandlerError::UndefinedStatusCodeError(e) => {
-                return Err(anyhow!("failed to handle http response: {e}"))
-            }
-        }
-    } else {
-        // Handle success response
-        encoded_payload = response
-            .bytes()
-            .await
-            .map_err(|e| anyhow!("should be able to get encoded payload from http response {e}"))?
-            .into();
-    }
-
-    Ok(ProxyDerivationStage {
-        pass_recency_check,
-        is_valid_cert,
-        encoded_payload,
-    })
-}
 
 /// Store certificate validity in key-value store
 async fn store_cert_validity(
