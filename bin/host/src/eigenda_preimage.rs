@@ -67,7 +67,7 @@ impl OnlineEigenDAPreimageProvider {
         let commitment_hex = hex::encode(altda_commitment_bytes);
         let mut url = self
             .base
-            .join(&format!("{}/{}", GET_METHOD, commitment_hex))
+            .join(&format!("{GET_METHOD}/{commitment_hex}"))
             .map_err(|e| anyhow!("failed to construct URL: {e}"))?;
         url.set_query(Some(GET_QUERY_PARAMS_ENCODED_PAYLOAD));
 
