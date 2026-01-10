@@ -117,7 +117,8 @@ impl SingleChainHostWithEigenDA {
             self.eigenda_proxy_address
                 .clone()
                 .ok_or(SingleChainHostError::Other("EigenDA API URL must be set"))?,
-        );
+        )
+        .map_err(|_| SingleChainHostError::Other("Failed to parse EigenDA API URL"))?;
 
         Ok(SingleChainProvidersWithEigenDA {
             kona_providers,

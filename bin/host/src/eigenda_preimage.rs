@@ -1,8 +1,8 @@
-use alloy_primitives::Bytes;
-use reqwest;
-use lru::LruCache;
-use core::num::NonZeroUsize;
+use alloy_primitives::{hex, Bytes};
 use anyhow::{anyhow, Result};
+use core::num::NonZeroUsize;
+use lru::LruCache;
+use reqwest::{self, Url};
 
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
@@ -10,9 +10,7 @@ use hokulea_eigenda::{
     EigenDAPreimageProvider, EncodedPayload, HokuleaErrorKind, HokuleaPreimageError,
 };
 
-use crate::status_code::{
-    DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS_CODE_TEAPOT,
-};
+use crate::status_code::{DerivationError, HostHandlerError, HTTP_RESPONSE_STATUS_CODE_TEAPOT};
 
 /// Currently Hokulea hosts relies on Eigenda-proxy for preimage retrieval.
 /// It relies on the [DerivationError] status code returned by the proxy to decide when to stop retrieving
@@ -31,10 +29,10 @@ pub struct ProxyDerivationStage {
 #[derive(Debug, Clone)]
 pub struct OnlineEigenDAPreimageProvider {
     /// The base url.
-    base: String,
+    base: Url,
     /// The inner reqwest client. Used to talk to proxy
     inner: reqwest::Client,
-    /// LRU cache
+    /// LRU cache.
     lru: LruCache<Bytes, ProxyDerivationStage>,
 }
 
@@ -53,31 +51,31 @@ impl OnlineEigenDAPreimageProvider {
     /// The `genesis_time` and `slot_interval` arguments are _optional_ and the
     /// [OnlineEigenDAPreimageProvider] will attempt to load them dynamically at runtime if they are not
     /// provided.
-    pub fn new_http(base: String) -> Self {
+    pub fn new_http(base: String) -> Result<Self> {
+        let base = Url::parse(&base).map_err(|e| anyhow!("invalid base URL: {e}"))?;
         let inner = reqwest::Client::new();
         let lru = LruCache::new(NonZeroUsize::new(32).expect("N must be greater than 0"));
-        Self { base, inner, lru }
+        Ok(Self { base, inner, lru })
     }
 
-    pub async fn fetch_eigenda_encoded_payload(
-        &self,
-        cert: &Bytes,
-    ) -> Result<reqwest::Response, reqwest::Error> {
-        let url = format!(
-            "{}/{}/{}?{}",
-            self.base, GET_METHOD, cert, GET_QUERY_PARAMS_ENCODED_PAYLOAD
-        );
-        self.inner.get(url).send().await
-    }
-
-    /// Process response from eigenda network
+    /// Fetch data from proxy without caching (takes `&self` for handler usage).
     pub async fn fetch_data_from_proxy(
         &self,
         altda_commitment_bytes: &Bytes,
     ) -> Result<ProxyDerivationStage> {
+        // Build URL with proper joining and query parameters
+        let commitment_hex = hex::encode(altda_commitment_bytes);
+        let mut url = self
+            .base
+            .join(&format!("{}/{}", GET_METHOD, commitment_hex))
+            .map_err(|e| anyhow!("failed to construct URL: {e}"))?;
+        url.set_query(Some(GET_QUERY_PARAMS_ENCODED_PAYLOAD));
+
         // Fetch the encoded payload from the eigenda network
         let response = self
-            .fetch_eigenda_encoded_payload(altda_commitment_bytes)
+            .inner
+            .get(url)
+            .send()
             .await
             .map_err(|e| anyhow!("failed to fetch eigenda encoded payload: {e}"))?;
 
@@ -119,7 +117,9 @@ impl OnlineEigenDAPreimageProvider {
             encoded_payload = response
                 .bytes()
                 .await
-                .map_err(|e| anyhow!("should be able to get encoded payload from http response {e}"))?
+                .map_err(|e| {
+                    anyhow!("should be able to get encoded payload from http response {e}")
+                })?
                 .into();
         }
 
@@ -132,6 +132,7 @@ impl OnlineEigenDAPreimageProvider {
         Ok(derivation_stage)
     }
 
+    /// Cached fetch. `&mut self` provides exclusive access, no Mutex needed.
     async fn get_or_fetch_payload(
         &mut self,
         altda_commitment: &AltDACommitment,
@@ -144,15 +145,16 @@ impl OnlineEigenDAPreimageProvider {
         }
 
         // Not in cache, fetch from proxy
-        let derivation_stage = self.fetch_data_from_proxy(&altda_commitment_bytes)
+        let derivation_stage = self
+            .fetch_data_from_proxy(&altda_commitment_bytes)
             .await
             .map_err(|e| HokuleaErrorKind::Temporary(format!("fetch failed: {e}")))?;
 
-        self.lru.put(altda_commitment_bytes.clone(), derivation_stage.clone());
+        self.lru
+            .put(altda_commitment_bytes.clone(), derivation_stage.clone());
         Ok(derivation_stage)
     }
 }
-
 
 #[async_trait]
 impl EigenDAPreimageProvider for OnlineEigenDAPreimageProvider {
@@ -174,7 +176,7 @@ impl EigenDAPreimageProvider for OnlineEigenDAPreimageProvider {
     ) -> Result<EncodedPayload, Self::Error> {
         let derivation_stage = self.get_or_fetch_payload(altda_commitment).await?;
         Ok(EncodedPayload {
-            encoded_payload: derivation_stage.encoded_payload.into()
+            encoded_payload: derivation_stage.encoded_payload.into(),
         })
     }
 }

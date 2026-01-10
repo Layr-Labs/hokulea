@@ -5,7 +5,8 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::{
-    BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY, RESERVED_EIGENDA_API_BYTE_INDEX
+    BYTES_PER_FIELD_ELEMENT, RESERVED_EIGENDA_API_BYTE_FOR_VALIDITY,
+    RESERVED_EIGENDA_API_BYTE_INDEX,
 };
 use hokulea_proof::hint::ExtendedHintType;
 use kona_host::SharedKeyValueStore;
@@ -116,7 +117,6 @@ pub async fn fetch_eigenda_hint(
 
     Ok(())
 }
-
 
 /// Store certificate validity in key-value store
 async fn store_cert_validity(
