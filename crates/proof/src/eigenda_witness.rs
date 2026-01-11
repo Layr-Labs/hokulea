@@ -110,6 +110,23 @@ impl EigenDAWitness {
         };
         Ok(witness)
     }
+
+    /// Deconstruct [EigenDAWitness] back into its component parts: preimage, KZG proofs, and canoe proof.
+    /// This is the inverse operation of [Self::from_preimage].
+    pub fn into_preimage(self) -> (EigenDAPreimage, Vec<FixedBytes<64>>, Option<Vec<u8>>) {
+        let (encoded_payloads, kzg_proofs): (Vec<_>, Vec<_>) = self
+            .encoded_payloads
+            .into_iter()
+            .map(|(commitment, payload, kzg_proof)| ((commitment, payload), kzg_proof))
+            .unzip();
+
+        let preimage = EigenDAPreimage {
+            validities: self.validities,
+            encoded_payloads,
+        };
+
+        (preimage, kzg_proofs, self.canoe_proof_bytes)
+    }
 }
 
 /// [EigenDAWitnessWithTrustedData] contains [EigenDAWitness] with a list of
