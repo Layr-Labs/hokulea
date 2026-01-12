@@ -208,7 +208,7 @@ where
     let optional_canoe_proof = hokulea_witgen::from_boot_info_to_canoe_proof(
         &boot_info,
         &eigenda_preimage,
-        oracle.as_ref(),
+        oracle.clone(),
         canoe_provider.clone(),
         canoe_address_fetcher,
     )
