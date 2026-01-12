@@ -2,11 +2,9 @@ use alloy_consensus::Header;
 use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
-use core::fmt::Debug;
 use hokulea_proof::eigenda_witness::EigenDAPreimage;
-use kona_preimage::{CommsClient, PreimageKey};
-use kona_proof::{BootInfo, FlushableCache};
-use std::sync::Arc;
+use kona_preimage::{PreimageKey, PreimageOracleClient};
+use kona_proof::BootInfo;
 use tracing::info;
 
 /// A helper function to create canoe proof by the provided canoe provider.
@@ -17,14 +15,14 @@ use tracing::info;
 pub async fn from_boot_info_to_canoe_proof<A, P, O>(
     boot_info: &BootInfo,
     eigenda_primage: &EigenDAPreimage,
-    oracle: Arc<O>,
+    oracle: &O,
     canoe_provider: P,
     canoe_address_fetcher: A,
 ) -> anyhow::Result<Option<P::Receipt>>
 where
     A: CanoeVerifierAddressFetcher,
     P: CanoeProvider,
-    O: CommsClient + FlushableCache + Send + Sync + Debug,
+    O: PreimageOracleClient,
 {
     let header_rlp = oracle
         .get(PreimageKey::new_keccak256(*boot_info.l1_head))
