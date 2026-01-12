@@ -4457,7 +4457,6 @@ dependencies = [
  "kona-preimage",
  "kona-proof",
  "kona-std-fpvm",
- "lru 0.16.2",
  "reqwest",
  "serde",
  "thiserror 2.0.17",

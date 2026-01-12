@@ -1,7 +1,5 @@
 use alloy_primitives::{hex, Bytes};
 use anyhow::{anyhow, Result};
-use core::num::NonZeroUsize;
-use lru::LruCache;
 use reqwest::{self, Url};
 
 use async_trait::async_trait;
@@ -33,7 +31,7 @@ pub struct OnlineEigenDAPreimageProvider {
     /// The inner reqwest client. Used to talk to proxy
     inner: reqwest::Client,
     /// LRU cache with key being the serialized AltDA commitment
-    lru: LruCache<Bytes, ProxyDerivationStage>,
+    last_entry: Option<(AltDACommitment, ProxyDerivationStage)>,
 }
 
 // Query parameters configuration for proxy behavior:
@@ -53,12 +51,15 @@ impl OnlineEigenDAPreimageProvider {
     pub fn new_http(base: String) -> Result<Self> {
         let base = Url::parse(&base).map_err(|e| anyhow!("invalid base URL: {e}"))?;
         let inner = reqwest::Client::new();
-        // LRU cache holds the 8 most recent entries. The typical access pattern is:
+        // Cache holds the last fetched entry. The typical access pattern is:
         // 1. get_validity() populates the cache
         // 2. get_encoded_payload() retrieves the same entry immediately after
-        // The size of 8 allows for parallel processing, though Hokulea currently processes serially.
-        let lru = LruCache::new(NonZeroUsize::new(8).expect("N must be greater than 0"));
-        Ok(Self { base, inner, lru })
+        let last_entry = None;
+        Ok(Self {
+            base,
+            inner,
+            last_entry,
+        })
     }
 
     /// Fetch data from proxy without caching (takes `&self` for handler usage).
@@ -141,21 +142,22 @@ impl OnlineEigenDAPreimageProvider {
         &mut self,
         altda_commitment: &AltDACommitment,
     ) -> Result<ProxyDerivationStage, HokuleaErrorKind> {
-        let altda_commitment_bytes = altda_commitment.to_rlp_bytes().into();
-
-        // Check cache first
-        if let Some(cached) = self.lru.get(&altda_commitment_bytes) {
-            return Ok(cached.clone());
+        // Check if last_entry matches the requested commitment
+        if let Some((cached_commitment, cached_stage)) = &self.last_entry {
+            if cached_commitment == altda_commitment {
+                return Ok(cached_stage.clone());
+            }
         }
 
         // Not in cache, fetch from proxy
+        let altda_commitment_bytes = altda_commitment.to_rlp_bytes().into();
         let derivation_stage = self
             .fetch_data_from_proxy(&altda_commitment_bytes)
             .await
             .map_err(|e| HokuleaErrorKind::Temporary(format!("fetch failed: {e}")))?;
 
-        self.lru
-            .put(altda_commitment_bytes.clone(), derivation_stage.clone());
+        // Update cache with new entry
+        self.last_entry = Some((altda_commitment.clone(), derivation_stage.clone()));
         Ok(derivation_stage)
     }
 }
