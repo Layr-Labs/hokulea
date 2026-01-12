@@ -14,7 +14,7 @@ use tracing::info;
 /// If no canoe proof is needed, it returns Ok(None)
 pub async fn from_boot_info_to_canoe_proof<A, P, O>(
     boot_info: &BootInfo,
-    eigenda_primage: &EigenDAPreimage,
+    eigenda_preimage: &EigenDAPreimage,
     oracle: &O,
     canoe_provider: P,
     canoe_address_fetcher: A,
@@ -33,13 +33,13 @@ where
 
     let mut canoe_inputs = vec![];
 
-    if eigenda_primage.validities.is_empty() {
+    if eigenda_preimage.validities.is_empty() {
         info!(target: "canoe witness provider", "no DA certs to process, skipping canoe proof generation");
     } else {
-        info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", eigenda_primage.validities.len());
+        info!(target: "canoe witness provider", "producing 1 canoe proof for {} DA certs", eigenda_preimage.validities.len());
     }
 
-    for (altda_commitment, claimed_validity) in &eigenda_primage.validities {
+    for (altda_commitment, claimed_validity) in &eigenda_preimage.validities {
         let canoe_input = CanoeInput {
             altda_commitment: altda_commitment.clone(),
             claimed_validity: *claimed_validity,
