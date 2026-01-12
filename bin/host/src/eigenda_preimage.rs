@@ -32,11 +32,10 @@ pub struct OnlineEigenDAPreimageProvider {
     base: Url,
     /// The inner reqwest client. Used to talk to proxy
     inner: reqwest::Client,
-    /// LRU cache.
+    /// LRU cache with key being the serialized AltDA commitment
     lru: LruCache<Bytes, ProxyDerivationStage>,
 }
 
-const GET_METHOD: &str = "get";
 // Query parameters configuration for proxy behavior:
 // - commitment_mode=optimism_generic: Specifies the commitment mode (default even if not specified)
 // - return_encoded_payload=true: Instructs proxy to return encoded payload instead of decoded rollup payload
@@ -54,7 +53,11 @@ impl OnlineEigenDAPreimageProvider {
     pub fn new_http(base: String) -> Result<Self> {
         let base = Url::parse(&base).map_err(|e| anyhow!("invalid base URL: {e}"))?;
         let inner = reqwest::Client::new();
-        let lru = LruCache::new(NonZeroUsize::new(32).expect("N must be greater than 0"));
+        // LRU cache holds the 8 most recent entries. The typical access pattern is:
+        // 1. get_validity() populates the cache
+        // 2. get_encoded_payload() retrieves the same entry immediately after
+        // The size of 8 allows for parallel processing, though Hokulea currently processes serially.
+        let lru = LruCache::new(NonZeroUsize::new(8).expect("N must be greater than 0"));
         Ok(Self { base, inner, lru })
     }
 
@@ -67,7 +70,7 @@ impl OnlineEigenDAPreimageProvider {
         let commitment_hex = hex::encode(altda_commitment_bytes);
         let mut url = self
             .base
-            .join(&format!("{GET_METHOD}/{commitment_hex}"))
+            .join(&format!("get/{commitment_hex}"))
             .map_err(|e| anyhow!("failed to construct URL: {e}"))?;
         url.set_query(Some(GET_QUERY_PARAMS_ENCODED_PAYLOAD));
 
@@ -85,7 +88,8 @@ impl OnlineEigenDAPreimageProvider {
 
         // Handle response based on status code
         if !response.status().is_success() {
-            // Handle non-success response
+            // Handle non-success responses. 400 errors are not possible here since the altda commitment
+            // deserialized successfully to reach this point. All 500 errors trigger infinite retries.
             if response.status().as_u16() != HTTP_RESPONSE_STATUS_CODE_TEAPOT {
                 // The error is handled by host library in kona, currently this triggers an infinite retry loop.
                 // https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135
