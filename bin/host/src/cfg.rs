@@ -13,10 +13,10 @@ use kona_preimage::{
     BidirectionalChannel, Channel, HintReader, HintWriter, OracleReader, OracleServer,
 };
 use kona_std_fpvm::{FileChannel, FileDescriptor};
+use reqwest::Url;
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::task::{self, JoinHandle};
-use reqwest::Url;
 
 /// The host Eigenda binary CLI application arguments.
 #[derive(Default, Parser, Serialize, Clone, Debug)]
