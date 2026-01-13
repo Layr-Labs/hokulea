@@ -30,7 +30,9 @@ pub struct OnlineEigenDAPreimageProvider {
     base: Url,
     /// The inner reqwest client. Used to talk to proxy
     inner: reqwest::Client,
-    /// LRU cache with key being the serialized AltDA commitment
+    /// Cache holds the last fetched entry. The typical access pattern is:
+    /// 1. get_validity() populates the cache
+    /// 2. get_encoded_payload() retrieves the same entry immediately after
     last_entry: Option<(AltDACommitment, ProxyDerivationStage)>,
 }
 
@@ -48,18 +50,12 @@ impl OnlineEigenDAPreimageProvider {
     /// The `genesis_time` and `slot_interval` arguments are _optional_ and the
     /// [OnlineEigenDAPreimageProvider] will attempt to load them dynamically at runtime if they are not
     /// provided.
-    pub fn new_http(base: String) -> Result<Self> {
-        let base = Url::parse(&base).map_err(|e| anyhow!("invalid base URL: {e}"))?;
-        let inner = reqwest::Client::new();
-        // Cache holds the last fetched entry. The typical access pattern is:
-        // 1. get_validity() populates the cache
-        // 2. get_encoded_payload() retrieves the same entry immediately after
-        let last_entry = None;
-        Ok(Self {
+    pub fn new_http(base: Url) -> Self {
+        Self {
             base,
-            inner,
-            last_entry,
-        })
+            inner: reqwest::Client::new(),
+            last_entry: None,
+        }
     }
 
     /// Fetch data from proxy without caching (takes `&self` for handler usage).
