@@ -13,6 +13,7 @@ use kona_preimage::{
     BidirectionalChannel, Channel, HintReader, HintWriter, OracleReader, OracleServer,
 };
 use kona_std_fpvm::{FileChannel, FileDescriptor};
+use reqwest::Url;
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::task::{self, JoinHandle};
@@ -113,11 +114,15 @@ impl SingleChainHostWithEigenDA {
     ) -> Result<SingleChainProvidersWithEigenDA, SingleChainHostError> {
         let kona_providers = self.kona_cfg.create_providers().await?;
 
-        let eigenda_preimage_provider = OnlineEigenDAPreimageProvider::new_http(
-            self.eigenda_proxy_address
-                .clone()
-                .ok_or(SingleChainHostError::Other("EigenDA API URL must be set"))?,
-        );
+        let url_str = self
+            .eigenda_proxy_address
+            .as_ref()
+            .ok_or_else(|| SingleChainHostError::Other("EigenDA API URL must be set"))?;
+
+        let base_url = Url::parse(url_str)
+            .map_err(|_| SingleChainHostError::Other("Failed to parse EigenDA API URL"))?;
+
+        let eigenda_preimage_provider = OnlineEigenDAPreimageProvider::new_http(base_url);
 
         Ok(SingleChainProvidersWithEigenDA {
             kona_providers,
