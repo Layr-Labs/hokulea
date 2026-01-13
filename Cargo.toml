@@ -87,7 +87,6 @@ num = "0.4"
 reqwest = "0.12.19"
 spin = "0.10.0"
 tokio = "1.45.1"
-lru = "0.16.2"
 
 # General
 anyhow = { version = "1.0.98", default-features = false }
