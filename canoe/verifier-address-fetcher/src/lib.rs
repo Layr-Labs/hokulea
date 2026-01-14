@@ -10,19 +10,20 @@ use eigenda_cert::EigenDAVersionedCert;
 #[derive(Debug, thiserror::Error)]
 pub enum CanoeVerifierAddressFetcherError {
     /// Cannot fetch address for chainID
-    #[error("Unable to fetch contract address with chain id {0} for abi encode interface, available for router and at least V3 certificate")]
-    UnknownChainIDForABIEncodeInterface(u64),
+    #[error("Unable to fetch contract address with l1 chain id {0} for abi encode interface, available for router and at least V3 certificate")]
+    UnknownL1ChainIDForABIEncodeInterface(u64),
     /// Invalid Cert validity response
-    #[error("Unable to fetch contract address with chain id {0} for legacy interface for V2 certificate")]
-    UnknownChainIDForLegacyInterface(u64),
+    #[error("Unable to fetch contract address with l1 chain id {0} for legacy interface for V2 certificate")]
+    UnknownL1ChainIDForLegacyInterface(u64),
 }
 
 pub trait CanoeVerifierAddressFetcher: Clone + Send + 'static {
     /// fetch address for canoe verifier
     fn fetch_address(
         &self,
-        chain_id: u64,
+        l1_chain_id: u64,
         versioned_cert: &EigenDAVersionedCert,
+        l2_chain_id: Option<u64>,
     ) -> Result<Address, CanoeVerifierAddressFetcherError>;
 }
 
@@ -34,6 +35,7 @@ impl CanoeVerifierAddressFetcher for CanoeNoOpVerifierAddressFetcher {
         &self,
         _chain_id: u64,
         _versioned_cert: &EigenDAVersionedCert,
+        _l2_chain_id: Option<u64>,
     ) -> Result<Address, CanoeVerifierAddressFetcherError> {
         Ok(Address::default())
     }
@@ -51,6 +53,7 @@ impl CanoeVerifierAddressFetcher for CanoeVerifierAddressFetcherDeployedByEigenL
         &self,
         chain_id: u64,
         versioned_cert: &EigenDAVersionedCert,
+        _l2_chain_id: Option<u64>,
     ) -> Result<Address, CanoeVerifierAddressFetcherError> {
         cert_verifier_address(chain_id, versioned_cert)
     }
@@ -92,7 +95,7 @@ fn cert_verifier_address_abi_encode_interface(
         // the default, the address below would change
         3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),
         chain_id => {
-            Err(CanoeVerifierAddressFetcherError::UnknownChainIDForABIEncodeInterface(chain_id))
+            Err(CanoeVerifierAddressFetcherError::UnknownL1ChainIDForABIEncodeInterface(chain_id))
         }
     }
 }
@@ -102,6 +105,7 @@ impl CanoeVerifierAddressFetcher for Address {
         &self,
         _chain_id: u64,
         _versioned_cert: &EigenDAVersionedCert,
+         _l2_chain_id: Option<u64>,
     ) -> Result<Address, CanoeVerifierAddressFetcherError> {
         Ok(*self)
     }

@@ -47,7 +47,7 @@ where
             l1_head_block_number: l1_head_header.number,
             l1_chain_id,
             verifier_address: canoe_address_fetcher
-                .fetch_address(l1_chain_id, &altda_commitment.versioned_cert)?,
+                .fetch_address(l1_chain_id, &altda_commitment.versioned_cert, None)?,
         };
         canoe_inputs.push(canoe_input);
     }
