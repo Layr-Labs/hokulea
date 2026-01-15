@@ -22,12 +22,13 @@ alloy-primitives.workspace = true
 
 # General
 async-trait.workspace = true
+rkyv.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 
 # Canoe
-canoe-verifier = { workspace = true } 
-canoe-verifier-address-fetcher = { workspace = true } 
+canoe-verifier.workspace = true
+canoe-verifier-address-fetcher.workspace = true
 
 [dev-dependencies]
 hokulea-compute-proof.workspace = true

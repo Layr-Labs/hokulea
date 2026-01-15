@@ -7,11 +7,12 @@ edition = "2021"
 kona-derive.workspace = true
 eigenda-cert.workspace = true
 alloy-primitives = { workspace = true}
-tracing.workspace = true
 async-trait.workspace = true
 kona-protocol.workspace = true
-thiserror.workspace = true
+rkyv.workspace = true
 serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
@@ -23,6 +24,4 @@ alloy-rlp = { workspace = true }
 rust-kzg-bn254-primitives.workspace = true
 
 [features]
-serde = [
-  "kona-protocol/serde",
-]
+serde = ["kona-protocol/serde"]
