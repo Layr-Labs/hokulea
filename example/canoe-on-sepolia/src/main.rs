@@ -65,7 +65,7 @@ async fn main() -> anyhow::Result<()> {
         l1_head_block_hash,
         l1_chain_id: 11155111,
         verifier_address: canoe_address_fetcher
-            .fetch_address(11155111, &altda_commitment.versioned_cert, None)?,
+            .fetch_address(11155111, &altda_commitment.versioned_cert)?,
     };
     verify_canoe_proof(
         cert_validity.clone(),
@@ -134,6 +134,6 @@ pub async fn get_canoe_input(
         l1_head_block_number: block_number,
         l1_chain_id: 11155111,
         verifier_address: canoe_address_fetcher
-            .fetch_address(11155111, &altda_commitment.versioned_cert, None)?,
+            .fetch_address(11155111, &altda_commitment.versioned_cert)?,
     })
 }

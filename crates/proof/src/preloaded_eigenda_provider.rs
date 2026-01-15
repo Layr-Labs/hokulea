@@ -79,7 +79,6 @@ impl PreloadedEigenDAPreimageProvider {
                         .fetch_address(
                             witness_with_trusted_data.l1_chain_id,
                             &altda_commitment.versioned_cert,
-                            None,
                         )
                         .expect("should be able to get verifier address");
                     let cert_validity = CertValidity {
