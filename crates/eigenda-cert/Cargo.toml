@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-primitives = { workspace = true, features = ["rlp", "serde"] }
+alloy-primitives = { workspace = true, features = ["rkyv", "rlp", "serde"] }
 alloy-rlp = { workspace = true, features = ["derive"] }
+rkyv = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 canoe-bindings = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
-

@@ -9,7 +9,9 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 /// EigenDA CertV2
-#[derive(Debug, Clone, RlpEncodable, RlpDecodable, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq)] //
+#[derive(RlpEncodable, RlpDecodable, Serialize, Deserialize)] //
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)] //
 pub struct EigenDACertV2 {
     pub blob_inclusion_info: BlobInclusionInfo,
     pub batch_header_v2: BatchHeaderV2,

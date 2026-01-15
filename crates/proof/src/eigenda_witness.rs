@@ -65,7 +65,8 @@ pub struct EigenDAPreimage {
 /// pipeline calls for a preimage for a DA cert, the two DA certs must
 /// match, and otherwise there is failures. See PreloadedEigenDAPreimageProvider
 /// for more information
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)] //
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)] //
 pub struct EigenDAWitness {
     /// validity of a da cert
     pub validities: Vec<(AltDACommitment, bool)>,

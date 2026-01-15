@@ -85,6 +85,7 @@ cfg-if = "1.0.0"
 clap = "4.5.39"
 num = "0.4"
 reqwest = "0.12.19"
+rkyv = { version = "0.8", features = ["hashbrown-0_15", "std"] }
 spin = "0.10.0"
 tokio = "1.45.1"
 
