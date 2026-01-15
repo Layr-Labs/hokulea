@@ -388,6 +388,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
 [group('utils')]
 get-sp1cc-elf-and-vkey sp1_tag='v5.2.1':
   #!/usr/bin/env bash
+  set -euo pipefail
   pushd canoe/sp1-cc/client/
       cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag {{sp1_tag}}
   popd
