@@ -1,31 +1,45 @@
-//! create [CanoeVerifierAddressFetcher] trait which returns contract verifier address, which the
-//! CanoeVerifier and CanoeProvider relies on to verify and prove the smart contract logic against.
-//! EigenLabs deploys CertVerifier and CertVerifier router contracts on each chains. However, a
-//! rollup has the option to deployed their own CertVerifier or router, if the rollup has security
-//! constraint.
+//! Traits for fetching Canoe verifier contract addresses.
+//!
+//! - [CanoeVerifierAddressFetcher]: Base trait for implementations that don't need L2 chain ID
+//! - [L2SpecificCanoeVerifierAddressFetcher]: Extended trait for L2-specific addressing (compile-time checked)
 #![no_std]
 use alloy_primitives::{address, Address};
 use eigenda_cert::EigenDAVersionedCert;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CanoeVerifierAddressFetcherError {
-    /// Cannot fetch address for chainID
-    #[error("Unable to fetch contract address with chain id {0} for abi encode interface, available for router and at least V3 certificate")]
-    UnknownChainIDForABIEncodeInterface(u64),
-    /// Invalid Cert validity response
-    #[error("Unable to fetch contract address with chain id {0} for legacy interface for V2 certificate")]
-    UnknownChainIDForLegacyInterface(u64),
+    /// Unknown L1 chain ID - the implementation doesn't support this L1 chain
+    #[error("Unknown L1 chain ID: {0}. This L1 chain is not supported.")]
+    UnknownL1ChainId(u64),
+    /// L2 chain ID is required but not provided (used by HokuleaRegistry and other L2-specific implementations)
+    #[error("L2 chain ID is required for this verifier address fetcher but was not provided")]
+    MissingL2ChainId,
+    /// Unknown L2 chain ID for the given L1 (used by HokuleaRegistry)
+    #[error("Unknown L2 chain ID: {0} for L1 chain ID: {1}. This L2 is not registered. Rollup teams should submit a PR to add their router address.")]
+    UnknownL2ChainId(u64, u64),
 }
 
+/// Trait for fetching verifier addresses. Use when address depends only on L1 chain ID and cert version.
+/// For L2-specific addressing, use [L2SpecificCanoeVerifierAddressFetcher] instead.
 pub trait CanoeVerifierAddressFetcher: Clone + Send + 'static {
-    /// fetch address for canoe verifier
     fn fetch_address(
         &self,
-        chain_id: u64,
+        l1_chain_id: u64,
         versioned_cert: &EigenDAVersionedCert,
     ) -> Result<Address, CanoeVerifierAddressFetcherError>;
 }
 
+/// Extended trait for L2-specific addressing. The l2_chain_id parameter is required (compile-time checked).
+pub trait L2SpecificCanoeVerifierAddressFetcher: CanoeVerifierAddressFetcher {
+    fn fetch_address_for_l2(
+        &self,
+        l1_chain_id: u64,
+        versioned_cert: &EigenDAVersionedCert,
+        l2_chain_id: u64,
+    ) -> Result<Address, CanoeVerifierAddressFetcherError>;
+}
+
+/// No-op implementation that returns a zero address.
 #[derive(Clone)]
 pub struct CanoeNoOpVerifierAddressFetcher {}
 
@@ -39,14 +53,11 @@ impl CanoeVerifierAddressFetcher for CanoeNoOpVerifierAddressFetcher {
     }
 }
 
+/// Fetcher for EigenLabs-deployed router addresses on Mainnet, Sepolia, Holesky, and Kurtosis devnet.
 #[derive(Clone)]
 pub struct CanoeVerifierAddressFetcherDeployedByEigenLabs {}
 
 impl CanoeVerifierAddressFetcher for CanoeVerifierAddressFetcherDeployedByEigenLabs {
-    // From V3 certificate and forward, Eigenlabs uses the address router implementation, which automatically picks the right
-    // verification logics inside the smart contract based on reference block number(rbn) stored inside the Abi encoded cert.
-    // For users that does not want a router, you can still implements the routing logics offchain by inspecting the rbn within
-    // the EigenDAVersionedCert
     fn fetch_address(
         &self,
         chain_id: u64,
@@ -56,47 +67,30 @@ impl CanoeVerifierAddressFetcher for CanoeVerifierAddressFetcherDeployedByEigenL
     }
 }
 
-/// get cert verifier address based on chain id, and cert version from altda commitment
-/// V3 cert uses router address
 fn cert_verifier_address(
     chain_id: u64,
     versioned_cert: &EigenDAVersionedCert,
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
     match &versioned_cert {
-        // route both v2 v3 and v4 with the abi encode interface
         EigenDAVersionedCert::V2(_) => cert_verifier_address_abi_encode_interface(chain_id),
         EigenDAVersionedCert::V3(_) => cert_verifier_address_abi_encode_interface(chain_id),
         EigenDAVersionedCert::V4(_) => cert_verifier_address_abi_encode_interface(chain_id),
     }
 }
 
-/// for smart contract functions that only accepts bytes
-/// this pattern is adopted since V3 certificate and address router implementation
-/// <https://github.com/Layr-Labs/eigenda/blob/bf714cb07fc2dee8b8c8ad7fb6043f9a030f7550/contracts/src/integrations/cert/interfaces/IEigenDACertVerifierBase.sol#L11>
 fn cert_verifier_address_abi_encode_interface(
     chain_id: u64,
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
-    // this is kurtosis devnet
     match chain_id {
-        // mainnet
-        1 => Ok(address!("0x1be7258230250Bc6a4548F8D59d576a87D216C12")),
-        // Sepolia router cert verifier address
-        11155111 => Ok(address!("0x17ec4112c4BbD540E2c1fE0A49D264a280176F0D")),
-        // holesky router cert verifier address
-        17000 => Ok(address!("0xDD735AFFe77A5ED5b21ED47219f95ED841f8Ffbd")),
-        // kurtosis l1 chain id => mock contract address
-        // This is the cert verifier that canoe provider and verifier are run against.
-        // In hokulea repo, there is a mock contract under canoe directory, which can be
-        // deployed to generate the address and test functionality.
-        // if user uses a different private key, or nonce for deployment are different from
-        // the default, the address below would change
-        3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),
-        chain_id => {
-            Err(CanoeVerifierAddressFetcherError::UnknownChainIDForABIEncodeInterface(chain_id))
-        }
+        1 => Ok(address!("0x1be7258230250Bc6a4548F8D59d576a87D216C12")), // Mainnet
+        11155111 => Ok(address!("0x17ec4112c4BbD540E2c1fE0A49D264a280176F0D")), // Sepolia
+        17000 => Ok(address!("0xDD735AFFe77A5ED5b21ED47219f95ED841f8Ffbd")), // Holesky
+        3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")), // Kurtosis devnet
+        chain_id => Err(CanoeVerifierAddressFetcherError::UnknownL1ChainId(chain_id)),
     }
 }
 
+/// Static address implementation - always returns the same address regardless of parameters.
 impl CanoeVerifierAddressFetcher for Address {
     fn fetch_address(
         &self,

@@ -50,6 +50,7 @@ hokulea-proof = { path = "crates/proof", version = "0.1.0", default-features = f
 hokulea-compute-proof = { path = "crates/compute-proof", version = "0.1.0", default-features = false }
 hokulea-witgen = { path = "crates/witgen", version = "0.1.0", default-features = false }
 hokulea-zkvm-verification = { path = "crates/zkvm-verification", version = "0.1.0", default-features = false }
+hokulea-registry = { path = "crates/registry", version = "0.1.0", default-features = false }
 
 # EigenDA v2 struct
 eigenda-cert = { path = "crates/eigenda-cert" }

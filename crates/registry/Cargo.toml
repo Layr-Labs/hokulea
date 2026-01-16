@@ -1,0 +1,9 @@
+[package]
+name = "hokulea-registry"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+canoe-verifier-address-fetcher.workspace = true
+alloy-primitives.workspace = true
+eigenda-cert = { workspace = true }
