@@ -7,6 +7,8 @@ Registry of custom CertVerifier router addresses for rollups deploying their own
 - ✅ **Use this registry** if you deploy your own CertVerifier/router contracts
 - ❌ **Use `CanoeVerifierAddressFetcherDeployedByEigenLabs`** if you use EigenLabs-deployed routers
 
+Alternatively, if you deploy your own CertVerifier/router contracts and prefer to maintain your own implementation, you can implement the `CanoeVerifierAddressFetcher` trait directly without using this registry.
+
 Supported L1 chains: Mainnet (1), Sepolia (11155111)
 
 ## Contributing Your Router Address
