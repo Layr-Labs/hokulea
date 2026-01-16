@@ -45,6 +45,7 @@ impl HokuleaRegistry {
         _versioned_cert: &EigenDAVersionedCert,
         l2_chain_id: u64,
     ) -> Result<Address, CanoeVerifierAddressFetcherError> {
+        #[allow(clippy::match_single_binding)]
         match l2_chain_id {
             // Add L2 router addresses here. Example:
             // 10 => Ok(address!("0x...")),
@@ -60,6 +61,7 @@ impl HokuleaRegistry {
         _versioned_cert: &EigenDAVersionedCert,
         l2_chain_id: u64,
     ) -> Result<Address, CanoeVerifierAddressFetcherError> {
+        #[allow(clippy::match_single_binding)]
         match l2_chain_id {
             // Add L2 router addresses here. Example:
             // 11155420 => Ok(address!("0x...")),  // OP Sepolia

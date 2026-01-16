@@ -82,10 +82,10 @@ fn cert_verifier_address_abi_encode_interface(
     chain_id: u64,
 ) -> Result<Address, CanoeVerifierAddressFetcherError> {
     match chain_id {
-        1 => Ok(address!("0x1be7258230250Bc6a4548F8D59d576a87D216C12")),        // Mainnet
+        1 => Ok(address!("0x1be7258230250Bc6a4548F8D59d576a87D216C12")), // Mainnet
         11155111 => Ok(address!("0x17ec4112c4BbD540E2c1fE0A49D264a280176F0D")), // Sepolia
-        17000 => Ok(address!("0xDD735AFFe77A5ED5b21ED47219f95ED841f8Ffbd")),    // Holesky
-        3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")),  // Kurtosis devnet
+        17000 => Ok(address!("0xDD735AFFe77A5ED5b21ED47219f95ED841f8Ffbd")), // Holesky
+        3151908 => Ok(address!("0xb4B46bdAA835F8E4b4d8e208B6559cD267851051")), // Kurtosis devnet
         chain_id => Err(CanoeVerifierAddressFetcherError::UnknownL1ChainId(chain_id)),
     }
 }
