@@ -97,11 +97,10 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
     }
 }
 
-async fn get_sp1_cc_proof(
-    canoe_inputs: Vec<CanoeInput>,
+pub async fn canoe_proof_stdin(
+    canoe_inputs: &[CanoeInput],
     eth_rpc_client: RpcClient,
-    mock_mode: bool,
-) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
+) -> Result<SP1Stdin> {
     // ensure chain id and l1 block number across all DAcerts are identical
     let l1_chain_id = canoe_inputs[0].l1_chain_id;
 
@@ -112,13 +111,6 @@ async fn get_sp1_cc_proof(
         assert!(canoe_input.l1_head_block_number == l1_head_block_number);
         assert!(canoe_input.l1_head_block_hash == l1_head_block_hash);
     }
-    let start = Instant::now();
-    info!(
-        "begin to generate a sp1-cc proof for {} number of altda commitment at l1 block number {} with chainID {}",
-        canoe_inputs.len(),
-        l1_head_block_number,
-        l1_chain_id,
-    );
 
     // Which block VerifyDACert eth-calls are executed against.
     let block_number = BlockNumberOrTag::Number(l1_head_block_number);
@@ -165,11 +157,7 @@ async fn get_sp1_cc_proof(
         };
     }
 
-    let evm_state_sketch = sketch
-        .finalize()
-        .await
-        .map_err(|e| anyhow::anyhow!(e.to_string()))
-        .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+    let evm_state_sketch = sketch.finalize().await?;
 
     // Feed the sketch into the client.
     let input_bytes = bincode::serialize(&evm_state_sketch)
@@ -177,7 +165,13 @@ async fn get_sp1_cc_proof(
     let mut stdin = SP1Stdin::new();
     stdin.write(&input_bytes);
     stdin.write(&canoe_inputs);
+    Ok(stdin)
+}
 
+pub async fn generate_canoe_proof(
+    stdin: SP1Stdin,
+    mock_mode: bool,
+) -> Result<SP1ProofWithPublicValues> {
     // Create a `NetworkProver`.
     let sp1_cc_proof_strategy = match env::var("SP1_CC_PROOF_STRATEGY")
         .ok()
@@ -276,6 +270,25 @@ async fn get_sp1_cc_proof(
 
         proof
     };
+
+    Ok(proof)
+}
+
+async fn get_sp1_cc_proof(
+    canoe_inputs: Vec<CanoeInput>,
+    eth_rpc_client: RpcClient,
+    mock_mode: bool,
+) -> Result<sp1_sdk::SP1ProofWithPublicValues> {
+    let start = Instant::now();
+    info!(
+        "begin to generate a sp1-cc proof for {} number of altda commitment at l1 block number {} with chainID {}",
+        canoe_inputs.len(),
+        canoe_inputs[0].l1_head_block_number,
+        canoe_inputs[0].l1_chain_id,
+    );
+
+    let stdin = canoe_proof_stdin(&canoe_inputs, eth_rpc_client).await?;
+    let proof = generate_canoe_proof(stdin, mock_mode).await?;
 
     debug!(
         "sp1cc proof {:?}",
