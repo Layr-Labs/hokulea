@@ -181,7 +181,7 @@ lint-native: fmt-native-check lint-docs
 # Lint the Rust documentation
 [group('style')]
 lint-docs:
-  RUSTDOCFLAGS="-D warnings" cargo doc --all --no-deps --document-private-items
+  RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 
 # Runs `cargo hack check` against the workspace
 alias h := hack
