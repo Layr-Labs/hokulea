@@ -181,7 +181,7 @@ lint-native: fmt-native-check lint-docs
 # Lint the Rust documentation
 [group('style')]
 lint-docs:
-  RUSTDOCFLAGS="-D warnings" cargo doc --all --no-deps --document-private-items
+  RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 
 # Runs `cargo hack check` against the workspace
 alias h := hack
@@ -343,6 +343,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --eigenda-proxy-address $EIGENDA_PROXY_RPC \
       --native \
       --data-dir ./data \
+      --enable-experimental-witness-endpoint \
       $CHAIN_ID_OR_L1_CONFIG_PATH \
       $CHAIN_ID_OR_ROLLUP_CONFIG_ARG \
       {{verbosity}}
@@ -377,6 +378,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
       --l2-chain-id $L2_CHAIN_ID \
       --server \
       --data-dir ./data \
+      --enable-experimental-witness-endpoint \
       --l1-config-path $L1_CONFIG_PATH \
       {{verbosity}}
   else
