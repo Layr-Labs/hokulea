@@ -12,6 +12,7 @@ use kona_host::{OfflineHostBackend, OnlineHostBackend, OnlineHostBackendCfg};
 use kona_preimage::{
     BidirectionalChannel, Channel, HintReader, HintWriter, OracleReader, OracleServer,
 };
+use kona_proof::HintType;
 use kona_std_fpvm::{FileChannel, FileDescriptor};
 use reqwest::Url;
 use serde::Serialize;
@@ -91,7 +92,8 @@ impl SingleChainHostWithEigenDA {
                 kv_store.clone(),
                 providers,
                 SingleChainHintHandlerWithEigenDA,
-            );
+            )
+            .with_proactive_hint(ExtendedHintType::Original(HintType::L2PayloadWitness));
 
             task::spawn(async {
                 PreimageServer::new(
