@@ -132,10 +132,10 @@ canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
 canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
 
 # RSP and SP1-CC - update to tags once released
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", rev = "40bc9c934703af96a99888c78af401c485b233ad" }
+rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.3" }
 sp1-build = "5.2.1"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "7f7a1b4db2476358d8549dfb2eb1760c7abb364e" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "7f7a1b4db2476358d8549dfb2eb1760c7abb364e" }
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
 sp1-core-executor = "5.2.1"
 sp1-lib = "5.2.1"
 sp1-prover = "5.2.1"
