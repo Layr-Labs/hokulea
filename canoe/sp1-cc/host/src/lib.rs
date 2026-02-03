@@ -10,9 +10,10 @@ use rsp_primitives::genesis::genesis_from_json;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_sdk::{
-    network::{FulfillmentStrategy, NetworkMode},
-    Prover, ProverClient, SP1Proof, SP1ProofMode, SP1ProofWithPublicValues, SP1Stdin,
-    SP1_CIRCUIT_VERSION,
+    blocking::{MockProver, Prover as BlockingProver},
+    network::FulfillmentStrategy,
+    Elf, ProveRequest, Prover as AsyncProver, ProverClient, ProvingKey, SP1ProofMode,
+    SP1ProofWithPublicValues, SP1Stdin, SP1_CIRCUIT_VERSION,
 };
 use tracing::{debug, info, warn};
 
@@ -22,13 +23,19 @@ use std::{
 };
 
 /// The ELF we want to execute inside the zkVM.
-pub const ELF: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
+pub const ELF_BYTES: &[u8] = include_bytes!("../../elf/canoe-sp1-cc-client");
+
+/// Get the ELF as a static Elf type for SP1 v6
+pub fn get_elf() -> Elf {
+    Elf::Static(ELF_BYTES)
+}
 
 const DEFAULT_NETWORK_PRIVATE_KEY: &str =
     "0x0000000000000000000000000000000000000000000000000000000000000001";
 
 pub const KURTOSIS_DEVNET_GENESIS: &str = include_str!("./kurtosis_devnet_genesis.json");
 pub const HOLESKY_GENESIS: &str = include_str!("./holesky_genesis.json");
+
 /// A canoe provider implementation with Sp1 contract call
 /// CanoeSp1CCProvider produces the receipt of type SP1ProofWithPublicValues,
 /// SP1ProofWithPublicValues contains a Stark proof which can be verified in
@@ -64,6 +71,10 @@ impl CanoeProvider for CanoeSp1CCProvider {
 /// by the implementation CanoeSp1CCProvider.
 /// CanoeSp1CCReducedProofProvider is needs when the proof verification takes place within
 /// zkVM. If you don't require verification within zkVM, please consider using [CanoeSp1CCProvider].
+///
+/// NOTE: In SP1 v6, the inner proof type has changed from `SP1ReduceProof<InnerSC>` to
+/// `SP1RecursionProof<SP1GlobalContext, SP1PcsProofInner>`. This provider now returns
+/// the full SP1ProofWithPublicValues - callers should extract the inner proof as needed.
 #[derive(Debug, Clone)]
 pub struct CanoeSp1CCReducedProofProvider {
     /// rpc to l1 geth node
@@ -74,7 +85,8 @@ pub struct CanoeSp1CCReducedProofProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCReducedProofProvider {
-    type Receipt = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
+    // In SP1 v6, return the full proof - callers can extract the compressed inner proof if needed
+    type Receipt = sp1_sdk::SP1ProofWithPublicValues;
 
     async fn create_certs_validity_proof(
         &self,
@@ -85,15 +97,11 @@ impl CanoeProvider for CanoeSp1CCReducedProofProvider {
             return None;
         }
 
-        match get_sp1_cc_proof(canoe_inputs, self.eth_rpc_client.clone(), self.mock_mode).await {
-            Ok(proof) => {
-                let SP1Proof::Compressed(proof) = proof.proof else {
-                    panic!("cannot get Sp1ReducedProof")
-                };
-                Some(Ok(*proof))
-            }
-            Err(e) => Some(Err(e)),
-        }
+        // Return the full proof - in SP1 v6, the inner type extraction would need to be done
+        // by the caller using SP1Proof::Compressed variant pattern matching
+        get_sp1_cc_proof(canoe_inputs, self.eth_rpc_client.clone(), self.mock_mode)
+            .await
+            .into()
     }
 }
 
@@ -172,7 +180,7 @@ pub async fn generate_canoe_proof(
     stdin: SP1Stdin,
     mock_mode: bool,
 ) -> Result<SP1ProofWithPublicValues> {
-    // Create a `NetworkProver`.
+    // Get proof strategy from environment
     let sp1_cc_proof_strategy = match env::var("SP1_CC_PROOF_STRATEGY")
         .ok()
         .filter(|s| !s.is_empty())
@@ -187,46 +195,50 @@ pub async fn generate_canoe_proof(
         }
     };
 
-    let network_mode = match sp1_cc_proof_strategy {
-        FulfillmentStrategy::UnspecifiedFulfillmentStrategy => {
-            anyhow::bail!("The sp1-cc proof fulfillment strategy must be specified")
-        }
-        FulfillmentStrategy::Hosted | FulfillmentStrategy::Reserved => NetworkMode::Reserved,
-        FulfillmentStrategy::Auction => NetworkMode::Mainnet,
-    };
+    if sp1_cc_proof_strategy == FulfillmentStrategy::UnspecifiedFulfillmentStrategy {
+        anyhow::bail!("The sp1-cc proof fulfillment strategy must be specified");
+    }
 
     let network_private_key = env::var("NETWORK_PRIVATE_KEY").unwrap_or_else(|_| {
         warn!("NETWORK_PRIVATE_KEY is not set, using default network private key");
         DEFAULT_NETWORK_PRIVATE_KEY.to_string()
     });
-    let client = ProverClient::builder()
-        .network_for(network_mode)
-        .private_key(&network_private_key)
-        .build();
-    let (pk, _vk) = client.setup(ELF);
+
+    let elf = get_elf();
 
     let proof = if mock_mode {
+        // For mock mode, use blocking MockProver
+        let prover = MockProver::new();
+        let pk = prover.setup(elf.clone()).expect("failed to setup proving key");
+
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
-        let (public_values, report) = client
-            .execute(ELF, &stdin)
+        let (public_values, report) = prover
+            .execute(elf, stdin.clone())
             .run()
             .expect("sp1-cc should have executed the ELF");
         info!(
             "executed program in mock mode with {} cycles and {} prover gas",
             report.total_instruction_count(),
-            report
-                .gas
-                .expect("gas calculation is enabled by default in the executor")
+            report.gas().expect("gas calculation is enabled by default in the executor")
         );
 
         // Create a mock aggregation proof with the public values.
         SP1ProofWithPublicValues::create_mock_proof(
-            &pk,
+            pk.verifying_key(),
             public_values,
             SP1ProofMode::Compressed,
             SP1_CIRCUIT_VERSION,
         )
     } else {
+        // For network proving, use async NetworkProver
+        let prover = ProverClient::builder()
+            .network()
+            .private_key(&network_private_key)
+            .build()
+            .await;
+
+        let pk = prover.setup(elf).await.expect("failed to setup proving key");
+
         // Generate the proof for the given program and input.
         let cycle_limit: u64 = match env::var("SP1_CC_CYCLE_LIMIT") {
             Ok(raw) if !raw.is_empty() => raw.parse()?,
@@ -243,8 +255,8 @@ pub async fn generate_canoe_proof(
             _ => 4 * 60 * 60,
         };
 
-        let mut proof_builder = client
-            .prove(&pk, &stdin)
+        let mut proof_builder = prover
+            .prove(&pk, stdin)
             .compressed()
             .strategy(sp1_cc_proof_strategy)
             .timeout(Duration::from_secs(timeout_seconds));
@@ -263,7 +275,7 @@ pub async fn generate_canoe_proof(
         }
 
         let proof = proof_builder
-            .run()
+            .await
             .expect("sp1-cc should have produced a compressed proof");
 
         info!("generated sp1-cc proof in non-mock mode");

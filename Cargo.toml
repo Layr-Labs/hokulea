@@ -4,11 +4,11 @@ members = [
     "bin/*",
     "canoe/bindings",
     "canoe/provider",
-    # TODO: canoe sp1-cc modules excluded pending sp1-contract-call v6 migration
-    # "canoe/sp1-cc/client",
-    # "canoe/sp1-cc/host",
-    # "canoe/sp1-cc/verifier",
-    # "canoe/sp1-cc/vkey-bin",
+    # Re-enabled: canoe sp1-cc modules now compatible with SP1 v6
+    "canoe/sp1-cc/client",
+    "canoe/sp1-cc/host",
+    "canoe/sp1-cc/verifier",
+    "canoe/sp1-cc/vkey-bin",
     # TODO: canoe steel modules excluded - risc0 toolchain MSRV incompatible with newer alloy/revm
     # "canoe/steel/apps",
     # "canoe/steel/methods",
@@ -128,22 +128,20 @@ canoe-verifier-address-fetcher = { path = "./canoe/verifier-address-fetcher", de
 # risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }
 # risc0-zkvm = { version = "3.0.3" }
 
-# Sp1-contract-call
-# TODO: canoe sp1-cc modules commented out pending sp1-contract-call v6 migration
-# canoe-sp1-cc-client = { path = "./canoe/sp1-cc/client", default-features = false }
-# canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
-# canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
+# Sp1-contract-call - re-enabled for SP1 v6
+canoe-sp1-cc-client = { path = "./canoe/sp1-cc/client", default-features = false }
+canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
+canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
 
-# RSP and SP1-CC - update to tags once released
-rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.3" }
+# RSP and SP1-CC - SP1 v6 migration branches
+rsp-primitives = { git = "https://github.com/fakedev9999/rsp", branch = "fakedev9999/sofia-v2" }
 sp1-build = "6.0.0-beta.1"
-# TODO: sp1-contract-call dependencies commented out pending v6 migration
-# sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
-# sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
+sp1-cc-client-executor = { git = "https://github.com/fakedev9999/sp1-contract-call", branch = "fakedev9999/charlotte" }
+sp1-cc-host-executor = { git = "https://github.com/fakedev9999/sp1-contract-call", branch = "fakedev9999/charlotte" }
 sp1-core-executor = "6.0.0-beta.1"
 sp1-lib = "6.0.0-beta.1"
 sp1-prover = "6.0.0-beta.1"
-sp1-sdk = "6.0.0-beta.1"
+sp1-sdk = { version = "6.0.0-beta.1", features = ["blocking", "network"] }
 sp1-zkvm = "6.0.0-beta.1"
 
 # ZKVM deps

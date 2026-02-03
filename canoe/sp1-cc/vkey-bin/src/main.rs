@@ -4,7 +4,10 @@
 //! ```
 use alloy_primitives::B256;
 use clap::Parser;
-use sp1_sdk::{HashableKey, ProverClient};
+use sp1_sdk::{
+    blocking::{Prover, ProverClient},
+    Elf, HashableKey, ProvingKey,
+};
 
 use std::{fs, path::PathBuf};
 
@@ -22,12 +25,14 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
     let canoe_client_elf: Vec<u8> = fs::read(&cli.elf).expect("Failed to read ELF file");
+    let elf = Elf::Dynamic(canoe_client_elf.into());
     let client = ProverClient::from_env();
 
     // from succinct lab, the vkey stays the same for all major release version
     // regardless minor changes. For example, 5.2.1 and 5.0.8 produce identical vkey
     // for the same ELF.
-    let (_pk, canoe_vk) = client.setup(&canoe_client_elf);
+    let pk = client.setup(elf).expect("Failed to setup proving key");
+    let canoe_vk = pk.verifying_key();
 
     if cli.hex {
         println!("{}", B256::from(canoe_vk.hash_bytes()));
