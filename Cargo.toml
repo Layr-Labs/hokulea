@@ -4,13 +4,15 @@ members = [
     "bin/*",
     "canoe/bindings",
     "canoe/provider",
-    "canoe/sp1-cc/client",
-    "canoe/sp1-cc/host",
-    "canoe/sp1-cc/verifier",
-    "canoe/sp1-cc/vkey-bin",
-    "canoe/steel/apps",
-    "canoe/steel/methods",
-    "canoe/steel/verifier",
+    # TODO: canoe sp1-cc modules excluded pending sp1-contract-call v6 migration
+    # "canoe/sp1-cc/client",
+    # "canoe/sp1-cc/host",
+    # "canoe/sp1-cc/verifier",
+    # "canoe/sp1-cc/vkey-bin",
+    # TODO: canoe steel modules excluded - risc0 toolchain MSRV incompatible with newer alloy/revm
+    # "canoe/steel/apps",
+    # "canoe/steel/methods",
+    # "canoe/steel/verifier",
     "canoe/verifier-address-fetcher",
     "canoe/verifier",
     "crates/*",
@@ -116,31 +118,33 @@ canoe-provider = { path = "./canoe/provider", default-features = false }
 canoe-verifier = { path = "./canoe/verifier", default-features = false }
 canoe-verifier-address-fetcher = { path = "./canoe/verifier-address-fetcher", default-features = false }
 
-# Steel
-canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false }
-canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false }
-canoe-steel-verifier = { path = "./canoe/steel/verifier", default-features = false }
+# Steel - TODO: excluded due to risc0 toolchain MSRV incompatibility with newer alloy/revm
+# canoe-steel-apps = { path = "./canoe/steel/apps", default-features = false }
+# canoe-steel-methods = { path = "./canoe/steel/methods", default-features = false }
+# canoe-steel-verifier = { path = "./canoe/steel/verifier", default-features = false }
 
-risc0-build = { version = "3.0", features = ["docker"] }
-risc0-build-ethereum = { version = "3.0" }
-risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }
-risc0-zkvm = { version = "3.0.3" }
+# risc0-build = { version = "3.0", features = ["docker"] }
+# risc0-build-ethereum = { version = "3.0" }
+# risc0-steel = { git = "https://github.com/boundless-xyz/steel.git", tag = "v2.4.0" }
+# risc0-zkvm = { version = "3.0.3" }
 
 # Sp1-contract-call
-canoe-sp1-cc-client = { path = "./canoe/sp1-cc/client", default-features = false }
-canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
-canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
+# TODO: canoe sp1-cc modules commented out pending sp1-contract-call v6 migration
+# canoe-sp1-cc-client = { path = "./canoe/sp1-cc/client", default-features = false }
+# canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
+# canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
 
 # RSP and SP1-CC - update to tags once released
 rsp-primitives = { git = "https://github.com/succinctlabs/rsp", tag = "reth-1.9.3" }
-sp1-build = "5.2.1"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
-sp1-core-executor = "5.2.1"
-sp1-lib = "5.2.1"
-sp1-prover = "5.2.1"
-sp1-sdk = "5.2.1"
-sp1-zkvm = "5.2.1"
+sp1-build = "6.0.0-beta.1"
+# TODO: sp1-contract-call dependencies commented out pending v6 migration
+# sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
+# sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-1.9.3" }
+sp1-core-executor = "6.0.0-beta.1"
+sp1-lib = "6.0.0-beta.1"
+sp1-prover = "6.0.0-beta.1"
+sp1-sdk = "6.0.0-beta.1"
+sp1-zkvm = "6.0.0-beta.1"
 
 # ZKVM deps
 bincode = "1.3.3"

@@ -33,15 +33,19 @@ op-revm.workspace = true
 revm.workspace = true
 
 canoe-provider.workspace = true
-canoe-sp1-cc-host = { workspace = true, optional = true }
-canoe-steel-apps = { workspace = true, optional = true }
-canoe-steel-verifier = { workspace = true, optional = true }
+# TODO: canoe-sp1-cc-host commented out pending sp1-contract-call v6 migration
+# canoe-sp1-cc-host = { workspace = true, optional = true }
+# TODO: canoe steel modules commented out - risc0 toolchain MSRV issue
+# canoe-steel-apps = { workspace = true, optional = true }
+# canoe-steel-verifier = { workspace = true, optional = true }
 canoe-verifier-address-fetcher.workspace = true
 canoe-verifier.workspace = true
 
 sp1-sdk = {workspace = true}
 
 [features]
-sp1-cc = ["canoe-sp1-cc-host"]
-steel = ["canoe-steel-apps", "canoe-steel-verifier"]
+# TODO: sp1-cc feature disabled pending sp1-contract-call v6 migration
+# sp1-cc = ["canoe-sp1-cc-host"]
+# TODO: steel feature disabled - risc0 toolchain MSRV issue
+# steel = ["canoe-steel-apps", "canoe-steel-verifier"]
 
