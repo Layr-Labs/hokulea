@@ -7,3 +7,4 @@ edition = "2021"
 alloy-primitives.workspace = true
 clap = { workspace = true, features = ["derive"] }
 sp1-sdk.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
