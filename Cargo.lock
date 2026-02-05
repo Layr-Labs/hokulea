@@ -2527,10 +2527,8 @@ dependencies = [
  "rsp-primitives",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",
- "sp1-core-executor",
  "sp1-hypercube",
  "sp1-primitives",
- "sp1-prover",
  "sp1-sdk",
  "tracing",
 ]
