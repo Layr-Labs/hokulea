@@ -133,16 +133,16 @@ canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = f
 
 # RSP and SP1-CC - update to tags once released
 rsp-primitives = { git = "https://github.com/succinctlabs/rsp", branch = "fakedev9999/sp1-v6-beta-bump" }
-sp1-build = "6.0.0-beta.1"
+sp1-build = "6.0.0-rc.1"
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", branch = "fakedev9999/bump-sp1-v6-beta1" }
 sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", branch = "fakedev9999/bump-sp1-v6-beta1" }
-sp1-core-executor = "6.0.0-beta.1"
-sp1-hypercube = "6.0.0-beta.1"
-sp1-lib = "6.0.0-beta.1"
-sp1-primitives = "6.0.0-beta.1"
-sp1-prover = "6.0.0-beta.1"
-sp1-sdk = { version = "6.0.0-beta.1", features = ["network"] }
-sp1-zkvm = "6.0.0-beta.1"
+sp1-core-executor = "6.0.0-rc.1"
+sp1-hypercube = "6.0.0-rc.1"
+sp1-lib = "6.0.0-rc.1"
+sp1-primitives = "6.0.0-rc.1"
+sp1-prover = "6.0.0-rc.1"
+sp1-sdk = { version = "6.0.0-rc.1", features = ["network"] }
+sp1-zkvm = "6.0.0-rc.1"
 
 # ZKVM deps
 bincode = "1.3.3"

@@ -21,7 +21,7 @@ jobs:
       - name: Install SP1 toolchain
         run: |
           curl -L https://sp1.succinct.xyz | bash
-          ~/.sp1/bin/sp1up -v v6.0.0-beta.1
+          ~/.sp1/bin/sp1up -v v6.0.0-rc.1
           ~/.sp1/bin/cargo-prove prove --version
           source ~/.bashrc
       - name: Install protoc
@@ -34,7 +34,7 @@ jobs:
         run: |
           # Build the binaries
           cd canoe/sp1-cc/client
-          ~/.sp1/bin/cargo-prove prove build --elf-name canoe-sp1-cc-client --docker --tag v6.0.0-beta.1 --output-directory ../elf
+          ~/.sp1/bin/cargo-prove prove build --elf-name canoe-sp1-cc-client --docker --tag v6.0.0-rc.1 --output-directory ../elf
           cd ../
 
           # Check for any changes in the elf directory
