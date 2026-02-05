@@ -58,7 +58,11 @@ impl EncodedPayload {
             .into());
         }
 
-        if self.encoded_payload.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+        if !self
+            .encoded_payload
+            .len()
+            .is_multiple_of(BYTES_PER_FIELD_ELEMENT)
+        {
             return Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(
                 self.encoded_payload.len() as u64,
             )
@@ -170,7 +174,7 @@ impl EncodedPayload {
     fn check_and_remove_zero_padding_for_field_elements(
         encoded_body: &[u8],
     ) -> Result<Bytes, HokuleaStatelessError> {
-        if encoded_body.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+        if !encoded_body.len().is_multiple_of(BYTES_PER_FIELD_ELEMENT) {
             return Err(EncodedPayloadDecodingError::InvalidLengthEncodedPayload(
                 encoded_body.len() as u64,
             )
@@ -250,7 +254,7 @@ mod tests {
         let rollup_data = vec![1, 2, 3, 4];
         let encoded_payload = encode(&rollup_data, PAYLOAD_ENCODING_VERSION_0);
         let data_len = encoded_payload.encoded_payload.len();
-        assert!(data_len % BYTES_PER_FIELD_ELEMENT == 0 && data_len != 0);
+        assert!(data_len.is_multiple_of(BYTES_PER_FIELD_ELEMENT) && data_len != 0);
 
         let result = encoded_payload.decode();
         assert!(result.is_ok());

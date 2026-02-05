@@ -148,7 +148,7 @@ async fn store_encoded_payload(
     // encoded_payload has identical length as eigenda blob
     let blob_length_fe = altda_commitment.get_num_field_element();
     // Verify encoded_payload data is properly formatted
-    assert!(encoded_payload.len() % 32 == 0 && !encoded_payload.is_empty());
+    assert!(encoded_payload.len().is_multiple_of(32) && !encoded_payload.is_empty());
 
     // Preliminary defense check against malicious eigenda proxy host
     // verify there is an empty byte for every 31 bytes. This is a harder constraint than field element range check.
