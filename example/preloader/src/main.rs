@@ -281,9 +281,11 @@ where
 {
     info!("start the code supposed to run inside zkVM");
 
+    let boot_info = BootInfo::load(oracle.as_ref()).await?;
     let beacon = OracleBlobProvider::new(oracle.clone());
     let preloaded_preimage_provider = eigenda_witness_to_preloaded_provider(
         oracle.clone(),
+        &boot_info,
         canoe_verifier,
         canoe_address_fetcher,
         witness,

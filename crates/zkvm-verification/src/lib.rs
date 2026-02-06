@@ -19,13 +19,17 @@ use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
 use alloc::sync::Arc;
 
 /// The function adds trusted information to [EigenDAWitness] for verifying claimed validity of DA certificate.
-/// All the information comes from the loaded oracle: those includes BootInfo and Header for l1_head from the
-/// bootInfo. Then it converts [EigenDAWitness] into [PreloadedEigenDAPreimageProvider] which contains all the
-/// EigenDA preimage data in order to run the eigenda blob derivation. All the date from
+/// All the information comes from the provided BootInfo and Header for l1_head from the oracle.
+/// Then it converts [EigenDAWitness] into [PreloadedEigenDAPreimageProvider] which contains all the
+/// EigenDA preimage data in order to run the eigenda blob derivation. All the data from
 /// [PreloadedEigenDAPreimageProvider] are considered safe to use.
+///
+/// The caller is responsible for loading the [BootInfo] using the appropriate method for their chain
+/// (e.g., `kona_proof::BootInfo::load()` or `celo_proof::CeloBootInfo::load()`).
 #[allow(clippy::type_complexity)]
 pub async fn eigenda_witness_to_preloaded_provider<O>(
     oracle: Arc<O>,
+    boot_info: &BootInfo,
     canoe_verifier: impl CanoeVerifier,
     canoe_address_fetcher: impl CanoeVerifierAddressFetcher,
     witness: EigenDAWitness,
@@ -33,7 +37,6 @@ pub async fn eigenda_witness_to_preloaded_provider<O>(
 where
     O: CommsClient + FlushableCache + Send + Sync + Debug,
 {
-    let boot_info = BootInfo::load(oracle.as_ref()).await?;
     let l1_head = boot_info.l1_head;
 
     // fetch timestamp and block number corresponding to l1_head for determining activation fork.
