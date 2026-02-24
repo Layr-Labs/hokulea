@@ -236,7 +236,7 @@ mod tests {
     pub const G1_POINTS_BYTE: &str = "8000000000000000000000000000000000000000000000000000000000000001cbfc87ecbdcdc23ef5481bb179aaada7f42c22d2dfd52b4655a18c2879c54eea9fb27cc0e2465b3e57a42a051dbfbd8d0b62eec80cd07c46401781deab36ca27c44ab250113840f37622eb001cfbcb1dec55f15e6ea48333ddb63e9d2befecab";
 
     // the passed in vector must outlive SRS
-    fn load_g1_srs(g1_srs: &mut vec::Vec<G1Affine>) -> SRS {
+    fn load_g1_srs(g1_srs: &mut vec::Vec<G1Affine>) -> SRS<'_> {
         let g1_points_bytes = hex::decode(G1_POINTS_BYTE).unwrap();
 
         g1_srs.push(read_g1_point_from_bytes_be(&g1_points_bytes[..32]).unwrap());

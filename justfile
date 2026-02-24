@@ -15,6 +15,7 @@ alias b := build-native-all
 [group('build')]
 build-native-all *args='':
   cargo build --workspace $@
+  cargo build --bin hokulea-example-preloader --features sp1-cc $@
 
 # Build for the native target
 [group('build')]
@@ -388,7 +389,7 @@ run-client env_file run_env_file native_or_asterisc='native' verbosity='':
 
 ############################### Utils ###############################
 [group('utils')]
-get-sp1cc-elf-and-vkey sp1_tag='v5.2.1':
+get-sp1cc-elf-and-vkey sp1_tag='v6.0.1':
   #!/usr/bin/env bash
   set -euo pipefail
   pushd canoe/sp1-cc/client/

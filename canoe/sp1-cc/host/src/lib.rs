@@ -9,10 +9,12 @@ use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
 use rsp_primitives::genesis::genesis_from_json;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
+use sp1_hypercube::{SP1PcsProofInner, SP1RecursionProof};
+use sp1_primitives::{Elf, SP1GlobalContext};
 use sp1_sdk::{
     network::{FulfillmentStrategy, NetworkMode},
-    Prover, ProverClient, SP1Proof, SP1ProofMode, SP1ProofWithPublicValues, SP1Stdin,
-    SP1_CIRCUIT_VERSION,
+    ProveRequest, Prover, ProverClient, ProvingKey, SP1Proof, SP1ProofMode,
+    SP1ProofWithPublicValues, SP1Stdin, SP1_CIRCUIT_VERSION,
 };
 use tracing::{debug, info, warn};
 
@@ -74,7 +76,7 @@ pub struct CanoeSp1CCReducedProofProvider {
 
 #[async_trait]
 impl CanoeProvider for CanoeSp1CCReducedProofProvider {
-    type Receipt = sp1_core_executor::SP1ReduceProof<sp1_prover::InnerSC>;
+    type Receipt = SP1RecursionProof<SP1GlobalContext, SP1PcsProofInner>;
 
     async fn create_certs_validity_proof(
         &self,
@@ -202,26 +204,27 @@ pub async fn generate_canoe_proof(
     let client = ProverClient::builder()
         .network_for(network_mode)
         .private_key(&network_private_key)
-        .build();
-    let (pk, _vk) = client.setup(ELF);
+        .build()
+        .await;
+    let pk = client.setup(Elf::Static(ELF)).await.unwrap();
 
     let proof = if mock_mode {
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
         let (public_values, report) = client
-            .execute(ELF, &stdin)
-            .run()
+            .execute(Elf::Static(ELF), stdin.clone())
+            .await
             .expect("sp1-cc should have executed the ELF");
         info!(
             "executed program in mock mode with {} cycles and {} prover gas",
             report.total_instruction_count(),
             report
-                .gas
+                .gas()
                 .expect("gas calculation is enabled by default in the executor")
         );
 
         // Create a mock aggregation proof with the public values.
         SP1ProofWithPublicValues::create_mock_proof(
-            &pk,
+            pk.verifying_key(),
             public_values,
             SP1ProofMode::Compressed,
             SP1_CIRCUIT_VERSION,
@@ -244,7 +247,7 @@ pub async fn generate_canoe_proof(
         };
 
         let mut proof_builder = client
-            .prove(&pk, &stdin)
+            .prove(&pk, stdin)
             .compressed()
             .strategy(sp1_cc_proof_strategy)
             .timeout(Duration::from_secs(timeout_seconds));
@@ -263,7 +266,7 @@ pub async fn generate_canoe_proof(
         }
 
         let proof = proof_builder
-            .run()
+            .await
             .expect("sp1-cc should have produced a compressed proof");
 
         info!("generated sp1-cc proof in non-mock mode");

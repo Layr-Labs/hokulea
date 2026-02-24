@@ -72,12 +72,13 @@ async fn main() -> anyhow::Result<()> {
             // use CanoeNoOpVerifier as CanoeSp1CCVerifier is only intended to be run within zkVM
             use alloy_rpc_client::RpcClient;
             use canoe_verifier::CanoeNoOpVerifier;
-            use sp1_sdk::{HashableKey, ProverClient};
+            use sp1_sdk::{Elf, HashableKey, Prover, ProverClient, ProvingKey};
             use std::env;
 
             const CANOE_SP1CC_ELF: &[u8] = canoe_sp1_cc_host::ELF;
-            let client = ProverClient::from_env();
-            let (_pk, canoe_vk) = client.setup(CANOE_SP1CC_ELF);
+            let client = ProverClient::from_env().await;
+            let pk = client.setup(Elf::Static(CANOE_SP1CC_ELF)).await.unwrap();
+            let canoe_vk = pk.verifying_key();
 
             println!("canoe sp1cc v_key {:?}", canoe_vk.vk.hash_u32());
 

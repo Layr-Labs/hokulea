@@ -17,10 +17,10 @@ use sp1_cc_client_executor::ChainConfig;
 use tracing::info;
 
 /// Any change to sp1-cc client including new sp1 toolchain produces a new ELF to be executed and proved by zkVM
-/// To generate the new ELF (a newer version than 5.2.1 toolchain tag is also fine)
+/// To generate the new ELF (a newer version than 6.0.1 toolchain tag is also fine)
 /// ``` bash
 /// cd canoe/sp1-cc/client
-/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
+/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v6.0.1
 /// ```
 ///
 /// The verificaiton of the ELF must be hardcoded here which pins an exact version of ELF a prover can use
@@ -35,7 +35,7 @@ use tracing::info;
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    1886433496, 568141676, 44080892, 1804516697, 1231935357, 420297346, 1897820756, 1742096029,
+    937925827, 281444100, 686019181, 251928259, 81755080, 784757509, 543802571, 1334291389,
 ];
 
 #[derive(Clone, Default)]
