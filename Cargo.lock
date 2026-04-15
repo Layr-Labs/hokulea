@@ -2436,9 +2436,9 @@ dependencies = [
 
 [[package]]
 name = "c-kzg"
-version = "2.1.7"
+version = "2.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6648ed1e4ea8e8a1a4a2c78e1cda29a3fd500bc622899c340d8525ea9a76b24a"
+checksum = "e00bf4b112b07b505472dbefd19e37e53307e2bfed5a79e0cc161d58ccd0e687"
 dependencies = [
  "blst",
  "cc",
@@ -2505,7 +2505,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0)",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",
  "sp1-hypercube",
@@ -2525,7 +2525,7 @@ dependencies = [
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0)",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
  "sp1-lib",
@@ -6436,7 +6436,7 @@ version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff32365de1b6743cb203b710788263c44a03de03802daf96092f2da4fe6ba4d7"
 dependencies = [
- "proc-macro-crate 3.4.0",
+ "proc-macro-crate 1.1.3",
  "proc-macro2",
  "quote",
  "syn 2.0.115",
@@ -9351,7 +9351,7 @@ dependencies = [
 [[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0#ed8416af24a289ed7aa23de402350090465ec97b"
+source = "git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0#93e3a27c396bdb895341087caf74f2994a30eb47"
 dependencies = [
  "alloy-consensus",
  "alloy-evm 0.23.3",
@@ -9374,7 +9374,7 @@ dependencies = [
  "revm 31.0.2",
  "revm-primitives 21.0.2",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0)",
  "serde",
  "serde_json",
  "serde_with",
@@ -9384,7 +9384,7 @@ dependencies = [
 [[package]]
 name = "rsp-mpt"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0#ed8416af24a289ed7aa23de402350090465ec97b"
+source = "git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0#93e3a27c396bdb895341087caf74f2994a30eb47"
 dependencies = [
  "alloy-primitives 1.5.6",
  "alloy-rlp",
@@ -9433,7 +9433,7 @@ dependencies = [
 [[package]]
 name = "rsp-rpc-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0#ed8416af24a289ed7aa23de402350090465ec97b"
+source = "git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0#93e3a27c396bdb895341087caf74f2994a30eb47"
 dependencies = [
  "alloy-consensus",
  "alloy-primitives 1.5.6",
@@ -9448,7 +9448,7 @@ dependencies = [
  "revm-primitives 21.0.2",
  "revm-state 8.1.1",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0)",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
@@ -9457,7 +9457,7 @@ dependencies = [
 [[package]]
 name = "rsp-witness-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0#ed8416af24a289ed7aa23de402350090465ec97b"
+source = "git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0#93e3a27c396bdb895341087caf74f2994a30eb47"
 dependencies = [
  "alloy-primitives 1.5.6",
  "reth-storage-errors",
@@ -10775,7 +10775,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?branch=fakedev9999%2Fbump-sp1-6.1.0#5ffc97248249a02d3686482d4b447758c32cad55"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?branch=fakedev9999%2Fbump-sp1-6.1.0#f60fc37a73e242e9c87a4ed592012d55337c7f82"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -10797,7 +10797,7 @@ dependencies = [
  "revm-primitives 21.0.2",
  "rsp-client-executor",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0)",
  "rsp-witness-db",
  "serde",
  "serde_with",
@@ -10809,7 +10809,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?branch=fakedev9999%2Fbump-sp1-6.1.0#5ffc97248249a02d3686482d4b447758c32cad55"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?branch=fakedev9999%2Fbump-sp1-6.1.0#f60fc37a73e242e9c87a4ed592012d55337c7f82"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -10831,7 +10831,7 @@ dependencies = [
  "revm-primitives 21.0.2",
  "rsp-client-executor",
  "rsp-mpt",
- "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?tag=reth-1.9.3-sp1-6.1.0)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?branch=fakedev9999%2Fbump-sp1-6.1.0)",
  "rsp-rpc-db",
  "serde",
  "serde_json",
