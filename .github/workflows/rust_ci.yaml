@@ -17,15 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@just
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: taiki-e/install-action@7e4a4ef9ed66446ab203dacde3df96698830955f  # just
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
       - name: Install protoc
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae  # v2
         with:
           cache-on-failure: true
       - run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just ${{ matrix.justfile-target }}
@@ -35,18 +35,18 @@ jobs:
     name: test
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@just
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: taiki-e/install-action@7e4a4ef9ed66446ab203dacde3df96698830955f  # just
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
       - name: Install protoc
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae  # v2
         with:
           cache-on-failure: true
-      - uses: taiki-e/install-action@nextest
+      - uses: taiki-e/install-action@e9fe1d0c24b9415d0c0be1429c063ba3e3a8b277  # nextest
       - name: cargo test
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just test
   cargo-lint:
@@ -60,22 +60,22 @@ jobs:
     name: lint-${{ matrix.target }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@just
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: taiki-e/install-action@7e4a4ef9ed66446ab203dacde3df96698830955f  # just
       - name: Install Rust nightly toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@5b842231ba77f5c045dba54ac5560fed2db780e2  # nightly
         with:
           components: rustfmt, clippy
       - name: Install protoc
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae  # v2
         with:
           cache-on-failure: true
           prefix-key: ${{ matrix.target }}
       - name: Log into ghcr
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -90,15 +90,15 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@just
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: taiki-e/install-action@7e4a4ef9ed66446ab203dacde3df96698830955f  # just
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
       - name: Install protoc
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae  # v2
         with:
           cache-on-failure: true
       - name: doclint
@@ -110,15 +110,15 @@ jobs:
     timeout-minutes: 5 # machete runs very quickly but need longer timeout to install the tools
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
-      - uses: taiki-e/install-action@v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: taiki-e/install-action@eea29cff9a2b68892c0845ae3e4f45fc47ee9354  # v2
         with:
           tool: just, cargo-udeps
       - name: Install Rust stable toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@5b842231ba77f5c045dba54ac5560fed2db780e2  # nightly
       - name: Install cargo-machete
         run: cargo +nightly install cargo-machete
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae  # v2
         with:
           cache-on-failure: true
       - run: just unused-deps
