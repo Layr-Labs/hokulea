@@ -46,7 +46,7 @@ jobs:
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
         with:
           cache-on-failure: true
-      - uses: taiki-e/install-action@nextest
+      - uses: taiki-e/install-action@e9fe1d0c24b9415d0c0be1429c063ba3e3a8b277
       - name: cargo test
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just test
   cargo-lint:
