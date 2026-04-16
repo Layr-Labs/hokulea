@@ -34,8 +34,7 @@ fn main() {
     // risc0-build spawns, and `cc` checks it before falling back to the system archiver.
     if env::var_os("AR_riscv32im_risc0_zkvm_elf").is_none() {
         if let Ok(home) = env::var("HOME") {
-            let risc0_ar =
-                PathBuf::from(home).join(".risc0/cpp/bin/riscv32-unknown-elf-ar");
+            let risc0_ar = PathBuf::from(home).join(".risc0/cpp/bin/riscv32-unknown-elf-ar");
             if risc0_ar.exists() {
                 // SAFETY: build scripts are single-threaded; set_var is safe here.
                 unsafe {
