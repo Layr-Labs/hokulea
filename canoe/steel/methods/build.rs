@@ -26,6 +26,25 @@ fn main() {
     // guest. Check the RISC0_USE_DOCKER variable and use Docker to build the guest if set.
     println!("cargo:rerun-if-env-changed=RISC0_USE_DOCKER");
     println!("cargo:rerun-if-changed=build.rs");
+
+    // On macOS, the system `ranlib` doesn't understand RISC-V ELF archives and produces an empty
+    // symbol index, causing `verify_kzg_proof` (and other symbols from c-kzg) to be undefined at
+    // link time. Fix this by pointing `cc` to the RISC-V `ar` from the risc0 cpp toolchain, which
+    // handles RISC-V ELF archives correctly. The env var is inherited by the cargo subprocess that
+    // risc0-build spawns, and `cc` checks it before falling back to the system archiver.
+    if env::var_os("AR_riscv32im_risc0_zkvm_elf").is_none() {
+        if let Ok(home) = env::var("HOME") {
+            let risc0_ar =
+                PathBuf::from(home).join(".risc0/cpp/bin/riscv32-unknown-elf-ar");
+            if risc0_ar.exists() {
+                // SAFETY: build scripts are single-threaded; set_var is safe here.
+                unsafe {
+                    std::env::set_var("AR_riscv32im_risc0_zkvm_elf", &risc0_ar);
+                }
+            }
+        }
+    }
+
     let manifest_dir = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
     let mut builder = GuestOptionsBuilder::default();
     if env::var("RISC0_USE_DOCKER").is_ok() {
