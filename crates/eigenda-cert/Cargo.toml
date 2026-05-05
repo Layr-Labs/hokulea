@@ -11,3 +11,6 @@ serde = { workspace = true, features = ["derive"] }
 canoe-bindings = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
+
+[dev-dependencies]
+alloy-sol-types = { workspace = true }
