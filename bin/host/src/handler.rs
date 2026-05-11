@@ -34,12 +34,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
         // route the hint to the right fetcher based on the hint type.
         match hint.ty {
             ExtendedHintType::EigenDACert => {
-                fetch_eigenda_hint(
-                    hint.data,
-                    &providers.eigenda_preimage_provider,
-                    kv,
-                )
-                .await?;
+                fetch_eigenda_hint(hint.data, &providers.eigenda_preimage_provider, kv).await?;
             }
             ExtendedHintType::Original(ty) => {
                 let hint_original = Hint {
