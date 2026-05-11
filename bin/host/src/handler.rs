@@ -1,6 +1,7 @@
-use alloy_primitives::keccak256;
+use alloy_primitives::{keccak256, Bytes};
 
 use crate::cfg::SingleChainHostWithEigenDA;
+use crate::eigenda_preimage::OnlineEigenDAPreimageProvider;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use eigenda_cert::AltDACommitment;
@@ -33,7 +34,7 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
         // route the hint to the right fetcher based on the hint type.
         match hint.ty {
             ExtendedHintType::EigenDACert => {
-                fetch_eigenda_hint(hint, providers, kv).await?;
+                fetch_eigenda_hint(hint.data, &providers.eigenda_preimage_provider, kv).await?;
             }
             ExtendedHintType::Original(ty) => {
                 let hint_original = Hint {
@@ -58,13 +59,11 @@ impl HintHandler for SingleChainHintHandlerWithEigenDA {
 /// For all returned errors, they are handled by the kona host library, and currently this triggers an infinite retry loop.
 /// <https://github.com/op-rs/kona/blob/98543fe6d91f755b2383941391d93aa9bea6c9ab/bin/host/src/backend/online.rs#L135>
 pub async fn fetch_eigenda_hint(
-    hint: Hint<<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::HintType>,
-    providers: &<SingleChainHostWithEigenDA as OnlineHostBackendCfg>::Providers,
+    altda_commitment_bytes: Bytes,
+    eigenda_preimage_provider: &OnlineEigenDAPreimageProvider,
     kv: SharedKeyValueStore,
 ) -> Result<()> {
-    let hint_type = hint.ty;
-    let altda_commitment_bytes = hint.data;
-    trace!(target: "fetcher_with_eigenda_support", "Fetching hint: {hint_type} {altda_commitment_bytes}");
+    trace!(target: "fetcher_with_eigenda_support", "Fetching EigenDA hint: {altda_commitment_bytes}");
 
     // Convert commitment bytes to AltDACommitment
     let altda_commitment: AltDACommitment = altda_commitment_bytes
@@ -73,8 +72,7 @@ pub async fn fetch_eigenda_hint(
         .map_err(|e| anyhow!("failed to parse AltDACommitment: {e}"))?;
 
     // Fetch preimage data and process response
-    let derivation_stage = providers
-        .eigenda_preimage_provider
+    let derivation_stage = eigenda_preimage_provider
         .fetch_data_from_proxy(&altda_commitment_bytes)
         .await?;
 
