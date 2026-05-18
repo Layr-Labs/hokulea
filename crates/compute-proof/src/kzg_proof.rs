@@ -41,7 +41,8 @@ pub fn compute_kzg_proof_with_srs<'s>(
 
     debug!(
         target: "compute_kzg_proof_with_srs",
-        "commit in eval form takes {:?}",
+        "blob size {:?} bytes. Commit in eval form takes {:?}",
+        encoded_payload.len(),
         commit_start.elapsed(),
     );
 
@@ -50,7 +51,8 @@ pub fn compute_kzg_proof_with_srs<'s>(
 
     debug!(
         target: "compute_kzg_proof_with_srs",
-        "proof generations takes {:?}",
+        "blob size {:?} bytes. Proof generations takes {:?}",
+        encoded_payload.len(),
         proof_start.elapsed(),
     );
 
