@@ -8,6 +8,8 @@ use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_primitives::errors::KzgError;
 use rust_kzg_bn254_prover::kzg::KZG;
 use rust_kzg_bn254_prover::srs::SRS;
+use std::time::Instant;
+use tracing::debug;
 
 include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 
@@ -26,6 +28,7 @@ pub fn compute_kzg_proof_with_srs<'s>(
     srs: &SRS<'s>,
 ) -> Result<Bytes, KzgError> {
     let mut kzg = KZG::new();
+
     kzg.calculate_and_store_roots_of_unity(encoded_payload.len() as u64)
         .unwrap();
 
@@ -33,9 +36,24 @@ pub fn compute_kzg_proof_with_srs<'s>(
     let blob = Blob::new(encoded_payload).expect("should be able to construct a blob");
     let input_poly = blob.to_polynomial_eval_form()?;
 
+    let commit_start = Instant::now();
     let commitment = kzg.commit_eval_form(&input_poly, srs)?;
 
+    debug!(
+        target: "compute_kzg_proof_with_srs",
+        "commit in eval form takes {:?}",
+        commit_start.elapsed(),
+    );
+
+    let proof_start = Instant::now();
     let proof = kzg.compute_blob_proof(&blob, &commitment, srs)?;
+
+    debug!(
+        target: "compute_kzg_proof_with_srs",
+        "proof generations takes {:?}",
+        proof_start.elapsed(),
+    );
+
     let proof_x_bigint: BigUint = proof.x.into();
     let proof_y_bigint: BigUint = proof.y.into();
 
