@@ -79,9 +79,28 @@ pub struct EigenDAWitness {
 }
 
 impl EigenDAWitness {
-    /// convert [EigenDAPreimage] into witnes data. It enforces there must be a canoe proof
-    /// if there is at least one required validity proof, and the number of KZG proof must
-    /// match number of encoded payload.
+    /// Constructs an [EigenDAWitness] from a preimage without validation. Use [Self::from_preimage]
+    /// if the inputs have not been prechecked.
+    pub fn from_preimage_unchecked(
+        preimage: EigenDAPreimage,
+        kzg_proofs: Vec<FixedBytes<64>>,
+        canoe_proof_bytes: Option<Vec<u8>>,
+    ) -> EigenDAWitness {
+        EigenDAWitness {
+            validities: preimage.validities,
+            encoded_payloads: preimage
+                .encoded_payloads
+                .into_iter()
+                .zip(kzg_proofs)
+                .map(|((commitment, payload), proof)| (commitment, payload, proof))
+                .collect(),
+            canoe_proof_bytes,
+        }
+    }
+
+    /// Constructs an [EigenDAWitness] from a preimage, validating that a canoe proof is present
+    /// when there is at least one validity entry, and that the number of KZG proofs matches the
+    /// number of encoded payloads.
     pub fn from_preimage(
         preimage: EigenDAPreimage,
         kzg_proofs: Vec<FixedBytes<64>>,
@@ -90,26 +109,14 @@ impl EigenDAWitness {
         if (!preimage.validities.is_empty()) && canoe_proof.is_none() {
             return Err(EigenDAWitnessError::MissingCanoeProof);
         }
-        let mut encoded_payloads_with_kzg_proof = Vec::new();
-
         if kzg_proofs.len() != preimage.encoded_payloads.len() {
             return Err(EigenDAWitnessError::MismatchKzgProof);
         }
-
-        for (i, proof) in kzg_proofs.iter().enumerate() {
-            encoded_payloads_with_kzg_proof.push((
-                preimage.encoded_payloads[i].0.clone(),
-                preimage.encoded_payloads[i].1.clone(),
-                *proof,
-            ))
-        }
-
-        let witness = EigenDAWitness {
-            validities: preimage.validities,
-            encoded_payloads: encoded_payloads_with_kzg_proof,
-            canoe_proof_bytes: canoe_proof,
-        };
-        Ok(witness)
+        Ok(Self::from_preimage_unchecked(
+            preimage,
+            kzg_proofs,
+            canoe_proof,
+        ))
     }
 
     /// Deconstruct [EigenDAWitness] back into its component parts: preimage, KZG proofs, and canoe proof.
