@@ -38,12 +38,11 @@ pub fn compute_kzg_proof_with_srs<'s>(
 
     let commit_start = Instant::now();
     let commitment = kzg.commit_eval_form(&input_poly, srs)?;
-
     debug!(
         target: "compute_kzg_proof_with_srs",
-        "blob size {:?} bytes. Commit in eval form takes {:?}",
-        encoded_payload.len(),
-        commit_start.elapsed(),
+        blob_size_bytes = encoded_payload.len(),
+        elapsed = ?commit_start.elapsed(),
+        "Commit in eval form"
     );
 
     let proof_start = Instant::now();
@@ -51,9 +50,9 @@ pub fn compute_kzg_proof_with_srs<'s>(
 
     debug!(
         target: "compute_kzg_proof_with_srs",
-        "blob size {:?} bytes. Proof generations takes {:?}",
-        encoded_payload.len(),
-        proof_start.elapsed(),
+        blob_size_bytes = encoded_payload.len(),
+        elapsed = ?proof_start.elapsed(),
+        "Proof generation"
     );
 
     let proof_x_bigint: BigUint = proof.x.into();
