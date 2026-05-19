@@ -9,7 +9,7 @@ use kona_preimage::{PreimageKey, PreimageOracleClient};
 use kona_proof::BootInfo;
 use tracing::info;
 
-pub fn from_eigenda_preimage_to_canoe_inputs<A>(
+fn from_eigenda_preimage_to_canoe_inputs<A>(
     validities: &[(AltDACommitment, bool)],
     canoe_address_fetcher: A,
     l1_chain_id: ChainId,
