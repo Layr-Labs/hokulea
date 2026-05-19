@@ -2536,7 +2536,6 @@ dependencies = [
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
- "rsp-primitives",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
  "sp1-lib",
