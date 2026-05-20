@@ -38,7 +38,7 @@ pub const V_KEY: [u32; 8] = [
 ];
 
 #[derive(Clone, Default)]
-pub struct CanoeSp1CCVerifier {}
+pub struct CanoeSp1CCVerifier;
 
 impl CanoeVerifier for CanoeSp1CCVerifier {
     // some variable is unused, because when sp1-cc verifier is not configured in zkVM mode, all tests

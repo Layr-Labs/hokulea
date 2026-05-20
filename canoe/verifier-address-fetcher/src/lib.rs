@@ -14,7 +14,7 @@ pub enum CanoeVerifierAddressFetcherError {
     /// L2 chain ID is required but not provided (used by HokuleaRegistry and other L2-specific implementations)
     #[error("L2 chain ID is required for this verifier address fetcher but was not provided")]
     MissingL2ChainId,
-    /// Unknown L2 chain ID for the given L1 (used by HokuleaRegistry)
+    /// Unknown L2 chain ID for the given L1 (usefd by HokuleaRegistry)
     #[error("Unknown L2 chain ID: {0} for L1 chain ID: {1}. This L2 is not registered. Rollup teams should submit a PR to add their router address.")]
     UnknownL2ChainId(u64, u64),
 }
@@ -39,23 +39,9 @@ pub trait L2SpecificCanoeVerifierAddressFetcher: CanoeVerifierAddressFetcher {
     ) -> Result<Address, CanoeVerifierAddressFetcherError>;
 }
 
-/// No-op implementation that returns a zero address.
-#[derive(Clone)]
-pub struct CanoeNoOpVerifierAddressFetcher {}
-
-impl CanoeVerifierAddressFetcher for CanoeNoOpVerifierAddressFetcher {
-    fn fetch_address(
-        &self,
-        _chain_id: u64,
-        _versioned_cert: &EigenDAVersionedCert,
-    ) -> Result<Address, CanoeVerifierAddressFetcherError> {
-        Ok(Address::default())
-    }
-}
-
 /// Fetcher for EigenLabs-deployed router addresses on Mainnet, Sepolia, Holesky, and Kurtosis devnet.
 #[derive(Clone)]
-pub struct CanoeVerifierAddressFetcherDeployedByEigenLabs {}
+pub struct CanoeVerifierAddressFetcherDeployedByEigenLabs;
 
 impl CanoeVerifierAddressFetcher for CanoeVerifierAddressFetcherDeployedByEigenLabs {
     fn fetch_address(
