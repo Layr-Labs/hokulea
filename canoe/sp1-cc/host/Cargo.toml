@@ -4,20 +4,20 @@ name = "canoe-sp1-cc-host"
 edition = "2021"
 
 [dependencies]
-rsp-primitives.workspace = true
 sp1-cc-client-executor.workspace = true
 sp1-cc-host-executor.workspace = true
 
+alloy-genesis.workspace = true
 alloy-primitives.workspace = true
-alloy-sol-types.workspace = true
-bincode.workspace = true
-
 alloy-rpc-client.workspace = true
 alloy-rpc-types.workspace = true
+alloy-sol-types.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
+bincode.workspace = true
 canoe-bindings.workspace = true
 canoe-provider.workspace = true
+serde_json.workspace = true
 
 # misc:
 tracing.workspace = true

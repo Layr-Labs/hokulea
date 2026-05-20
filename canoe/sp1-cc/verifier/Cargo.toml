@@ -10,7 +10,6 @@ eigenda-cert.workspace = true
 canoe-verifier = { workspace = true }
 canoe-bindings = { workspace = true }
 sp1-cc-client-executor = { workspace = true }
-rsp-primitives =  { workspace = true }
 
 cfg-if.workspace = true
 tracing.workspace = true

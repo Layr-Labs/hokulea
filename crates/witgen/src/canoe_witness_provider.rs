@@ -3,13 +3,14 @@ use alloy_primitives::{BlockNumber, ChainId, B256};
 use alloy_rlp::Decodable;
 use canoe_provider::{CanoeInput, CanoeProvider};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
+use eigenda_cert::AltDACommitment;
 use hokulea_proof::eigenda_witness::EigenDAPreimage;
 use kona_preimage::{PreimageKey, PreimageOracleClient};
 use kona_proof::BootInfo;
 use tracing::info;
 
 pub fn from_eigenda_preimage_to_canoe_inputs<A>(
-    eigenda_preimage: &EigenDAPreimage,
+    validities: &[(AltDACommitment, bool)],
     canoe_address_fetcher: A,
     l1_chain_id: ChainId,
     l1_head_block_hash: B256,
@@ -20,7 +21,7 @@ where
 {
     let mut canoe_inputs = vec![];
 
-    for (altda_commitment, claimed_validity) in &eigenda_preimage.validities {
+    for (altda_commitment, claimed_validity) in validities {
         let canoe_input = CanoeInput {
             altda_commitment: altda_commitment.clone(),
             claimed_validity: *claimed_validity,
@@ -61,7 +62,7 @@ where
     let l1_chain_id = boot_info.rollup_config.l1_chain_id;
 
     let canoe_inputs = from_eigenda_preimage_to_canoe_inputs(
-        eigenda_preimage,
+        &eigenda_preimage.validities,
         canoe_address_fetcher,
         l1_chain_id,
         boot_info.l1_head,

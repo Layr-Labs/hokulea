@@ -2506,6 +2506,7 @@ dependencies = [
 name = "canoe-sp1-cc-host"
 version = "0.1.0"
 dependencies = [
+ "alloy-genesis",
  "alloy-primitives 1.5.6",
  "alloy-rpc-client",
  "alloy-rpc-types",
@@ -2515,7 +2516,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
- "rsp-primitives",
+ "serde_json",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",
  "sp1-hypercube",
@@ -2535,7 +2536,6 @@ dependencies = [
  "canoe-verifier",
  "cfg-if",
  "eigenda-cert",
- "rsp-primitives",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
  "sp1-lib",

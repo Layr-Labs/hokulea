@@ -11,8 +11,7 @@ use alloy_sol_types::SolValue;
 use canoe_bindings::Journal;
 use canoe_verifier::{chain_spec, CanoeVerifier, CertValidity, HokuleaCanoeVerificationError};
 use eigenda_cert::AltDACommitment;
-use rsp_primitives::genesis::Genesis;
-use sp1_cc_client_executor::ChainConfig;
+use sp1_cc_client_executor::{ChainConfig, Genesis};
 
 use tracing::info;
 

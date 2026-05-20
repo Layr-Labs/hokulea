@@ -6,7 +6,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use canoe_bindings::{Journal, StatusCode};
 use canoe_provider::{CanoeInput, CanoeProvider, CertVerifierCall};
-use rsp_primitives::genesis::genesis_from_json;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::{EvmSketch, Genesis};
 use sp1_hypercube::{SP1PcsProofInner, SP1RecursionProof};
@@ -120,12 +119,12 @@ pub async fn canoe_proof_stdin(
     let genesis = if let Ok(genesis) = Genesis::try_from(l1_chain_id) {
         genesis
     } else {
-        let chain_config = match l1_chain_id {
-            17000 => genesis_from_json(HOLESKY_GENESIS).expect("genesis from json"),
-            3151908 => genesis_from_json(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
+        let chain_genesis: alloy_genesis::Genesis = match l1_chain_id {
+            17000 => serde_json::from_str(HOLESKY_GENESIS).expect("genesis from json"),
+            3151908 => serde_json::from_str(KURTOSIS_DEVNET_GENESIS).expect("genesis from json"),
             _ => panic!("chain id {l1_chain_id} is not supported by canoe sp1 cc"),
         };
-        Genesis::Custom(chain_config.config)
+        Genesis::Custom(chain_genesis.config)
     };
 
     let sketch = EvmSketch::builder()
