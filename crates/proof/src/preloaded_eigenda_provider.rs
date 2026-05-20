@@ -223,9 +223,8 @@ mod tests {
     use super::*;
     use crate::eigenda_witness::EigenDAWitness;
     use alloc::{borrow::Cow, vec};
-    use alloy_primitives::{hex, Bytes, U256};
+    use alloy_primitives::{hex, Address, Bytes, U256};
     use canoe_verifier::CanoeNoOpVerifier;
-    use canoe_verifier_address_fetcher::CanoeNoOpVerifierAddressFetcher;
     use eigenda_cert::AltDACommitment;
     use num::BigUint;
     use rust_kzg_bn254_primitives::errors::KzgError;
@@ -420,7 +419,7 @@ mod tests {
         let preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(Default::default()),
             CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
+            Address::ZERO,
         );
         assert_eq!(preimage.encoded_payload_entries.len(), 0);
         assert_eq!(preimage.validity_entries.len(), 0);
@@ -436,7 +435,7 @@ mod tests {
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
+            Address::ZERO,
         );
         assert_eq!(
             preimage.get_validity(&altda_commitment).await.unwrap(),
@@ -462,7 +461,7 @@ mod tests {
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
+            Address::ZERO,
         );
         let _ = preimage.get_validity(&altda_commitment).await;
     }
@@ -477,7 +476,7 @@ mod tests {
         let mut preimage = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
+            Address::ZERO,
         );
         let _ = preimage.get_encoded_payload(&altda_commitment).await;
     }
@@ -493,7 +492,7 @@ mod tests {
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
+            Address::ZERO,
         );
     }
 
@@ -505,7 +504,7 @@ mod tests {
         let _ = PreloadedEigenDAPreimageProvider::from_witness(
             construct_template_witness_with_trusted_data(eigenda_witness.clone()),
             CanoeNoOpVerifier {},
-            CanoeNoOpVerifierAddressFetcher {},
+            Address::ZERO,
         );
     }
 }
