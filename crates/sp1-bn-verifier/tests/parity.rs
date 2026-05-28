@@ -9,15 +9,17 @@ use std::borrow::Cow;
 use std::vec;
 use std::vec::Vec;
 
+use alloy_primitives::{hex, FixedBytes, U256};
 use ark_bn254::{Fq, Fr as ArkFr, G1Affine};
 use ark_ff::{BigInteger, PrimeField};
-use alloy_primitives::{hex, FixedBytes, U256};
 use eigenda_cert::G1Point;
 use hokulea_eigenda::EncodedPayload;
 use num::BigUint;
 use rust_kzg_bn254_primitives::blob::Blob;
 use rust_kzg_bn254_primitives::errors::KzgError as RefKzgError;
-use rust_kzg_bn254_primitives::helpers::{compute_challenge as ref_compute_challenge, read_g1_point_from_bytes_be};
+use rust_kzg_bn254_primitives::helpers::{
+    compute_challenge as ref_compute_challenge, read_g1_point_from_bytes_be,
+};
 use rust_kzg_bn254_prover::{kzg::KZG, srs::SRS};
 use rust_kzg_bn254_verifier::batch as ref_batch;
 use substrate_bn::{AffineG1, Fq as BnFq};
@@ -39,7 +41,8 @@ fn load_g1_srs(g1_srs: &mut Vec<G1Affine>) -> SRS<'_> {
 
 fn compute_commitment(blob: &Blob) -> Result<G1Point, RefKzgError> {
     let mut kzg = KZG::new();
-    kzg.calculate_and_store_roots_of_unity(blob.len() as u64).unwrap();
+    kzg.calculate_and_store_roots_of_unity(blob.len() as u64)
+        .unwrap();
     let poly = blob.to_polynomial_eval_form()?;
     let mut srs_storage = vec![];
     let commitment = kzg.commit_eval_form(&poly, &load_g1_srs(&mut srs_storage))?;
@@ -103,17 +106,17 @@ fn sp1_batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
 
 fn fixture_payload_a() -> Vec<u8> {
     vec![
-        0, 0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1,
     ]
 }
 
 fn fixture_payload_b() -> Vec<u8> {
     vec![
-        0, 1, 1, 1, 1, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 31, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1,
     ]
 }
 
@@ -169,7 +172,10 @@ fn g1point_to_bn_affine(c: &G1Point) -> AffineG1 {
 fn g1point_to_ark_affine(c: &G1Point) -> G1Affine {
     let x: [u8; 32] = c.x.to_be_bytes();
     let y: [u8; 32] = c.y.to_be_bytes();
-    G1Affine::new(Fq::from_be_bytes_mod_order(&x), Fq::from_be_bytes_mod_order(&y))
+    G1Affine::new(
+        Fq::from_be_bytes_mod_order(&x),
+        Fq::from_be_bytes_mod_order(&y),
+    )
 }
 
 /// Compare the per-blob FS challenge produced by the two implementations. They must match

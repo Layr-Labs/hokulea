@@ -59,11 +59,7 @@ fn proof_bytes_to_affine(proof: &FixedBytes<64>) -> Result<AffineG1, KzgError> {
 /// `blobs[i]` is the raw blob bytes (length must be a multiple of 32 and each chunk a canonical
 /// field element). `commitments[i]` is the KZG commitment as `(x, y)` BE-encoded U256s, and
 /// `proofs[i]` is the 64-byte BE-encoded `(x, y)` proof point.
-pub fn batch_verify(
-    blobs: &[&[u8]],
-    commitments: &[G1Point],
-    proofs: &[FixedBytes<64>],
-) -> bool {
+pub fn batch_verify(blobs: &[&[u8]], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
     verify_blob_kzg_proof_batch(blobs, commitments, proofs).unwrap_or(false)
 }
 
@@ -108,13 +104,7 @@ pub fn verify_blob_kzg_proof_batch(
         })
         .collect::<Result<Vec<_>, KzgError>>()?;
 
-    verify_kzg_proof_batch(
-        &commitments_aff,
-        &zs,
-        &ys,
-        &proofs_aff,
-        &blob_lengths,
-    )
+    verify_kzg_proof_batch(&commitments_aff, &zs, &ys, &proofs_aff, &blob_lengths)
 }
 
 /// Compute powers `[r⁰, r¹, …, rⁿ⁻¹]` of the Fiat-Shamir batch challenge.
@@ -129,10 +119,7 @@ fn compute_r_powers(
 
     let initial_data_length: usize = 40;
     let input_size = initial_data_length
-        + n * (BYTES_PER_FIELD_ELEMENT
-            + 2 * BYTES_PER_FIELD_ELEMENT
-            + BYTES_PER_FIELD_ELEMENT
-            + 8);
+        + n * (BYTES_PER_FIELD_ELEMENT + 2 * BYTES_PER_FIELD_ELEMENT + BYTES_PER_FIELD_ELEMENT + 8);
     let mut buf: Vec<u8> = vec![0u8; input_size];
 
     // Domain separator (24 bytes) + n (8 bytes).
@@ -184,10 +171,7 @@ fn verify_kzg_proof_batch(
     proofs: &[AffineG1],
     blob_lengths: &[u64],
 ) -> Result<bool, KzgError> {
-    if !(commitments.len() == zs.len()
-        && zs.len() == ys.len()
-        && ys.len() == proofs.len())
-    {
+    if !(commitments.len() == zs.len() && zs.len() == ys.len() && ys.len() == proofs.len()) {
         return Err(KzgError::GenericError(
             "length's of the input are not the same".to_string(),
         ));

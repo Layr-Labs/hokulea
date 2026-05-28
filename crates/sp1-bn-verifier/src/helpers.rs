@@ -147,8 +147,8 @@ pub fn to_fr_array_canonical(blob: &[u8]) -> Result<Vec<Fr>, KzgError> {
     for chunk in blob.chunks_exact(BYTES_PER_FIELD_ELEMENT) {
         // Round-trip through `from_bytes_be_mod_order` and compare with `from_slice`
         // (which does no modulus check) to detect non-canonical encodings.
-        let reduced = Fr::from_bytes_be_mod_order(chunk)
-            .map_err(|_| KzgError::InvalidFieldElement)?;
+        let reduced =
+            Fr::from_bytes_be_mod_order(chunk).map_err(|_| KzgError::InvalidFieldElement)?;
         let direct = Fr::from_slice(chunk).map_err(|_| KzgError::InvalidFieldElement)?;
         if reduced != direct {
             return Err(KzgError::InvalidFieldElement);
@@ -302,9 +302,7 @@ pub fn calculate_roots_of_unity(length_of_data_after_padding: u64) -> Result<Vec
 
     let n_field_elements = length_of_data_after_padding.div_ceil(BYTES_PER_FIELD_ELEMENT as u64);
     if n_field_elements > MAINNET_SRS_G1_SIZE as u64 {
-        return Err(KzgError::GenericError(
-            "Length exceeds SRS".to_string(),
-        ));
+        return Err(KzgError::GenericError("Length exceeds SRS".to_string()));
     }
     let target = (n_field_elements as usize).next_power_of_two();
     let log2 = target.trailing_zeros() as usize;
