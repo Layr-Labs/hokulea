@@ -1,12 +1,15 @@
 use crate::eigenda_witness::EigenDAWitnessWithTrustedData;
 use crate::errors::HokuleaOracleProviderError;
 use alloy_primitives::FixedBytes;
+#[cfg(not(feature = "sp1-bn-verifier"))]
 use ark_bn254::{Fq, G1Affine};
+#[cfg(not(feature = "sp1-bn-verifier"))]
 use ark_ff::PrimeField;
 use async_trait::async_trait;
 use eigenda_cert::{AltDACommitment, G1Point};
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use rust_kzg_bn254_primitives::blob::Blob;
+#[cfg(not(feature = "sp1-bn-verifier"))]
 use rust_kzg_bn254_verifier::batch;
 
 use alloc::boxed::Box;
@@ -187,9 +190,15 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
     }
 }
 
-/// Eventually, rust-kzg-bn254 would provide an interface that takes big endian
-/// bytes input, so that we can remove this wrapper. For now, just include it here
-/// the proving locates inside hokulea-compute-proof crate
+/// Batch-verify EigenDA blob KZG proofs.
+///
+/// The backend is chosen at compile time:
+/// * default — `rust-kzg-bn254-verifier` (arkworks).
+/// * `--features sp1-bn-verifier` — `hokulea-sp1-bn-verifier` (substrate-bn / sp1-patches),
+///   which is significantly cheaper inside an SP1 zkVM thanks to the patched primitives.
+///
+/// Both backends are tested for byte-level parity in `crates/sp1-bn-verifier/tests/parity.rs`.
+#[cfg(not(feature = "sp1-bn-verifier"))]
 pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
@@ -218,12 +227,22 @@ pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
     batch::verify_blob_kzg_proof_batch(lib_blobs, &lib_commitments, &lib_proofs).unwrap_or(false)
 }
 
+/// Substrate-bn (sp1-patches) backend. Selected via the `sp1-bn-verifier` Cargo feature.
+#[cfg(feature = "sp1-bn-verifier")]
+pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
+    let blob_views: Vec<&[u8]> = blobs.iter().map(|b| b.data()).collect();
+    hokulea_sp1_bn_verifier::batch::batch_verify(&blob_views, commitments, proofs)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::eigenda_witness::EigenDAWitness;
     use alloc::{borrow::Cow, vec};
     use alloy_primitives::{hex, Address, Bytes, U256};
+    // The KZG prover used by the tests is built on arkworks regardless of which batch-verify
+    // backend is selected, so the test-only `G1Affine` import is unconditional.
+    use ark_bn254::G1Affine;
     use canoe_verifier::CanoeNoOpVerifier;
     use eigenda_cert::AltDACommitment;
     use num::BigUint;

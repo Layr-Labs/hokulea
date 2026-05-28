@@ -14,6 +14,8 @@ eigenda-cert.workspace = true
 rust-kzg-bn254-primitives.workspace = true
 rust-kzg-bn254-verifier.workspace = true
 
+hokulea-sp1-bn-verifier = { workspace = true, optional = true }
+
 ark-bn254.workspace = true
 ark-ff.workspace = true
 
@@ -36,3 +38,9 @@ rust-kzg-bn254-prover.workspace = true
 num.workspace = true
 tokio = { workspace = true, features = ["full"] }
 spin.workspace = true
+
+[features]
+default = []
+# Use the substrate-bn (sp1-patches/bn) batch KZG verifier instead of the arkworks-based
+# rust-kzg-bn254-verifier. Intended for zkVM clients where the patched bn primitives win.
+sp1-bn-verifier = ["dep:hokulea-sp1-bn-verifier"]

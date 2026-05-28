@@ -2538,7 +2538,7 @@ dependencies = [
  "eigenda-cert",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
- "sp1-lib",
+ "sp1-lib 6.1.0",
  "tracing",
 ]
 
@@ -4592,6 +4592,7 @@ dependencies = [
  "eigenda-cert",
  "hokulea-compute-proof",
  "hokulea-eigenda",
+ "hokulea-sp1-bn-verifier",
  "kona-preimage",
  "kona-proof",
  "num",
@@ -4612,6 +4613,26 @@ dependencies = [
  "alloy-primitives 1.5.6",
  "canoe-verifier-address-fetcher",
  "eigenda-cert",
+]
+
+[[package]]
+name = "hokulea-sp1-bn-verifier"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives 1.5.6",
+ "ark-bn254",
+ "ark-ff 0.5.0",
+ "eigenda-cert",
+ "hokulea-compute-proof",
+ "hokulea-eigenda",
+ "num",
+ "rust-kzg-bn254-primitives",
+ "rust-kzg-bn254-prover",
+ "rust-kzg-bn254-verifier",
+ "sha2 0.10.9",
+ "spin 0.10.0",
+ "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?rev=8ef05d3969312eca34fa9f1f566a469022badda6)",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -8956,7 +8977,7 @@ dependencies = [
  "rug",
  "secp256k1 0.31.1",
  "sha2 0.10.9",
- "substrate-bn",
+ "substrate-bn 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -11166,6 +11187,16 @@ dependencies = [
 
 [[package]]
 name = "sp1-lib"
+version = "3.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a5729da1b05d56c01457e5ecabdc77f1cc941df23f2921163a2f325aec22428"
+dependencies = [
+ "bincode",
+ "serde",
+]
+
+[[package]]
+name = "sp1-lib"
 version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b96392c1b1c197beaa6b0806099a8d73643a09d5ac0874e26c9c5153a7fcb4c"
@@ -11510,7 +11541,7 @@ dependencies = [
  "libm",
  "rand 0.8.5",
  "sha2 0.10.9",
- "sp1-lib",
+ "sp1-lib 6.1.0",
  "sp1-primitives",
 ]
 
@@ -11525,7 +11556,7 @@ dependencies = [
  "group 0.13.0",
  "pairing 0.23.0",
  "rand_core 0.6.4",
- "sp1-lib",
+ "sp1-lib 6.1.0",
  "subtle",
 ]
 
@@ -11686,6 +11717,22 @@ dependencies = [
  "lazy_static",
  "rand 0.8.5",
  "rustc-hex",
+]
+
+[[package]]
+name = "substrate-bn"
+version = "0.6.0"
+source = "git+https://github.com/sp1-patches/bn?rev=8ef05d3969312eca34fa9f1f566a469022badda6#8ef05d3969312eca34fa9f1f566a469022badda6"
+dependencies = [
+ "bytemuck",
+ "byteorder",
+ "cfg-if",
+ "crunchy",
+ "lazy_static",
+ "num-bigint 0.4.6",
+ "rand 0.8.5",
+ "rustc-hex",
+ "sp1-lib 3.4.0",
 ]
 
 [[package]]
