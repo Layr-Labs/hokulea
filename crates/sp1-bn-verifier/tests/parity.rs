@@ -100,8 +100,11 @@ fn ref_batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
 }
 
 fn sp1_batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
-    let blob_views: Vec<&[u8]> = blobs.iter().map(|b| b.data()).collect();
-    hokulea_sp1_bn_verifier::batch::batch_verify(&blob_views, commitments, proofs)
+    hokulea_sp1_bn_verifier::batch::batch_verify(
+        blobs.iter().map(|b| b.data()),
+        commitments.iter().copied(),
+        proofs.iter().copied(),
+    )
 }
 
 fn fixture_payload_a() -> Vec<u8> {
@@ -199,8 +202,12 @@ fn parity_compute_challenge_bytes_match() {
         };
 
         // Port: substrate-bn challenge.
+        let blob_poly = {
+            let fr = hokulea_sp1_bn_verifier::helpers::to_fr_array_canonical(blob.data()).unwrap();
+            hokulea_sp1_bn_verifier::helpers::PolynomialEvalForm::new(fr).unwrap()
+        };
         let sp1_z = hokulea_sp1_bn_verifier::helpers::compute_challenge(
-            blob.data(),
+            &blob_poly,
             &g1point_to_bn_affine(&commitment),
         )
         .unwrap();

@@ -333,11 +333,11 @@ fn expand_root_of_unity(root: &Fr) -> Vec<Fr> {
 
 /// Compute the Fiat-Shamir challenge for a single (blob, commitment) pair. Encoding matches
 /// `rust_kzg_bn254_primitives::helpers::compute_challenge` byte-for-byte.
-pub fn compute_challenge(blob_data: &[u8], commitment: &AffineG1) -> Result<Fr, KzgError> {
+pub fn compute_challenge(
+    blob_poly: &PolynomialEvalForm,
+    commitment: &AffineG1,
+) -> Result<Fr, KzgError> {
     validate_g1_point(&(*commitment).into())?;
-
-    let blob_fr = to_fr_array_canonical(blob_data)?;
-    let blob_poly = PolynomialEvalForm::new(blob_fr)?;
 
     let challenge_input_size = FIAT_SHAMIR_PROTOCOL_DOMAIN.len()
         + 8
@@ -371,7 +371,7 @@ pub fn compute_challenge(blob_data: &[u8], commitment: &AffineG1) -> Result<Fr, 
 /// For each blob/commitment pair: compute the FS challenge `z_i` and evaluate the blob's
 /// polynomial at `z_i`, returning `(zs, ys)`.
 pub fn compute_challenges_and_evaluate_polynomial(
-    blobs_data: &[&[u8]],
+    blobs_data: &[PolynomialEvalForm],
     commitments: &[AffineG1],
 ) -> Result<(Vec<Fr>, Vec<Fr>), KzgError> {
     if blobs_data.len() != commitments.len() && !blobs_data.is_empty() {
@@ -382,11 +382,9 @@ pub fn compute_challenges_and_evaluate_polynomial(
 
     let mut zs = Vec::with_capacity(blobs_data.len());
     let mut ys = Vec::with_capacity(blobs_data.len());
-    for (blob, commit) in blobs_data.iter().zip(commitments.iter()) {
-        let blob_fr = to_fr_array_canonical(blob)?;
-        let poly = PolynomialEvalForm::new(blob_fr)?;
-        let z = compute_challenge(blob, commit)?;
-        let y = evaluate_polynomial_in_evaluation_form(&poly, &z)?;
+    for (poly, commit) in blobs_data.iter().zip(commitments.iter()) {
+        let z = compute_challenge(poly, commit)?;
+        let y = evaluate_polynomial_in_evaluation_form(poly, &z)?;
         zs.push(z);
         ys.push(y);
     }

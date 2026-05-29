@@ -59,50 +59,49 @@ fn proof_bytes_to_affine(proof: &FixedBytes<64>) -> Result<AffineG1, KzgError> {
 /// `blobs[i]` is the raw blob bytes (length must be a multiple of 32 and each chunk a canonical
 /// field element). `commitments[i]` is the KZG commitment as `(x, y)` BE-encoded U256s, and
 /// `proofs[i]` is the 64-byte BE-encoded `(x, y)` proof point.
-pub fn batch_verify(blobs: &[&[u8]], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
+pub fn batch_verify(
+    blobs: impl Iterator<Item = impl AsRef<[u8]>>,
+    commitments: impl Iterator<Item = G1Point>,
+    proofs: impl Iterator<Item = FixedBytes<64>>,
+) -> bool {
     verify_blob_kzg_proof_batch(blobs, commitments, proofs).unwrap_or(false)
 }
 
 /// Verbose result variant of [`batch_verify`].
 pub fn verify_blob_kzg_proof_batch(
-    blobs: &[&[u8]],
-    commitments: &[G1Point],
-    proofs: &[FixedBytes<64>],
+    blobs: impl Iterator<Item = impl AsRef<[u8]>>,
+    commitments: impl Iterator<Item = G1Point>,
+    proofs: impl Iterator<Item = FixedBytes<64>>,
 ) -> Result<bool, KzgError> {
-    if commitments.len() != blobs.len() || proofs.len() != blobs.len() {
+    let polys: Vec<PolynomialEvalForm> = blobs
+        .map(|b| PolynomialEvalForm::new(to_fr_array_canonical(b.as_ref())?))
+        .collect::<Result<Vec<_>, KzgError>>()?;
+
+    // The empty batch is vacuously valid. Short-circuit before calling into substrate-bn:
+    // `AffineG1::msm` panics on a zero-length slice, and the reference verifier accepts
+    // the empty case (the equation `e(0, [τ]) = e(0, G)` is `1 = 1`).
+    if polys.is_empty() {
+        return Ok(true);
+    }
+
+    let commitments_aff: Vec<AffineG1> = commitments
+        .map(|c| g1_point_to_affine(&c))
+        .collect::<Result<Vec<_>, _>>()?;
+    let proofs_aff: Vec<AffineG1> = proofs
+        .map(|p| proof_bytes_to_affine(&p))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if commitments_aff.len() != polys.len() || proofs_aff.len() != polys.len() {
         return Err(KzgError::GenericError(
             "length's of the input are not the same".to_string(),
         ));
     }
 
-    // The empty batch is vacuously valid. Short-circuit before calling into substrate-bn:
-    // `AffineG1::msm` panics on a zero-length slice, and the reference verifier accepts
-    // the empty case (the equation `e(0, [τ]) = e(0, G)` is `1 = 1`).
-    if blobs.is_empty() {
-        return Ok(true);
-    }
-
-    let commitments_aff: Vec<AffineG1> = commitments
-        .iter()
-        .map(g1_point_to_affine)
-        .collect::<Result<Vec<_>, _>>()?;
-    let proofs_aff: Vec<AffineG1> = proofs
-        .iter()
-        .map(proof_bytes_to_affine)
-        .collect::<Result<Vec<_>, _>>()?;
-
-    let (zs, ys) = compute_challenges_and_evaluate_polynomial(blobs, &commitments_aff)?;
+    let (zs, ys) = compute_challenges_and_evaluate_polynomial(&polys, &commitments_aff)?;
 
     // Per-blob padded polynomial length, in field elements. The FS transcript binds these,
     // so a verifier hands the prover a transcript that depends on each blob's length.
-    let blob_lengths: Vec<u64> = blobs
-        .iter()
-        .map(|blob| {
-            let fr_vec = to_fr_array_canonical(blob)?;
-            let poly = PolynomialEvalForm::new(fr_vec)?;
-            Ok(poly.len() as u64)
-        })
-        .collect::<Result<Vec<_>, KzgError>>()?;
+    let blob_lengths: Vec<u64> = polys.iter().map(|poly| poly.len() as u64).collect();
 
     verify_kzg_proof_batch(&commitments_aff, &zs, &ys, &proofs_aff, &blob_lengths)
 }
