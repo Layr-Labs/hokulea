@@ -11,9 +11,7 @@ use alloc::vec::Vec;
 // Exactly one batch-verifier backend must be enabled. `sp1-bn-verifier` takes precedence when
 // both are on so a downstream that opts into the zkVM-cheap path always gets it.
 #[cfg(not(any(feature = "ark", feature = "sp1-bn-verifier")))]
-compile_error!(
-    "hokulea-proof requires one of the `ark` (default) or `sp1-bn-verifier` features"
-);
+compile_error!("hokulea-proof requires one of the `ark` (default) or `sp1-bn-verifier` features");
 
 use canoe_verifier::{CanoeVerifier, CertValidity};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
