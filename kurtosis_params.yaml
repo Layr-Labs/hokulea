@@ -20,6 +20,10 @@ ethereum_package:
       # See https://github.com/ethpandaops/ethereum-package/issues/974 for more details.
       cl_image: consensys/teku:25.5.0
       el_type: geth
+      # Pinned because `ethereum/client-go:latest` removed the `--allow-insecure-unlock` flag,
+      # which the pinned ethereum-package's geth launcher still passes. Any pre-removal tag works;
+      # bump when the optimism-package's ethereum-package pin advances past the launcher fix.
+      el_image: ethereum/client-go:v1.16.3
 optimism_package:
   observability:
     # Unfortunately can't be disabled, see https://github.com/ethpandaops/optimism-package/issues/221
