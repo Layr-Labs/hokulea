@@ -77,13 +77,6 @@ pub fn verify_blob_kzg_proof_batch(
         .map(|b| PolynomialEvalForm::new(to_fr_array_canonical(b.as_ref())?))
         .collect::<Result<Vec<_>, KzgError>>()?;
 
-    // The empty batch is vacuously valid. Short-circuit before calling into substrate-bn:
-    // `AffineG1::msm` panics on a zero-length slice, and the reference verifier accepts
-    // the empty case (the equation `e(0, [τ]) = e(0, G)` is `1 = 1`).
-    if polys.is_empty() {
-        return Ok(true);
-    }
-
     let commitments_aff: Vec<AffineG1> = commitments
         .map(|c| g1_point_to_affine(&c))
         .collect::<Result<Vec<_>, _>>()?;
@@ -95,6 +88,13 @@ pub fn verify_blob_kzg_proof_batch(
         return Err(KzgError::GenericError(
             "length's of the input are not the same".to_string(),
         ));
+    }
+
+    // The empty batch is vacuously valid. Short-circuit before calling into substrate-bn:
+    // `AffineG1::msm` panics on a zero-length slice, and the reference verifier accepts
+    // the empty case (the equation `e(0, [τ]) = e(0, G)` is `1 = 1`).
+    if polys.is_empty() {
+        return Ok(true);
     }
 
     let (zs, ys) = compute_challenges_and_evaluate_polynomial(&polys, &commitments_aff)?;

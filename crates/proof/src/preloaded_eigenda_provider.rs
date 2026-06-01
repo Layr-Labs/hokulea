@@ -4,10 +4,16 @@ use alloy_primitives::FixedBytes;
 use async_trait::async_trait;
 use eigenda_cert::{AltDACommitment, G1Point};
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
-use rust_kzg_bn254_primitives::blob::Blob;
 
 use alloc::boxed::Box;
 use alloc::vec::Vec;
+
+// Exactly one batch-verifier backend must be enabled. `sp1-bn-verifier` takes precedence when
+// both are on so a downstream that opts into the zkVM-cheap path always gets it.
+#[cfg(not(any(feature = "ark", feature = "sp1-bn-verifier")))]
+compile_error!(
+    "hokulea-proof requires one of the `ark` (default) or `sp1-bn-verifier` features"
+);
 
 use canoe_verifier::{CanoeVerifier, CertValidity};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
@@ -179,12 +185,13 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
 /// Batch-verify EigenDA blob KZG proofs.
 ///
 /// The backend is chosen at compile time:
-/// * default — `rust-kzg-bn254-verifier` (arkworks).
+/// * `--features ark` (default) — `rust-kzg-bn254-verifier` (arkworks).
 /// * `--features sp1-bn-verifier` — `hokulea-sp1-bn-verifier` (substrate-bn / sp1-patches),
 ///   which is significantly cheaper inside an SP1 zkVM thanks to the patched primitives.
+///   When both are enabled, `sp1-bn-verifier` wins.
 ///
 /// Both backends are tested for byte-level parity in `crates/sp1-bn-verifier/tests/parity.rs`.
-#[cfg(not(feature = "sp1-bn-verifier"))]
+#[cfg(all(feature = "ark", not(feature = "sp1-bn-verifier")))]
 pub fn batch_verify(
     blobs: impl Iterator<Item = impl AsRef<[u8]>>,
     commitments: impl Iterator<Item = G1Point>,
@@ -192,6 +199,7 @@ pub fn batch_verify(
 ) -> bool {
     use ark_bn254::{Fq, G1Affine};
     use ark_ff::PrimeField;
+    use rust_kzg_bn254_primitives::blob::Blob;
 
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
@@ -224,7 +232,7 @@ pub fn batch_verify(
     .unwrap_or(false)
 }
 
-/// Substrate-bn (sp1-patches) backend. Selected via the `sp1-bn-verifier` Cargo feature.
+/// Substrate-bn (sp1-patches) backend.
 #[cfg(feature = "sp1-bn-verifier")]
 pub fn batch_verify(
     blobs: impl Iterator<Item = impl AsRef<[u8]>>,
@@ -234,18 +242,20 @@ pub fn batch_verify(
     hokulea_sp1_bn_verifier::batch::batch_verify(blobs, commitments, proofs)
 }
 
-#[cfg(test)]
+// Tests use `rust-kzg-bn254-prover` (arkworks) to produce KZG proofs/commitments, so the test
+// module only compiles with the `ark` feature. The sp1 backend is exercised via the parity
+// suite in `crates/sp1-bn-verifier/tests/parity.rs`.
+#[cfg(all(test, feature = "ark"))]
 mod tests {
     use super::*;
     use crate::eigenda_witness::EigenDAWitness;
     use alloc::{borrow::Cow, vec};
     use alloy_primitives::{hex, Address, Bytes, U256};
-    // The KZG prover used by the tests is built on arkworks regardless of which batch-verify
-    // backend is selected, so the test-only `G1Affine` import is unconditional.
     use ark_bn254::G1Affine;
     use canoe_verifier::CanoeNoOpVerifier;
     use eigenda_cert::AltDACommitment;
     use num::BigUint;
+    use rust_kzg_bn254_primitives::blob::Blob;
     use rust_kzg_bn254_primitives::errors::KzgError;
     use rust_kzg_bn254_primitives::helpers::read_g1_point_from_bytes_be;
     use rust_kzg_bn254_prover::{kzg::KZG, srs::SRS};

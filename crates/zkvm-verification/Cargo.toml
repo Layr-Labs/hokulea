@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hokulea-proof.workspace = true
+hokulea-proof = { workspace = true, features = ["ark"] }
 kona-preimage.workspace = true
 kona-derive.workspace = true
 kona-proof.workspace = true

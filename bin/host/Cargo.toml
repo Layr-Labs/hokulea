@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Hokulea and EigenDA
-hokulea-proof.workspace = true
+hokulea-proof = { workspace = true, features = ["ark"] }
 hokulea-client-bin.workspace = true
 hokulea-eigenda.workspace = true
 eigenda-cert.workspace = true
