@@ -39,7 +39,7 @@ pub fn compute_powers(base: &Fr, count: usize) -> Vec<Fr> {
     let mut current = Fr::one();
     for _ in 0..count {
         powers.push(current);
-        current = current * *base;
+        current *= *base;
     }
     powers
 }
@@ -140,7 +140,7 @@ pub fn serialize_fr_le(value: &Fr) -> [u8; 32] {
 /// Each 32-byte chunk must encode a value strictly less than the field order; non-canonical
 /// chunks are rejected (matching `rust_kzg_bn254_primitives::helpers::validate_blob_data_as_canonical_field_elements`).
 pub fn to_fr_array_canonical(blob: &[u8]) -> Result<Vec<Fr>, KzgError> {
-    if blob.len() % BYTES_PER_FIELD_ELEMENT != 0 {
+    if !blob.len().is_multiple_of(BYTES_PER_FIELD_ELEMENT) {
         return Err(KzgError::InvalidInputLength);
     }
     let mut out = Vec::with_capacity(blob.len() / BYTES_PER_FIELD_ELEMENT);
@@ -285,7 +285,7 @@ pub fn evaluate_polynomial_in_evaluation_form(
                 "Division by zero in barycentric evaluation".to_string(),
             ));
         }
-        sum = sum + a * b.inverse().ok_or(KzgError::InvalidDenominator)?;
+        sum += a * b.inverse().ok_or(KzgError::InvalidDenominator)?;
     }
 
     let r = z.pow(fr_from_usize(width)) - Fr::one();
