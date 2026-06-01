@@ -2538,7 +2538,7 @@ dependencies = [
  "eigenda-cert",
  "sha2 0.10.9",
  "sp1-cc-client-executor",
- "sp1-lib 6.1.0",
+ "sp1-lib",
  "tracing",
 ]
 
@@ -4631,7 +4631,7 @@ dependencies = [
  "rust-kzg-bn254-verifier",
  "sha2 0.10.9",
  "spin 0.10.0",
- "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?rev=8ef05d3969312eca34fa9f1f566a469022badda6)",
+ "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-6.0.0-substrate-bn)",
  "thiserror 2.0.18",
 ]
 
@@ -11187,16 +11187,6 @@ dependencies = [
 
 [[package]]
 name = "sp1-lib"
-version = "3.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a5729da1b05d56c01457e5ecabdc77f1cc941df23f2921163a2f325aec22428"
-dependencies = [
- "bincode",
- "serde",
-]
-
-[[package]]
-name = "sp1-lib"
 version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b96392c1b1c197beaa6b0806099a8d73643a09d5ac0874e26c9c5153a7fcb4c"
@@ -11541,7 +11531,7 @@ dependencies = [
  "libm",
  "rand 0.8.5",
  "sha2 0.10.9",
- "sp1-lib 6.1.0",
+ "sp1-lib",
  "sp1-primitives",
 ]
 
@@ -11556,7 +11546,7 @@ dependencies = [
  "group 0.13.0",
  "pairing 0.23.0",
  "rand_core 0.6.4",
- "sp1-lib 6.1.0",
+ "sp1-lib",
  "subtle",
 ]
 
@@ -11722,7 +11712,7 @@ dependencies = [
 [[package]]
 name = "substrate-bn"
 version = "0.6.0"
-source = "git+https://github.com/sp1-patches/bn?rev=8ef05d3969312eca34fa9f1f566a469022badda6#8ef05d3969312eca34fa9f1f566a469022badda6"
+source = "git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-6.0.0-substrate-bn#13747d255e00c158afbb6d4a4a94275edd804bbf"
 dependencies = [
  "bytemuck",
  "byteorder",
@@ -11732,7 +11722,7 @@ dependencies = [
  "num-bigint 0.4.6",
  "rand 0.8.5",
  "rustc-hex",
- "sp1-lib 3.4.0",
+ "sp1-lib",
 ]
 
 [[package]]

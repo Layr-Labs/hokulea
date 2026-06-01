@@ -5,7 +5,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-substrate-bn = { git = "https://github.com/sp1-patches/bn", rev = "8ef05d3969312eca34fa9f1f566a469022badda6", default-features = false }
+substrate-bn = { git = "https://github.com/sp1-patches/bn", tag = "patch-0.6.0-sp1-6.0.0-substrate-bn" }
 
 eigenda-cert.workspace = true
 
@@ -23,4 +23,4 @@ rust-kzg-bn254-verifier.workspace = true
 hokulea-compute-proof.workspace = true
 hokulea-eigenda.workspace = true
 num.workspace = true
-substrate-bn = { git = "https://github.com/sp1-patches/bn", rev = "8ef05d3969312eca34fa9f1f566a469022badda6", default-features = false }
+substrate-bn = { git = "https://github.com/sp1-patches/bn", tag = "patch-0.6.0-sp1-6.0.0-substrate-bn" }
