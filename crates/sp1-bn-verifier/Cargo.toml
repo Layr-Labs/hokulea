@@ -23,4 +23,3 @@ rust-kzg-bn254-verifier.workspace = true
 hokulea-compute-proof.workspace = true
 hokulea-eigenda.workspace = true
 num.workspace = true
-substrate-bn = { git = "https://github.com/sp1-patches/bn", tag = "patch-0.6.0-sp1-6.0.0-substrate-bn" }
