@@ -35,4 +35,4 @@ tracing-subscriber.workspace = true
 [features]
 default = ["ark"]
 ark = ["hokulea-proof/ark"]
-bn = ["hokulea-proof/bn"]
+sp1-bn = ["hokulea-proof/sp1-bn"]

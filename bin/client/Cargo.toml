@@ -25,7 +25,7 @@ revm.workspace = true
 [features]
 default = ["ark"]
 ark = ["hokulea-proof/ark"]
-bn = ["hokulea-proof/bn"]
+sp1-bn = ["hokulea-proof/sp1-bn"]
 
 [package.metadata.cargo-machete]
 # cfg-if is used by the `client_entry` macro in kona-client

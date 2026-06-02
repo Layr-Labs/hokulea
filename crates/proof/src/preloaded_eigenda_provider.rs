@@ -8,10 +8,10 @@ use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 
-// Exactly one batch-verifier backend must be enabled. `bn` takes precedence when
+// Exactly one batch-verifier backend must be enabled. `sp1-bn` takes precedence when
 // both are on so a downstream that opts into the zkVM-cheap path always gets it.
-#[cfg(not(any(feature = "ark", feature = "bn")))]
-compile_error!("hokulea-proof requires one of the `ark` (default) or `bn` features");
+#[cfg(not(any(feature = "ark", feature = "sp1-bn")))]
+compile_error!("hokulea-proof requires one of the `ark` (default) or `sp1-bn` features");
 
 use canoe_verifier::{CanoeVerifier, CertValidity};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
@@ -184,12 +184,12 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
 ///
 /// The backend is chosen at compile time:
 /// * `--features ark` (default) — `rust-kzg-bn254-verifier` (arkworks).
-/// * `--features bn` — `hokulea-sp1-bn-verifier` (substrate-bn / sp1-patches),
+/// * `--features sp1-bn` — `hokulea-sp1-bn-verifier` (substrate-bn / sp1-patches),
 ///   which is significantly cheaper inside an SP1 zkVM thanks to the patched primitives.
-///   When both are enabled, `bn` wins.
+///   When both are enabled, `sp1-bn` wins.
 ///
 /// Both backends are tested for byte-level parity in `crates/sp1-bn-verifier/tests/parity.rs`.
-#[cfg(all(feature = "ark", not(feature = "bn")))]
+#[cfg(all(feature = "ark", not(feature = "sp1-bn")))]
 pub fn batch_verify(
     blobs: impl Iterator<Item = impl AsRef<[u8]>>,
     commitments: impl Iterator<Item = G1Point>,
@@ -231,7 +231,7 @@ pub fn batch_verify(
 }
 
 /// Substrate-bn (sp1-patches) backend.
-#[cfg(feature = "bn")]
+#[cfg(feature = "sp1-bn")]
 pub fn batch_verify(
     blobs: impl Iterator<Item = impl AsRef<[u8]>>,
     commitments: impl Iterator<Item = G1Point>,

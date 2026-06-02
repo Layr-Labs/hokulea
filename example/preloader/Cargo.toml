@@ -44,4 +44,7 @@ sp1-sdk = {workspace = true}
 [features]
 sp1-cc = ["canoe-sp1-cc-host"]
 steel = ["canoe-steel-apps", "canoe-steel-verifier"]
+# Route batch KZG verification through hokulea-sp1-bn-verifier (substrate-bn / sp1-patches)
+# instead of the default arkworks backend. Exercises the same code path the zkVM client uses.
+sp1-bn = ["hokulea-proof/sp1-bn"]
 
