@@ -4,9 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hokulea-proof = { workspace = true, features = ["ark"] }
+hokulea-proof.workspace = true
 kona-preimage.workspace = true
 kona-derive.workspace = true
 kona-proof.workspace = true
 canoe-verifier.workspace = true
 canoe-verifier-address-fetcher.workspace = true
+
+[features]
+default = ["ark"]
+ark = ["hokulea-proof/ark"]
+bn = ["hokulea-proof/bn"]

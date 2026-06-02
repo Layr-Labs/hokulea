@@ -12,7 +12,7 @@ hokulea-eigenda.workspace = true
 
 eigenda-cert.workspace = true
 
-# Arkworks-flavoured batch KZG verifier. Optional so the `sp1-bn-verifier` build doesn't drag
+# Arkworks-flavoured batch KZG verifier. Optional so the `bn` build doesn't drag
 # arkworks into the dependency tree (rust-kzg-bn254-primitives transitively depends on
 # ark-bn254/ark-ec/ark-ff/ark-serialize/ark-std/ark-poly).
 rust-kzg-bn254-primitives = { workspace = true, optional = true }
@@ -47,6 +47,6 @@ default = ["ark"]
 # Arkworks-based batch KZG verifier (`rust-kzg-bn254-verifier`). Default backend.
 ark = ["dep:rust-kzg-bn254-primitives", "dep:rust-kzg-bn254-verifier", "dep:ark-bn254", "dep:ark-ff"]
 # Use the substrate-bn (sp1-patches/bn) batch KZG verifier. Intended for zkVM clients where
-# the patched bn primitives win. When both `ark` and `sp1-bn-verifier` are enabled,
-# `sp1-bn-verifier` takes precedence — opt-in to the zkVM-cheap path is honoured.
-sp1-bn-verifier = ["dep:hokulea-sp1-bn-verifier"]
+# the patched bn primitives win. When both `ark` and `bn` are enabled,
+# `bn` takes precedence — opt-in to the zkVM-cheap path is honoured.
+bn = ["dep:hokulea-sp1-bn-verifier"]
