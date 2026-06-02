@@ -1,10 +1,9 @@
-//! Define three data structures [EigenDAPreimage] [EigenDAWitness] [EigenDAWitnessWithTrustedData]
+//! Define two data structures [EigenDAPreimage] and [EigenDAWitness].
 //! [EigenDAPreimage] contains purely eigenda preimage after running derivation pipeline. It can be
-//! converted into [EigenDAWitness] with appropriate proofs. [EigenDAWitnessWithTrustedData] contains
-//! in addition to a list of trusted input which are required for cert validity verification.
+//! converted into [EigenDAWitness] with appropriate proofs.
 extern crate alloc;
 use alloc::vec::Vec;
-use alloy_primitives::{FixedBytes, B256};
+use alloy_primitives::FixedBytes;
 
 use eigenda_cert::AltDACommitment;
 use hokulea_eigenda::EncodedPayload;
@@ -135,28 +134,4 @@ impl EigenDAWitness {
 
         (preimage, kzg_proofs, self.canoe_proof_bytes)
     }
-}
-
-/// [EigenDAWitnessWithTrustedData] contains [EigenDAWitness] with a list of
-/// trusted input data source. Those are either already verified or will be verified without
-/// modification. In practice, all of data can be found in verified oracle BootInfo, or Header
-/// corresponding to the l1_head from BootInfo.
-/// zkVM crate provides an example method `eigenda_witness_to_preloaded_provider` to convert a
-/// [EigenDAWitness] to [EigenDAWitnessWithTrustedData] using a trusted oracle, which has been
-/// populated the trusted l1_head_block_hash and its corresponding header used to populate all
-/// the fields
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EigenDAWitnessWithTrustedData {
-    /// block hash where view call anchored at, it must be part of l1 canonical chain
-    /// where l1_head from kona_cfg is also a part of
-    pub l1_head_block_hash: B256,
-    // l1_head_block_number for l1_head_block_hash
-    pub l1_head_block_number: u64,
-    // l1_head_block_timestamp for l1_head_block_hash
-    pub l1_head_block_timestamp: u64,
-    /// l1 chain id specifies the chain which implicitly along with l1_head_block_number
-    /// indicates the current EVM version due to hardfork.
-    pub l1_chain_id: u64,
-    // eigenDA witness
-    pub witness: EigenDAWitness,
 }

@@ -9,8 +9,7 @@ use kona_proof::{
 };
 
 use hokulea_proof::{
-    eigenda_witness::{EigenDAWitness, EigenDAWitnessWithTrustedData},
-    preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
+    eigenda_witness::EigenDAWitness, preloaded_eigenda_provider::PreloadedEigenDAPreimageProvider,
 };
 
 use canoe_verifier::CanoeVerifier;
@@ -46,20 +45,16 @@ where
         .await
         .expect("should be able to get header for l1 header using oracle");
 
-    // it is critical that some field of the witness is populated inside the zkVM using known truth within the zkVM.
-    // All the data from the oracle has been verified, by Kailua and OP-succincts
-    // For kailua, the check is at https://github.com/boundless-xyz/kailua/blob/2414297a5f9feb98365ef6d88634bcd181a1934b/crates/kona/src/client/stateless.rs#L61
-    // For op-succinct, the check is at https://github.com/succinctlabs/op-succinct/blob/b0f190e634ab5b03a3028d4ef88e207186b48337/programs/range/eigenda/src/main.rs#L32
-    let witness_with_trusted_data = EigenDAWitnessWithTrustedData {
-        l1_head_block_hash: l1_head,
-        l1_head_block_number: header.number,
-        l1_head_block_timestamp: header.timestamp,
-        l1_chain_id: boot_info.rollup_config.l1_chain_id,
-        witness,
-    };
-
+    // It is critical that the L1 context passed to from_witness is populated inside the zkVM
+    // from already-verified oracle truth. All data from the oracle has been verified by the
+    // respective zkVM host (Kailua: stateless.rs#L61, op-succinct: range/eigenda/src/main.rs#L32).
+    // Supplying incorrect values would allow accepting invalid DA certificates or rejecting valid ones.
     Ok(PreloadedEigenDAPreimageProvider::from_witness(
-        witness_with_trusted_data,
+        witness,
+        l1_head,
+        header.number,
+        header.timestamp,
+        boot_info.rollup_config.l1_chain_id,
         canoe_verifier,
         canoe_address_fetcher,
     ))
