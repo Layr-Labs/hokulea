@@ -11,7 +11,7 @@ alloy-rlp.workspace = true
 
 kona-proof.workspace = true
 kona-preimage.workspace = true
-hokulea-proof.workspace = true
+hokulea-proof = { workspace = true }
 hokulea-eigenda.workspace = true
 eigenda-cert.workspace = true
 canoe-provider.workspace = true
@@ -20,3 +20,8 @@ canoe-verifier-address-fetcher.workspace = true
 async-trait.workspace = true
 anyhow.workspace = true
 tracing.workspace = true
+
+[features]
+default = ["ark"]
+ark = ["hokulea-proof/ark"]
+sp1-bn = ["hokulea-proof/sp1-bn"]

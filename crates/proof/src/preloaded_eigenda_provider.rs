@@ -1,17 +1,17 @@
-use crate::eigenda_witness::EigenDAWitnessWithTrustedData;
+use crate::eigenda_witness::{EigenDAWitness, EigenDAWitnessWithTrustedData};
 use crate::errors::HokuleaOracleProviderError;
 use alloy_primitives::FixedBytes;
-use ark_bn254::{Fq, G1Affine};
-use ark_ff::PrimeField;
 use async_trait::async_trait;
 use eigenda_cert::{AltDACommitment, G1Point};
 use hokulea_eigenda::{EigenDAPreimageProvider, EncodedPayload};
-use rust_kzg_bn254_primitives::blob::Blob;
-use rust_kzg_bn254_verifier::batch;
 
 use alloc::boxed::Box;
-use alloc::vec;
 use alloc::vec::Vec;
+
+// Exactly one batch-verifier backend must be enabled. `sp1-bn` takes precedence when
+// both are on so a downstream that opts into the zkVM-cheap path always gets it.
+#[cfg(not(any(feature = "ark", feature = "sp1-bn")))]
+compile_error!("hokulea-proof requires one of the `ark` (default) or `sp1-bn` features");
 
 use canoe_verifier::{CanoeVerifier, CertValidity};
 use canoe_verifier_address_fetcher::CanoeVerifierAddressFetcher;
@@ -55,12 +55,17 @@ impl PreloadedEigenDAPreimageProvider {
         canoe_verifier: impl CanoeVerifier,
         canoe_verifier_address_fetcher: impl CanoeVerifierAddressFetcher,
     ) -> PreloadedEigenDAPreimageProvider {
-        let eigenda_witness = witness_with_trusted_data.witness;
+        let EigenDAWitness {
+            validities,
+            encoded_payloads,
+            canoe_proof_bytes,
+        } = witness_with_trusted_data.witness;
+
         // check number of element invariants
-        assert!(eigenda_witness.validities.len() >= eigenda_witness.encoded_payloads.len());
+        assert!(validities.len() >= encoded_payloads.len());
 
         // check all encoded payload having correct number of field elements compared to the number from altda commitment
-        for (altda_commitment, encoded_payload, _) in &eigenda_witness.encoded_payloads {
+        for (altda_commitment, encoded_payload, _) in &encoded_payloads {
             assert_eq!(
                 encoded_payload.num_field_element(),
                 altda_commitment.get_num_field_element()
@@ -69,10 +74,9 @@ impl PreloadedEigenDAPreimageProvider {
 
         // if the number of da cert is non-zero, verify the single canoe proof, regardless if the
         // da cert is valid or not. Otherwise, skip the verification
-        if !eigenda_witness.validities.is_empty() {
+        if !validities.is_empty() {
             // construct cert validity
-            let cert_validities = eigenda_witness
-                .validities
+            let cert_validities = validities
                 .iter()
                 .map(|(altda_commitment, claimed_validity)| {
                     let verifier_address_fetched = canoe_verifier_address_fetcher
@@ -95,37 +99,26 @@ impl PreloadedEigenDAPreimageProvider {
 
             // check cert validity altogether in one verification
             canoe_verifier
-                .validate_cert_receipt(cert_validities, eigenda_witness.canoe_proof_bytes)
+                .validate_cert_receipt(cert_validities, canoe_proof_bytes)
                 .expect("verification should have been passing");
         }
 
         // check all altda commitment validity are supported by zk validity proof
-        let mut validity_entries = vec![];
-        for (altda_commitment, claimed_validity) in &eigenda_witness.validities {
-            // populate only the mapping <DAcert, boolean> for preimage trait, by this time it has been verified
-            validity_entries.push((altda_commitment.clone(), *claimed_validity));
-        }
+        let mut validity_entries: Vec<_> = validities.into_iter().collect();
 
-        let mut encoded_payload_entries = vec![];
+        assert!(batch_verify(
+            encoded_payloads.iter().map(|(_, ep, _)| ep.serialize()),
+            encoded_payloads
+                .iter()
+                .map(|(ac, _, _)| ac.get_kzg_commitment()),
+            encoded_payloads.iter().map(|(_, _, p)| *p),
+        ));
 
-        // check all blobs correponds to cert are correct
-        let mut blobs = vec![];
-        let mut proofs = vec![];
-        let mut commitments = vec![];
-
-        for (altda_commitment, encoded_payload, kzg_proof) in eigenda_witness.encoded_payloads {
-            // populate entries ahead of time, if something is invalid, batch_verify will abort
-            encoded_payload_entries.push((altda_commitment.clone(), encoded_payload.clone()));
-
-            // gather kzg commitment and proof for batch verification
-            let blob =
-                Blob::new(encoded_payload.serialize()).expect("should be able to construct a blob");
-            blobs.push(blob);
-            proofs.push(kzg_proof);
-            commitments.push(altda_commitment.get_kzg_commitment());
-        }
-
-        assert!(batch_verify(&blobs, &commitments, &proofs));
+        // batch_verify passed; now populate entries (avoids cloning on verification failure)
+        let mut encoded_payload_entries: Vec<_> = encoded_payloads
+            .into_iter()
+            .map(|(ac, ep, _)| (ac, ep))
+            .collect();
         // invariant check
         assert!(validity_entries.len() >= encoded_payload_entries.len());
 
@@ -187,15 +180,31 @@ impl EigenDAPreimageProvider for PreloadedEigenDAPreimageProvider {
     }
 }
 
-/// Eventually, rust-kzg-bn254 would provide an interface that takes big endian
-/// bytes input, so that we can remove this wrapper. For now, just include it here
-/// the proving locates inside hokulea-compute-proof crate
-pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedBytes<64>]) -> bool {
+/// Batch-verify EigenDA blob KZG proofs.
+///
+/// The backend is chosen at compile time:
+/// * `--features ark` (default) — `rust-kzg-bn254-verifier` (arkworks).
+/// * `--features sp1-bn` — `hokulea-sp1-bn-verifier` (substrate-bn / sp1-patches),
+///   which is significantly cheaper inside an SP1 zkVM thanks to the patched primitives.
+///   When both are enabled, `sp1-bn` wins.
+///
+/// Both backends are tested for byte-level parity in `crates/sp1-bn-verifier/tests/parity.rs`.
+#[cfg(all(feature = "ark", not(feature = "sp1-bn")))]
+pub fn batch_verify(
+    blobs: impl Iterator<Item = impl AsRef<[u8]>>,
+    commitments: impl Iterator<Item = G1Point>,
+    proofs: impl Iterator<Item = FixedBytes<64>>,
+) -> bool {
+    use ark_bn254::{Fq, G1Affine};
+    use ark_ff::PrimeField;
+    use rust_kzg_bn254_primitives::blob::Blob;
+
     // transform to rust-kzg-bn254 inputs types
     // TODO should make library do the parsing the return result
-    let lib_blobs: &[Blob] = blobs;
+    let lib_blobs: Vec<Blob> = blobs
+        .map(|b| Blob::new(b.as_ref()).expect("should be able to construct blob"))
+        .collect();
     let lib_commitments: Vec<G1Affine> = commitments
-        .iter()
         .map(|c| {
             let a: [u8; 32] = c.x.to_be_bytes();
             let b: [u8; 32] = c.y.to_be_bytes();
@@ -205,28 +214,46 @@ pub fn batch_verify(blobs: &[Blob], commitments: &[G1Point], proofs: &[FixedByte
         })
         .collect();
     let lib_proofs: Vec<G1Affine> = proofs
-        .iter()
         .map(|p| {
             let x = Fq::from_be_bytes_mod_order(&p[..32]);
             let y = Fq::from_be_bytes_mod_order(&p[32..64]);
-
             G1Affine::new(x, y)
         })
         .collect();
 
     // convert all the error to false
-    batch::verify_blob_kzg_proof_batch(lib_blobs, &lib_commitments, &lib_proofs).unwrap_or(false)
+    rust_kzg_bn254_verifier::batch::verify_blob_kzg_proof_batch(
+        &lib_blobs,
+        &lib_commitments,
+        &lib_proofs,
+    )
+    .unwrap_or(false)
 }
 
-#[cfg(test)]
+/// Substrate-bn (sp1-patches) backend.
+#[cfg(feature = "sp1-bn")]
+pub fn batch_verify(
+    blobs: impl Iterator<Item = impl AsRef<[u8]>>,
+    commitments: impl Iterator<Item = G1Point>,
+    proofs: impl Iterator<Item = FixedBytes<64>>,
+) -> bool {
+    hokulea_sp1_bn_verifier::batch::batch_verify(blobs, commitments, proofs)
+}
+
+// Tests use `rust-kzg-bn254-prover` (arkworks) to produce KZG proofs/commitments, so the test
+// module only compiles with the `ark` feature. The sp1 backend is exercised via the parity
+// suite in `crates/sp1-bn-verifier/tests/parity.rs`.
+#[cfg(all(test, feature = "ark"))]
 mod tests {
     use super::*;
     use crate::eigenda_witness::EigenDAWitness;
     use alloc::{borrow::Cow, vec};
     use alloy_primitives::{hex, Address, Bytes, U256};
+    use ark_bn254::G1Affine;
     use canoe_verifier::CanoeNoOpVerifier;
     use eigenda_cert::AltDACommitment;
     use num::BigUint;
+    use rust_kzg_bn254_primitives::blob::Blob;
     use rust_kzg_bn254_primitives::errors::KzgError;
     use rust_kzg_bn254_primitives::helpers::read_g1_point_from_bytes_be;
     use rust_kzg_bn254_prover::{kzg::KZG, srs::SRS};
@@ -385,21 +412,33 @@ mod tests {
             .into_iter()
             .map(compute_kzg_proof_and_commitment)
         {
-            blobs.push(blob);
+            blobs.push(Vec::from(blob));
             commitments.push(commitment);
             proofs.push(proof);
         }
 
-        assert!(batch_verify(&blobs, &commitments, &proofs));
+        assert!(batch_verify(
+            blobs.iter(),
+            commitments.iter().cloned(),
+            proofs.iter().copied()
+        ));
         let mut proofs = proofs.clone();
 
         // switch order of proof 0 and 1 should be enough to corrupt
         proofs.swap(0, 1);
 
-        assert!(!batch_verify(&blobs, &commitments, &proofs));
+        assert!(!batch_verify(
+            blobs.iter(),
+            commitments.iter().cloned(),
+            proofs.iter().copied()
+        ));
 
         // corrupt proof by using the second srs as proof
-        assert!(!batch_verify(&blobs[..1], &commitments[..1], &proofs[..1]));
+        assert!(!batch_verify(
+            blobs[..1].iter(),
+            commitments[..1].iter().cloned(),
+            proofs[..1].iter().copied()
+        ));
     }
 
     fn construct_template_witness_with_trusted_data(

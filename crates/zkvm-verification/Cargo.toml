@@ -10,3 +10,8 @@ kona-derive.workspace = true
 kona-proof.workspace = true
 canoe-verifier.workspace = true
 canoe-verifier-address-fetcher.workspace = true
+
+[features]
+default = ["ark"]
+ark = ["hokulea-proof/ark"]
+sp1-bn = ["hokulea-proof/sp1-bn"]

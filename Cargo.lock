@@ -4592,6 +4592,7 @@ dependencies = [
  "eigenda-cert",
  "hokulea-compute-proof",
  "hokulea-eigenda",
+ "hokulea-sp1-bn-verifier",
  "kona-preimage",
  "kona-proof",
  "num",
@@ -4612,6 +4613,26 @@ dependencies = [
  "alloy-primitives 1.5.6",
  "canoe-verifier-address-fetcher",
  "eigenda-cert",
+]
+
+[[package]]
+name = "hokulea-sp1-bn-verifier"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives 1.5.6",
+ "ark-bn254",
+ "ark-ff 0.5.0",
+ "eigenda-cert",
+ "hokulea-compute-proof",
+ "hokulea-eigenda",
+ "num",
+ "rust-kzg-bn254-primitives",
+ "rust-kzg-bn254-prover",
+ "rust-kzg-bn254-verifier",
+ "sha2 0.10.9",
+ "spin 0.10.0",
+ "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-6.0.0-substrate-bn)",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -8956,7 +8977,7 @@ dependencies = [
  "rug",
  "secp256k1 0.31.1",
  "sha2 0.10.9",
- "substrate-bn",
+ "substrate-bn 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -11686,6 +11707,22 @@ dependencies = [
  "lazy_static",
  "rand 0.8.5",
  "rustc-hex",
+]
+
+[[package]]
+name = "substrate-bn"
+version = "0.6.0"
+source = "git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-6.0.0-substrate-bn#13747d255e00c158afbb6d4a4a94275edd804bbf"
+dependencies = [
+ "bytemuck",
+ "byteorder",
+ "cfg-if",
+ "crunchy",
+ "lazy_static",
+ "num-bigint 0.4.6",
+ "rand 0.8.5",
+ "rustc-hex",
+ "sp1-lib",
 ]
 
 [[package]]
