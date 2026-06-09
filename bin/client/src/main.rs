@@ -9,6 +9,7 @@ use kona_preimage::{HintWriter, OracleReader};
 use kona_std_fpvm::{FileChannel, FileDescriptor};
 use kona_std_fpvm_proc::client_entry;
 
+use alloy_op_evm::post_exec::PostExecEvmFactoryAdapter;
 use kona_client::fpvm_evm::FpvmOpEvmFactory;
 
 /// The global preimage oracle reader pipe.
@@ -30,6 +31,6 @@ fn main() -> Result<(), String> {
     kona_proof::block_on(run_direct_client(
         ORACLE_READER,
         HINT_WRITER,
-        FpvmOpEvmFactory::new(HINT_WRITER, ORACLE_READER),
+        PostExecEvmFactoryAdapter::new(FpvmOpEvmFactory::new(HINT_WRITER, ORACLE_READER)),
     ))
 }

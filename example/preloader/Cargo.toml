@@ -21,13 +21,17 @@ tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
 
 kona-client.workspace = true
+kona-genesis.workspace = true
 kona-preimage.workspace = true
 kona-proof.workspace = true
 
 # Execution
 alloy-evm.workspace = true
 alloy-op-evm.workspace = true
-alloy-rpc-client.workspace = true
+# Only the `sp1-cc` feature path uses this — to build the L1 RpcClient for
+# CanoeSp1CCReducedProofProvider, which lives on the reth-1.9.3 / alloy-1.x stack.
+# Pinned to 1.6.x rather than the workspace's alloy-2.x so the RpcClient types match.
+alloy-rpc-client = { version = "1.6.3", default-features = false }
 op-alloy-consensus.workspace = true
 op-revm.workspace = true
 revm.workspace = true

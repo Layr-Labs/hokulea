@@ -1,5 +1,6 @@
 use crate::eigenda_preimage::OnlineEigenDAPreimageProvider;
 use crate::handler::SingleChainHintHandlerWithEigenDA;
+use alloy_op_evm::post_exec::PostExecEvmFactoryAdapter;
 use anyhow::Result;
 use clap::Parser;
 use hokulea_proof::hint::ExtendedHintType;
@@ -144,10 +145,10 @@ impl SingleChainHostWithEigenDA {
         let client_task = task::spawn(hokulea_client_bin::client::run_direct_client(
             OracleReader::new(preimage.client.clone()),
             HintWriter::new(hint.client.clone()),
-            FpvmOpEvmFactory::new(
+            PostExecEvmFactoryAdapter::new(FpvmOpEvmFactory::new(
                 HintWriter::new(hint.client),
                 OracleReader::new(preimage.client),
-            ),
+            )),
         ));
 
         let (_, client_result) = tokio::try_join!(server_task, client_task)?;
