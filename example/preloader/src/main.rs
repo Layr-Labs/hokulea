@@ -5,6 +5,7 @@ use hokulea_host_bin::{cfg::SingleChainHostWithEigenDA, init_tracing_subscriber}
 use hokulea_zkvm_verification::eigenda_witness_to_preloaded_provider;
 use kona_client::fpvm_evm::FpvmOpEvmFactory;
 use kona_client::single::FaultProofProgramError;
+use kona_genesis::RollupConfig;
 use kona_preimage::{
     BidirectionalChannel, CommsClient, HintWriter, HintWriterClient, OracleReader,
     PreimageOracleClient,
@@ -14,9 +15,13 @@ use tokio::task;
 
 use core::fmt::Debug;
 
-use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
-use alloy_op_evm::block::OpTxEnv;
-use op_alloy_consensus::OpTxEnvelope;
+use alloy_evm::{block::BlockExecutorFactory, EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use alloy_op_evm::{
+    block::{OpAlloyReceiptBuilder, OpTxEnv},
+    post_exec::PostExecEvmFactoryAdapter,
+    OpBlockExecutionCtx, OpBlockExecutorFactory,
+};
+use op_alloy_consensus::{OpReceiptEnvelope, OpTxEnvelope};
 use op_revm::OpSpecId;
 use revm::context::BlockEnv;
 
@@ -113,10 +118,10 @@ async fn main() -> anyhow::Result<()> {
     let client_task = task::spawn(run_witgen_and_zk_verification(
         OracleReader::new(preimage.client.clone()),
         HintWriter::new(hint.client.clone()),
-        FpvmOpEvmFactory::new(
+        PostExecEvmFactoryAdapter::new(FpvmOpEvmFactory::new(
             HintWriter::new(hint.client),
             OracleReader::new(preimage.client),
-        ),
+        )),
         canoe_provider,
         canoe_verifier,
         canoe_address_fetcher,
@@ -149,6 +154,12 @@ where
     Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx:
         FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
+    OpBlockExecutorFactory<OpAlloyReceiptBuilder, RollupConfig, Evm>: for<'a> BlockExecutorFactory<
+        EvmFactory = Evm,
+        ExecutionCtx<'a> = OpBlockExecutionCtx,
+        Transaction = OpTxEnvelope,
+        Receipt = OpReceiptEnvelope,
+    >,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
 
@@ -195,6 +206,12 @@ where
     Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx:
         FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
+    OpBlockExecutorFactory<OpAlloyReceiptBuilder, RollupConfig, Evm>: for<'a> BlockExecutorFactory<
+        EvmFactory = Evm,
+        ExecutionCtx<'a> = OpBlockExecutionCtx,
+        Transaction = OpTxEnvelope,
+        Receipt = OpReceiptEnvelope,
+    >,
 {
     // Run derivation for the first time to populate the witness data
     let eigenda_preimage: EigenDAPreimage =
@@ -244,6 +261,12 @@ where
     Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx:
         FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
+    OpBlockExecutorFactory<OpAlloyReceiptBuilder, RollupConfig, Evm>: for<'a> BlockExecutorFactory<
+        EvmFactory = Evm,
+        ExecutionCtx<'a> = OpBlockExecutionCtx,
+        Transaction = OpTxEnvelope,
+        Receipt = OpReceiptEnvelope,
+    >,
 {
     let beacon = OracleBlobProvider::new(oracle.clone());
 
@@ -279,6 +302,12 @@ where
     Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx:
         FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
+    OpBlockExecutorFactory<OpAlloyReceiptBuilder, RollupConfig, Evm>: for<'a> BlockExecutorFactory<
+        EvmFactory = Evm,
+        ExecutionCtx<'a> = OpBlockExecutionCtx,
+        Transaction = OpTxEnvelope,
+        Receipt = OpReceiptEnvelope,
+    >,
 {
     info!("start the code supposed to run inside zkVM");
 

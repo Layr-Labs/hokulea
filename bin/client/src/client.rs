@@ -4,15 +4,19 @@ use alloc::sync::Arc;
 use core::fmt::Debug;
 
 use kona_client::single::FaultProofProgramError;
+use kona_genesis::RollupConfig;
 use kona_preimage::{HintWriterClient, PreimageOracleClient};
 use kona_proof::{l1::OracleBlobProvider, CachingOracle};
 
 use hokulea_client::fp_client;
 use hokulea_proof::eigenda_provider::OracleEigenDAPreimageProvider;
 
-use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
-use alloy_op_evm::block::OpTxEnv;
-use op_alloy_consensus::OpTxEnvelope;
+use alloy_evm::{block::BlockExecutorFactory, EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use alloy_op_evm::{
+    block::{OpAlloyReceiptBuilder, OpTxEnv},
+    OpBlockExecutionCtx, OpBlockExecutorFactory,
+};
+use op_alloy_consensus::{OpReceiptEnvelope, OpTxEnvelope};
 use op_revm::OpSpecId;
 use revm::context::BlockEnv;
 
@@ -31,6 +35,12 @@ where
     Evm: EvmFactory<Spec = OpSpecId, BlockEnv = BlockEnv> + Send + Sync + Debug + Clone + 'static,
     <Evm as EvmFactory>::Tx:
         FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
+    OpBlockExecutorFactory<OpAlloyReceiptBuilder, RollupConfig, Evm>: for<'a> BlockExecutorFactory<
+        EvmFactory = Evm,
+        ExecutionCtx<'a> = OpBlockExecutionCtx,
+        Transaction = OpTxEnvelope,
+        Receipt = OpReceiptEnvelope,
+    >,
 {
     const ORACLE_LRU_SIZE: usize = 1024;
 
