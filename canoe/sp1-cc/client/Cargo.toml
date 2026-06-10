@@ -3,6 +3,18 @@ name = "canoe-sp1-cc-client"
 description = ""
 edition = "2021"
 
+# This is an SP1 zkVM guest. When built for the host target (e.g. by `cargo nextest`),
+# `sp1_zkvm::entrypoint!` generates a bare `#[no_mangle] fn main()` that just returns,
+# leaving an undefined process exit status (0 on macOS, 112 on Linux). nextest runs every
+# workspace test binary with `--list` before executing, so on Linux CI that non-zero exit
+# is reported as TEST_LIST_CREATION_FAILED (exit 104). Disabling the test/bench harness
+# stops nextest from listing this binary at all.
+[[bin]]
+name = "canoe-sp1-cc-client"
+path = "src/main.rs"
+test = false
+bench = false
+
 [dependencies]
 sp1-cc-client-executor = { workspace = true }
 

@@ -11,6 +11,7 @@ use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
 use kona_derive::BlobProvider;
 use kona_driver::Driver;
 use kona_executor::TrieDBProvider;
+use kona_genesis::RollupConfig;
 use kona_preimage::CommsClient;
 use kona_proof::{
     executor::KonaExecutor, l1::OracleL1ChainProvider, l1::OraclePipeline,
@@ -19,9 +20,12 @@ use kona_proof::{
 
 use kona_derive::EthereumDataSource;
 
-use alloy_evm::{EvmFactory, FromRecoveredTx, FromTxWithEncoded};
-use alloy_op_evm::block::OpTxEnv;
-use op_alloy_consensus::OpTxEnvelope;
+use alloy_evm::{block::BlockExecutorFactory, EvmFactory, FromRecoveredTx, FromTxWithEncoded};
+use alloy_op_evm::{
+    block::{OpAlloyReceiptBuilder, OpTxEnv},
+    OpBlockExecutionCtx, OpBlockExecutorFactory,
+};
+use op_alloy_consensus::{OpReceiptEnvelope, OpTxEnvelope};
 use op_revm::OpSpecId;
 use revm::context::BlockEnv;
 
@@ -42,6 +46,12 @@ where
     <E as EigenDAPreimageProvider>::Error: Debug,
     <Evm as EvmFactory>::Tx:
         FromTxWithEncoded<OpTxEnvelope> + FromRecoveredTx<OpTxEnvelope> + OpTxEnv,
+    OpBlockExecutorFactory<OpAlloyReceiptBuilder, RollupConfig, Evm>: for<'a> BlockExecutorFactory<
+        EvmFactory = Evm,
+        ExecutionCtx<'a> = OpBlockExecutionCtx,
+        Transaction = OpTxEnvelope,
+        Receipt = OpReceiptEnvelope,
+    >,
 {
     ////////////////////////////////////////////////////////////////
     //                          PROLOGUE                          //
@@ -117,6 +127,7 @@ where
         dap,
         l1_provider.clone(),
         l2_provider.clone(),
+        None,
     )
     .await?;
 

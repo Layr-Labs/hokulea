@@ -20,6 +20,7 @@ kona-client.workspace = true
 
 # Alloy
 alloy-primitives = { workspace = true, features = ["serde"] }
+alloy-op-evm.workspace = true
 
 # General
 anyhow.workspace = true
