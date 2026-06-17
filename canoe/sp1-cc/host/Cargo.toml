@@ -7,13 +7,12 @@ edition = "2021"
 sp1-cc-client-executor.workspace = true
 sp1-cc-host-executor.workspace = true
 
-# sp1-cc runs on the reth-1.9.3 / alloy-1.x stack (sp1-cc tag reth-1.9.3-sp1-6.1.0),
-# so these alloy crates are pinned to the steel/sp1-compatible 1.6.x versions rather
-# than the workspace's alloy-2.x pins used on the Kona (L2) side.
-alloy-genesis = { version = "1.6.3", default-features = false }
+# sp1-cc now runs on the reth-2.2.0 / alloy-2.x stack (sp1-cc tag reth-2.2.0-sp1-6.2.4),
+# matching the workspace's alloy-2.x pins shared with the Kona (L2) side.
+alloy-genesis.workspace = true
 alloy-primitives.workspace = true
-alloy-rpc-client = { version = "1.6.3", default-features = false }
-alloy-rpc-types = { version = "1.6.3", default-features = false }
+alloy-rpc-client.workspace = true
+alloy-rpc-types.workspace = true
 alloy-sol-types.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
