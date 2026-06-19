@@ -94,7 +94,7 @@ impl SingleChainHostWithEigenDA {
                 providers,
                 SingleChainHintHandlerWithEigenDA,
             )
-            .with_proactive_hint(ExtendedHintType::Original(HintType::L2PayloadWitness));
+            .with_high_level_hint(ExtendedHintType::Original(HintType::L2PayloadWitness));
 
             task::spawn(async {
                 PreimageServer::new(
