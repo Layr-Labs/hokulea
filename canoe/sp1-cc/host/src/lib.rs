@@ -161,10 +161,8 @@ pub async fn canoe_proof_stdin(
     let evm_state_sketch = sketch.finalize().await?;
 
     // Feed the sketch into the client.
-    let input_bytes = bincode::serialize(&evm_state_sketch)
-        .expect("bincode should have serialized the EVM sketch");
     let mut stdin = SP1Stdin::new();
-    stdin.write(&input_bytes);
+    stdin.write(&evm_state_sketch);
     stdin.write(&canoe_inputs);
     Ok(stdin)
 }

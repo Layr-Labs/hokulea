@@ -10,9 +10,7 @@ use sp1_cc_client_executor::{io::EvmSketchInput, AnchorType, ClientExecutor, Con
 pub fn main() {
     // Read the state sketch from stdin. Use this during the execution in order to
     // access Ethereum state.
-    let state_sketch_bytes = sp1_zkvm::io::read::<Vec<u8>>();
-    let state_sketch = bincode::deserialize::<EvmSketchInput>(&state_sketch_bytes)
-        .expect("should be able to deserialize evm sketch state");
+    let state_sketch = sp1_zkvm::io::read::<EvmSketchInput>();
 
     // read a list of canoe inputs and prove them all together in one sp1-cc proof
     let canoe_inputs = sp1_zkvm::io::read::<Vec<CanoeInput>>();
