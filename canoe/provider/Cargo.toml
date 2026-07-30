@@ -8,6 +8,7 @@ eigenda-cert = { workspace = true }
 anyhow.workspace = true
 serde.workspace = true
 async-trait.workspace = true
-alloy-primitives.workspace = true
+alloy-primitives = { workspace = true, features = ["rkyv"] }
+rkyv = { workspace = true }
 alloy-sol-types = { workspace = true }
 canoe-bindings = { workspace = true }

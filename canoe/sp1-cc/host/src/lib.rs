@@ -161,9 +161,13 @@ pub async fn canoe_proof_stdin(
     let evm_state_sketch = sketch.finalize().await?;
 
     // Feed the sketch into the client.
+    // EvmSketchInput is not rkyv-serializable, so it keeps using SP1Stdin's serde path.
+    // CanoeInput is rkyv-serializable, so we serialize it with rkyv and pass the raw bytes.
+    let canoe_inputs_bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&canoe_inputs.to_vec())
+        .expect("rkyv should have serialized the canoe inputs");
     let mut stdin = SP1Stdin::new();
     stdin.write(&evm_state_sketch);
-    stdin.write(&canoe_inputs);
+    stdin.write_vec(canoe_inputs_bytes.to_vec());
     Ok(stdin)
 }
 
