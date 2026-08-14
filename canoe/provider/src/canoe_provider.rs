@@ -7,7 +7,8 @@ use eigenda_cert::AltDACommitment;
 
 /// CanoeInput contains all the necessary data to create a ZK proof
 /// attesting the validity of a cert within an altda commitment
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)] //
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)] //
 pub struct CanoeInput {
     /// altda commitment
     pub altda_commitment: AltDACommitment,

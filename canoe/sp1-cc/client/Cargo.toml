@@ -29,3 +29,4 @@ sp1-zkvm = { workspace = true, features = ["default"] }
 
 # misc
 bincode.workspace = true
+rkyv = { workspace = true }

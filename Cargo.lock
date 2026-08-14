@@ -2784,6 +2784,7 @@ dependencies = [
  "async-trait",
  "canoe-bindings",
  "eigenda-cert",
+ "rkyv",
  "serde",
 ]
 
@@ -2796,6 +2797,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
+ "rkyv",
  "sp1-cc-client-executor",
  "sp1-zkvm",
 ]
@@ -2814,6 +2816,7 @@ dependencies = [
  "bincode",
  "canoe-bindings",
  "canoe-provider",
+ "rkyv",
  "serde_json",
  "sp1-cc-client-executor",
  "sp1-cc-host-executor",

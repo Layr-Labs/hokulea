@@ -1179,6 +1179,7 @@ dependencies = [
  "async-trait",
  "canoe-bindings",
  "eigenda-cert",
+ "rkyv",
  "serde",
 ]
 
