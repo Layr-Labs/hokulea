@@ -173,9 +173,9 @@ The `sp1-cc client` program defines the execution logic for verifying DA certifi
 Before generating the ELF file, ensure that the SP1 toolchain is installed as described in the repository’s main README. Then run the following commands:
 ```bash
 cd canoe/sp1-cc/client
-cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v5.2.1
+cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v6.4.0
 ```
-> Note: Using a specific Docker tag (e.g., v5.2.1) ensures deterministic builds.
+> Note: Using a specific Docker tag (e.g., v6.4.0) ensures deterministic builds.
 
 ### Generating the Verification Key
 The verification key derived from the ELF must be hardcoded into the V_KEY variable in `canoe/sp1-cc/verifier/src/lib.rs`. You can generate this key using one of the following methods:

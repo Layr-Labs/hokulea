@@ -7,7 +7,7 @@ edition = "2021"
 sp1-cc-client-executor.workspace = true
 sp1-cc-host-executor.workspace = true
 
-# sp1-cc now runs on the reth-2.2.0 / alloy-2.x stack (sp1-cc tag reth-2.2.0-sp1-6.2.4),
+# sp1-cc runs on the reth-2.2.0 / alloy-2.x stack (sp1-cc tag reth-2.2.0-sp1-6.4.0),
 # matching the workspace's alloy-2.x pins shared with the Kona (L2) side.
 alloy-genesis.workspace = true
 alloy-primitives.workspace = true
