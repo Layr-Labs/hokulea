@@ -19,7 +19,7 @@ use tracing::info;
 /// To generate the new ELF (a newer version than 6.0.1 toolchain tag is also fine)
 /// ``` bash
 /// cd canoe/sp1-cc/client
-/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v6.4.0
+/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v6.5.0
 /// ```
 ///
 /// The verificaiton of the ELF must be hardcoded here which pins an exact version of ELF a prover can use
