@@ -132,10 +132,10 @@ canoe-sp1-cc-client = { path = "./canoe/sp1-cc/client", default-features = false
 canoe-sp1-cc-host = { path = "./canoe/sp1-cc/host", default-features = false }
 canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = false }
 
-# RSP and SP1-CC - update to tags once released
+# RSP and SP1-CC
 sp1-build = "=6.5.0"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "b34aa8c74ddb1e90d5b51b6dc5b07af1cf0a756a" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "b34aa8c74ddb1e90d5b51b6dc5b07af1cf0a756a" }
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-2.2.0-sp1-6.5.0" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-2.2.0-sp1-6.5.0" }
 sp1-core-executor = "=6.5.0"
 sp1-hypercube = "=6.5.0"
 sp1-lib = "=6.5.0"
