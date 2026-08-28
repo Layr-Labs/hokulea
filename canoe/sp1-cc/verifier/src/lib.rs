@@ -19,7 +19,7 @@ use tracing::info;
 /// To generate the new ELF (a newer version than 6.0.1 toolchain tag is also fine)
 /// ``` bash
 /// cd canoe/sp1-cc/client
-/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v6.4.0
+/// cargo prove build --output-directory ../elf --elf-name canoe-sp1-cc-client --docker --tag v6.5.0
 /// ```
 ///
 /// The verificaiton of the ELF must be hardcoded here which pins an exact version of ELF a prover can use
@@ -34,7 +34,7 @@ use tracing::info;
 /// ```
 /// The v_key will be printed in the terminal.
 pub const V_KEY: [u32; 8] = [
-    1931380531, 1002560070, 1155309978, 765948272, 649884302, 1109285520, 1400587018, 1707023885,
+    869109396, 1268795081, 444738726, 1988481071, 24436118, 1906100204, 947432243, 47542668,
 ];
 
 #[derive(Clone, Default)]
