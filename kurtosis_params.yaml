@@ -46,8 +46,10 @@ optimism_package:
           # Isthmis upgrade
           # https://docs.optimism.io/notices/upgrade-15#for-node-operators
           cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.2
-          el_type: op-geth
-          el_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.4
+          cl_extra_params:
+            - --l2.enginekind=reth
+          el_type: op-reth
+          el_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.2.3
           count: 1
       batcher_params:
         extra_params:
@@ -57,6 +59,7 @@ optimism_package:
           - --target-num-frames=5
           - --max-l1-tx-size-bytes=1000
           - --batch-type=1
+          - --throttle.unsafe-da-bytes-lower-threshold=0
       proposer_params:
         game_type: 1
         proposal_interval: 10m
