@@ -50,24 +50,24 @@ download-srs:
 # The client assumes that rollup.json is present in the current working directory.
 # This target downloads the rollup config from the op-node running in the kurtosis enclave.
 [group('local-env')]
-_download-rollup-config-from-kurtosis enclave='eigenda-devnet' chain_id='2151908':
+_download-rollup-config-from-kurtosis enclave='eigenda-devnet' chain_id='2151908' el_type='op-reth':
   #!/usr/bin/env bash
   set -o pipefail -o errexit -o nounset
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
 
-  ROLLUP_NODE_RPC=$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)
+  ROLLUP_NODE_RPC=$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-{{el_type}}-op-kurtosis http)
   echo "Downloading rollup config from kurtosis op-node at $ROLLUP_NODE_RPC"
   cast rpc "optimism_rollupConfig" --rpc-url $ROLLUP_NODE_RPC | jq > rollup.json
 
 # `run-client-native-against-devnet` requires a finalized L2 block before it can run.
 # In CI we thus run this command before running the client.
 [group('local-env')]
-_kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
+_kurtosis_wait_for_first_l2_finalized_block enclave='eigenda-devnet' chain_id='2151908' el_type='op-reth':
   #!/usr/bin/env bash
   set -o pipefail -o errexit -o nounset
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
 
-  L2_RPC=$(kurtosis port print eigenda-devnet op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)
+  L2_RPC=$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-{{el_type}}-op-node-op-kurtosis rpc)
   while true; do
     BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
     if [ $BLOCK_NUMBER -ne 0 ]; then
@@ -79,9 +79,9 @@ _kurtosis_wait_for_first_l2_finalized_block chain_id='2151908':
   done
 
 [group('local-env')]
-get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
+get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908' el_type='op-reth':
   #!/usr/bin/env bash
-  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
+  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-{{el_type}}-op-node-op-kurtosis rpc)"
   L2_BLOCK_NUMBER=$(cast block finalized --json --rpc-url $L2_RPC | jq -r .number | cast 2d)
   if [ $L2_BLOCK_NUMBER -eq 0 ]; then
     echo "No finalized blocks found on L2 chain. If devnet was just started, wait a bit and try again..."
@@ -94,16 +94,16 @@ get-l2-finalize-block-number enclave='eigenda-devnet' chain_id='2151908':
 
 # Run the client program natively with the host program attached, against the op-devnet.
 [group('local-env')]
-run-client-against-devnet native_or_asterisc='native' verbosity='' env_file='.devnet.env' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908': (download-srs) (_download-rollup-config-from-kurtosis) (_kurtosis_wait_for_first_l2_finalized_block)
+run-client-against-devnet native_or_asterisc='native' verbosity='' env_file='.devnet.env' block_number='' rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' el_type='op-reth': (download-srs) (_download-rollup-config-from-kurtosis enclave chain_id el_type) (_kurtosis_wait_for_first_l2_finalized_block enclave chain_id el_type)
   #!/usr/bin/env bash
   if [ -z "{{block_number}}" ]; then
-    L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}})
+    L2_BLOCK_NUMBER=$(just get-l2-finalize-block-number {{enclave}} {{chain_id}} {{el_type}})
   else
     L2_BLOCK_NUMBER={{block_number}}
   fi
 
   RUN_ENV_FILE=".run{{env_file}}"
-  just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER {{rollup_config_path}}
+  just save-all-env {{env_file}} $RUN_ENV_FILE $L2_BLOCK_NUMBER {{rollup_config_path}} {{enclave}} {{chain_id}} {{el_type}}
 
   set -x
   # note we don't need ROLLUP_NODE_RPC
@@ -232,11 +232,11 @@ test-docs:
 
 ############################## GET PARAMETERS #################################
 [group('local-env')]
-save-all-env env_file run_env_file block_number rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908':
+save-all-env env_file run_env_file block_number rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' el_type='op-reth':
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
-  just save-chain-env {{env_file}} {{rollup_config_path}} {{enclave}} {{chain_id}}
+  just save-chain-env {{env_file}} {{rollup_config_path}} {{enclave}} {{chain_id}} {{el_type}}
   set a-
     source {{env_file}}
   set a+
@@ -245,15 +245,15 @@ save-all-env env_file run_env_file block_number rollup_config_path='rollup.json'
 
 # save rpc variable in to .devnet.env
 [group('local-env')]
-save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' l1_config_path="kurtosis_l1_config.json":
+save-chain-env env_file rollup_config_path='rollup.json' enclave='eigenda-devnet' chain_id='2151908' el_type='op-reth' l1_config_path="kurtosis_l1_config.json":
   #!/usr/bin/env bash
   set -o errexit -o nounset -o pipefail
   export FOUNDRY_DISABLE_NIGHTLY_WARNING=true
 
   L1_RPC="http://$(kurtosis port print {{enclave}} el-1-geth-teku rpc)"
   L1_BEACON_RPC="$(kurtosis port print {{enclave}} cl-1-teku-geth http)"
-  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-op-geth-op-node-op-kurtosis rpc)"
-  ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-op-geth-op-kurtosis http)"
+  L2_RPC="$(kurtosis port print {{enclave}} op-el-{{chain_id}}-1-{{el_type}}-op-node-op-kurtosis rpc)"
+  ROLLUP_NODE_RPC="$(kurtosis port print {{enclave}} op-cl-{{chain_id}}-1-op-node-{{el_type}}-op-kurtosis http)"
   EIGENDA_PROXY_RPC="$(kurtosis port print {{enclave}} da-server-op-kurtosis http)"
   ROLLUP_CONFIG_PATH="$(realpath {{rollup_config_path}})"
   L1_CONFIG_PATH="$(realpath {{l1_config_path}})"
