@@ -7,15 +7,19 @@ use tracing::{error, info};
 
 use hokulea_eigenda::{EigenDADataSource, EigenDAPreimageProvider, EigenDAPreimageSource};
 
-use kona_client::single::{fetch_safe_head_hash, FaultProofProgramError};
+use kona_client::single::FaultProofProgramError;
 use kona_derive::BlobProvider;
 use kona_driver::Driver;
 use kona_executor::TrieDBProvider;
 use kona_genesis::RollupConfig;
 use kona_preimage::CommsClient;
 use kona_proof::{
-    executor::KonaExecutor, l1::OracleL1ChainProvider, l1::OraclePipeline,
-    l2::OracleL2ChainProvider, sync::new_oracle_pipeline_cursor, BootInfo, FlushableCache,
+    executor::KonaExecutor,
+    l1::OracleL1ChainProvider,
+    l1::OraclePipeline,
+    l2::OracleL2ChainProvider,
+    sync::{fetch_safe_head_hash, new_oracle_pipeline_cursor},
+    BootInfo, FlushableCache,
 };
 
 use kona_derive::EthereumDataSource;
