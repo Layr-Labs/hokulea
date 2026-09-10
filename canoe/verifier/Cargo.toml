@@ -10,11 +10,13 @@ alloy-primitives = { workspace = true }
 serde.workspace = true
 thiserror.workspace = true
 
-# canoe verifies the EigenDA cert via an L1 view-call on the reth-2.2.0 / revm-38
-# stack (shared with sp1-cc), now on alloy 2.x. These types must match reth's, so
-# they track the workspace's alloy-2.x / revm-23 pins (also used on the Kona side).
-revm-primitives = { workspace = true }
-reth-chainspec = { workspace = true }
-reth-evm = { workspace = true }
-alloy-genesis = { workspace = true }
+# Only the chain-spec helpers require the Reth execution stack.
+revm-primitives = { workspace = true, optional = true }
+reth-chainspec = { workspace = true, optional = true }
+reth-evm = { workspace = true, optional = true }
+alloy-genesis = { workspace = true, optional = true }
 tracing = { workspace = true }
+
+[features]
+default = ["chain-spec"]
+chain-spec = ["dep:revm-primitives", "dep:reth-chainspec", "dep:reth-evm", "dep:alloy-genesis"]

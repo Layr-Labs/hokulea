@@ -7,7 +7,7 @@ edition = "2021"
 [dependencies]
 eigenda-cert.workspace = true
 
-canoe-verifier = { workspace = true }
+canoe-verifier = { workspace = true, features = ["chain-spec"] }
 canoe-bindings = { workspace = true }
 sp1-cc-client-executor = { workspace = true }
 
