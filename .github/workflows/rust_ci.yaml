@@ -28,6 +28,15 @@ jobs:
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
         with:
           cache-on-failure: true
+      - name: Check generic verifier dependencies
+        shell: bash
+        run: |
+          cargo check --locked -p canoe-verifier --no-default-features
+          cargo tree --locked -p canoe-verifier --no-default-features --edges normal --prefix none > verifier-dependencies.txt
+          if grep -E '^(reth-|revm[ -])' verifier-dependencies.txt; then
+            echo "The generic verifier must not depend on the Reth execution stack."
+            exit 1
+          fi
       - run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just ${{ matrix.justfile-target }}
   cargo-tests:
     runs-on: ubuntu-latest
