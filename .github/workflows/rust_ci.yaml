@@ -28,6 +28,9 @@ jobs:
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
         with:
           cache-on-failure: true
+      # SP1 embeds a registry-local runner binary that rust-cache does not preserve.
+      - name: Rebuild cached SP1 runner
+        run: cargo clean -p sp1-core-executor-runner
       - name: Check generic verifier dependencies
         shell: bash
         run: |
@@ -57,6 +60,8 @@ jobs:
           cache-on-failure: true
       # https://github.com/taiki-e/install-action/tree/releases/nextest
       - uses: taiki-e/install-action@e9fe1d0c24b9415d0c0be1429c063ba3e3a8b277
+      - name: Rebuild cached SP1 runner
+        run: cargo clean -p sp1-core-executor-runner
       - name: cargo test
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just test
   cargo-lint:
@@ -85,6 +90,8 @@ jobs:
         with:
           cache-on-failure: true
           prefix-key: ${{ matrix.target }}
+      - name: Rebuild cached SP1 runner
+        run: cargo clean -p sp1-core-executor-runner
       - name: Log into ghcr
         # v4.1.0
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
@@ -113,6 +120,8 @@ jobs:
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           cache-on-failure: true
+      - name: Rebuild cached SP1 runner
+        run: cargo clean -p sp1-core-executor-runner
       - name: doclint
         run: RISC0_SKIP_BUILD=1 SP1_SKIP_PROGRAM_BUILD=true just lint-docs
       - name: doctest
