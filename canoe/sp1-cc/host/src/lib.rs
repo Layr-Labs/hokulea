@@ -211,10 +211,16 @@ pub async fn generate_canoe_proof(
 
     let proof = if mock_mode {
         // Execute the program using the `ProverClient.execute` method, without generating a proof.
-        let (public_values, report) = client
-            .execute(Elf::Static(ELF), stdin.clone())
-            .await
-            .expect("sp1-cc should have executed the ELF");
+        let (public_values, report) = client.execute(Elf::Static(ELF), stdin.clone()).await?;
+        anyhow::ensure!(
+            report.exit_code == 0,
+            "Canoe guest exited with code {}",
+            report.exit_code
+        );
+        anyhow::ensure!(
+            !public_values.as_slice().is_empty(),
+            "Canoe guest returned no public values"
+        );
         info!(
             "executed program in mock mode with {} cycles and {} prover gas",
             report.total_instruction_count(),
@@ -307,4 +313,18 @@ async fn get_sp1_cc_proof(
         elapsed,
     );
     Ok(proof)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn mock_proof_rejects_guest_panic() {
+        let mut stdin = SP1Stdin::new();
+        stdin.write(&Vec::<u8>::new());
+        generate_canoe_proof(stdin, true)
+            .await
+            .expect_err("a guest panic must not produce a mock proof");
+    }
 }
