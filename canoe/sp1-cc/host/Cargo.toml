@@ -29,3 +29,6 @@ tracing.workspace = true
 sp1-hypercube.workspace = true
 sp1-primitives.workspace = true
 sp1-sdk.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
