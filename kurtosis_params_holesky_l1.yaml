@@ -1,0 +1,74 @@
+# This file should be deploying the exact same optimism_package as `kurtosis_params.yaml`,
+# but it does so over an external L1 network instead of a local one (replaces ethereum_package).
+#
+# This feature is not well documented... only original PR had a comment about it:
+# See https://github.com/ethpandaops/optimism-package/pull/104
+# Fill in the missing rpc_urls and priv_key.
+# TODO: Currently doesn't work... seems like the feature was only implemented to target another ethereum_package
+# deployed locally. It doesn't work with holesky for a few reasons:
+# 1. hardcoded addresses that are using the junk mnemonic (can prob be changed to all use the priv_key instead?)
+# 2. op-deployer is always run. There's no way to turn it off and point to pre-deployed contracts.
+#    This means it would waste a lot of ETH everytime we run it. Plus right now op-deployer execution is timing out after 180 seconds.
+#    Prob takes more than 3 minutes to deploy against a real network... 
+external_l1_network_params:
+  network_id: "17000" # holesky
+  rpc_kind: standard
+  el_rpc_url:
+  el_ws_url:
+  cl_rpc_url:
+  priv_key:
+
+optimism_package:
+  observability:
+    # Unfortunately can't be disabled, see https://github.com/ethpandaops/optimism-package/issues/221
+    # Would be nice to speed up CI...
+    enabled: true
+  altda_deploy_config:
+    da_bond_size: 0
+    da_challenge_window: 16
+    da_commitment_type: GenericCommitment
+    da_resolve_window: 16
+    da_resolver_refund_percentage: 0
+    use_altda: true
+  chains:
+    - additional_services:
+        - da_server
+      participants:
+        - cl_type: op-node
+          el_type: op-geth
+          count: 1
+      batcher_params:
+        extra_params:
+          - --max-channel-duration=10
+          - --altda.max-concurrent-da-requests=10
+          - --max-pending-tx=10
+          - --target-num-frames=5
+          - --max-l1-tx-size-bytes=1000
+          - --batch-type=1
+          - --throttle-threshold=500_000
+          - --throttle-block-size=1000
+      challenger_params:
+        enabled: false
+      proposer_params:
+        game_type: 1
+        proposal_interval: 10m
+      da_server_params:
+        cmd:
+          - --addr=0.0.0.0
+          - --port=3100
+          - --storage.backends-to-enable=V1,V2
+          - --storage.dispersal-backend=v2
+          - --api-enabled=admin
+          - --eigenda.v2.max-blob-length=1MiB
+          - --memstore.enabled
+          - --memstore.expiration=180m
+        image: ghcr.io/layr-labs/eigenda-proxy:v1.7.0
+      network_params:
+        fjord_time_offset: 0
+        granite_time_offset: 0
+        holocene_time_offset: 0
+        fund_dev_accounts: true
+        name: op-kurtosis
+        network: kurtosis
+        network_id: "2151908"
+        seconds_per_slot: 2
