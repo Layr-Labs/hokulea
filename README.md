@@ -9,7 +9,7 @@ Hokulea is a library to provide the altda providers for a derivation pipeline bu
 We use mise to track and manage dependencies. Please first [install mise](https://mise.jdx.dev/getting-started.html), and then run `mise install` to install the dependencies.
 
 ## SRS points
-Hokulea's proving client currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the proving client to have access to sufficient KZG G1 SRS points. Currently the SRS points are (hardcoded) assumed to be located at `resources/g1.point`. You can download the SRS points to that location by running `just download-srs`, which downloads the `g1.point` file from the [eigenda repo](https://github.com/Layr-Labs/eigenda-proxy/tree/main/resources).
+Hokulea's proving client currently computes a challenge proof that validates the correctness of the eigenda blob against the provided kzg commitment. Such computation requires the proving client to have access to sufficient KZG G1 SRS points. Currently the SRS points are (hardcoded) assumed to be located at `resources/g1.point`. You can download the SRS points to that location by running `just download-srs`, which downloads the `g1.point` file from the [EigenDA monorepo](https://github.com/Layr-Labs/eigenda/tree/master/resources/srs).
 
 ## Integrating with Hokulea
 
@@ -94,7 +94,7 @@ just generate-deps-graphviz
 
 ## Run Against Sepolia
 
-You will need to run an instance of [eigenda-proxy](https://github.com/Layr-Labs/eigenda-proxy) with V2 support. Then populate the `.sepolia.env` file, see a template at `.example.env`.
+You will need to run an instance of [eigenda-proxy](https://github.com/Layr-Labs/eigenda/tree/master/api/proxy) with V2 support. Then populate the `.sepolia.env` file, see a template at `.example.env`.
 
 ```bash
 # To download a `sepolia.rollup.json` from a rollup consensus node, you can use the command
