@@ -10495,7 +10495,7 @@ dependencies = [
 [[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-2.2.0-sp1-6.10.0#5afe72eb12a2d6accd9d7fdff66785d91cbc8e72"
+source = "git+https://github.com/succinctlabs/rsp?rev=c97f16836ce18f5af84f07bb8f9397e081ba0fdf#c97f16836ce18f5af84f07bb8f9397e081ba0fdf"
 dependencies = [
  "alloy-consensus 2.3.0",
  "alloy-evm 0.34.0",
@@ -10529,7 +10529,7 @@ dependencies = [
 [[package]]
 name = "rsp-mpt"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-2.2.0-sp1-6.10.0#5afe72eb12a2d6accd9d7fdff66785d91cbc8e72"
+source = "git+https://github.com/succinctlabs/rsp?rev=c97f16836ce18f5af84f07bb8f9397e081ba0fdf#c97f16836ce18f5af84f07bb8f9397e081ba0fdf"
 dependencies = [
  "alloy-primitives 1.7.3",
  "alloy-rlp",
@@ -10548,7 +10548,7 @@ dependencies = [
 [[package]]
 name = "rsp-primitives"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-2.2.0-sp1-6.10.0#5afe72eb12a2d6accd9d7fdff66785d91cbc8e72"
+source = "git+https://github.com/succinctlabs/rsp?rev=c97f16836ce18f5af84f07bb8f9397e081ba0fdf#c97f16836ce18f5af84f07bb8f9397e081ba0fdf"
 dependencies = [
  "alloy-eips 2.5.0",
  "alloy-genesis 2.3.0",
@@ -10565,7 +10565,7 @@ dependencies = [
 [[package]]
 name = "rsp-rpc-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-2.2.0-sp1-6.10.0#5afe72eb12a2d6accd9d7fdff66785d91cbc8e72"
+source = "git+https://github.com/succinctlabs/rsp?rev=c97f16836ce18f5af84f07bb8f9397e081ba0fdf#c97f16836ce18f5af84f07bb8f9397e081ba0fdf"
 dependencies = [
  "alloy-consensus 2.3.0",
  "alloy-primitives 1.7.3",
@@ -10589,7 +10589,7 @@ dependencies = [
 [[package]]
 name = "rsp-witness-db"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/rsp?tag=reth-2.2.0-sp1-6.10.0#5afe72eb12a2d6accd9d7fdff66785d91cbc8e72"
+source = "git+https://github.com/succinctlabs/rsp?rev=c97f16836ce18f5af84f07bb8f9397e081ba0fdf#c97f16836ce18f5af84f07bb8f9397e081ba0fdf"
 dependencies = [
  "alloy-primitives 1.7.3",
  "reth-storage-errors",
@@ -11873,7 +11873,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-2.2.0-sp1-6.10.0#ee7506f2341206528d7bb5772bf3748a44bc2eda"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=d9e95cce7b5aa0ee821eca7861bae1ef1278faeb#d9e95cce7b5aa0ee821eca7861bae1ef1278faeb"
 dependencies = [
  "alloy-consensus 2.3.0",
  "alloy-eips 2.5.0",
@@ -11908,7 +11908,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call.git?tag=reth-2.2.0-sp1-6.10.0#ee7506f2341206528d7bb5772bf3748a44bc2eda"
+source = "git+https://github.com/succinctlabs/sp1-contract-call.git?rev=d9e95cce7b5aa0ee821eca7861bae1ef1278faeb#d9e95cce7b5aa0ee821eca7861bae1ef1278faeb"
 dependencies = [
  "alloy-consensus 2.3.0",
  "alloy-eips 2.5.0",
@@ -12682,7 +12682,7 @@ dependencies = [
 [[package]]
 name = "substrate-bn"
 version = "0.6.0"
-source = "git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-6.10.0-substrate-bn#ab4d0085567695967cf34c23b3090f1ae02a03d1"
+source = "git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-6.10.0-substrate-bn-r1#2bc7d524f4e799031701dd7e31c1d7b0011cdfc4"
 dependencies = [
  "bytemuck",
  "byteorder",
@@ -12697,9 +12697,9 @@ dependencies = [
 
 [[package]]
 name = "substrate-bn-succinct-rs"
-version = "0.6.1"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5ad6ccb8ae10730213d4d5bdb0a9c4ddf351210e7c6ad9c66c02f2ad0b4256"
+checksum = "e96045ac8bc2bc3b1dbb0d3c94adc4913d61e52400cd9ba03a8e90cc52fc1753"
 dependencies = [
  "bytemuck",
  "byteorder",
