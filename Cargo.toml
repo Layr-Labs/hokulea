@@ -134,8 +134,8 @@ canoe-sp1-cc-verifier = { path = "./canoe/sp1-cc/verifier", default-features = f
 
 # RSP and SP1-CC
 sp1-build = "=6.10.0"
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "d9e95cce7b5aa0ee821eca7861bae1ef1278faeb" }
-sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", rev = "d9e95cce7b5aa0ee821eca7861bae1ef1278faeb" }
+sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-2.2.0-sp1-6.10.0-patch.1" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call.git", tag = "reth-2.2.0-sp1-6.10.0-patch.1" }
 sp1-core-executor = "=6.10.0"
 sp1-hypercube = "=6.10.0"
 sp1-lib = "=6.10.0"
